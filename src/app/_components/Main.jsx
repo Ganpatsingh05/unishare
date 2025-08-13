@@ -1,61 +1,62 @@
 "use client";
 
 import Link from 'next/link';
+import { Car, ShoppingCart, Tag, Search, Star, Home, Megaphone, BookOpen, Phone, Users, RotateCw, CheckCircle } from 'lucide-react';
 
 const Main = ({ darkMode }) => {
   const sections = [
     {
       title: 'Share a Ride',
       description: 'Find or share info about destinations, connect with others to share taxi/auto fares.',
-      icon: '🚗',
+      icon: <Car className="w-10 h-10" />,
       href: '/share-ride'
     },
     {
       title: 'Buy Items',
       description: 'Browse and buy new or used items uploaded by users.',
-      icon: '🛒',
+      icon: <ShoppingCart className="w-10 h-10" />,
       href: '/marketplace/buy'
     },
     {
       title: 'Sell Items',
       description: 'Sell your unused or used items to others in the community.',
-      icon: '💰',
+      icon: <Tag className="w-10 h-10" />,
       href: '/marketplace/sell'
     },
     {
       title: 'Report Lost Item',
       description: 'Report lost items and provide your info so others can help you recover them.',
-      icon: '🔍',
+      icon: <Search className="w-10 h-10" />,
       href: '/lost-found/report'
     },
     {
       title: 'Found Item',
       description: 'Share info about items you found so the rightful owner can claim them.',
-      icon: '✨',
+      icon: <Star className="w-10 h-10" />,
       href: '/lost-found/found'
     },
     {
       title: 'Room & Roommate',
       description: 'Search for available rooms or roommates that match your preferences.',
-      icon: '🏠',
+      icon: <Home className="w-10 h-10" />,
       href: '/housing'
     },
     {
       title: 'Announcements',
       description: 'See important and urgent announcements from the community.',
-      icon: '📢',
+      icon: <Megaphone className="w-10 h-10" />,
       href: '/announcements'
     },
     {
       title: 'Notes & Resources',
       description: 'Access notes, syllabus, PPTs, PDFs, previous year questions, and more.',
-      icon: '📚',
+      icon: <BookOpen className="w-10 h-10" />,
       href: '/resources'
     },
     {
       title: 'Important Contacts',
       description: 'Find essential contacts and information for your locality or institution.',
-      icon: '📞',
+      icon: <Phone className="w-10 h-10" />,
       href: '/contacts'
     }
   ];
@@ -76,7 +77,7 @@ const Main = ({ darkMode }) => {
                   : 'bg-gray-100 hover:bg-white shadow-gray-900/10'
               }`}
             >
-              <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">
+              <div className="mb-3 group-hover:scale-110 transition-transform duration-300">
                 {section.icon}
               </div>
               <h3 className={`text-xl font-semibold mb-3 ${
@@ -97,10 +98,10 @@ const Main = ({ darkMode }) => {
       {/* Quick Stats Section */}
       <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6">
         {[
-          { label: 'Active Users', value: '2,500+', icon: '👥' },
-          { label: 'Items Traded', value: '850+', icon: '🔄' },
-          { label: 'Rides Shared', value: '1,200+', icon: '🚗' },
-          { label: 'Items Found', value: '95%', icon: '🎯' }
+          { label: 'Active Users', value: '2,500+', icon: <Users className="w-8 h-8" /> },
+          { label: 'Items Traded', value: '850+', icon: <RotateCw className="w-8 h-8" /> },
+          { label: 'Rides Shared', value: '1,200+', icon: <Car className="w-8 h-8" /> },
+          { label: 'Items Found', value: '95%', icon: <CheckCircle className="w-8 h-8" /> }
         ].map((stat, index) => (
           <div key={index} className={`text-center p-4 rounded-lg ${
             darkMode ? 'bg-gray-800' : 'bg-white/80'

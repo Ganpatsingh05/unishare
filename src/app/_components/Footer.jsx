@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { Car, ShoppingCart, Tag, Search, Star, Home as HomeIcon, Megaphone, BookOpen, Phone, GraduationCap } from 'lucide-react';
 
 const Footer = ({ darkMode = false }) => {
   const [email, setEmail] = useState('');
@@ -33,17 +34,17 @@ const Footer = ({ darkMode = false }) => {
     'Vulnerability Disclosure Program'
   ];
 
-  // Updated company features with matching icons from main.jsx (excluding QuickCampus)
+  // Updated company features with matching icons from main (excluding QuickCampus)
   const companyFeatures = [
-    { name: 'Share a Ride', icon: '🚗' },
-    { name: 'Buy Items', icon: '🛒' },
-    { name: 'Sell Items', icon: '💰' },
-    { name: 'Report Lost Item', icon: '🔍' },
-    { name: 'Found Item', icon: '✨' },
-    { name: 'Room & Roommate', icon: '🏠' },
-    { name: 'Announcements', icon: '📢' },
-    { name: 'Notes & Resources', icon: '📚' },
-    { name: 'Important Contacts', icon: '📞' }
+    { name: 'Share a Ride', icon: <Car className="w-6 h-6" /> },
+    { name: 'Buy Items', icon: <ShoppingCart className="w-6 h-6" /> },
+    { name: 'Sell Items', icon: <Tag className="w-6 h-6" /> },
+    { name: 'Report Lost Item', icon: <Search className="w-6 h-6" /> },
+    { name: 'Found Item', icon: <Star className="w-6 h-6" /> },
+    { name: 'Room & Roommate', icon: <HomeIcon className="w-6 h-6" /> },
+    { name: 'Announcements', icon: <Megaphone className="w-6 h-6" /> },
+    { name: 'Notes & Resources', icon: <BookOpen className="w-6 h-6" /> },
+    { name: 'Important Contacts', icon: <Phone className="w-6 h-6" /> }
   ];
 
   const socialLinks = [
@@ -307,7 +308,7 @@ const Footer = ({ darkMode = false }) => {
           <div className="flex items-center justify-between">
             {/* Static QuickCampus Logo - Far Left */}
             <div className="flex flex-col items-center justify-center text-center flex-shrink-0 mr-8">
-              <div className="text-4xl mb-2">🎓</div>
+              <div className="text-4xl mb-2"><GraduationCap className="w-8 h-8" /></div>
               <div className="text-lg font-bold whitespace-nowrap">QuickCampus</div>
             </div>
             

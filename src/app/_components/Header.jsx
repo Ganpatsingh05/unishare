@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Search, Globe, Bell, Sun, Moon, User, LogOut } from 'lucide-react';
 
 const Header = ({ darkMode, onThemeToggle }) => {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -35,7 +36,7 @@ const Header = ({ darkMode, onThemeToggle }) => {
             <div className="hidden md:flex items-center relative">
               <span className={`absolute left-4 text-lg pointer-events-none ${
                 darkMode ? 'text-yellow-300' : 'text-blue-500'
-              }`}>🔍</span>
+              }`}><Search className="w-5 h-5" /></span>
               <input
                 type="text"
                 placeholder="Search..."
@@ -63,7 +64,7 @@ const Header = ({ darkMode, onThemeToggle }) => {
                 }`}
                 onClick={() => alert('Language toggle clicked!')}
               >
-                <span>🌐</span>
+                <Globe className="w-4 h-4" />
                 <span>EN | HI</span>
               </button>
 
@@ -77,7 +78,7 @@ const Header = ({ darkMode, onThemeToggle }) => {
                 onClick={() => alert('Notifications clicked!')}
                 title="Notifications"
               >
-                <span className="text-xl">🔔</span>
+                <Bell className="w-5 h-5" />
               </button>
 
               {/* Theme Toggle */}
@@ -90,7 +91,7 @@ const Header = ({ darkMode, onThemeToggle }) => {
                 onClick={onThemeToggle}
                 title="Toggle theme"
               >
-                <span className="text-xl">{darkMode ? '🌙' : '☀️'}</span>
+                {darkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
               </button>
 
               {/* Profile Dropdown */}
@@ -108,7 +109,7 @@ const Header = ({ darkMode, onThemeToggle }) => {
                   <div className={`size-12 flex items-center justify-center font-bold text-xl ${
                     darkMode ? 'bg-yellow-300 text-gray-900' : 'bg-blue-600 text-white'
                   }`}>
-                    👤
+                    <User className="w-5 h-5" />
                   </div>
                 </button>
 
@@ -178,20 +179,7 @@ const Header = ({ darkMode, onThemeToggle }) => {
                         role="menuitem"
                         onClick={() => alert('Logout clicked!')}
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth="1.5"
-                          stroke="currentColor"
-                          className="size-5"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
-                          />
-                        </svg>
+                        <LogOut className="w-4 h-4" />
                         Logout
                       </button>
                     </div>
@@ -207,7 +195,7 @@ const Header = ({ darkMode, onThemeToggle }) => {
           <div className="flex items-center relative">
             <span className={`absolute left-4 text-lg pointer-events-none ${
               darkMode ? 'text-yellow-300' : 'text-blue-500'
-            }`}>🔍</span>
+            }`}><Search className="w-5 h-5" /></span>
             <input
               type="text"
               placeholder="Search..."
@@ -230,7 +218,7 @@ const Header = ({ darkMode, onThemeToggle }) => {
             }`}
             onClick={() => alert('Language toggle clicked!')}
           >
-            <span>🌐</span>
+            <Globe className="w-4 h-4" />
             <span>EN | HI</span>
           </button>
           
@@ -240,7 +228,7 @@ const Header = ({ darkMode, onThemeToggle }) => {
             }`}
             onClick={() => alert('Notifications clicked!')}
           >
-            <span className="text-lg">🔔</span>
+            <Bell className="w-5 h-5" />
           </button>
           
           <button 
@@ -249,7 +237,7 @@ const Header = ({ darkMode, onThemeToggle }) => {
             }`}
             onClick={onThemeToggle}
           >
-            <span className="text-lg">{darkMode ? '🌙' : '☀️'}</span>
+            {darkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
           </button>
         </div>
       </div>
