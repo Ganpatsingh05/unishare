@@ -1,17 +1,17 @@
-# 📚 CampHub
+# 📚 UniShare
 
-**CampHub** – A community platform for university students to connect, share, and collaborate.  
-From selling old stuff to finding a roommate or sharing rides, CampHub makes campus life easier and more connected.
+**UniShare** – A community platform for university students to connect, share, and collaborate.  
+From selling old stuff to finding a roommate or sharing rides, UniShare makes campus life easier and more connected.
 
 ---
 
 ## 🚀 Features
 
-- 🛒 **Sell or Buy Used Items** – Post and browse listings for books, gadgets, furniture, and more.
-- 🚗 **Ride Sharing** – Share rides with fellow students to save costs and go green.
-- 🏠 **Find Roommates** – Connect with students looking for shared accommodations.
-- 📢 **Campus Announcements** – Stay updated with university-related events and notices.
-- 💬 **Student Networking** – Chat and collaborate with peers.
+- 🛒 **Sell or Buy Used Items** – Post and browse listings for books, gadgets, furniture, and more.  
+- 🚗 **Ride Sharing** – Share rides with fellow students to save costs and go green.  
+- 🏠 **Find Roommates** – Connect with students looking for shared accommodations.  
+- 📢 **Campus Announcements** – Stay updated with university-related events and notices.  
+- 💬 **Student Networking** – Chat and collaborate with peers.  
 
 ---
 
@@ -23,18 +23,18 @@ To create a one-stop digital hub for all campus needs — making it easier for s
 
 ## 🛠️ Tech Stack (Planned)
 
-- **Frontend:** Next.js, Tailwind CSS
-- **Backend:** Node.js, Express / Strapi
-- **Database:** PostgreSQL / MongoDB
-- **Authentication:** Custom Auth / OAuth
-- **Hosting:** Vercel / Render
+- **Frontend:** Next.js, Tailwind CSS  
+- **Backend:** Node.js, Express / Strapi  
+- **Database:** PostgreSQL / MongoDB  
+- **Authentication:** Custom Auth / OAuth  
+- **Hosting:** Vercel / Render  
 
 ---
 
 ## 👨‍💻 Contributors
 
 - [GanpatSingh05](https://github.com/GanpatSingh05)  
-- [PravinChoudhary11](https://github.com/PravinChoudhary11)
+- [PravinChoudhary11](https://github.com/PravinChoudhary11)  
 
 ---
 
@@ -51,7 +51,7 @@ Feel free to **fork** the repo, **open an issue**, or **submit a pull request**.
 
 ---
 
-> **Note:** CampHub is in its early development phase — exciting features are coming soon!
+> **Note:** UniShare is in its early development phase — exciting features are coming soon!
 
 ---
 
