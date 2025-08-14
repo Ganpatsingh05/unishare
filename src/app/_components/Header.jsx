@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import logoImage from '../assets/images/logounishare1.png'; // Adjust path as needed
-import { Search, Globe, Bell, Sun, Moon, User, LogOut, Settings, FileText, HelpCircle, UserCircle } from 'lucide-react';
+import { Search, Globe, Bell, Sun, Moon, User, LogOut, Settings, FileText, HelpCircle, UserCircle, Menu, X } from 'lucide-react';
 
 const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -12,6 +13,9 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
   const [searchValue, setSearchValue] = useState('');
   const [isNotificationActive, setIsNotificationActive] = useState(false);
   const [isLanguageActive, setIsLanguageActive] = useState(false);
+  const [language, setLanguage] = useState('EN');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter();
 
   const handleProfileMenuToggle = () => setProfileMenuOpen((prev) => !prev);
 
@@ -23,8 +27,8 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
 
   const handleLanguageToggle = () => {
     setIsLanguageActive(true);
+    setLanguage(prev => (prev === 'EN' ? 'HI' : 'EN'));
     setTimeout(() => setIsLanguageActive(false), 200);
-    alert('Language toggle clicked!');
   };
 
   const handleThemeToggle = () => {
@@ -37,8 +41,17 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
     }
   };
 
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('unishare_user');
+      localStorage.removeItem('token');
+    } catch (e) {}
+    setMobileMenuOpen(false);
+    router.push('/login');
+  };
+
   return (
-    <header className={`sticky top-0 z-50 transition-all duration-300 shadow-lg backdrop-blur-md border-b ${
+    <header className={`sticky top-0 z-50 w-full overflow-x-clip transition-all duration-300 shadow-lg backdrop-blur-md border-b ${
       darkMode ? 'bg-gray-900/95 border-gray-800 shadow-gray-900/20' : 'bg-white/95 border-gray-200 shadow-gray-200/50'
     }`}>
       <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
@@ -157,6 +170,18 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
 
           {/* Right Section */}
           <div className="flex items-center gap-3">
+            {/* Mobile Hamburger */}
+            <button
+              className={`md:hidden inline-flex items-center justify-center p-3 rounded-xl border transition-all duration-200 cursor-pointer ${
+                darkMode ? 'border-gray-700 text-gray-200 hover:bg-gray-800' : 'border-gray-200 text-gray-700 hover:bg-gray-100'
+              }`}
+              aria-label="Open menu"
+              aria-controls="navbar-hamburger"
+              aria-expanded={mobileMenuOpen ? 'true' : 'false'}
+              onClick={() => setMobileMenuOpen((o) => !o)}
+            >
+              <Menu className="w-5 h-5" />
+            </button>
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2">
@@ -212,7 +237,7 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
               </button>
 
               {/* Enhanced Profile Dropdown */}
-              <div className="relative">
+              <div className="relative hidden md:block">
                 <Link 
                   href="/login"
                   className={`overflow-hidden rounded-xl border-2 shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95 cursor-pointer inline-block ${
@@ -233,84 +258,109 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
           </div>
         </div>
 
-        {/* Enhanced Mobile Search Bar */}
-        <div className="md:hidden pb-4">
-          <div className="flex items-center relative">
-            <div className={`absolute left-4 transition-all duration-300 z-10 ${
-              searchFocused || searchValue 
-                ? (darkMode ? 'text-yellow-300 transform scale-110' : 'text-blue-500 transform scale-110')
-                : (darkMode ? 'text-gray-400' : 'text-gray-500')
-            }`}>
-              <Search className="w-5 h-5" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search for anything..."
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              onFocus={() => setSearchFocused(true)}
-              onBlur={() => setSearchFocused(false)}
-              className={`w-full pl-12 pr-12 py-3 rounded-2xl border-2 text-sm transition-all duration-300 cursor-text ${
-                searchFocused 
-                  ? `${darkMode 
-                      ? 'bg-gray-700 text-gray-100 border-yellow-300 shadow-lg shadow-yellow-300/20 ring-2 ring-yellow-300/20' 
-                      : 'bg-white text-gray-800 border-blue-500 shadow-lg shadow-blue-500/20 ring-2 ring-blue-500/20'
-                    }` 
-                  : `${darkMode 
-                      ? 'bg-gray-800 text-gray-100 border-gray-700' 
-                      : 'bg-gray-50 text-gray-800 border-gray-200'
-                    }`
-              } outline-none placeholder-gray-500`}
-            />
-            {searchValue && (
+        {/* Flowbite-like collapsible mobile menu */}
+        <div className={`${mobileMenuOpen ? 'block' : 'hidden'} md:hidden w-full mt-2`} id="navbar-hamburger">
+          <ul className={`flex flex-col font-medium rounded-lg border overflow-hidden ${
+            darkMode ? 'bg-gray-900 border-gray-800' : 'bg-gray-50 border-gray-200'
+          }`}>
+            {/* Search row */}
+            <li className={`${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+              <div className="px-3 py-2">
+                <div className="relative">
+                  <Search className={`w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    value={searchValue}
+                    onChange={(e) => setSearchValue(e.target.value)}
+                    onFocus={() => setSearchFocused(true)}
+                    onBlur={() => setSearchFocused(false)}
+                    className={`w-full pl-10 pr-3 py-2 rounded-md border text-sm ${
+                      darkMode ? 'bg-gray-800 text-gray-100 border-gray-700 placeholder-gray-400' : 'bg-white text-gray-900 border-gray-300 placeholder-gray-500'
+                    }`}
+                  />
+                </div>
+              </div>
+            </li>
+            {/* Language with EN | HI labels on toggle */}
+            <li>
+              <div className={`flex items-center justify-between py-2.5 px-3 ${darkMode ? 'text-gray-200 hover:bg-gray-800' : 'text-gray-900 hover:bg-gray-100'}`}>
+                <div className="inline-flex items-center gap-3">
+                  <Globe className="w-5 h-5" />
+                  <span>Language</span>
+                </div>
+                <button
+                  role="switch"
+                  aria-checked={language === 'HI'}
+                  onClick={handleLanguageToggle}
+                  className={`relative inline-flex h-7 w-24 items-center rounded-full border transition-colors duration-200 ${
+                    darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-300 border-gray-200'
+                  }`}
+                  title={`Language: ${language}`}
+                >
+                  {/* Labels */}
+                  <span className={`absolute left-2 text-[10px] font-semibold tracking-wide ${
+                    language === 'EN' ? (darkMode ? 'text-yellow-300' : 'text-blue-700') : (darkMode ? 'text-gray-300' : 'text-gray-700')
+                  }`}>EN</span>
+                  <span className={`absolute right-2 text-[10px] font-semibold tracking-wide ${
+                    language === 'HI' ? (darkMode ? 'text-yellow-300' : 'text-blue-700') : (darkMode ? 'text-gray-300' : 'text-gray-700')
+                  }`}>HI</span>
+                  {/* Knob */}
+                  <span
+                    className={`absolute h-6 w-12 rounded-full bg-white shadow transition-transform duration-200 ${
+                      language === 'HI' ? 'translate-x-12' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+            </li>
+            {/* Notifications */}
+            <li>
               <button
-                onClick={() => setSearchValue('')}
-                className={`absolute right-4 p-1 rounded-full transition-all duration-200 hover:scale-110 cursor-pointer ${
-                  darkMode ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
-                }`}
+                onClick={handleNotificationClick}
+                className={`w-full flex items-center gap-3 py-2.5 px-3 text-left rounded-none ${darkMode ? 'text-gray-200 hover:bg-gray-800' : 'text-gray-900 hover:bg-gray-100'}`}
               >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
+                <Bell className="w-5 h-5" />
+                <span>Notifications</span>
               </button>
-            )}
-          </div>
-        </div>
-
-        {/* Enhanced Mobile Action Buttons */}
-        <div className="sm:hidden flex items-center justify-center gap-3 pb-4">
-          <button 
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl border-2 font-medium text-sm transition-all duration-300 transform hover:scale-105 active:scale-95 cursor-pointer ${
-              darkMode 
-                ? 'border-yellow-300 bg-gray-800 text-yellow-300 hover:bg-yellow-300/10' 
-                : 'border-blue-500 bg-blue-50 text-blue-600 hover:bg-blue-100'
-            }`}
-            onClick={handleLanguageToggle}
-          >
-            <Globe className="w-4 h-4" />
-            <span>EN | HI</span>
-          </button>
-          
-          <button 
-            className={`p-3 rounded-xl transition-all duration-300 transform hover:scale-110 active:scale-95 relative cursor-pointer ${
-              darkMode ? 'text-gray-100 bg-gray-800 hover:text-yellow-300' : 'text-blue-600 bg-gray-50 hover:text-blue-700'
-            }`}
-            onClick={handleNotificationClick}
-          >
-            <Bell className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
-          </button>
-          
-          <button 
-            className={`p-3 rounded-xl transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer ${
-              darkMode ? 'text-yellow-300 bg-gray-800 hover:text-yellow-200' : 'text-yellow-600 bg-gray-50 hover:text-yellow-700'
-            }`}
-            onClick={handleThemeToggle}
-          >
-            {darkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-          </button>
+            </li>
+            {/* Theme toggle */}
+            <li>
+              <button
+                data-theme-toggle
+                onClick={handleThemeToggle}
+                className={`w-full flex items-center gap-3 py-2.5 px-3 text-left rounded-none ${darkMode ? 'text-gray-200 hover:bg-gray-800' : 'text-gray-900 hover:bg-gray-100'}`}
+                title={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
+              >
+                {darkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                <span>Toggle Theme</span>
+              </button>
+            </li>
+            {/* Profile/Login */}
+            <li>
+              <Link
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`w-full inline-flex items-center gap-3 py-2.5 px-3 rounded-none ${darkMode ? 'text-gray-200 hover:bg-gray-800' : 'text-gray-900 hover:bg-gray-100'}`}
+              >
+                <User className="w-5 h-5" />
+                <span>Login / Profile</span>
+              </Link>
+            </li>
+            {/* Logout */}
+            <li>
+              <button
+                onClick={() => { try { localStorage.removeItem('unishare_user'); localStorage.removeItem('token'); } catch(e){}; setMobileMenuOpen(false); router.push('/login'); }}
+                className={`w-full flex items-center gap-3 py-2.5 px-3 text-left rounded-none ${darkMode ? 'text-red-300 hover:bg-gray-800' : 'text-red-600 hover:bg-gray-100'}`}
+              >
+                <LogOut className="w-5 h-5" />
+                <span>Logout</span>
+              </button>
+            </li>
+          </ul>
         </div>
       </div>
+      
     </header>
   );
 };

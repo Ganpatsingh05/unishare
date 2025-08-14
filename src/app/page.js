@@ -202,7 +202,7 @@ export default function Page() {
       {/* INTERACTIVE HERO SECTION */}
       <section
         ref={heroRef}
-        className="relative h-screen flex flex-col justify-center items-center overflow-hidden cursor-pointer"
+  className="relative h-screen flex flex-col justify-center items-center overflow-hidden cursor-pointer pt-52 md:pt-28"
         style={{
           background: darkMode
             ? `radial-gradient(circle at ${50 + mousePosition.x * 0.1}% ${50 + mousePosition.y * 0.1}%, #1e293b 0%, #0f172a 100%)`

@@ -53,8 +53,8 @@ const sections = [
     features: ['Real-time matching', 'Cost splitting', 'Safe rides']
   },
   {
-    title: 'Buy/Sell in Marketplace',
-    description: 'Buy or sell items within your college community at great prices.',
+    title: 'Buy in Marketplace',
+    description: 'Buy items within your college community at great prices.',
     icon: <ShoppingCart className="w-10 h-10" />,
     href: '/marketplace/buy',
     color: 'from-green-500 to-emerald-500',
@@ -80,7 +80,7 @@ const sections = [
     features: ['Location filtering', 'Roommate matching', 'Virtual tours']
   },
   {
-    title: 'Lost & Found Items',
+    title: 'Report Lost Items',
     description: 'Report lost items or help others find their missing belongings.',
     icon: <Search className="w-10 h-10" />,
     href: '/lost-found/report',
