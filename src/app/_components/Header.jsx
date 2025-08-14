@@ -6,7 +6,7 @@ import Link from 'next/link';
 import logoImage from '../assets/images/logounishare1.png'; // Adjust path as needed
 import { Search, Globe, Bell, Sun, Moon, User, LogOut, Settings, FileText, HelpCircle, UserCircle } from 'lucide-react';
 
-const Header = ({ darkMode, onThemeToggle }) => {
+const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [searchValue, setSearchValue] = useState('');
@@ -50,14 +50,20 @@ const Header = ({ darkMode, onThemeToggle }) => {
             <Link className="block group cursor-pointer" href="/">
               <span className="sr-only">UniShare Home</span>
               <div className="flex items-center gap-3">
-                {/* 🔧 LOGO SIZE CHANGE: Changed from h-16 w-16 to h-24 w-24 to make logo bigger */}
-                <div className="h-16 w-16 transition-all duration-300 transform group-hover:scale-110 group-hover:rotate-3">
+                {/* Enhanced Interactive Logo */}
+                <div 
+                  className="h-16 w-16 transition-all duration-300 transform group-hover:scale-125 animate-float"
+                  style={{ 
+                    transform: `scale(1) rotate(${logoRotation}deg)`,
+                    filter: darkMode ? 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.3))' : 'drop-shadow(0 0 15px rgba(59, 130, 246, 0.2))'
+                  }}
+                >
                   <Image
                     src={logoImage}
                     alt="UniShare Logo"
-                    width={100} // 🔧 LOGO SIZE CHANGE: Changed from 64 to 96
-                    height={100} // 🔧 LOGO SIZE CHANGE: Changed from 64 to 96
-                    className="w-full h-full object-contain bg-transparent"
+                    width={100}
+                    height={100}
+                    className="w-full h-full object-contain bg-transparent transition-all duration-300 group-hover:animate-pulse-glow"
                     priority
                   />
                 </div>
@@ -207,105 +213,21 @@ const Header = ({ darkMode, onThemeToggle }) => {
 
               {/* Enhanced Profile Dropdown */}
               <div className="relative">
-                <button
-                  type="button"
-                  className={`overflow-hidden rounded-xl border-2 shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95 cursor-pointer ${
-                    profileMenuOpen 
-                      ? (darkMode ? 'border-yellow-300 shadow-yellow-300/30' : 'border-blue-500 shadow-blue-500/30')
-                      : (darkMode 
-                          ? 'border-gray-600 hover:border-yellow-300 hover:shadow-yellow-300/20' 
-                          : 'border-gray-300 hover:border-blue-500 hover:shadow-blue-500/20'
-                        )
+                <Link 
+                  href="/login"
+                  className={`overflow-hidden rounded-xl border-2 shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95 cursor-pointer inline-block ${
+                    darkMode 
+                      ? 'border-gray-600 hover:border-yellow-300 hover:shadow-yellow-300/20' 
+                      : 'border-gray-300 hover:border-blue-500 hover:shadow-blue-500/20'
                   }`}
-                  onClick={handleProfileMenuToggle}
                 >
-                  <span className="sr-only">Toggle profile menu</span>
+                  <span className="sr-only">Login / Profile</span>
                   <div className={`size-12 flex items-center justify-center font-bold text-xl transition-all duration-300 ${
                     darkMode ? 'bg-gradient-to-br from-yellow-400 to-yellow-300 text-gray-900' : 'bg-gradient-to-br from-blue-600 to-blue-700 text-white'
                   }`}>
                     <User className="w-5 h-5" />
                   </div>
-                </button>
-
-                {/* Enhanced Profile Dropdown Menu */}
-                {profileMenuOpen && (
-                  <>
-                    {/* Backdrop */}
-                    <div className="fixed inset-0 z-10" onClick={() => setProfileMenuOpen(false)}></div>
-                    
-                    <div
-                      className={`absolute end-0 z-20 mt-2 w-64 rounded-xl border-2 shadow-2xl backdrop-blur-sm animate-in slide-in-from-top-2 fade-in duration-200 ${
-                        darkMode 
-                          ? 'border-gray-700 bg-gray-900/95 shadow-gray-900/50' 
-                          : 'border-gray-200 bg-white/95 shadow-gray-300/50'
-                      }`}
-                      role="menu"
-                    >
-                      <div className="p-3">
-                        {/* Profile Header */}
-                        <div className={`px-4 py-3 border-b mb-2 ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                          <div className="flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                              darkMode ? 'bg-yellow-300 text-gray-900' : 'bg-blue-600 text-white'
-                            }`}>
-                              <User className="w-4 h-4" />
-                            </div>
-                            <div>
-                              <p className={`font-medium text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                Student Name
-                              </p>
-                              <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                student@college.edu
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Menu Items */}
-                        {[
-                          { href: '/profile', icon: UserCircle, label: 'My Profile' },
-                          { href: '/settings', icon: Settings, label: 'Settings' },
-                          { href: '/my-posts', icon: FileText, label: 'My Posts' },
-                          { href: '/help', icon: HelpCircle, label: 'Help Center' }
-                        ].map((item, index) => (
-                          <Link
-                            key={index}
-                            href={item.href}
-                            className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm transition-all duration-200 group cursor-pointer ${
-                              darkMode 
-                                ? 'text-gray-300 hover:bg-gray-800 hover:text-white' 
-                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                            }`}
-                            role="menuitem"
-                            onClick={() => setProfileMenuOpen(false)}
-                          >
-                            <item.icon className="w-4 h-4 transition-colors duration-200 group-hover:text-blue-500" />
-                            {item.label}
-                          </Link>
-                        ))}
-
-                        <hr className={`my-2 ${darkMode ? 'border-gray-700' : 'border-gray-200'}`} />
-                        
-                        <button
-                          type="button"
-                          className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm transition-all duration-200 group cursor-pointer ${
-                            darkMode 
-                              ? 'text-red-400 hover:bg-red-600/10 hover:text-red-300' 
-                              : 'text-red-700 hover:bg-red-50 hover:text-red-800'
-                          }`}
-                          role="menuitem"
-                          onClick={() => {
-                            setProfileMenuOpen(false);
-                            alert('Logout clicked!');
-                          }}
-                        >
-                          <LogOut className="w-4 h-4 transition-colors duration-200" />
-                          Logout
-                        </button>
-                      </div>
-                    </div>
-                  </>
-                )}
+                </Link>
               </div>
             </div>
           </div>

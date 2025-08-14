@@ -17,6 +17,8 @@ import {
   Zap,
   MessageCircle,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import Header from "./_components/Header";
 import Main from "./_components/Main";
@@ -29,13 +31,13 @@ export default function Page() {
   // Set default theme to dark
   const [darkMode, setDarkMode] = useState(true);
   const [offset, setOffset] = useState(0);
-  const [currentFeature, setCurrentFeature] = useState(0);
+  const [hoveredFeature, setHoveredFeature] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isTyping, setIsTyping] = useState(true);
-  const [typedText, setTypedText] = useState("");
-  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isMainVisible, setIsMainVisible] = useState(false);
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [visibleStats, setVisibleStats] = useState([]);
+  const [logoRotation, setLogoRotation] = useState(0);
   
   const heroRef = useRef(null);
   const mainRef = useRef(null);
@@ -43,15 +45,9 @@ export default function Page() {
 
   // Client-only particle state
   const [particles, setParticles] = useState([]);
-  const [floatingElements, setFloatingElements] = useState([]);
 
-  // Dynamic quotes for UniShare
-  const quotes = [
-    "Where Students Connect, Share, and Thrive Together",
-    "Your Campus Community, All in One Place",
-    "Making University Life Easier, One Share at a Time",
-    "Connect. Share. Discover. Succeed."
-  ];
+  // Static main quote
+  const mainQuote = "Where Students Connect, Share, and Thrive Together";
 
   // Interactive features showcase
   const features = [
@@ -105,9 +101,18 @@ export default function Page() {
         const isVisible = mainRect.top < windowHeight * 0.8;
         setIsMainVisible(isVisible);
       }
+
+      // Animate stats when they come into view
+      const statsSection = document.getElementById('stats-section');
+      if (statsSection) {
+        const statsRect = statsSection.getBoundingClientRect();
+        if (statsRect.top < windowHeight * 0.8 && visibleStats.length === 0) {
+          setVisibleStats([0, 1, 2, 3]);
+        }
+      }
     };
 
-    // Mouse tracking for interactive effects
+    // Enhanced mouse tracking for interactive effects
     const handleMouseMove = (e) => {
       if (heroRef.current) {
         const rect = heroRef.current.getBoundingClientRect();
@@ -116,32 +121,34 @@ export default function Page() {
           y: ((e.clientY - rect.top) / rect.height - 0.5) * 100,
         });
       }
+      
+      // Logo rotation based on mouse movement
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      const deltaX = e.clientX - centerX;
+      const deltaY = e.clientY - centerY;
+      const rotation = Math.atan2(deltaY, deltaX) * (180 / Math.PI) * 0.1;
+      setLogoRotation(rotation);
     };
 
     window.addEventListener("scroll", handleScroll);
     window.addEventListener("mousemove", handleMouseMove);
 
-    // Generate particles and floating elements
-    const p = Array.from({ length: 30 }).map((_, i) => ({
+    // Generate enhanced particles
+    const p = Array.from({ length: 20 }).map((_, i) => ({
       id: i,
       top: `${Math.random() * 100}%`,
       left: `${Math.random() * 100}%`,
-      size: `${Math.random() * 6 + 3}px`,
-      animationDuration: `${Math.random() * 8 + 4}s`,
-      opacity: `${Math.random() * 0.4 + 0.1}`,
-      delay: `${Math.random() * 2}s`,
+      size: `${Math.random() * 4 + 2}px`,
+      opacity: `${Math.random() * 0.3 + 0.1}`,
+      delay: `${Math.random() * 5}s`,
     }));
     setParticles(p);
 
-    // Floating UI elements
-    const floatingIcons = [
-      { icon: Heart, position: { top: '20%', left: '10%' }, delay: 0 },
-      { icon: Star, position: { top: '15%', right: '15%' }, delay: 1 },
-      { icon: Sparkles, position: { top: '70%', left: '8%' }, delay: 2 },
-      { icon: Zap, position: { top: '60%', right: '12%' }, delay: 1.5 },
-      { icon: MessageCircle, position: { top: '30%', left: '85%' }, delay: 0.5 },
-    ];
-    setFloatingElements(floatingIcons);
+    // Auto-rotate testimonials
+    const testimonialInterval = setInterval(() => {
+      setActiveTestimonial(prev => (prev + 1) % 3);
+    }, 5000);
 
     // Initial scroll position check
     handleScroll();
@@ -149,39 +156,9 @@ export default function Page() {
     return () => {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("mousemove", handleMouseMove);
+      clearInterval(testimonialInterval);
     };
-  }, []);
-
-  // Typing animation effect
-  useEffect(() => {
-    const currentQuote = quotes[currentQuoteIndex];
-    let index = 0;
-    setTypedText("");
-    setIsTyping(true);
-
-    const typingInterval = setInterval(() => {
-      if (index < currentQuote.length) {
-        setTypedText(currentQuote.slice(0, index + 1));
-        index++;
-      } else {
-        setIsTyping(false);
-        setTimeout(() => {
-          setCurrentQuoteIndex((prev) => (prev + 1) % quotes.length);
-        }, 3000);
-        clearInterval(typingInterval);
-      }
-    }, 100);
-
-    return () => clearInterval(typingInterval);
-  }, [currentQuoteIndex]);
-
-  // Auto-rotate features
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentFeature((prev) => (prev + 1) % features.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+  }, [visibleStats.length]);
 
   const handleThemeToggle = () => setDarkMode((prev) => !prev);
 
@@ -220,7 +197,7 @@ export default function Page() {
         </div>
       </div>
 
-      <Header darkMode={darkMode} onThemeToggle={handleThemeToggle} />
+            <Header darkMode={darkMode} onThemeToggle={handleThemeToggle} logoRotation={logoRotation} />
 
       {/* INTERACTIVE HERO SECTION */}
       <section
@@ -235,12 +212,12 @@ export default function Page() {
       >
 
 
-        {/* Enhanced Dynamic Background Particles */}
+        {/* Static Background Particles */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {particles.map((particle) => (
             <div
               key={particle.id}
-              className={`absolute rounded-full transition-all duration-1000 ${
+              className={`absolute rounded-full transition-opacity duration-1000 ${
                 darkMode ? 'bg-yellow-300/20' : 'bg-blue-500/20'
               }`}
               style={{
@@ -248,36 +225,11 @@ export default function Page() {
                 left: particle.left,
                 width: particle.size,
                 height: particle.size,
-                animation: `float ${particle.animationDuration} infinite ease-in-out`,
-                animationDelay: particle.delay,
                 opacity: Math.max(0.1, particle.opacity * (1 - scrollProgress)),
-                transform: `translate(${mousePosition.x * 0.02}px, ${mousePosition.y * 0.02}px) scale(${1 - scrollProgress * 0.5})`,
               }}
             />
           ))}
         </div>
-
-        {/* Floating Interactive Elements */}
-        {floatingElements.map((element, index) => {
-          const IconComponent = element.icon;
-          return (
-            <div
-              key={index}
-              className={`absolute pointer-events-none transition-all duration-1000 ${
-                darkMode ? 'text-yellow-300/30' : 'text-blue-500/30'
-              }`}
-              style={{
-                ...element.position,
-                opacity: 1 - scrollProgress,
-                transform: `translate(${mousePosition.x * 0.05}px, ${mousePosition.y * 0.05}px) rotate(${Math.sin(Date.now() / 1000 + element.delay) * 10}deg) scale(${1 - scrollProgress * 0.3})`,
-                animation: `float ${3 + element.delay}s infinite ease-in-out`,
-                animationDelay: `${element.delay}s`,
-              }}
-            >
-              <IconComponent className="w-8 h-8" />
-            </div>
-          );
-        })}
 
         {/* Main Content with Enhanced Scroll Effects */}
         <div 
@@ -296,19 +248,14 @@ export default function Page() {
             </div>
           </div>
 
-          {/* Animated Typing Quote */}
-          <div className="mb-8 h-20 flex items-center justify-center">
+          {/* Static Main Quote */}
+          <div className="mb-8 flex items-center justify-center">
             <h1
-              className={`font-bold text-2xl md:text-4xl lg:text-5xl leading-tight transition-all duration-300 ${
+              className={`font-bold text-2xl md:text-4xl lg:text-5xl leading-tight transition-all duration-300 text-center ${
                 darkMode ? "text-white" : "text-gray-900"
               }`}
             >
-              {typedText}
-              <span 
-                className={`inline-block w-1 h-8 md:h-12 ml-2 transition-opacity duration-300 ${
-                  isTyping ? 'opacity-100' : 'opacity-0'
-                } ${darkMode ? 'bg-yellow-300' : 'bg-blue-600'}`}
-              />
+              {mainQuote}
             </h1>
           </div>
 
@@ -319,47 +266,64 @@ export default function Page() {
             study resources, and so much more. Your university life, simplified.
           </p>
 
-          {/* Interactive CTA Buttons */}
+          {/* Enhanced Interactive CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <button
-              className={`group px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center gap-3 ${
+              className={`group px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center gap-3 relative overflow-hidden ${
                 darkMode 
                   ? "bg-gradient-to-r from-yellow-400 to-yellow-300 text-gray-900 hover:from-yellow-300 hover:to-yellow-200" 
                   : "bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600"
               }`}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'scale(1.05) rotateY(5deg)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'scale(1) rotateY(0deg)';
+              }}
             >
-              <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
-              Join UniShare Today
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+              <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+              <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300 relative z-10" />
+              <span className="relative z-10">Join UniShare Today</span>
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300 relative z-10" />
             </button>
             
             <button
-              className={`group px-8 py-4 rounded-2xl font-semibold border-2 transition-all duration-300 transform hover:scale-105 flex items-center gap-3 ${
+              className={`group px-8 py-4 rounded-2xl font-semibold border-2 transition-all duration-300 transform hover:scale-105 flex items-center gap-3 relative overflow-hidden ${
                 darkMode 
-                  ? "border-yellow-300 text-yellow-300 hover:bg-yellow-300/10" 
-                  : "border-blue-600 text-blue-600 hover:bg-blue-600/10"
+                  ? "border-yellow-300 text-yellow-300 hover:bg-yellow-300/10 hover:border-yellow-200" 
+                  : "border-blue-600 text-blue-600 hover:bg-blue-600/10 hover:border-blue-700"
               }`}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'scale(1.05) rotateY(-5deg)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'scale(1) rotateY(0deg)';
+              }}
             >
-              <Play className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
-              Watch Demo
+              <div className={`absolute inset-0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ${
+                darkMode ? 'bg-yellow-300/10' : 'bg-blue-600/10'
+              }`}></div>
+              <Play className="w-5 h-5 group-hover:scale-110 transition-transform duration-300 relative z-10" />
+              <span className="relative z-10">Watch Demo</span>
             </button>
           </div>
 
-          {/* Interactive Feature Showcase */}
+          {/* Static Feature Showcase */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             {features.map((feature, idx) => {
               const IconComponent = feature.icon;
-              const isActive = idx === currentFeature;
+              const isHovered = idx === hoveredFeature;
               
               return (
                 <div
                   key={idx}
-                  className={`group relative p-6 rounded-2xl backdrop-blur-md border transition-all duration-500 cursor-pointer transform hover:scale-105 ${
-                    isActive 
-                      ? (darkMode ? "bg-gray-800/80 border-yellow-300/50 shadow-2xl scale-105" : "bg-white/80 border-blue-500/50 shadow-2xl scale-105")
-                      : (darkMode ? "bg-gray-800/40 border-gray-700/50" : "bg-white/40 border-gray-200/50")
+                  className={`group relative p-6 rounded-2xl backdrop-blur-md border transition-all duration-300 cursor-pointer transform hover:scale-105 ${
+                    isHovered 
+                      ? (darkMode ? "bg-gray-800/80 border-yellow-300/50 shadow-2xl" : "bg-white/80 border-blue-500/50 shadow-2xl")
+                      : (darkMode ? "bg-gray-800/40 border-gray-700/50 hover:bg-gray-800/60" : "bg-white/40 border-gray-200/50 hover:bg-white/60")
                   }`}
-                  onMouseEnter={() => setCurrentFeature(idx)}
+                  onMouseEnter={() => setHoveredFeature(idx)}
+                  onMouseLeave={() => setHoveredFeature(null)}
                 >
                   {/* Gradient Background */}
                   <div 
@@ -368,7 +332,7 @@ export default function Page() {
                   
                   <div className="relative z-10 flex flex-col items-center text-center">
                     <div className={`mb-3 p-3 rounded-full transition-all duration-300 ${
-                      isActive 
+                      isHovered 
                         ? `bg-gradient-to-br ${feature.color} text-white shadow-lg` 
                         : (darkMode ? 'bg-gray-700 text-yellow-300' : 'bg-gray-100 text-blue-600')
                     }`}>
@@ -376,7 +340,7 @@ export default function Page() {
                     </div>
                     
                     <div className={`text-2xl font-bold mb-1 transition-colors duration-300 ${
-                      isActive 
+                      isHovered 
                         ? (darkMode ? 'text-yellow-300' : 'text-blue-600')
                         : (darkMode ? 'text-gray-300' : 'text-gray-700')
                     }`}>
@@ -395,13 +359,6 @@ export default function Page() {
                       {feature.description}
                     </div>
                   </div>
-                  
-                  {/* Active indicator */}
-                  {isActive && (
-                    <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full ${
-                      darkMode ? 'bg-yellow-300' : 'bg-blue-500'
-                    } animate-pulse`} />
-                  )}
                 </div>
               );
             })}
@@ -423,59 +380,6 @@ export default function Page() {
           }`}>
             <ChevronDown className="w-6 h-6" />
           </div>
-        </div>
-      </section>
-
-      {/* ENHANCED TRANSITION SECTION */}
-      <section 
-        ref={transitionRef}
-        className={`relative transition-all duration-700 ${
-          darkMode 
-            ? 'bg-gradient-to-b from-gray-900/50 via-gray-800 to-gray-900' 
-            : 'bg-gradient-to-b from-blue-50/50 via-white to-gray-50'
-        }`}
-        style={{
-          paddingTop: `${Math.max(2, 8 - scrollProgress * 6)}rem`,
-          paddingBottom: `${Math.max(2, 8 - scrollProgress * 6)}rem`,
-        }}
-      >
-        {/* Morphing background overlay */}
-        <div 
-          className="absolute inset-0 transition-all duration-1000"
-          style={{
-            background: darkMode 
-              ? `radial-gradient(ellipse at center, rgba(31, 41, 55, ${0.3 + scrollProgress * 0.4}) 0%, transparent 70%)`
-              : `radial-gradient(ellipse at center, rgba(59, 130, 246, ${0.1 + scrollProgress * 0.2}) 0%, transparent 70%)`,
-          }}
-        />
-        
-        <div 
-          className="relative z-10 max-w-6xl mx-auto px-4 text-center transition-all duration-700"
-          style={{
-            opacity: scrollProgress > 0.3 ? 1 : scrollProgress * 3,
-            transform: `translateY(${Math.max(0, 50 - scrollProgress * 100)}px)`,
-          }}
-        >
-          <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-medium mb-8 transition-all duration-500 ${
-            darkMode 
-              ? 'bg-yellow-300/10 text-yellow-300 border border-yellow-300/30' 
-              : 'bg-blue-100 text-blue-700 border border-blue-200'
-          }`}>
-            <Sparkles className="w-4 h-4" />
-            Trusted by 2,500+ Students Across 50+ Universities
-          </div>
-          
-          <h2 className={`text-3xl md:text-4xl font-bold mb-6 transition-all duration-500 ${
-            darkMode ? 'text-white' : 'text-gray-900'
-          }`}>
-            Everything You Need for Campus Life
-          </h2>
-          
-          <p className={`text-lg max-w-3xl mx-auto leading-relaxed transition-all duration-500 ${
-            darkMode ? 'text-gray-300' : 'text-gray-600'
-          }`}>
-            From finding the perfect ride to discovering study materials, UniShare brings your entire campus community together in one seamless platform.
-          </p>
         </div>
       </section>
 
@@ -557,7 +461,7 @@ export default function Page() {
         </div>
       </section>
 
-      {/* Success Stories Section */}
+      {/* Interactive Testimonials Section */}
       <section className={`py-20 transition-all duration-300 ${
         darkMode ? 'bg-gray-800' : 'bg-white'
       }`}>
@@ -566,7 +470,7 @@ export default function Page() {
             <h2 className={`text-4xl font-bold mb-6 ${
               darkMode ? 'text-white' : 'text-gray-900'
             }`}>
-              Success Stories
+              What Students Are Saying
             </h2>
             <p className={`text-xl max-w-2xl mx-auto ${
               darkMode ? 'text-gray-300' : 'text-gray-600'
@@ -575,63 +479,122 @@ export default function Page() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {/* Interactive Testimonial Carousel */}
+          <div className="relative h-80 mb-8 max-w-4xl mx-auto">
             {[
               {
                 name: "Sarah Chen",
                 university: "Stanford University",
                 story: "Found my perfect study group and saved $200 on textbooks in my first month. UniShare connected me with people I never would have met otherwise!",
                 avatar: "👩‍🎓",
-                metric: "Saved $200"
+                metric: "Saved $200",
+                role: "Computer Science Senior"
               },
               {
                 name: "Marcus Rodriguez", 
                 university: "UCLA",
                 story: "Sharing rides to campus has cut my transportation costs by 70%. Plus, I've made some great friends along the way!",
                 avatar: "👨‍🎓",
-                metric: "70% savings"
+                metric: "70% savings",
+                role: "Business Junior"
               },
               {
                 name: "Emily Johnson",
                 university: "MIT",
                 story: "Lost my laptop charger and found a replacement within 2 hours through UniShare's lost & found. The community is incredibly helpful!",
                 avatar: "👩‍💻",
-                metric: "Found in 2hrs"
+                metric: "Found in 2hrs",
+                role: "Engineering Sophomore"
               }
-            ].map((story, index) => (
-              <div key={index} className={`p-8 rounded-2xl border transition-all duration-300 hover:transform hover:scale-105 ${
-                darkMode 
-                  ? 'bg-gray-900 border-gray-700 hover:border-yellow-300/50' 
-                  : 'bg-gray-50 border-gray-200 hover:border-blue-300'
-              }`}>
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="text-4xl">{story.avatar}</div>
-                  <div>
-                    <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                      {story.name}
-                    </h3>
-                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                      {story.university}
-                    </p>
-                  </div>
-                </div>
-                
-                <p className={`text-lg leading-relaxed mb-6 italic ${
-                  darkMode ? 'text-gray-300' : 'text-gray-700'
-                }`}>
-                  "{story.story}"
-                </p>
-                
-                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
+            ].map((testimonial, index) => (
+              <div
+                key={index}
+                className={`absolute inset-0 transition-all duration-700 transform ${
+                  index === activeTestimonial
+                    ? 'opacity-100 scale-100 translate-x-0'
+                    : index < activeTestimonial
+                    ? 'opacity-0 scale-95 -translate-x-full'
+                    : 'opacity-0 scale-95 translate-x-full'
+                }`}
+              >
+                <div className={`p-12 rounded-3xl border h-full flex flex-col justify-center transition-all duration-500 ${
                   darkMode 
-                    ? 'bg-yellow-300/20 text-yellow-300' 
-                    : 'bg-blue-100 text-blue-700'
+                    ? 'bg-gray-900/80 border-gray-700 backdrop-blur-sm' 
+                    : 'bg-gray-50/80 border-gray-200 backdrop-blur-sm'
                 }`}>
-                  <Star className="w-4 h-4" />
-                  {story.metric}
+                  <div className="flex items-center gap-6 mb-8">
+                    <div className="text-6xl">{testimonial.avatar}</div>
+                    <div>
+                      <h3 className={`font-bold text-2xl ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {testimonial.name}
+                      </h3>
+                      <p className={`text-lg ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {testimonial.role}
+                      </p>
+                      <p className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                        {testimonial.university}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <p className={`text-xl leading-relaxed mb-8 italic text-center ${
+                    darkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    "{testimonial.story}"
+                  </p>
+                  
+                  <div className="flex justify-center">
+                    <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-lg font-medium ${
+                      darkMode 
+                        ? 'bg-yellow-300/20 text-yellow-300' 
+                        : 'bg-blue-100 text-blue-700'
+                    }`}>
+                      <Star className="w-5 h-5" />
+                      {testimonial.metric}
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
+          </div>
+          
+          {/* Testimonial Navigation */}
+          <div className="flex justify-center items-center space-x-6">
+            <button
+              onClick={() => setActiveTestimonial(prev => prev === 0 ? 2 : prev - 1)}
+              className={`p-3 rounded-full transition-all duration-300 hover:scale-110 ${
+                darkMode 
+                  ? 'bg-gray-700 hover:bg-gray-600 text-white' 
+                  : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+              }`}
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            
+            <div className="flex space-x-3">
+              {[0, 1, 2].map((index) => (
+                <button
+                  key={index}
+                  onClick={() => setActiveTestimonial(index)}
+                  className={`w-4 h-4 rounded-full transition-all duration-300 ${
+                    index === activeTestimonial
+                      ? darkMode ? 'bg-yellow-400 scale-125' : 'bg-blue-500 scale-125'
+                      : darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-300 hover:bg-gray-400'
+                  }`}
+                />
+              ))}
+            </div>
+            
+            <button
+              onClick={() => setActiveTestimonial(prev => prev === 2 ? 0 : prev + 1)}
+              className={`p-3 rounded-full transition-all duration-300 hover:scale-110 ${
+                darkMode 
+                  ? 'bg-gray-700 hover:bg-gray-600 text-white' 
+                  : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+              }`}
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
           </div>
         </div>
       </section>
