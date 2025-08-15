@@ -503,7 +503,7 @@ export default function Page() {
             <p className={`text-xl max-w-2xl mx-auto ${
               darkMode ? 'text-gray-300' : 'text-gray-600'
             }`}>
-              Real stories from students who've transformed their campus experience with UniShare.
+              Real stories from students who&apos;ve transformed their campus experience with UniShare.
             </p>
           </div>
 
@@ -568,7 +568,7 @@ export default function Page() {
                   <p className={`text-xl leading-relaxed mb-8 italic text-center ${
                     darkMode ? 'text-gray-300' : 'text-gray-700'
                   }`}>
-                    "{testimonial.story}"
+                    <span aria-hidden="true">&ldquo;</span>{testimonial.story}<span aria-hidden="true">&rdquo;</span>
                   </p>
                   
                   <div className="flex justify-center">
