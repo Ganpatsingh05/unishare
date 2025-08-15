@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import logoImage from '../assets/images/logounishare1.png'; // Adjust path as needed
 import { Search, Globe, Bell, Sun, Moon, User, LogOut, Settings, FileText, HelpCircle, UserCircle, Menu, X } from 'lucide-react';
+import NotificationPanel from './NotificationPanel';
+import HeaderMobile from './HeaderMobile';
+import { useLanguage } from "../_providers/LanguageProvider";
 
 const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -13,21 +16,29 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
   const [searchValue, setSearchValue] = useState('');
   const [isNotificationActive, setIsNotificationActive] = useState(false);
   const [isLanguageActive, setIsLanguageActive] = useState(false);
-  const [language, setLanguage] = useState('EN');
+  const { language, toggleLanguage } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifInlineOpen, setNotifInlineOpen] = useState(false);
+  const [notifInlineFilter, setNotifInlineFilter] = useState('All'); // 'All' | 'Unread'
+  const [notifications, setNotifications] = useState(() => [
+    { id: '1', title: 'Welcome to UniShare', body: 'Thanks for joining! Explore rides, marketplace, housing and more.', time: 'Just now', type: 'announcement', read: false },
+    { id: '2', title: 'New message', body: 'Alex: “Hey! Are you still selling the calculator?”', time: '5m', type: 'message', read: false },
+    { id: '3', title: 'Safety tip', body: 'Meet in public places for trades. Keep it safe ✨', time: '1h', type: 'info', read: true },
+  ]);
   const router = useRouter();
 
   const handleProfileMenuToggle = () => setProfileMenuOpen((prev) => !prev);
 
   const handleNotificationClick = () => {
     setIsNotificationActive(true);
-    setTimeout(() => setIsNotificationActive(false), 200);
-    alert('Notifications clicked!');
+    setTimeout(() => setIsNotificationActive(false), 150);
+    setNotifOpen(true);
   };
 
   const handleLanguageToggle = () => {
     setIsLanguageActive(true);
-    setLanguage(prev => (prev === 'EN' ? 'HI' : 'EN'));
+    toggleLanguage();
     setTimeout(() => setIsLanguageActive(false), 200);
   };
 
@@ -54,7 +65,13 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
     <header className={`sticky top-0 z-50 w-full overflow-x-clip transition-all duration-300 shadow-lg backdrop-blur-md border-b ${
       darkMode ? 'bg-gray-900/95 border-gray-800 shadow-gray-900/20' : 'bg-white/95 border-gray-200 shadow-gray-200/50'
     }`}>
-      <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
+      {/* Mobile-only header */}
+      <div className="md:hidden">
+        <HeaderMobile darkMode={darkMode} onThemeToggle={onThemeToggle} logoRotation={logoRotation} />
+      </div>
+
+      {/* Desktop/Tablet header */}
+      <div className="hidden md:block mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
         {/* 🔧 HEADER HEIGHT CHANGE: Changed from h-16 to h-28 to increase header height for larger logo */}
         <div className="flex h-20 items-center justify-between">
           
@@ -199,7 +216,7 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
                 onClick={handleLanguageToggle}
               >
                 <Globe className="w-4 h-4 transition-transform duration-300 group-hover:rotate-12" />
-                <span>EN | HI</span>
+                <span>{language === 'EN' ? 'EN | HI' : 'HI | EN'}</span>
               </button>
 
               {/* Enhanced Notifications */}
@@ -217,7 +234,9 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
               >
                 <Bell className="w-5 h-5 transition-all duration-300" />
                 {/* Notification badge */}
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
+                {notifications.some(n => !n.read) && (
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
+                )}
               </button>
 
               {/* Enhanced Theme Toggle */}
@@ -256,10 +275,10 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
               </div>
             </div>
           </div>
-        </div>
+  </div>
 
         {/* Flowbite-like collapsible mobile menu */}
-        <div className={`${mobileMenuOpen ? 'block' : 'hidden'} md:hidden w-full mt-2`} id="navbar-hamburger">
+  <div className={`${mobileMenuOpen ? 'block' : 'hidden'} md:hidden w-full mt-2`} id="navbar-hamburger">
           <ul className={`flex flex-col font-medium rounded-lg border overflow-hidden ${
             darkMode ? 'bg-gray-900 border-gray-800' : 'bg-gray-50 border-gray-200'
           }`}>
@@ -317,12 +336,94 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
             {/* Notifications */}
             <li>
               <button
-                onClick={handleNotificationClick}
+                onClick={() => { setNotifInlineOpen((o) => !o); }}
                 className={`w-full flex items-center gap-3 py-2.5 px-3 text-left rounded-none ${darkMode ? 'text-gray-200 hover:bg-gray-800' : 'text-gray-900 hover:bg-gray-100'}`}
+                aria-expanded={notifInlineOpen}
+                aria-controls="mobile-inline-notifs"
               >
                 <Bell className="w-5 h-5" />
                 <span>Notifications</span>
+                {notifications.some(n => !n.read) && (
+                  <span className={`ml-auto text-xs px-2 py-0.5 rounded-full ${darkMode ? 'bg-red-500/20 text-red-300' : 'bg-red-100 text-red-700'}`}>
+                    {notifications.filter(n => !n.read).length}
+                  </span>
+                )}
               </button>
+              {notifInlineOpen && (
+                <div id="mobile-inline-notifs" className={`mx-3 mb-2 rounded-lg border ${darkMode ? 'border-gray-800 bg-gray-900' : 'border-gray-200 bg-white'}`}>
+                  <div className="px-3 pt-3 pb-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${darkMode ? 'bg-yellow-300/20 text-yellow-300' : 'bg-blue-100 text-blue-700'}`}>
+                        {notifications.filter(n => !n.read).length} unread
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setNotifInlineFilter((f) => f === 'All' ? 'Unread' : 'All')}
+                        className={`px-2 py-1 rounded-md text-[11px] font-medium border ${darkMode ? 'border-gray-700 text-gray-300 hover:bg-gray-800' : 'border-gray-200 text-gray-700 hover:bg-gray-100'}`}
+                      >
+                        {notifInlineFilter === 'All' ? 'Show Unread' : 'Show All'}
+                      </button>
+                      <button
+                        onClick={() => setNotifications((prev) => prev.map(n => ({ ...n, read: true })))}
+                        className={`px-2 py-1 rounded-md text-[11px] font-medium border ${darkMode ? 'border-gray-700 text-gray-300 hover:bg-gray-800' : 'border-gray-200 text-gray-700 hover:bg-gray-100'}`}
+                      >
+                        Mark all
+                      </button>
+                    </div>
+                  </div>
+                  <div className="max-h-64 overflow-y-auto px-2 pb-2">
+                    {(
+                      (notifInlineFilter === 'Unread')
+                        ? notifications.filter(n => !n.read)
+                        : notifications
+                    ).length === 0 ? (
+                      <div className={`text-center text-xs py-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>No notifications</div>
+                    ) : (
+                      <ul className="space-y-2">
+                        {(
+                          notifInlineFilter === 'Unread'
+                            ? notifications.filter(n => !n.read)
+                            : notifications
+                        ).map((n) => (
+                          <li key={n.id} className={`px-3 py-2 rounded-md border ${darkMode ? 'border-gray-800 hover:bg-gray-800' : 'border-gray-200 hover:bg-gray-50'}`}>
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0 flex-1">
+                                <p className={`text-sm font-medium truncate ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{n.title}</p>
+                                <p className={`text-xs truncate ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{n.body}</p>
+                                <div className="mt-1 flex items-center gap-2">
+                                  {!n.read && <span className={`inline-block w-1.5 h-1.5 rounded-full ${darkMode ? 'bg-yellow-300' : 'bg-blue-600'}`} />}
+                                  <button
+                                    onClick={() => setNotifications((prev) => prev.map(x => x.id === n.id ? { ...x, read: !x.read } : x))}
+                                    className={`text-[11px] underline ${darkMode ? 'text-gray-300 hover:text-yellow-300' : 'text-gray-700 hover:text-blue-700'}`}
+                                  >
+                                    Mark as {n.read ? 'unread' : 'read'}
+                                  </button>
+                                </div>
+                              </div>
+                              <div className={`text-[10px] whitespace-nowrap mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{n.time}</div>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div className={`px-3 py-2 border-t flex items-center justify-between ${darkMode ? 'border-gray-800' : 'border-gray-200'}`}>
+                    <button
+                      className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                      onClick={() => setNotifInlineOpen(false)}
+                    >
+                      Hide
+                    </button>
+                    <button
+                      className={`text-xs ${darkMode ? 'text-yellow-300' : 'text-blue-600'}`}
+                      onClick={() => { setMobileMenuOpen(false); setNotifOpen(true); }}
+                    >
+                      Open full panel
+                    </button>
+                  </div>
+                </div>
+              )}
             </li>
             {/* Theme toggle */}
             <li>
@@ -361,6 +462,14 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
         </div>
       </div>
       
+      {/* Notification Panel Portal */}
+      <NotificationPanel
+        open={notifOpen}
+        onClose={() => setNotifOpen(false)}
+        darkMode={darkMode}
+        notifications={notifications}
+        setNotifications={setNotifications}
+      />
     </header>
   );
 };

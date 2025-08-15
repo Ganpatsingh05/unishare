@@ -177,7 +177,7 @@ const Main = ({ darkMode, isVisible = false }) => {
   };
 
   return (
-    <main className="max-w-6xl mx-auto px-4 py-16">
+    <main className="max-w-6xl mx-auto px-4 pt-8 md:pt-16 pb-16">
       {/* Enhanced Interactive Header with Scroll Animations */}
       <div 
         className="text-center mb-16 transition-all duration-1000"
@@ -259,12 +259,23 @@ const Main = ({ darkMode, isVisible = false }) => {
             placeholder="Search services, features..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className={`block w-full pl-12 pr-4 py-4 rounded-2xl border-2 transition-all duration-300 focus:outline-none focus:ring-4 focus:scale-105 ${
+            className={`block w-full pl-12 pr-12 py-4 rounded-2xl border-2 transition-all duration-300 focus:outline-none focus:ring-4 focus:scale-105 ${
               darkMode 
                 ? 'bg-gray-800/80 border-gray-700 text-white placeholder-gray-400 focus:ring-yellow-400/20 focus:border-yellow-400 backdrop-blur-sm' 
                 : 'bg-white/80 border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500/20 focus:border-blue-500 backdrop-blur-sm'
             } shadow-xl hover:shadow-2xl hover:scale-102`}
           />
+          {/* Right search icon button for clearer affordance */}
+          <button
+            type="button"
+            aria-label="Search"
+            className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-xl transition-colors duration-200 ${
+              darkMode ? 'text-gray-400 hover:text-yellow-300 hover:bg-gray-700' : 'text-gray-500 hover:text-blue-600 hover:bg-gray-100'
+            }`}
+            onClick={() => { /* search is live as you type; this is a visual affordance */ }}
+          >
+            <Search className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Quick Filter Buttons */}
@@ -280,7 +291,8 @@ const Main = ({ darkMode, isVisible = false }) => {
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`px-6 py-2 rounded-full font-medium transition-all duration-300 transform hover:scale-105 ${
+              aria-pressed={activeFilter === filter}
+              className={`px-6 py-2 rounded-full font-medium transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                 activeFilter === filter
                   ? darkMode 
                     ? 'bg-yellow-400 text-gray-900 shadow-lg' 
@@ -290,10 +302,10 @@ const Main = ({ darkMode, isVisible = false }) => {
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
               }`}
               style={{
-                animationDelay: `${1.2 + index * 0.1}s`,
                 opacity: isVisible ? 1 : 0,
                 transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-                transition: `all 0.6s ease-out ${1.2 + index * 0.1}s`
+                // Limit transition to opacity/transform only (no delay), so color changes on click are instant
+                transition: 'opacity 0.6s ease-out, transform 0.6s ease-out'
               }}
             >
               {filter}

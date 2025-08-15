@@ -82,57 +82,70 @@ export default function Page() {
   ];
 
   useEffect(() => {
-    // Enhanced scroll handler with progress tracking
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      const windowHeight = window.innerHeight;
-      
-      // Parallax offset
-      setOffset(scrollY * 0.3);
-      
-      // Calculate scroll progress for hero section
-      const heroHeight = heroRef.current?.offsetHeight || windowHeight;
-      const progress = Math.min(scrollY / (heroHeight * 0.8), 1);
-      setScrollProgress(progress);
-      
-      // Check if main section is visible
-      if (mainRef.current) {
-        const mainRect = mainRef.current.getBoundingClientRect();
-        const isVisible = mainRect.top < windowHeight * 0.8;
-        setIsMainVisible(isVisible);
-      }
+    // Smooth, throttled scroll/mouse handlers using requestAnimationFrame
+    const ticking = { scroll: false, mouse: false };
 
-      // Animate stats when they come into view
-      const statsSection = document.getElementById('stats-section');
-      if (statsSection) {
-        const statsRect = statsSection.getBoundingClientRect();
-        if (statsRect.top < windowHeight * 0.8 && visibleStats.length === 0) {
-          setVisibleStats([0, 1, 2, 3]);
-        }
-      }
-    };
+    const onScroll = () => {
+      if (!ticking.scroll) {
+        ticking.scroll = true;
+        requestAnimationFrame(() => {
+          const scrollY = window.scrollY;
+          const windowHeight = window.innerHeight;
 
-    // Enhanced mouse tracking for interactive effects
-    const handleMouseMove = (e) => {
-      if (heroRef.current) {
-        const rect = heroRef.current.getBoundingClientRect();
-        setMousePosition({
-          x: ((e.clientX - rect.left) / rect.width - 0.5) * 100,
-          y: ((e.clientY - rect.top) / rect.height - 0.5) * 100,
+          // Parallax offset
+          const newOffset = scrollY * 0.3;
+          setOffset((prev) => (Math.abs(prev - newOffset) < 0.5 ? prev : newOffset));
+
+          // Calculate scroll progress for hero section
+          const heroHeight = heroRef.current?.offsetHeight || windowHeight;
+          const progress = Math.min(scrollY / (heroHeight * 0.8), 1);
+          setScrollProgress((prev) => (Math.abs(prev - progress) < 0.005 ? prev : progress));
+
+          // Check if main section is visible
+          if (mainRef.current) {
+            const mainRect = mainRef.current.getBoundingClientRect();
+            const isVisible = mainRect.top < windowHeight * 0.8;
+            setIsMainVisible((prev) => (prev === isVisible ? prev : isVisible));
+          }
+
+          // Animate stats when they come into view
+          const statsSection = document.getElementById('stats-section');
+          if (statsSection && visibleStats.length === 0) {
+            const statsRect = statsSection.getBoundingClientRect();
+            if (statsRect.top < windowHeight * 0.8) {
+              setVisibleStats([0, 1, 2, 3]);
+            }
+          }
+
+          ticking.scroll = false;
         });
       }
-      
-      // Logo rotation based on mouse movement
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
-      const deltaX = e.clientX - centerX;
-      const deltaY = e.clientY - centerY;
-      const rotation = Math.atan2(deltaY, deltaX) * (180 / Math.PI) * 0.1;
-      setLogoRotation(rotation);
     };
 
-    window.addEventListener("scroll", handleScroll);
-    window.addEventListener("mousemove", handleMouseMove);
+    const onMouseMove = (e) => {
+      if (!ticking.mouse) {
+        ticking.mouse = true;
+        requestAnimationFrame(() => {
+          if (heroRef.current) {
+            const rect = heroRef.current.getBoundingClientRect();
+            setMousePosition({
+              x: ((e.clientX - rect.left) / rect.width - 0.5) * 100,
+              y: ((e.clientY - rect.top) / rect.height - 0.5) * 100,
+            });
+          }
+          const centerX = window.innerWidth / 2;
+          const centerY = window.innerHeight / 2;
+          const deltaX = e.clientX - centerX;
+          const deltaY = e.clientY - centerY;
+          const rotation = Math.atan2(deltaY, deltaX) * (180 / Math.PI) * 0.1;
+          setLogoRotation((prev) => (Math.abs(prev - rotation) < 0.1 ? prev : rotation));
+          ticking.mouse = false;
+        });
+      }
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("mousemove", onMouseMove, { passive: true });
 
     // Generate enhanced particles
     const p = Array.from({ length: 20 }).map((_, i) => ({
@@ -150,12 +163,12 @@ export default function Page() {
       setActiveTestimonial(prev => (prev + 1) % 3);
     }, 5000);
 
-    // Initial scroll position check
-    handleScroll();
+  // Initial scroll position check
+  onScroll();
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("mousemove", onMouseMove);
       clearInterval(testimonialInterval);
     };
   }, [visibleStats.length]);
@@ -200,9 +213,9 @@ export default function Page() {
             <Header darkMode={darkMode} onThemeToggle={handleThemeToggle} logoRotation={logoRotation} />
 
       {/* INTERACTIVE HERO SECTION */}
-      <section
-        ref={heroRef}
-  className="relative h-screen flex flex-col justify-center items-center overflow-hidden cursor-pointer pt-52 md:pt-28"
+  <section
+    ref={heroRef}
+    className="relative h-[85vh] md:h-screen flex flex-col justify-start md:justify-center items-center overflow-hidden cursor-default pt-5 md:pt-28"
         style={{
           background: darkMode
             ? `radial-gradient(circle at ${50 + mousePosition.x * 0.1}% ${50 + mousePosition.y * 0.1}%, #1e293b 0%, #0f172a 100%)`
@@ -231,16 +244,17 @@ export default function Page() {
           ))}
         </div>
 
-        {/* Main Content with Enhanced Scroll Effects */}
+        {/* Main Content with Enhanced Scroll Effects (mobile-first) */}
         <div 
-          className="relative z-10 text-center px-6 max-w-5xl transition-all duration-500 ease-in-out"
+          className="relative z-10 text-center px-4 sm:px-6 max-w-5xl -mt-2 md:mt-0"
           style={{
-            opacity: 1 - scrollProgress * 0.8,
-            transform: `translateY(${scrollProgress * -50}px) scale(${1 - scrollProgress * 0.1})`,
+            opacity: 1 - scrollProgress * 0.7,
+            transform: `translateY(${scrollProgress * -30}px) scale(${1 - scrollProgress * 0.06})`,
+            willChange: 'transform, opacity'
           }}
         >
           {/* Dynamic Logo/Brand */}
-          <div className="mb-6 flex justify-center items-center gap-4">
+          <div className="mb-4 md:mb-6 flex justify-center items-center gap-3 md:gap-4">
             <div className={`text-6xl font-black transition-all duration-500 transform hover:scale-110 ${
               darkMode ? 'text-yellow-300' : 'text-blue-600'
             }`}>
@@ -249,7 +263,7 @@ export default function Page() {
           </div>
 
           {/* Static Main Quote */}
-          <div className="mb-8 flex items-center justify-center">
+          <div className="mb-6 md:mb-8 flex items-center justify-center">
             <h1
               className={`font-bold text-2xl md:text-4xl lg:text-5xl leading-tight transition-all duration-300 text-center ${
                 darkMode ? "text-white" : "text-gray-900"
@@ -259,7 +273,7 @@ export default function Page() {
             </h1>
           </div>
 
-          <p className={`mb-10 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed ${
+          <p className={`mb-8 md:mb-10 text-base md:text-xl max-w-2xl mx-auto leading-relaxed ${
             darkMode ? "text-gray-300" : "text-gray-700"
           }`}>
             Connect with your campus community through ride sharing, marketplace, housing, 
@@ -267,7 +281,7 @@ export default function Page() {
           </p>
 
           {/* Enhanced Interactive CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center mb-6 md:mb-12">
             <button
               className={`group px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center gap-3 relative overflow-hidden ${
                 darkMode 
@@ -308,12 +322,26 @@ export default function Page() {
             </button>
           </div>
 
-          {/* Static Feature Showcase */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          {/* Quick Stats (mobile only) */}
+          <div className="grid grid-cols-2 gap-3 md:hidden max-w-md mx-auto mt-4">
+            {[
+              { label: 'Rides', count: '1.2k+' },
+              { label: 'Listings', count: '850+' },
+              { label: 'Rooms', count: '200+' },
+              { label: 'Resources', count: '500+' },
+            ].map((s, i) => (
+              <div key={i} className={`${darkMode ? 'bg-gray-800/70 text-gray-200 border-gray-700' : 'bg-white/80 text-gray-800 border-gray-200'} border rounded-xl py-3 px-4 flex items-center justify-between backdrop-blur-sm`}> 
+                <span className="text-xs opacity-80">{s.label}</span>
+                <span className={`${darkMode ? 'text-yellow-300' : 'text-blue-600'} font-semibold`}>{s.count}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Static Feature Showcase (desktop/tablet only) */}
+          <div className="hidden md:grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             {features.map((feature, idx) => {
               const IconComponent = feature.icon;
               const isHovered = idx === hoveredFeature;
-              
               return (
                 <div
                   key={idx}
@@ -384,7 +412,7 @@ export default function Page() {
       </section>
 
       {/* ENHANCED MAIN SECTION */}
-      <div ref={mainRef}>
+  <div ref={mainRef} className="-mt-2 md:mt-0">
         <Main darkMode={darkMode} isVisible={isMainVisible} scrollProgress={scrollProgress} />
       </div>
 
