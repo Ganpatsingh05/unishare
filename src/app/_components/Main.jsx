@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from 'next/link';
 import { Car, ShoppingCart, Tag, Search, Star, Home, Megaphone, BookOpen, Phone, Users, RotateCw, CheckCircle, Filter, TrendingUp, Zap } from 'lucide-react';
+import Image from 'next/image';
+import logoImage from '../assets/images/logounishare1.png';
 
 // Animated Counter Component
 const AnimatedCounter = ({ end, duration = 2000, isVisible, suffix = "" }) => {
@@ -207,7 +209,7 @@ const Main = ({ darkMode, isVisible = false }) => {
           }`} />
         </div>
 
-  {/* Heading removed as requested */}
+        {/* Heading removed as requested */}
         
         <p 
           className={`text-2xl md:text-3xl mb-8 max-w-3xl mx-auto leading-relaxed font-semibold italic tracking-wide ${
@@ -222,7 +224,7 @@ const Main = ({ darkMode, isVisible = false }) => {
           Explore campus life with rides, study materials, and more—all in one place.
         </p>
         
-        {/* Enhanced Interactive Search Bar */}
+        {/* Enhanced Interactive Search Bar with Logo Inside */}
         <div 
           className="relative max-w-lg mx-auto mb-12"
           style={{
@@ -231,33 +233,52 @@ const Main = ({ darkMode, isVisible = false }) => {
             transition: 'all 0.8s ease-out 0.8s'
           }}
         >
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Search className={`h-5 w-5 transition-colors duration-300 ${
-              darkMode ? 'text-gray-400' : 'text-gray-500'
-            }`} />
+          <div className="relative">
+            {/* Logo inside search bar - left side with higher z-index */}
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center z-20">
+              <Link href="/" className="flex items-center">
+                <Image
+                  src={logoImage}
+                  alt="UniShare Logo"
+                  width={28}
+                  height={32}
+                  className="transition-transform duration-300 hover:scale-110 hover:rotate-6 active:scale-95 cursor-pointer"
+                  style={{
+                    background: 'transparent',
+                    filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))',
+                    zIndex: 20
+                  }}
+                  priority
+                />
+              </Link>
+            </div>
+            
+            {/* Removed left magnifying glass icon from search bar */}
+            
+            <input
+              type="text"
+              placeholder="Search services, features..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={`relative block w-full pl-18 pr-12 py-4 rounded-2xl border-2 transition-all duration-300 focus:outline-none focus:ring-4 focus:scale-105 z-0 ${
+                darkMode 
+                  ? 'bg-gray-800/80 border-gray-700 text-white placeholder-gray-400 focus:ring-yellow-400/20 focus:border-yellow-400 backdrop-blur-sm' 
+                  : 'bg-white/80 border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500/20 focus:border-blue-500 backdrop-blur-sm'
+              } shadow-xl hover:shadow-2xl hover:scale-102`}
+            />
+            
+            {/* Right search icon button for clearer affordance */}
+            <button
+              type="button"
+              aria-label="Search"
+              className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-xl transition-colors duration-200 z-10 ${
+                darkMode ? 'text-gray-400 hover:text-yellow-300 hover:bg-gray-700' : 'text-gray-500 hover:text-blue-600 hover:bg-gray-100'
+              }`}
+              onClick={() => { /* search is live as you type; this is a visual affordance */ }}
+            >
+              <Search className="w-5 h-5" />
+            </button>
           </div>
-          <input
-            type="text"
-            placeholder="Search services, features..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className={`block w-full pl-12 pr-12 py-4 rounded-2xl border-2 transition-all duration-300 focus:outline-none focus:ring-4 focus:scale-105 ${
-              darkMode 
-                ? 'bg-gray-800/80 border-gray-700 text-white placeholder-gray-400 focus:ring-yellow-400/20 focus:border-yellow-400 backdrop-blur-sm' 
-                : 'bg-white/80 border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500/20 focus:border-blue-500 backdrop-blur-sm'
-            } shadow-xl hover:shadow-2xl hover:scale-102`}
-          />
-          {/* Right search icon button for clearer affordance */}
-          <button
-            type="button"
-            aria-label="Search"
-            className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-xl transition-colors duration-200 ${
-              darkMode ? 'text-gray-400 hover:text-yellow-300 hover:bg-gray-700' : 'text-gray-500 hover:text-blue-600 hover:bg-gray-100'
-            }`}
-            onClick={() => { /* search is live as you type; this is a visual affordance */ }}
-          >
-            <Search className="w-5 h-5" />
-          </button>
         </div>
 
         {/* Quick Filter Buttons */}
