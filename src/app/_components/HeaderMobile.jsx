@@ -8,7 +8,7 @@ import logoImage from '../assets/images/logounishare1.png';
 import { Search, Globe, Bell, Sun, Moon, User, LogOut, Menu, X, Settings, Camera, Edit3, Shield, HelpCircle, Info, ChevronRight } from 'lucide-react';
 import { useLanguage } from "../_providers/LanguageProvider";
 
-export default function HeaderMobile({ darkMode, onThemeToggle, onMenuToggle }) {
+export default function HeaderMobile({ darkMode, onThemeToggle }) {
   const [searchFocused, setSearchFocused] = useState(false);
   const [logoRotation, setLogoRotation] = useState(0);
   const logoRef = useRef(null);
@@ -55,20 +55,40 @@ export default function HeaderMobile({ darkMode, onThemeToggle, onMenuToggle }) 
     setMobileMenuOpen(false);
     setNotifInlineOpen(false);
     setSettingsOpen(false);
-    // Notify parent component about menu state change
-    if (onMenuToggle) {
-      onMenuToggle(false);
-    }
   };
 
-  // Handle menu toggle and notify parent
-  const handleMenuToggle = () => {
-    const newMenuState = !mobileMenuOpen;
-    setMobileMenuOpen(newMenuState);
-    if (onMenuToggle) {
-      onMenuToggle(newMenuState);
+  // Prevent body scroll when menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      // Save current scroll position
+      const scrollY = window.scrollY;
+      
+      // Prevent scrolling on body
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Restore scroll position and normal scrolling
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      }
     }
-  };
+    
+    // Cleanup on unmount
+    return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
 
   // Animate logo rotation on mobile (throttled + orientation support)
   useEffect(() => {
@@ -199,23 +219,15 @@ export default function HeaderMobile({ darkMode, onThemeToggle, onMenuToggle }) 
           aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
           aria-controls="navbar-hamburger"
           aria-expanded={mobileMenuOpen ? 'true' : 'false'}
-          onClick={handleMenuToggle}
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
           <HamburgerIcon isOpen={mobileMenuOpen} />
         </button>
       </div>
 
-      {/* Mobile menu overlay */}
-      {mobileMenuOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black bg-opacity-50 transition-opacity duration-300"
-          onClick={closeMobileMenu}
-        />
-      )}
-
       {/* Mobile menu panel */}
       <div
-        className={`fixed top-0 right-0 z-45 transition-all duration-300 shadow-2xl h-screen w-[85vw] max-w-sm transform ${
+        className={`fixed top-0 right-0 z-40 transition-all duration-300 shadow-2xl h-[90vh] w-[85vw] max-w-sm transform ${
           mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
         style={{
@@ -296,48 +308,6 @@ export default function HeaderMobile({ darkMode, onThemeToggle, onMenuToggle }) 
               </li>
 
               {/* Menu Items */}
-              
-              {/* Theme Toggle */}
-              <li>
-                <button
-                  onClick={onThemeToggle}
-                  className={`w-full flex items-center justify-between px-6 py-3 text-left transition-colors duration-200 ${
-                    darkMode ? 'text-gray-200 hover:bg-gray-800/50' : 'text-gray-900 hover:bg-gray-100/50'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    {darkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                    <span className="font-medium">{t('common.toggleTheme')}</span>
-                  </div>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600'
-                  }`}>
-                    {darkMode ? 'Dark' : 'Light'}
-                  </span>
-                </button>
-              </li>
-
-              {/* Language Toggle */}
-              <li>
-                <button
-                  onClick={handleLanguageToggle}
-                  className={`w-full flex items-center justify-between px-6 py-3 text-left transition-colors duration-200 ${
-                    darkMode ? 'text-gray-200 hover:bg-gray-800/50' : 'text-gray-900 hover:bg-gray-100/50'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Globe className="w-5 h-5" />
-                    <span className="font-medium">{t('common.language')}</span>
-                  </div>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600'
-                  }`}>
-                    {language}
-                  </span>
-                </button>
-              </li>
-
-              {/* Notifications */}
               <li>
                 <button
                   onClick={() => { setNotifInlineOpen(!notifInlineOpen); setSettingsOpen(false); }}
@@ -436,6 +406,46 @@ export default function HeaderMobile({ darkMode, onThemeToggle, onMenuToggle }) 
                 )}
               </li>
 
+              {/* Theme toggle */}
+              <li>
+                <button
+                  onClick={onThemeToggle}
+                  className={`w-full flex items-center justify-between px-6 py-3 text-left transition-colors duration-200 ${
+                    darkMode ? 'text-gray-200 hover:bg-gray-800/50' : 'text-gray-900 hover:bg-gray-100/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    {darkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                    <span className="font-medium">{t('common.toggleTheme')}</span>
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600'
+                  }`}>
+                    {darkMode ? 'Dark' : 'Light'}
+                  </span>
+                </button>
+              </li>
+
+              {/* Language */}
+              <li>
+                <button
+                  onClick={handleLanguageToggle}
+                  className={`w-full flex items-center justify-between px-6 py-3 text-left transition-colors duration-200 ${
+                    darkMode ? 'text-gray-200 hover:bg-gray-800/50' : 'text-gray-900 hover:bg-gray-100/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Globe className="w-5 h-5" />
+                    <span className="font-medium">{t('common.language')}</span>
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600'
+                  }`}>
+                    {language}
+                  </span>
+                </button>
+              </li>
+
               {/* Settings */}
               <li>
                 <button
@@ -453,40 +463,40 @@ export default function HeaderMobile({ darkMode, onThemeToggle, onMenuToggle }) 
                 
                 {settingsOpen && (
                   <div className={`mx-4 mb-3 rounded-lg border ${darkMode ? 'border-gray-700 bg-gray-800/30' : 'border-gray-200 bg-gray-50/30'} overflow-hidden`}>
-                    <div className="py-2">
-                      {/* Privacy */}
-                      <button className={`w-full flex items-center justify-between px-4 py-3 text-sm transition-colors ${
-                        darkMode ? 'text-gray-300 hover:bg-gray-700/30' : 'text-gray-700 hover:bg-gray-100'
-                      }`}>
-                        <div className="flex items-center gap-3">
-                          <Shield className="w-4 h-4" />
-                          <span>Privacy</span>
-                        </div>
-                        <ChevronRight className="w-3 h-3" />
-                      </button>
+                  <div className="py-2">
+                    {/* Privacy */}
+                    <button className={`w-full flex items-center justify-between px-4 py-3 text-sm transition-colors ${
+                      darkMode ? 'text-gray-300 hover:bg-gray-700/30' : 'text-gray-700 hover:bg-gray-100'
+                    }`}>
+                      <div className="flex items-center gap-3">
+                        <Shield className="w-4 h-4" />
+                        <span>Privacy</span>
+                      </div>
+                      <ChevronRight className="w-3 h-3" />
+                    </button>
 
-                      {/* Help */}
-                      <button className={`w-full flex items-center justify-between px-4 py-3 text-sm transition-colors ${
-                        darkMode ? 'text-gray-300 hover:bg-gray-700/30' : 'text-gray-700 hover:bg-gray-100'
-                      }`}>
-                        <div className="flex items-center gap-3">
-                          <HelpCircle className="w-4 h-4" />
-                          <span>Help & Support</span>
-                        </div>
-                        <ChevronRight className="w-3 h-3" />
-                      </button>
+                    {/* Help */}
+                    <button className={`w-full flex items-center justify-between px-4 py-3 text-sm transition-colors ${
+                      darkMode ? 'text-gray-300 hover:bg-gray-700/30' : 'text-gray-700 hover:bg-gray-100'
+                    }`}>
+                      <div className="flex items-center gap-3">
+                        <HelpCircle className="w-4 h-4" />
+                        <span>Help & Support</span>
+                      </div>
+                      <ChevronRight className="w-3 h-3" />
+                    </button>
 
-                      {/* About */}
-                      <button className={`w-full flex items-center justify-between px-4 py-3 text-sm transition-colors ${
-                        darkMode ? 'text-gray-300 hover:bg-gray-700/30' : 'text-gray-700 hover:bg-gray-100'
-                      }`}>
-                        <div className="flex items-center gap-3">
-                          <Info className="w-4 h-4" />
-                          <span>About</span>
-                        </div>
-                        <ChevronRight className="w-3 h-3" />
-                      </button>
-                    </div>
+                    {/* About */}
+                    <button className={`w-full flex items-center justify-between px-4 py-3 text-sm transition-colors ${
+                      darkMode ? 'text-gray-300 hover:bg-gray-700/30' : 'text-gray-700 hover:bg-gray-100'
+                    }`}>
+                      <div className="flex items-center gap-3">
+                        <Info className="w-4 h-4" />
+                        <span>About</span>
+                      </div>
+                      <ChevronRight className="w-3 h-3" />
+                    </button>
+                  </div>
                   </div>
                 )}
               </li>
@@ -504,34 +514,38 @@ export default function HeaderMobile({ darkMode, onThemeToggle, onMenuToggle }) 
                   <span className="font-medium">{t('common.loginProfile')}</span>
                 </Link>
               </li>
+
+              {/* Logout */}
+              <li>
+                <button
+                  onClick={handleLogout}
+                  className={`w-full flex items-center gap-3 px-6 py-3 text-left transition-colors duration-200 ${
+                    darkMode ? 'text-red-300 hover:bg-red-500/10' : 'text-red-600 hover:bg-red-50'
+                  }`}
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span className="font-medium">{t('common.logout')}</span>
+                </button>
+              </li>
             </ul>
           </div>
 
-          {/* Footer with trademark and logout */}
-          <div className={`px-6 py-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-            {/* Trademark */}
-            <div className="text-center mb-4">
-              <div className="flex items-center justify-center gap-1">
-                <span className="text-sm font-medium">Powered by</span>
-                <span className="font-bold text-lg">
-                  <span className="text-yellow-500">Uni</span>
-                  <span className="text-blue-500">Share</span>
+          {/* Footer with UniShare trademark */}
+          <div className={`px-4 py-3 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+            <div className="flex items-center justify-center">
+              <div className="flex items-center gap-1">
+                <span className="text-xs font-semibold tracking-wide">
+                  <span className={darkMode ? 'text-yellow-300' : 'text-yellow-500'}>Uni</span>
+                  <span className={darkMode ? 'text-sky-300' : 'text-sky-500'}>Share</span>
+                </span>
+                <span className={`text-xs ml-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  ™
                 </span>
               </div>
-              <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                © 2024 UniShare. All rights reserved.
-              </p>
             </div>
-            
-            <button
-              onClick={handleLogout}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
-                darkMode ? 'text-red-300 hover:bg-red-500/10' : 'text-red-600 hover:bg-red-50'
-              }`}
-            >
-              <LogOut className="w-5 h-5" />
-              <span className="font-medium">{t('common.logout')}</span>
-            </button>
+            <div className={`text-center text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+              © 2025 All rights reserved
+            </div>
           </div>
         </div>
       </div>
