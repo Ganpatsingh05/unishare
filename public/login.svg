@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" width="1440" height="900">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#0a0f1f"/>
+      <stop offset="60%" stop-color="#0b1022"/>
+      <stop offset="100%" stop-color="#0a0f1f"/>
+    </linearGradient>
+    <linearGradient id="brand" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#fde047"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="60"/></filter>
+  </defs>
+  <rect width="1440" height="900" fill="url(#bg)"/>
+  <g opacity="0.2" filter="url(#blur)">
+    <circle cx="360" cy="220" r="220" fill="#fde047"/>
+    <circle cx="1160" cy="640" r="260" fill="#38bdf8"/>
+  </g>
+  <g opacity="0.08">
+    <path d="M0,760 C280,700 520,740 800,760 C1080,780 1260,740 1440,700 L1440,900 L0,900 Z" fill="#38bdf8"/>
+  </g>
+  <g opacity="0.65">
+    <rect x="120" y="110" width="1200" height="680" rx="28" fill="none" stroke="#1f2937" stroke-width="2"/>
+  </g>
+  <g>
+    <text x="80" y="120" fill="#e5e7eb" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="800">Welcome to UniShare</text>
+    <text x="80" y="170" fill="#9ca3af" font-family="Inter, Arial, sans-serif" font-size="22">Branded placeholder — replace with login.jpg when available</text>
+  </g>
+</svg>

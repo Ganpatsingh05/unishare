@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
   User, 
   Mail, 
@@ -26,6 +27,7 @@ const LoginPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [imgSrc, setImgSrc] = useState('/assets/images/login.png');
 
   const [formData, setFormData] = useState({
     email: '',
@@ -68,21 +70,21 @@ const LoginPage = () => {
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${
-      darkMode ? 'bg-gray-900' : 'bg-gray-50'
+    <div className={`min-h-screen relative transition-colors duration-300 ${
+      darkMode ? 'bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900' : 'bg-gradient-to-br from-blue-50 via-gray-50 to-green-50'
     }`}>
       {/* Background Pattern */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-yellow-400/10 to-orange-400/10 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className={`absolute -top-40 -right-40 w-80 h-80 rounded-full blur-3xl ${darkMode ? 'bg-yellow-400/10' : 'bg-yellow-400/10'}`}></div>
+        <div className={`absolute -bottom-40 -left-40 w-80 h-80 rounded-full blur-3xl ${darkMode ? 'bg-blue-400/10' : 'bg-blue-400/10'}`}></div>
       </div>
 
       <div className="relative min-h-screen flex items-center justify-center px-4 py-12">
-        <div className="max-w-md w-full">
+  <div className="max-w-7xl w-full">
           {/* Back Button */}
           <Link 
             href="/" 
-            className={`inline-flex items-center gap-2 mb-8 text-sm font-medium transition-all duration-300 hover:scale-105 ${
+            className={`inline-flex items-center gap-2 mb-6 text-sm font-medium transition-all duration-300 hover:scale-105 ${
               darkMode ? 'text-gray-400 hover:text-yellow-400' : 'text-gray-600 hover:text-blue-600'
             }`}
           >
@@ -90,34 +92,49 @@ const LoginPage = () => {
             Back to Home
           </Link>
 
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="mb-6">
-              <span className="text-4xl font-bold">
-                <span className={darkMode ? 'text-yellow-300' : 'text-yellow-500'}>Uni</span>
-                <span className={darkMode ? 'text-sky-300' : 'text-sky-500'}>Share</span>
-              </span>
-            </div>
-            <h1 className={`text-3xl font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              {isLoginMode ? 'Welcome Back!' : 'Join Our Community'}
-            </h1>
-            <p className={`text-lg ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              {isLoginMode 
-                ? 'Sign in to access your campus community' 
-                : 'Create your account and connect with fellow students'
-              }
-            </p>
-          </div>
+          {/* Two-column card: image left (md+), form right */}
+          <div className={"rounded-3xl backdrop-blur-xl shadow-2xl bg-transparent"}>
+            <div className="grid grid-cols-1 md:grid-cols-5 lg:grid-cols-8 xl:grid-cols-9 md:gap-x-4 lg:gap-x-6">
+              {/* Left image (desktop/tablet only) */}
+        <div className={`relative hidden md:block md:col-span-3 lg:col-span-5 xl:col-span-6 min-h-[900px] lg:min-h-[1200px] md:-ml-2 lg:-ml-4 xl:-ml-6 pt-2 md:pt-3 lg:pt-4`}>
+                <Image
+                  src={imgSrc}
+                  alt="Login to UniShare"
+                  fill
+                  sizes="(max-width: 1024px) 50vw, 1200px"
+          className="object-contain object-left-top translate-y-2 md:translate-y-4 lg:translate-y-15"
+                  priority
+                  onError={() => setImgSrc('/login.svg')}
+                />
+              </div>
 
-          {/* Main Form Card */}
-          <div className={`rounded-3xl border-2 p-8 backdrop-blur-xl shadow-2xl ${
-            darkMode 
-              ? 'bg-gray-800/90 border-gray-700/50' 
-              : 'bg-white/90 border-gray-200/50'
-          }`}>
-            
-            {/* Social Login Options */}
-            <div className="mb-8">
+              {/* Right form panel */}
+              <div className={`p-6 sm:p-8 md:col-span-2 lg:col-span-3 xl:col-span-3 md:pl-8 lg:pl-12 rounded-3xl border-2 self-start m-4 md:m-0 md:ml-4 lg:ml-6 ${
+                darkMode 
+                  ? 'bg-gray-800/90 border-gray-700/60' 
+                  : 'bg-white/90 border-gray-200/70'
+              }`}>
+                {/* Header */}
+                <div className="text-center mb-6">
+                  <div className="mb-4">
+                    <span className="text-4xl font-bold">
+                      <span className={darkMode ? 'text-yellow-300' : 'text-yellow-500'}>Uni</span>
+                      <span className={darkMode ? 'text-sky-300' : 'text-sky-500'}>Share</span>
+                    </span>
+                  </div>
+                  <h1 className={`text-3xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    {isLoginMode ? 'Welcome Back!' : 'Join Our Community'}
+                  </h1>
+                  <p className={`text-base ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {isLoginMode 
+                      ? 'Sign in to access your campus community' 
+                      : 'Create your account and connect with fellow students'
+                    }
+                  </p>
+                </div>
+
+                {/* Social Login Options */}
+                <div className="mb-8">
               <div className="grid grid-cols-3 gap-3">
                 {[
                   { name: 'Google', color: 'from-red-500 to-red-600', icon: Chrome },
@@ -141,22 +158,22 @@ const LoginPage = () => {
                 ))}
               </div>
 
-              <div className="relative mt-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className={`w-full border-t ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}></div>
+                  <div className="relative mt-6">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className={`w-full border-t ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className={`px-4 font-medium ${
+                        darkMode ? 'bg-gray-800 text-gray-400' : 'bg-white text-gray-500'
+                      }`}>
+                        Or continue with email
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className={`px-4 font-medium ${
-                    darkMode ? 'bg-gray-800 text-gray-400' : 'bg-white text-gray-500'
-                  }`}>
-                    Or continue with email
-                  </span>
-                </div>
-              </div>
-            </div>
 
-            {/* Email/Password Form */}
-            <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Email/Password Form */}
+                <form onSubmit={handleSubmit} className="space-y-6">
               
               {/* Registration-only fields */}
               {!isLoginMode && (
@@ -362,9 +379,11 @@ const LoginPage = () => {
                 type="submit"
                 disabled={loading}
                 className={`w-full py-4 rounded-xl font-bold text-lg text-white transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl ${
-                  darkMode 
-                    ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 shadow-yellow-400/25' 
-                    : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-blue-500/25'
+                  isLoginMode
+                    ? 'bg-gradient-to-r from-blue-300 to-blue-400 hover:from-blue-400 hover:to-blue-500 shadow-blue-300/25'
+                    : darkMode
+                      ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 shadow-yellow-400/25'
+                      : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-blue-500/25'
                 }`}
               >
                 {loading ? (
@@ -376,10 +395,10 @@ const LoginPage = () => {
                   isLoginMode ? 'Sign In to UniShare' : 'Create My Account'
                 )}
               </button>
-            </form>
+                </form>
 
-            {/* Toggle between login/register */}
-            <div className="mt-8 text-center">
+                {/* Toggle between login/register */}
+                <div className="mt-8 text-center">
               <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                 {isLoginMode ? "Don't have an account?" : "Already have an account?"}
               </p>
@@ -391,48 +410,50 @@ const LoginPage = () => {
               >
                 {isLoginMode ? 'Create Account' : 'Sign In Instead'}
               </button>
-            </div>
+                </div>
 
-            {/* Forgot Password for login */}
-            {isLoginMode && (
-              <div className="mt-6 text-center">
-                <Link 
-                  href="/forgot-password"
-                  className={`text-sm font-medium transition-colors duration-300 ${
-                    darkMode ? 'text-gray-400 hover:text-yellow-400' : 'text-gray-600 hover:text-blue-600'
-                  }`}
-                >
-                  Forgot your password?
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* Benefits section for registration */}
-          {!isLoginMode && (
-            <div className={`mt-8 p-6 rounded-2xl ${
-              darkMode ? 'bg-gray-800/50' : 'bg-white/50'
-            }`}>
-              <h3 className={`text-lg font-bold mb-4 text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                Why Join UniShare?
-              </h3>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                {[
-                  { icon: Car, text: 'Share rides & save money' },
-                  { icon: BookOpen, text: 'Buy/sell textbooks easily' },
-                  { icon: Home, text: 'Find perfect roommates' },
-                  { icon: Briefcase, text: 'Access study resources' }
-                ].map((benefit, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <benefit.icon className={`w-4 h-4 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                    <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>
-                      {benefit.text}
-                    </span>
+                {/* Forgot Password for login */}
+                {isLoginMode && (
+                  <div className="mt-6 text-center">
+                    <Link 
+                      href="/forgot-password"
+                      className={`text-sm font-medium transition-colors duration-300 ${
+                        darkMode ? 'text-gray-400 hover:text-yellow-400' : 'text-gray-600 hover:text-blue-600'
+                      }`}
+                    >
+                      Forgot your password?
+                    </Link>
                   </div>
-                ))}
+                )}
+
+                {/* Benefits section for registration */}
+                {!isLoginMode && (
+                  <div className={`mt-8 p-6 rounded-2xl ${
+                    darkMode ? 'bg-gray-800/50' : 'bg-white/50'
+                  }`}>
+                    <h3 className={`text-lg font-bold mb-4 text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      Why Join UniShare?
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      {[
+                        { icon: Car, text: 'Share rides & save money' },
+                        { icon: BookOpen, text: 'Buy/sell textbooks easily' },
+                        { icon: Home, text: 'Find perfect roommates' },
+                        { icon: Briefcase, text: 'Access study resources' }
+                      ].map((benefit, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <benefit.icon className={`w-4 h-4 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                          <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>
+                            {benefit.text}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

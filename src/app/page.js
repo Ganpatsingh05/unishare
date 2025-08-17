@@ -12,9 +12,12 @@ import {
   MapPin,
   ArrowRight,
   ChevronDown,
+  Megaphone,
+  X,
 } from "lucide-react";
 import Header from "./_components/Header";
 import Main from "./_components/Main";
+import HeroSlider from "./_components/HeroSlider";
 import Footer from "./_components/Footer";
 
 /**
@@ -30,6 +33,7 @@ export default function Page() {
   const [isMainVisible, setIsMainVisible] = useState(false);
   const [visibleStats, setVisibleStats] = useState([]);
   const [logoRotation, setLogoRotation] = useState(0);
+  const [noticeVisible, setNoticeVisible] = useState(true);
   
   const heroRef = useRef(null);
   const mainRef = useRef(null);
@@ -176,211 +180,41 @@ export default function Page() {
           : "bg-gradient-to-br from-blue-50 via-gray-50 to-green-50 text-gray-800"
       }`}
     >
-      {/* Organic announcement bar - more human, less corporate */}
-      <div
-        className={`w-full flex items-center justify-center px-4 py-3 border-b transition-all duration-300
-          ${darkMode
-            ? 'bg-gray-900/80 border-gray-700/50'
-            : 'bg-orange-50/90 border-orange-200/60'}
-        `}
-      >
-        <div className="flex items-center gap-2 max-w-5xl w-full justify-center text-center">
-          <span className="text-lg">🎉</span>
-          <span className={`font-medium text-sm tracking-wide ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-            Hey there! Welcome to <span className="font-semibold text-orange-600">UniShare</span> — where campus life gets a whole lot easier
-          </span>
-          <span className="text-lg">✨</span>
+      {/* Announcement / Notice bar */}
+      {noticeVisible && (
+        <div
+          className={`w-full transition-all duration-300 border-b backdrop-blur-md ${
+            darkMode
+              ? 'bg-gradient-to-r from-gray-900/95 via-gray-900/80 to-gray-900/95 border-gray-800'
+              : 'bg-gradient-to-r from-yellow-50 via-blue-50 to-yellow-50 border-gray-200'
+          }`}
+        >
+          <div className="mx-auto max-w-screen-xl px-4 sm:px-6">
+            <div className="flex items-center gap-3 py-2.5 sm:py-3">
+              <p className={`flex-1 text-center text-xs sm:text-sm tracking-wide ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                <Megaphone className={`inline-block w-4 h-4 mr-2 align-[-2px] ${darkMode ? 'text-yellow-300' : 'text-blue-600'}`} />
+                Welcome to <span className={`${darkMode ? 'text-yellow-300' : 'text-yellow-600'} font-semibold`}>Uni</span>
+                <span className={`${darkMode ? 'text-sky-300' : 'text-sky-600'} font-semibold`}>Share</span> — your campus hub for rides, deals, rooms, and notes.
+                <span className={`ml-2 hidden sm:inline ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Stay tuned for weekly updates and new features.</span>
+              </p>
+              <button
+                aria-label="Dismiss notice"
+                onClick={() => setNoticeVisible(false)}
+                className={`flex h-8 w-8 flex-none items-center justify-center rounded-full border transition-colors ${
+                  darkMode ? 'border-gray-700 text-gray-300 hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
             <Header darkMode={darkMode} onThemeToggle={handleThemeToggle} logoRotation={logoRotation} />
 
-      {/* INTERACTIVE HERO SECTION */}
-  <section
-    ref={heroRef}
-    className="relative h-[85vh] md:h-screen flex flex-col justify-start md:justify-center items-center overflow-hidden cursor-default pt-5 md:pt-28"
-        style={{
-          background: darkMode
-            ? `radial-gradient(circle at ${50 + mousePosition.x * 0.1}% ${50 + mousePosition.y * 0.1}%, #1e293b 0%, #0f172a 100%)`
-            : `radial-gradient(circle at ${50 + mousePosition.x * 0.1}% ${50 + mousePosition.y * 0.1}%, #e0f2fe 0%, #f0f9ff 100%)`,
-          transform: `translateY(${offset}px)`,
-        }}
-      >
-
-
-        {/* Static Background Particles */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {particles.map((particle) => (
-            <div
-              key={particle.id}
-              className={`absolute rounded-full transition-opacity duration-1000 ${
-                darkMode ? 'bg-yellow-300/20' : 'bg-blue-500/20'
-              }`}
-              style={{
-                top: particle.top,
-                left: particle.left,
-                width: particle.size,
-                height: particle.size,
-                opacity: Math.max(0.1, particle.opacity * (1 - scrollProgress)),
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Main Content with Enhanced Scroll Effects (mobile-first) */}
-        <div 
-          className="relative z-10 text-center px-4 sm:px-6 max-w-5xl -mt-2 md:mt-0"
-          style={{
-            opacity: 1 - scrollProgress * 0.7,
-            transform: `translateY(${scrollProgress * -30}px) scale(${1 - scrollProgress * 0.06})`,
-            willChange: 'transform, opacity'
-          }}
-        >
-          {/* More natural, conversational headline */}
-          <div className="mb-4 md:mb-6 flex justify-center items-center gap-3 md:gap-4">
-            <div className={`text-5xl md:text-6xl font-black transition-all duration-500 ${
-              darkMode ? 'text-white' : 'text-gray-900'
-            }`}>
-              Uni<span className={darkMode ? 'text-orange-400' : 'text-orange-500'}>Share</span>
-            </div>
-          </div>
-
-          {/* More human, relatable tagline */}
-          <div className="mb-6 md:mb-8 flex items-center justify-center">
-            <h1
-              className={`font-bold text-2xl md:text-4xl lg:text-5xl leading-tight transition-all duration-300 text-center ${
-                darkMode ? "text-white" : "text-gray-900"
-              }`}
-            >
-              Your campus life, but <span className="italic">way</span> better
-            </h1>
-          </div>
-
-          <p className={`mb-8 md:mb-10 text-base md:text-xl max-w-2xl mx-auto leading-relaxed ${
-            darkMode ? "text-gray-300" : "text-gray-700"
-          }`}>
-            Tired of walking everywhere? Need textbooks but broke? Looking for that perfect study buddy? 
-            We've got you covered. This is where students actually help each other out.
-          </p>
-
-          {/* More casual, approachable CTAs */}
-          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center mb-6 md:mb-12">
-            <button
-              className={`group px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-xl flex items-center gap-3 relative overflow-hidden ${
-                darkMode 
-                  ? "bg-orange-500 hover:bg-orange-400 text-white" 
-                  : "bg-orange-500 hover:bg-orange-600 text-white"
-              }`}
-              onMouseEnter={(e) => {
-                e.target.style.transform = 'scale(1.05)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.transform = 'scale(1)';
-              }}
-            >
-              <span className="relative z-10">Yeah, let's do this!</span>
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300 relative z-10" />
-            </button>
-            
-            <button
-              className={`group px-8 py-4 rounded-2xl font-semibold border-2 transition-all duration-300 transform hover:scale-105 flex items-center gap-3 ${
-                darkMode 
-                  ? "border-gray-600 text-gray-300 hover:bg-gray-800 hover:border-gray-500" 
-                  : "border-gray-400 text-gray-700 hover:bg-gray-100 hover:border-gray-500"
-              }`}
-            >
-              <span className="relative z-10">Show me how it works</span>
-            </button>
-          </div>
-
-          {/* More realistic mobile stats */}
-          <div className="grid grid-cols-2 gap-3 md:hidden max-w-md mx-auto mt-4">
-            {[
-              { label: 'Rides shared', count: '2.1k' },
-              { label: 'Items sold', count: '847' },
-              { label: 'Rooms found', count: '203' },
-              { label: 'Notes shared', count: '512' },
-            ].map((s, i) => (
-              <div key={i} className={`${darkMode ? 'bg-gray-800/70 text-gray-200 border-gray-700' : 'bg-white/80 text-gray-800 border-gray-200'} border rounded-xl py-3 px-4 flex items-center justify-between backdrop-blur-sm`}> 
-                <span className="text-xs opacity-80">{s.label}</span>
-                <span className={`${darkMode ? 'text-orange-400' : 'text-orange-600'} font-semibold`}>{s.count}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Static Feature Showcase (desktop/tablet only) */}
-          <div className="hidden md:grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {features.map((feature, idx) => {
-              const IconComponent = feature.icon;
-              const isHovered = idx === hoveredFeature;
-              return (
-                <div
-                  key={idx}
-                  className={`group relative p-6 rounded-2xl backdrop-blur-md border transition-all duration-300 cursor-pointer transform hover:scale-105 ${
-                    isHovered 
-                      ? (darkMode ? "bg-gray-800/80 border-yellow-300/50 shadow-2xl" : "bg-white/80 border-blue-500/50 shadow-2xl")
-                      : (darkMode ? "bg-gray-800/40 border-gray-700/50 hover:bg-gray-800/60" : "bg-white/40 border-gray-200/50 hover:bg-white/60")
-                  }`}
-                  onMouseEnter={() => setHoveredFeature(idx)}
-                  onMouseLeave={() => setHoveredFeature(null)}
-                >
-                  {/* Gradient Background */}
-                  <div 
-                    className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-300 bg-gradient-to-br ${feature.color}`}
-                  />
-                  
-                  <div className="relative z-10 flex flex-col items-center text-center">
-                    <div className={`mb-3 p-3 rounded-full transition-all duration-300 ${
-                      isHovered 
-                        ? `bg-gradient-to-br ${feature.color} text-white shadow-lg` 
-                        : (darkMode ? 'bg-gray-700 text-yellow-300' : 'bg-gray-100 text-blue-600')
-                    }`}>
-                      <IconComponent className="w-6 h-6" />
-                    </div>
-                    
-                    <div className={`text-2xl font-bold mb-1 transition-colors duration-300 ${
-                      isHovered 
-                        ? (darkMode ? 'text-yellow-300' : 'text-blue-600')
-                        : (darkMode ? 'text-gray-300' : 'text-gray-700')
-                    }`}>
-                      {feature.count}
-                    </div>
-                    
-                    <div className={`text-sm font-medium mb-1 ${
-                      darkMode ? 'text-gray-300' : 'text-gray-700'
-                    }`}>
-                      {feature.label}
-                    </div>
-                    
-                    <div className={`text-xs opacity-75 ${
-                      darkMode ? 'text-gray-400' : 'text-gray-600'
-                    }`}>
-                      {feature.description}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Enhanced interactive scroll indicator */}
-        <div 
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 cursor-pointer group animate-bounce-slow transition-all duration-500 ease-in-out"
-          onClick={scrollToMain}
-          style={{
-            opacity: 1 - scrollProgress,
-          }}
-        >
-          <div className={`p-4 rounded-full border-2 transition-all duration-300 group-hover:scale-110 group-active:scale-95 ${
-            darkMode 
-              ? 'border-yellow-300/50 text-yellow-300 group-hover:border-yellow-300 group-hover:bg-yellow-300/10' 
-              : 'border-blue-500/50 text-blue-500 group-hover:border-blue-500 group-hover:bg-blue-500/10'
-          }`}>
-            <ChevronDown className="w-6 h-6" />
-          </div>
-        </div>
-      </section>
+  {/* SLIDER SECTION (replacing previous hero) */}
+  <HeroSlider darkMode={darkMode} />
 
       {/* ENHANCED MAIN SECTION */}
   <div ref={mainRef} className="-mt-2 md:mt-0">

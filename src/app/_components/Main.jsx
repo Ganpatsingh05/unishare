@@ -207,28 +207,11 @@ const Main = ({ darkMode, isVisible = false }) => {
           }`} />
         </div>
 
-        <h2 
-          className={`text-4xl md:text-5xl font-bold mb-6 transition-all duration-1000 ${
-            darkMode ? 'text-white' : 'text-gray-900'
-          }`}
-          style={{
-            opacity: isVisible ? 1 : 0,
-            transform: isVisible ? 'translateY(0)' : 'translateY(40px)',
-            transition: 'all 0.8s ease-out 0.4s'
-          }}
-        >
-          Everything You Need for{' '}
-          <span className={`${darkMode ? 'text-yellow-300' : 'text-blue-600'} relative`}>
-            Campus Life
-            <div className={`absolute -bottom-2 left-0 w-full h-1 rounded-full ${
-              darkMode ? 'bg-yellow-300/30' : 'bg-blue-600/30'
-            } transition-all duration-1000 ${isVisible ? 'scale-x-100' : 'scale-x-0'}`} />
-          </span>
-        </h2>
+  {/* Heading removed as requested */}
         
         <p 
-          className={`text-lg md:text-xl mb-8 max-w-3xl mx-auto leading-relaxed ${
-            darkMode ? 'text-gray-300' : 'text-gray-600'
+          className={`text-2xl md:text-3xl mb-8 max-w-3xl mx-auto leading-relaxed font-semibold italic tracking-wide ${
+            darkMode ? 'text-blue-200' : 'text-blue-700'
           }`}
           style={{
             opacity: isVisible ? 1 : 0,
@@ -236,8 +219,7 @@ const Main = ({ darkMode, isVisible = false }) => {
             transition: 'all 0.8s ease-out 0.6s'
           }}
         >
-          Discover all the amazing features and services available in your campus community. 
-          From sharing rides to finding study materials, we've got everything you need to thrive.
+          Explore campus life with rides, study materials, and more—all in one place.
         </p>
         
         {/* Enhanced Interactive Search Bar */}

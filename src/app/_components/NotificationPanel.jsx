@@ -16,6 +16,7 @@ import { Bell, CheckCheck, Trash2, MessageCircle, Megaphone, AlertTriangle, Info
 export default function NotificationPanel({ open, onClose, darkMode, notifications, setNotifications }) {
   const [filter, setFilter] = useState('All'); // 'All' | 'Unread'
   const panelRef = useRef(null);
+  const [removing, setRemoving] = useState({}); // id => true while animating out
 
   // Close on ESC
   useEffect(() => {
@@ -47,7 +48,12 @@ export default function NotificationPanel({ open, onClose, darkMode, notificatio
   };
 
   const removeItem = (id) => {
-    setNotifications((prev) => prev.filter(n => n.id !== id));
+    setRemoving((r) => ({ ...r, [id]: true }));
+    // Wait for swipe-out animation then remove
+    setTimeout(() => {
+      setNotifications((prev) => prev.filter(n => n.id !== id));
+      setRemoving((r) => { const { [id]: _, ...rest } = r; return rest; });
+    }, 220);
   };
 
   const TypeIcon = ({ type, className }) => {
@@ -67,7 +73,7 @@ export default function NotificationPanel({ open, onClose, darkMode, notificatio
     <div className="fixed inset-0 z-[60] md:z-50" aria-modal="true" role="dialog">
       {/* Overlay */}
       <div
-        className={`absolute inset-0 transition-opacity duration-200 ${darkMode ? 'bg-black/60' : 'bg-black/40'}`}
+        className={`absolute inset-0 ${darkMode ? 'bg-black/60' : 'bg-black/40'} animate-fade-in-up`}
         onClick={onClose}
       />
 
@@ -76,7 +82,7 @@ export default function NotificationPanel({ open, onClose, darkMode, notificatio
         ref={panelRef}
         className={`md:hidden absolute inset-x-0 bottom-0 rounded-t-2xl shadow-2xl border-t max-h-[85vh] flex flex-col overflow-hidden ${
           darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'
-        }`}
+        } animate-slide-up-soft`}
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         {/* Grab handle */}
@@ -112,16 +118,18 @@ export default function NotificationPanel({ open, onClose, darkMode, notificatio
         </div>
 
         {/* List */}
-  <div className="px-2 pb-4 flex-1 overflow-y-auto">
+        <div className="px-2 pb-4 flex-1 overflow-y-auto">
           {list.length === 0 ? (
             <div className={`text-center text-sm py-12 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>No notifications</div>
           ) : (
             <ul className="space-y-2">
-              {list.map((n) => (
-                <li key={n.id}
-                  className={`flex items-start gap-3 px-3 py-3 rounded-xl border transition-colors ${
-                    darkMode ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'
-                  }`}
+              {list.map((n, idx) => (
+                <li
+                  key={n.id}
+                  className={`flex items-start gap-3 px-3 py-3 rounded-xl border transition-all duration-200 ${
+                    darkMode ? 'bg-gray-900 border-gray-800 hover:bg-gray-800 active:scale-[0.995]' : 'bg-white border-gray-200 hover:bg-gray-50 active:scale-[0.995]'
+                  } ${removing[n.id] ? 'animate-swipe-out' : 'animate-item-in'}`}
+                  style={{ animationDelay: `${Math.min(idx * 40, 240)}ms` }}
                 >
                   <div className={`mt-0.5 p-2 rounded-lg ${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-gray-100 text-gray-700'}`}>
                     <TypeIcon type={n.type} />
@@ -141,7 +149,7 @@ export default function NotificationPanel({ open, onClose, darkMode, notificatio
                   </div>
                   <button
                     onClick={() => removeItem(n.id)}
-                    className={`self-start p-2 rounded-md ${darkMode ? 'text-gray-400 hover:bg-gray-800 hover:text-red-300' : 'text-gray-500 hover:bg-gray-100 hover:text-red-600'}`}
+                    className={`self-start p-2 rounded-md ${darkMode ? 'text-gray-400 hover:bg-gray-800 hover:text-red-300' : 'text-gray-500 hover:bg-gray-100 hover:text-red-600'} transition-transform active:scale-95`}
                     aria-label="Remove"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -164,7 +172,7 @@ export default function NotificationPanel({ open, onClose, darkMode, notificatio
 
       {/* Desktop dropdown */}
       <div className="hidden md:block absolute right-4 top-24">
-        <div className={`w-[22rem] rounded-2xl shadow-2xl border overflow-hidden ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'}`}>
+        <div className={`w-[22rem] rounded-2xl shadow-2xl border overflow-hidden ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'} animate-dropdown-in`}>
           <div className="px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bell className={`w-5 h-5 ${darkMode ? 'text-yellow-300' : 'text-blue-600'}`} />
@@ -185,8 +193,12 @@ export default function NotificationPanel({ open, onClose, darkMode, notificatio
               <div className={`text-center text-sm py-10 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>No notifications</div>
             ) : (
               <ul className="space-y-2">
-                {list.map((n) => (
-                  <li key={n.id} className={`flex items-start gap-3 px-3 py-3 rounded-xl border transition-colors ${darkMode ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
+                {list.map((n, idx) => (
+                  <li
+                    key={n.id}
+                    className={`flex items-start gap-3 px-3 py-3 rounded-xl border transition-all duration-200 ${darkMode ? 'bg-gray-900 border-gray-800 hover:bg-gray-800 active:scale-[0.995]' : 'bg-white border-gray-200 hover:bg-gray-50 active:scale-[0.995]'} ${removing[n.id] ? 'animate-swipe-out' : 'animate-item-in'}`}
+                    style={{ animationDelay: `${Math.min(idx * 40, 240)}ms` }}
+                  >
                     <div className={`mt-0.5 p-2 rounded-lg ${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-gray-100 text-gray-700'}`}>
                       <TypeIcon type={n.type} />
                     </div>
@@ -201,7 +213,7 @@ export default function NotificationPanel({ open, onClose, darkMode, notificatio
                         <button onClick={() => toggleRead(n.id)} className={`text-xs underline ${darkMode ? 'text-gray-300 hover:text-yellow-300' : 'text-gray-700 hover:text-blue-700'}`}>Mark as {n.read ? 'unread' : 'read'}</button>
                       </div>
                     </div>
-                    <button onClick={() => removeItem(n.id)} className={`self-start p-2 rounded-md ${darkMode ? 'text-gray-400 hover:bg-gray-800 hover:text-red-300' : 'text-gray-500 hover:bg-gray-100 hover:text-red-600'}`} aria-label="Remove">
+                    <button onClick={() => removeItem(n.id)} className={`self-start p-2 rounded-md ${darkMode ? 'text-gray-400 hover:bg-gray-800 hover:text-red-300' : 'text-gray-500 hover:bg-gray-100 hover:text-red-600'} transition-transform active:scale-95`} aria-label="Remove">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </li>
