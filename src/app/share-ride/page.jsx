@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import Image from "next/image";
 import Header from "../_components/Header";
 import Footer from "../_components/Footer";
@@ -19,10 +19,106 @@ import {
   Trash2,
 } from "lucide-react";
 
+// Loading Component
+function LoadingScreen({ onComplete }) {
+  const [progress, setProgress] = useState(0);
+  const [loadingText, setLoadingText] = useState("Loading");
+  const [dots, setDots] = useState("");
+
+  useEffect(() => {
+    // Progress bar animation
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
+          setTimeout(onComplete, 200); // Small delay after 100%
+          return 100;
+        }
+        return prev + 2; // 2% every 100ms = 5 seconds total
+      });
+    }, 100);
+
+    // Animated dots
+    const dotsInterval = setInterval(() => {
+      setDots((prev) => {
+        if (prev.length >= 3) return "";
+        return prev + ".";
+      });
+    }, 500);
+
+    // Loading text variations
+    const textVariations = [
+      "Finding rides",
+      "Loading drivers",
+      "Searching routes",
+      "Almost ready",
+      "Start sharing"
+    ];
+    let textIndex = 0;
+    const textInterval = setInterval(() => {
+      setLoadingText(textVariations[textIndex]);
+      textIndex = (textIndex + 1) % textVariations.length;
+    }, 1000);
+
+    return () => {
+      clearInterval(progressInterval);
+      clearInterval(dotsInterval);
+      clearInterval(textInterval);
+    };
+  }, [onComplete]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900">
+      <div className="relative z-10 text-center">
+        {/* GIF Container - Larger size */}
+        <div className="mb-8 relative">
+          <div className="w-56 h-56 mx-auto mb-4 rounded-3xl overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20 shadow-2xl flex items-center justify-center">
+            <img 
+              src="/rideshare.gif" 
+              alt="RideShare Navigator" 
+              className="w-full h-full object-cover"
+            />
+          </div>
+          {/* Pulsing ring around gif */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-64 h-64 border-2 border-emerald-400/40 rounded-full animate-ping" />
+          </div>
+          {/* Secondary pulsing ring */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-72 h-72 border border-blue-400/30 rounded-full animate-pulse" />
+          </div>
+        </div>
+
+        {/* Loading Text */}
+        <h2 className="text-2xl font-bold text-white mb-2">
+          {loadingText}{dots}
+        </h2>
+        <p className="text-blue-100 mb-8 text-sm">
+          Connecting riders and drivers...
+        </p>
+
+        {/* Progress Bar */}
+        <div className="w-64 mx-auto">
+          <div className="bg-white/20 rounded-full h-2 overflow-hidden backdrop-blur-sm">
+            <div 
+              className="bg-gradient-to-r from-emerald-400 via-blue-400 to-purple-400 h-full rounded-full transition-all duration-100 ease-out shadow-lg"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <div className="mt-2 text-white/80 text-xs font-medium">
+            {progress}%
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ShareRidePage() {
   const [darkMode, setDarkMode] = useState(true);
   const [mode, setMode] = useState("find"); // 'find' | 'offer'
   const [heroSrc, setHeroSrc] = useState("/assets/images/rideunishare.png");
+  const [isLoading, setIsLoading] = useState(true);
 
   // Common styles
   const labelClr = darkMode ? "text-gray-300" : "text-gray-700";
@@ -46,6 +142,8 @@ export default function ShareRidePage() {
   const [ofPrice, setOfPrice] = useState("");
   const [vehicle, setVehicle] = useState("");
   const [contacts, setContacts] = useState([{ id: 1, type: "mobile", value: "" }]);
+
+  const handleLoadingComplete = () => setIsLoading(false);
 
   const iconForType = (type) => {
     switch (type) {
@@ -134,6 +232,11 @@ export default function ShareRidePage() {
       return inFrom && inTo && inDate && inSeats;
     });
   }, [rides, fromLoc, toLoc, date, seatsNeeded]);
+
+  // Show loading screen
+  if (isLoading) {
+    return <LoadingScreen onComplete={handleLoadingComplete} />;
+  }
 
   return (
     <div
