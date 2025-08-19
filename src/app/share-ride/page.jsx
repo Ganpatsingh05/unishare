@@ -10,13 +10,13 @@ import {
   Calendar,
   Clock,
   Users,
-  DollarSign,
   Phone,
   Instagram,
   Mail,
   Link2,
   Plus,
   Trash2,
+  IndianRupee,
 } from "lucide-react";
 
 // Loading Component
@@ -166,7 +166,7 @@ export default function ShareRidePage() {
       case "instagram":
         return "@username";
       case "email":
-        return "name@university.edu";
+        return "example@gmail.com";
       case "link":
         return "https://...";
       default:
@@ -179,31 +179,31 @@ export default function ShareRidePage() {
     () => [
       {
         id: 1,
-        driver: "Aman",
-        from: "Hostel A",
-        to: "Main Gate",
-        date: "2025-08-16",
+        driver: "Sumanth Jupudi",
+        from: "BH3 Maingate",
+        to: "LawGate to meet Balaji",
+        date: "2025-08-20",
         time: "09:00",
         seats: 3,
         price: 60,
       },
       {
         id: 2,
-        driver: "Priya",
-        from: "CS Block",
-        to: "City Center",
-        date: "2025-08-16",
-        time: "18:30",
+        driver: "Balaji",
+        from: "LawGate",
+        to: "BH3 Maingate to meet jupudi",
+        date: "2025-08-20",
+        time: "8:30",
         seats: 2,
         price: 120,
       },
       {
         id: 3,
-        driver: "Rahul",
-        from: "Library",
-        to: "Railway Station",
-        date: "2025-08-15",
-        time: "20:00",
+        driver: "Teja",
+        from: "LawGate ",
+        to: "LPU Library (to meet GF)",
+        date: "2025-08-20",
+        time: "9:00",
         seats: 1,
         price: 200,
       },
@@ -467,7 +467,7 @@ export default function ShareRidePage() {
                           </div>
                           <div className="mt-2 flex items-center justify-between">
                             <div className="inline-flex items-center gap-1 text-emerald-500 font-semibold">
-                              <DollarSign size={16} /> {r.price} / seat
+                              <IndianRupee size={16} /> {r.price} / seat
                             </div>
                             <div
                               className={`${
@@ -572,7 +572,7 @@ export default function ShareRidePage() {
                     Price per seat
                   </label>
                   <div className="relative">
-                    <DollarSign className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <IndianRupee className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
                       value={ofPrice}
                       onChange={(e) => setOfPrice(e.target.value.replace(/[^0-9]/g, ""))}

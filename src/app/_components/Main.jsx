@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Car, ShoppingCart, Tag, Search, Star, Home, Megaphone, BookOpen, Phone, Users, RotateCw, CheckCircle, Filter, TrendingUp, Zap } from 'lucide-react';
 import Image from 'next/image';
 import logoImage from '../assets/images/logounishare1.png';
+import MobileMain from "./mobilemain";
 
 // Animated Counter Component
 const AnimatedCounter = ({ end, duration = 2000, isVisible, suffix = "" }) => {
@@ -135,6 +136,27 @@ const Main = ({ darkMode, isVisible = false }) => {
   const [animatedStats, setAnimatedStats] = useState(false);
   const [clickedSection, setClickedSection] = useState(null);
   const [activeFilter, setActiveFilter] = useState('All');
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Mobile detection
+  useEffect(() => {
+    const checkIsMobile = () => {
+      const width = window.innerWidth;
+      const isMobileDevice = width < 768; // md breakpoint
+      setIsMobile(isMobileDevice);
+    };
+
+    // Check on mount
+    checkIsMobile();
+
+    // Add resize listener
+    const handleResize = () => {
+      checkIsMobile();
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Filter sections based on search term and active filter
   useEffect(() => {
@@ -178,6 +200,12 @@ const Main = ({ darkMode, isVisible = false }) => {
     setTimeout(() => setClickedSection(null), 200);
   };
 
+  // Return mobile component if mobile detected
+  if (isMobile) {
+    return <MobileMain darkMode={darkMode} isVisible={isVisible} />;
+  }
+
+  // Desktop version (original implementation)
   return (
     <main className="max-w-6xl mx-auto px-4 pt-8 md:pt-16 pb-16">
       {/* Enhanced Interactive Header with Scroll Animations */}
