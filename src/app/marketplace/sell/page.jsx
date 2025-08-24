@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Header from "../../_components/Header";
 import Footer from "../../_components/Footer";
-import { Calendar, Image as ImageIcon, DollarSign, Tag, MapPin, Phone, Instagram, Mail, Link2, Plus, Trash2 } from "lucide-react";
+import { Calendar, Image as ImageIcon, DollarSign, Tag, MapPin, Phone, Instagram, Mail, Link2, Plus, Trash2, IndianRupee } from "lucide-react";
 
 export default function MarketplaceSellPage() {
   const [darkMode, setDarkMode] = useState(true);
@@ -61,7 +61,7 @@ export default function MarketplaceSellPage() {
             <div>
               <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Price</label>
               <div className="relative">
-                <DollarSign className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <IndianRupee className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input value={price} onChange={(e) => setPrice(e.target.value.replace(/[^0-9]/g, ''))} placeholder="1000" className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`} />
               </div>
             </div>

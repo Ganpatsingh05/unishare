@@ -71,12 +71,6 @@ export default function NotificationPanel({ open, onClose, darkMode, notificatio
 
   return (
     <div className="fixed inset-0 z-[60] md:z-50" aria-modal="true" role="dialog">
-      {/* Overlay */}
-      <div
-        className={`absolute inset-0 ${darkMode ? 'bg-black/60' : 'bg-black/40'} animate-fade-in-up`}
-        onClick={onClose}
-      />
-
       {/* Mobile bottom sheet */}
       <div
         ref={panelRef}

@@ -65,7 +65,7 @@ const sections = [
   },
   {
     title: 'Sell Items',
-    description: 'Sell unused items quickly.',
+    description: 'Sell unused and unused items quickly.',
     icon: <Tag className="w-6 h-6" />,
     href: '/marketplace/sell',
     color: 'from-purple-500 to-violet-500',
@@ -74,7 +74,7 @@ const sections = [
   },
   {
     title: 'Find Housing',
-    description: 'Discover rooms & its mates',
+    description: 'Discover rooms & Roomates',
     icon: <Home className="w-6 h-6" />,
     href: '/housing',
     color: 'from-orange-500 to-red-500',
@@ -88,10 +88,10 @@ const sections = [
     href: '/lost-found/report',
     color: 'from-indigo-500 to-blue-500',
     category: 'community',
-    keyFeature: 'AI matching'
+    keyFeature: 'Easy Reporting'
   },
   {
-    title: 'Found Items',
+    title: 'View Found Items',
     description: 'Browse found items to claim.',
     icon: <CheckCircle className="w-6 h-6" />,
     href: '/lost-found/view-found',
@@ -180,9 +180,9 @@ const MobileMain = ({ darkMode, isVisible = false }) => {
     const diff = touchStartY - touchEndY;
     
     // Subtle haptic feedback on scroll (if supported)
-    if (Math.abs(diff) > 50 && 'vibrate' in navigator) {
-      navigator.vibrate(50);
-    }
+    // if (Math.abs(diff) > 50 && 'vibrate' in navigator) {
+    //   navigator.vibrate(50);
+    // }
   };
 
   return (
@@ -215,7 +215,7 @@ const MobileMain = ({ darkMode, isVisible = false }) => {
         </div>
 
         <p 
-          className={`text-lg mb-6 px-2 leading-relaxed font-medium ${
+          className={`text-lg mb-6 px-2 leading-relaxed font-bold italic ${
             darkMode ? 'text-blue-200' : 'text-blue-700'
           }`}
         >

@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 import Header from "../../_components/Header";
 import Footer from "../../_components/Footer";
-import { Search, SlidersHorizontal, Tag, MapPin, DollarSign, Star, ArrowUpDown, Image as ImageIcon } from "lucide-react";
+import { Search, SlidersHorizontal, Tag, MapPin, DollarSign, Star, ArrowUpDown, Image as ImageIcon, IndianRupee } from "lucide-react";
 
 export default function MarketplaceBuyPage() {
   const [darkMode, setDarkMode] = useState(true);
@@ -95,14 +95,14 @@ export default function MarketplaceBuyPage() {
             <div className="col-span-1">
               <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Min Price</label>
               <div className="relative">
-                <DollarSign className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <IndianRupee className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input value={minPrice} onChange={(e) => setMinPrice(e.target.value.replace(/[^0-9]/g, ''))} placeholder="0" className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`} />
               </div>
             </div>
             <div className="col-span-1">
               <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Max Price</label>
               <div className="relative">
-                <DollarSign className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <IndianRupee className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input value={maxPrice} onChange={(e) => setMaxPrice(e.target.value.replace(/[^0-9]/g, ''))} placeholder="5000" className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`} />
               </div>
             </div>
@@ -145,7 +145,7 @@ export default function MarketplaceBuyPage() {
                     </div>
                     <div className="mt-2 flex items-center justify-between">
                       <div className="inline-flex items-center gap-1 text-emerald-500 font-semibold">
-                        <DollarSign size={16} /> {it.price}
+                        <IndianRupee size={16} /> {it.price}
                       </div>
                       <div className={`text-xs inline-flex items-center gap-1 ${subClr}`}>
                         <Star size={14} className="text-yellow-400" /> {it.rating}

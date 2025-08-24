@@ -14,11 +14,14 @@ import {
   ChevronDown,
   Megaphone,
   X,
+  ChevronRight,
+  CheckCircle,
 } from "lucide-react";
 import Header from "./_components/Header";
 import Main from "./_components/Main";
 import HeroSlider from "./_components/HeroSlider";
 import Footer from "./_components/Footer";
+import FloatingActionButton from "./_components/FloatingActionButton"; // Add this import
 
 /**
  * Page component with interactive hero section and enhanced scroll effects
@@ -34,6 +37,11 @@ export default function Page() {
   const [visibleStats, setVisibleStats] = useState([]);
   const [logoRotation, setLogoRotation] = useState(0);
   const [noticeVisible, setNoticeVisible] = useState(true);
+  
+  // Interactive How It Works states
+  const [activeStep, setActiveStep] = useState(0);
+  const [visibleSteps, setVisibleSteps] = useState([]);
+  const [isMobile, setIsMobile] = useState(false);
   
   const heroRef = useRef(null);
   const mainRef = useRef(null);
@@ -77,7 +85,49 @@ export default function Page() {
     },
   ];
 
+  // Enhanced How It Works steps
+  const howItWorksSteps = [
+    {
+      step: "01",
+      title: "Sign Up (Obviously)",
+      shortTitle: "Sign Up",
+      description: "Use your university email to join. We'll verify you're actually a student and not some weird bot.",
+      mobileDescription: "Quick uni email verification - takes 30 seconds max",
+      icon: User,
+      color: "from-blue-500 to-cyan-500",
+      features: ["University email required", "Instant verification", "Student-only access"]
+    },
+    {
+      step: "02", 
+      title: "Browse & Connect",
+      shortTitle: "Browse",
+      description: "Check out what's available around campus. Found something interesting? Hit up the person who posted it.",
+      mobileDescription: "Swipe through campus listings and connect instantly",
+      icon: Search,
+      color: "from-purple-500 to-pink-500",
+      features: ["Real-time listings", "Campus-wide search", "Direct messaging"]
+    },
+    {
+      step: "03",
+      title: "Start Sharing",
+      shortTitle: "Share",
+      description: "Post your own stuff, offer rides, find study buddies. The more you share, the more you save.",
+      mobileDescription: "Post anything - rides, stuff, rooms. Build your campus network",
+      icon: Heart,
+      color: "from-green-500 to-emerald-500",
+      features: ["Easy posting", "Build reputation", "Save money together"]
+    }
+  ];
+
   useEffect(() => {
+    // Check if mobile
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
     // Smooth, throttled scroll/mouse handlers using requestAnimationFrame
     const ticking = { scroll: false, mouse: false };
 
@@ -112,6 +162,15 @@ export default function Page() {
               setVisibleStats([0, 1, 2, 3]);
             }
           }
+
+          // Check How It Works steps visibility
+          const stepElements = document.querySelectorAll('[data-step]');
+          stepElements.forEach((el, index) => {
+            const rect = el.getBoundingClientRect();
+            if (rect.top < windowHeight * 0.8 && !visibleSteps.includes(index)) {
+              setVisibleSteps(prev => [...prev, index].sort());
+            }
+          });
 
           ticking.scroll = false;
         });
@@ -154,14 +213,15 @@ export default function Page() {
     }));
     setParticles(p);
 
-  // Initial scroll position check
-  onScroll();
+    // Initial scroll position check
+    onScroll();
 
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener('resize', checkMobile);
     };
-  }, [visibleStats.length]);
+  }, [visibleStats.length, visibleSteps]);
 
   const handleThemeToggle = () => setDarkMode((prev) => !prev);
 
@@ -170,6 +230,147 @@ export default function Page() {
       behavior: 'smooth',
       block: 'start'
     });
+  };
+
+  const handleStepClick = (index) => {
+    setActiveStep(activeStep === index ? -1 : index);
+  };
+
+  const StepCard = ({ step, index, isActive, isVisible }) => {
+    const IconComponent = step.icon;
+    const isCompleted = index < activeStep || (isMobile && visibleSteps.includes(index));
+    
+    return (
+      <div 
+        data-step={index}
+        className={`relative group cursor-pointer transition-all duration-500 ${
+          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+        }`}
+        onClick={() => isMobile && handleStepClick(index)}
+        style={{ transitionDelay: `${index * 150}ms` }}
+      >
+        {/* Mobile: Card style */}
+        {isMobile ? (
+          <div className={`relative overflow-hidden rounded-2xl border-2 transition-all duration-300 ${
+            isActive 
+              ? `border-transparent bg-gradient-to-r ${step.color}` 
+              : darkMode 
+                ? 'border-gray-700 bg-gray-800/50 hover:border-gray-600' 
+                : 'border-gray-200 bg-white hover:border-gray-300'
+          }`}>
+            {/* Background animation */}
+            <div className={`absolute inset-0 bg-gradient-to-r ${step.color} opacity-0 transition-opacity duration-300 ${
+              isActive ? 'opacity-100' : 'group-hover:opacity-10'
+            }`} />
+            
+            <div className="relative p-6">
+              <div className="flex items-start gap-4">
+                {/* Step indicator */}
+                <div className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold transition-all duration-300 ${
+                  isActive 
+                    ? 'bg-white text-gray-900 shadow-lg' 
+                    : `bg-gradient-to-r ${step.color} text-white`
+                }`}>
+                  {isCompleted && isActive ? (
+                    <CheckCircle className="w-6 h-6" />
+                  ) : (
+                    step.step
+                  )}
+                </div>
+
+                <div className="flex-1">
+                  <h3 className={`text-lg font-bold mb-2 transition-colors duration-300 ${
+                    isActive 
+                      ? 'text-white' 
+                      : darkMode 
+                        ? 'text-white' 
+                        : 'text-gray-900'
+                  }`}>
+                    {step.shortTitle}
+                  </h3>
+                  <p className={`text-sm leading-relaxed transition-colors duration-300 ${
+                    isActive 
+                      ? 'text-white/90' 
+                      : darkMode 
+                        ? 'text-gray-300' 
+                        : 'text-gray-600'
+                  }`}>
+                    {step.mobileDescription}
+                  </p>
+                </div>
+
+                <ChevronRight className={`w-5 h-5 transition-all duration-300 ${
+                  isActive 
+                    ? 'text-white transform rotate-90' 
+                    : darkMode 
+                      ? 'text-gray-400 group-hover:text-gray-300' 
+                      : 'text-gray-400 group-hover:text-gray-600'
+                }`} />
+              </div>
+
+              {/* Expanded content */}
+              <div className={`overflow-hidden transition-all duration-300 ${
+                isActive ? 'max-h-32 opacity-100 mt-4' : 'max-h-0 opacity-0'
+              }`}>
+                <div className="space-y-2">
+                  {step.features.map((feature, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                      <span className="text-white/80 text-sm">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Progress indicator */}
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-white/20">
+              <div 
+                className={`h-full bg-white transition-all duration-500 ${
+                  isActive ? 'w-full' : 'w-0'
+                }`} 
+              />
+            </div>
+          </div>
+        ) : (
+          /* Desktop: Enhanced original style */
+          <div className="relative group">
+            <div className={`absolute inset-0 bg-gradient-to-r ${step.color} rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300`} />
+            <div className={`relative p-8 rounded-2xl border transition-all duration-300 group-hover:transform group-hover:scale-105 ${
+              darkMode 
+                ? 'bg-gray-800/80 border-gray-700 hover:border-gray-600' 
+                : 'bg-white border-gray-200 hover:border-gray-300'
+            }`}>
+              <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r ${step.color} text-white text-2xl font-bold mb-6`}>
+                {step.step}
+              </div>
+              <div className="mb-4">
+                <IconComponent className={`w-8 h-8 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+              </div>
+              <h3 className={`text-2xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                {step.title}
+              </h3>
+              <p className={`text-lg leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                {step.description}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Connection line for mobile */}
+        {isMobile && index < howItWorksSteps.length - 1 && (
+          <div className="flex justify-center py-3">
+            <div className={`w-0.5 h-8 rounded-full transition-all duration-500 ${
+              visibleSteps.includes(index + 1) 
+                ? `bg-gradient-to-b ${step.color}` 
+                : darkMode 
+                  ? 'bg-gray-700' 
+                  : 'bg-gray-300'
+            }`} />
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -211,140 +412,75 @@ export default function Page() {
         </div>
       )}
 
-            <Header darkMode={darkMode} onThemeToggle={handleThemeToggle} logoRotation={logoRotation} />
+      <Header darkMode={darkMode} onThemeToggle={handleThemeToggle} logoRotation={logoRotation} />
 
-  {/* SLIDER SECTION (replacing previous hero) */}
-  <HeroSlider darkMode={darkMode} />
+      {/* SLIDER SECTION (replacing previous hero) */}
+      <HeroSlider darkMode={darkMode} />
 
       {/* ENHANCED MAIN SECTION */}
-  <div ref={mainRef} className="-mt-2 md:mt-0">
+      <div ref={mainRef} className="-mt-2 md:mt-0">
         <Main darkMode={darkMode} isVisible={isMainVisible} scrollProgress={scrollProgress} />
       </div>
 
-      {/* Additional Content Sections */}
-      
-      {/* How It Works Section */}
-      <section className={`py-20 transition-all duration-300 ${
+      {/* Interactive How It Works Section */}
+      <section className={`py-16 md:py-20 transition-all duration-300 ${
         darkMode ? 'bg-gray-900' : 'bg-gray-50'
       }`}>
         <div className="max-w-6xl mx-auto px-4">
-          {/* More conversational "How It Works" */}
-          <div className="text-center mb-16">
-            <h2 className={`text-4xl font-bold mb-6 ${
-              darkMode ? 'text-white' : 'text-gray-900'
-            }`}>
-              How does this actually work?
-            </h2>
-            <p className={`text-xl max-w-2xl mx-auto ${
+          {/* Header */}
+          <div className="text-center mb-12 md:mb-16">
+            <div className="relative inline-block">
+              <h2 className={`text-3xl md:text-4xl font-bold mb-6 ${
+                darkMode ? 'text-white' : 'text-gray-900'
+              }`}>
+                How does this actually work?
+              </h2>
+              <div className={`absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-1 rounded-full bg-gradient-to-r from-blue-500 to-purple-500`} />
+            </div>
+            <p className={`text-lg md:text-xl max-w-2xl mx-auto mt-6 ${
               darkMode ? 'text-gray-300' : 'text-gray-600'
             }`}>
-              Don't worry, it's super simple. Literally takes like 2 minutes to get started, and then you're in.
+              {isMobile 
+                ? "Tap each step below to see how easy it is"
+                : "Don't worry, it's super simple. Literally takes like 2 minutes to get started, and then you're in."
+              }
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                step: "01",
-                title: "Sign Up (Obviously)",
-                description: "Use your university email to join. We'll verify you're actually a student and not some weird bot.",
-                icon: User,
-                color: "from-blue-500 to-cyan-500"
-              },
-              {
-                step: "02", 
-                title: "Browse & Connect",
-                description: "Check out what's available around campus. Found something interesting? Hit up the person who posted it.",
-                icon: Search,
-                color: "from-purple-500 to-pink-500"
-              },
-              {
-                step: "03",
-                title: "Start Sharing",
-                description: "Post your own stuff, offer rides, find study buddies. The more you share, the more you save.",
-                icon: Heart,
-                color: "from-green-500 to-emerald-500"
-              }
-            ].map((step, index) => {
-              const IconComponent = step.icon;
-              return (
-                <div key={index} className="relative group">
-                  <div className={`absolute inset-0 bg-gradient-to-r ${step.color} rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300`} />
-                  <div className={`relative p-8 rounded-2xl border transition-all duration-300 group-hover:transform group-hover:scale-105 ${
-                    darkMode 
-                      ? 'bg-gray-800/80 border-gray-700 hover:border-gray-600' 
-                      : 'bg-white border-gray-200 hover:border-gray-300'
-                  }`}>
-                    <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r ${step.color} text-white text-2xl font-bold mb-6`}>
-                      {step.step}
-                    </div>
-                    <div className="mb-4">
-                      <IconComponent className={`w-8 h-8 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
-                    </div>
-                    <h3 className={`text-2xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                      {step.title}
-                    </h3>
-                    <p className={`text-lg leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                      {step.description}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-
-
-      {/* Campus Partners Section */}
-      <section className={`py-20 transition-all duration-300 ${
-        darkMode ? 'bg-gray-900' : 'bg-gray-50'
-      }`}>
-        <div className="max-w-6xl mx-auto px-4 text-center">
-          <h2 className={`text-4xl font-bold mb-6 ${
-            darkMode ? 'text-white' : 'text-gray-900'
-          }`}>
-            Yeah, we're at a bunch of schools
-          </h2>
-          <p className={`text-xl mb-12 max-w-2xl mx-auto ${
-            darkMode ? 'text-gray-300' : 'text-gray-600'
-          }`}>
-            Started small, but turns out students everywhere wanted this. Now we're helping out at universities across the country.
-          </p>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-            {[
-              { name: "Stanford", students: "2.1k" },
-              { name: "MIT", students: "1.8k" },
-              { name: "Harvard", students: "2.3k" },
-              { name: "UCLA", students: "1.9k" }
-            ].map((university, index) => (
-              <div key={index} className={`p-6 rounded-xl transition-all duration-300 hover:transform hover:scale-105 ${
-                darkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:bg-gray-50'
-              }`}>
-                <div className={`text-3xl font-bold mb-2 ${
-                  darkMode ? 'text-orange-400' : 'text-orange-600'
-                }`}>
-                  {university.students}
-                </div>
-                <div className={`font-medium ${
-                  darkMode ? 'text-gray-300' : 'text-gray-700'
-                }`}>
-                  {university.name} students
-                </div>
-              </div>
+          {/* Steps */}
+          <div className={`${isMobile ? 'space-y-0' : 'grid grid-cols-3 gap-8'}`}>
+            {howItWorksSteps.map((step, index) => (
+              <StepCard
+                key={index}
+                step={step}
+                index={index}
+                isActive={activeStep === index}
+                isVisible={visibleSteps.includes(index)}
+              />
             ))}
           </div>
 
-          <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full ${
-            darkMode 
-              ? 'bg-green-500/20 text-green-300 border border-green-500/30' 
-              : 'bg-green-100 text-green-700 border border-green-200'
-          }`}>
-            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-            About 500+ new students join every week (not bad, right?)
-          </div>
+          {/* Mobile: Progress indicator */}
+          {isMobile && (
+            <div className="mt-8 flex justify-center">
+              <div className="flex gap-2">
+                {howItWorksSteps.map((step, index) => (
+                  <button
+                    key={index}
+                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                      visibleSteps.includes(index)
+                        ? `bg-gradient-to-r ${step.color}` 
+                        : darkMode 
+                          ? 'bg-gray-700' 
+                          : 'bg-gray-300'
+                    }`}
+                    onClick={() => setActiveStep(index)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
         </div>
       </section>
 
@@ -391,6 +527,9 @@ export default function Page() {
       </section>
 
       <Footer darkMode={darkMode} />
+
+      {/* Floating Action Button */}
+      <FloatingActionButton darkMode={darkMode} />
       
       <style jsx>{`
         @keyframes bounce-slow {

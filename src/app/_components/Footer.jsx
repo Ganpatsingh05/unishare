@@ -51,25 +51,22 @@ const Footer = ({ darkMode }) => {
 
   const footerLinks = {
     platform: [
-      { name: 'Find Rides', href: '/rides', icon: Car },
-      { name: 'Buy & Sell', href: '/marketplace', icon: ShoppingBag },
-      { name: 'Find Rooms', href: '/accommodation', icon: Home },
-      { name: 'Study Materials', href: '/study', icon: BookOpen },
-      { name: 'Community', href: '/community', icon: MessageCircle }
+      { name: 'Find Rides', href: '/share-ride', icon: Car },
+      { name: 'Buy & Sell', href: '/marketplace/buy', icon: ShoppingBag },
+      { name: 'Find Rooms', href: '/housing', icon: Home },
+      { name: 'Study Materials', href: '/resources', icon: BookOpen },
+      { name: 'Community contacts', href: '/contacts', icon: MessageCircle }
     ],
     support: [
-      { name: 'Help Center', href: '/help' },
-      { name: 'Safety Guidelines', href: '/safety' },
-      { name: 'Contact Support', href: '/support' },
-      { name: 'Report Issues', href: '/report' },
-      { name: 'FAQs', href: '/faq' }
+      { name: 'Help Center', href: '/footerpages/help' },
+      { name: 'Safety Guidelines', href: '/footerpages/support-guidelines' },
+      { name: 'Report Issues', href: '/footerpages/report' },
+      { name: 'FAQs', href: '/footerpages/faqs' }
     ],
     company: [
       { name: 'About UniShare', href: '/about' },
       { name: 'Our Mission', href: '/mission' },
-      { name: 'Careers', href: '/careers' },
-      { name: 'Press Kit', href: '/press' },
-      { name: 'Blog', href: '/blog' }
+      { name: 'Careers', href: '/careers' }
     ],
     legal: [
       { name: 'Privacy Policy', href: '/privacy' },
