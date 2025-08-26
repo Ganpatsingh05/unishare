@@ -64,16 +64,16 @@ const Footer = ({ darkMode }) => {
       { name: 'FAQs', href: '/footerpages/faqs' }
     ],
     company: [
-      { name: 'About UniShare', href: '/about' },
-      { name: 'Our Mission', href: '/mission' },
-      { name: 'Careers', href: '/careers' }
+      { name: 'About UniShare', href: '/footerpages/about' },
+      { name: 'Our Mission', href: '/footerpages/mission' },
+      { name: 'Careers', href: '/footerpages/careers' }
     ],
     legal: [
-      { name: 'Privacy Policy', href: '/privacy' },
-      { name: 'Terms of Service', href: '/terms' },
-      { name: 'Cookie Policy', href: '/cookies' },
-      { name: 'Community Guidelines', href: '/guidelines' },
-      { name: 'Data Protection', href: '/data-protection' }
+      { name: 'Privacy Policy', href: '/footerpages/privacy' },
+      { name: 'Terms of Service', href: '/footerpages/terms' },
+      { name: 'Cookie Policy', href: '/footerpages/cookies' },
+      { name: 'Community Guidelines', href: '/footerpages/guidelines' },
+      { name: 'Data Protection', href: '/footerpages/data-protection' }
     ]
   };
 

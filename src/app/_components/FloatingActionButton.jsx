@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { HelpCircle, MessageSquare, X, ChevronUp, Mail, Phone } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const FloatingActionButton = ({ darkMode }) => {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [showFAQ, setShowFAQ] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -303,8 +305,8 @@ const FloatingActionButton = ({ darkMode }) => {
             }`}>
               <span className="text-sm font-medium whitespace-nowrap">FAQs</span>
             </div>
-            <button
-              onClick={() => setShowFAQ(true)}
+              <button
+              onClick={() => router.push('/footerpages/faqs')}
               className={`w-12 h-12 rounded-full shadow-lg transition-all duration-200 transform hover:scale-110 flex items-center justify-center ${
                 darkMode 
                   ? 'bg-blue-600 hover:bg-blue-700 text-white' 
@@ -325,7 +327,7 @@ const FloatingActionButton = ({ darkMode }) => {
               <span className="text-sm font-medium whitespace-nowrap">Feedback</span>
             </div>
             <button
-              onClick={() => setShowFeedback(true)}
+              onClick={() => router.push('/footerpages/help')}
               className={`w-12 h-12 rounded-full shadow-lg transition-all duration-200 transform hover:scale-110 flex items-center justify-center ${
                 darkMode 
                   ? 'bg-green-600 hover:bg-green-700 text-white' 
