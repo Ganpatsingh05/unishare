@@ -9,6 +9,9 @@ const nextConfig = {
 		ignoreDuringBuilds: true,
 	},
 	pageExtensions: ['js', 'jsx', 'ts', 'tsx'],
+	images: {
+		domains: ['uniserver-4hkz.onrender.com', 'res.cloudinary.com'],
+	},
 };
 
 export default nextConfig;
