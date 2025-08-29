@@ -10,18 +10,27 @@ import {
   Eye, 
   EyeOff, 
   ArrowRight,
+  Phone,
+  GraduationCap,
   Home,
   ArrowLeft
 } from 'lucide-react';
 import logoImage from '../assets/images/logounishare1.png';
 
-const LoginPage = () => {
+const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showOwlMessage, setShowOwlMessage] = useState(false);
   const [currentOwlMessage, setCurrentOwlMessage] = useState('');
   const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
     email: '',
-    password: ''
+    phone: '',
+    university: '',
+    password: '',
+    confirmPassword: '',
+    agreeToTerms: false
   });
 
   const handleInputChange = (field, value) => {
@@ -33,31 +42,45 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.email && formData.password) {
-      localStorage.setItem('isLoggedIn', 'true');
-      window.location.href = '/profile';
-    } else {
+    
+    // Basic validation
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.confirmPassword) {
       alert('Please fill in all required fields');
+      return;
     }
+    
+    if (formData.password !== formData.confirmPassword) {
+      alert('Passwords do not match');
+      return;
+    }
+    
+    if (!formData.agreeToTerms) {
+      alert('Please agree to the Terms of Service and Privacy Policy');
+      return;
+    }
+    
+    // Registration logic would go here
+    console.log('Registration data:', formData);
+    alert('Account created successfully! Please check your email for verification.');
   };
 
-  const handleGoogleLogin = () => {
-    // Google OAuth logic would go here
-    console.log('Google login clicked');
+  const handleGoogleSignUp = () => {
+    // Google OAuth registration logic would go here
+    console.log('Google sign up clicked');
   };
 
   const handleOwlClick = () => {
     const owlMessages = [
-      "Keep going to login process dont disturb me",
-      "Hoot! I'm watching you study... 👀",
-      "Stop clicking me and focus on your login!",
-      "I'm busy guarding your campus secrets 🤫",
-      "Wise owls don't get distracted during login",
-      "Click less, study more! 📚",
-      "I'm not your entertainment, I'm your guardian!",
-      "Focus on your password, not on me!",
-      "Every click delays your campus journey...",
-      "Hoot hoot! Pay attention to the form!"
+      "Welcome to UniShare! Ready to join the community?",
+      "Hoot! Creating your campus journey starts here! 🎓",
+      "Fill out the form carefully, future scholar!",
+      "I'm excited to have you in our campus family!",
+      "Make sure your password is strong! 🔒",
+      "Your university adventure begins with registration!",
+      "Hoot hoot! Double-check your email address!",
+      "Welcome aboard the UniShare express! 🚀",
+      "Creating connections, one registration at a time!",
+      "Ready to unlock your campus potential?"
     ];
     
     const randomMessage = owlMessages[Math.floor(Math.random() * owlMessages.length)];
@@ -105,10 +128,10 @@ const LoginPage = () => {
 
           {/* Mobile Welcome Text */}
           <h1 className="text-xl font-bold text-white leading-tight mb-3">
-            Welcome Back!
+            Join UniShare
           </h1>
           <p className="text-slate-300 text-sm mb-6">
-            Sign in to your campus community
+            Create your campus community account
           </p>
         </div>
 
@@ -133,19 +156,69 @@ const LoginPage = () => {
               </div>
             </div>
 
-            <h2 className="text-xl font-bold text-white mb-6 text-center">LOGIN</h2>
+            <h2 className="text-xl font-bold text-white mb-6 text-center">CREATE ACCOUNT</h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Mobile Name Inputs */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="First Name"
+                    value={formData.firstName}
+                    onChange={(e) => handleInputChange('firstName', e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-700/70 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300 text-sm"
+                  />
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Last Name"
+                    value={formData.lastName}
+                    onChange={(e) => handleInputChange('lastName', e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-700/70 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300 text-sm"
+                  />
+                </div>
+              </div>
+
               {/* Mobile Email Input */}
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <User className="w-5 h-5 text-slate-400" />
+                  <Mail className="w-5 h-5 text-slate-400" />
                 </div>
                 <input
                   type="email"
                   placeholder="Email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 bg-slate-700/70 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300"
+                />
+              </div>
+
+              {/* Mobile Phone Input */}
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Phone className="w-5 h-5 text-slate-400" />
+                </div>
+                <input
+                  type="tel"
+                  placeholder="Phone Number (Optional)"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 bg-slate-700/70 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300"
+                />
+              </div>
+
+              {/* Mobile University Input */}
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <GraduationCap className="w-5 h-5 text-slate-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="University/College"
+                  value={formData.university}
+                  onChange={(e) => handleInputChange('university', e.target.value)}
                   className="w-full pl-12 pr-4 py-3 bg-slate-700/70 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300"
                 />
               </div>
@@ -171,22 +244,57 @@ const LoginPage = () => {
                 </button>
               </div>
 
-              {/* Mobile Sign In Button */}
+              {/* Mobile Confirm Password Input */}
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Lock className="w-5 h-5 text-slate-400" />
+                </div>
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm Password"
+                  value={formData.confirmPassword}
+                  onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                  className="w-full pl-12 pr-12 py-3 bg-slate-700/70 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-cyan-400 transition-colors"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+
+              {/* Terms Agreement */}
+              <div className="flex items-start gap-3 mt-4">
+                <input
+                  type="checkbox"
+                  id="agreeToTerms"
+                  checked={formData.agreeToTerms}
+                  onChange={(e) => handleInputChange('agreeToTerms', e.target.checked)}
+                  className="mt-1 w-4 h-4 text-cyan-600 bg-slate-700 border-slate-600 rounded focus:ring-cyan-500 focus:ring-2"
+                />
+                <label htmlFor="agreeToTerms" className="text-sm text-slate-300">
+                  I agree to the{' '}
+                  <Link href="/terms" className="text-cyan-400 hover:text-cyan-300 underline">
+                    Terms of Service
+                  </Link>
+                  {' '}and{' '}
+                  <Link href="/privacy" className="text-cyan-400 hover:text-cyan-300 underline">
+                    Privacy Policy
+                  </Link>
+                </label>
+              </div>
+
+              {/* Mobile Create Account Button */}
               <button
                 type="submit"
-                className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-cyan-500/25 flex items-center justify-center gap-2"
+                className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-cyan-500/25 flex items-center justify-center gap-2 mt-6"
               >
-                <span>LOGIN</span>
+                <span>CREATE ACCOUNT</span>
                 <ArrowRight className="w-5 h-5" />
               </button>
             </form>
-
-            {/* Mobile Forgot Password */}
-            <div className="text-center mt-4">
-              <Link href="/forgot-password" className="text-cyan-400 hover:text-cyan-300 transition-colors text-sm">
-                Forgot password?
-              </Link>
-            </div>
 
             {/* Mobile Divider */}
             <div className="relative my-6">
@@ -198,9 +306,9 @@ const LoginPage = () => {
               </div>
             </div>
 
-            {/* Mobile Google Login */}
+            {/* Mobile Google Sign Up */}
             <button
-              onClick={handleGoogleLogin}
+              onClick={handleGoogleSignUp}
               className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white hover:bg-gray-100 text-gray-700 font-medium rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg border border-gray-200"
             >
               <div className="w-6 h-6 flex items-center justify-center">
@@ -214,14 +322,14 @@ const LoginPage = () => {
               <span>Continue with Google</span>
             </button>
 
-            {/* Mobile Create Account Link */}
+            {/* Mobile Login Link */}
             <div className="text-center mt-6">
-              <p className="text-slate-400 text-sm mb-3">Don't have an account?</p>
+              <p className="text-slate-400 text-sm mb-3">Already have an account?</p>
               <Link 
-                href="/register" 
+                href="/login" 
                 className="inline-flex items-center justify-center px-6 py-2.5 bg-transparent border-2 border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-white font-semibold rounded-xl transition-all duration-300"
               >
-                CREATE ACCOUNT
+                LOGIN
               </Link>
             </div>
           </div>
@@ -261,7 +369,7 @@ const LoginPage = () => {
             <div className="absolute bottom-1/4 right-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
           </div>
 
-          <div className="relative w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-0">
+          <div className="relative w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-0">
             {/* Left Side - Brand/Welcome */}
             <div className="flex flex-col justify-center items-start p-4 sm:p-6 lg:p-12 bg-slate-800/50 backdrop-blur-sm rounded-2xl lg:rounded-r-none border border-slate-700/50 order-2 lg:order-1">
               {/* Logo */}
@@ -274,63 +382,89 @@ const LoginPage = () => {
               </div>
 
               <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-white leading-tight mb-3 lg:mb-4 text-center lg:text-left">
-                ONE ACCOUNT FOR ALL UNISHARE SERVICES
+                JOIN THE UNISHARE COMMUNITY
               </h1>
               
               <p className="text-slate-300 text-sm lg:text-base mb-4 lg:mb-6 leading-relaxed text-center lg:text-left">
-                Hi there! Sign in to your account and enjoy your campus community experience on UniShare.
+                Connect with students, share resources, find housing, and build your campus network. Your university journey starts here!
               </p>
 
               <div className="w-full flex justify-center lg:justify-start">
                 <Link 
-                  href="/register" 
-                  className="inline-flex items-center justify-center px-5 sm:px-6 py-2.5 sm:py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-cyan-500/25 text-sm"
+                  href="/login" 
+                  className="inline-flex items-center justify-center px-5 sm:px-6 py-2.5 sm:py-3 bg-transparent border-2 border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg text-sm"
                 >
-                  CREATE NEW ACCOUNT
+                  ALREADY HAVE AN ACCOUNT?
                 </Link>
               </div>
             </div>
 
-            {/* Right Side - Sign In Form */}
+            {/* Right Side - Register Form */}
             <div className="relative flex flex-col justify-center p-4 sm:p-6 lg:p-12 bg-slate-700/50 backdrop-blur-sm rounded-2xl lg:rounded-l-none border border-slate-600/50 order-1 lg:order-2">
-              {/* Peeking Owl Mascot */}
-              <div className="absolute -top-16 right-8 sm:-top-18 sm:right-10 z-10">
-                <div className="relative cursor-pointer" onClick={handleOwlClick}>
-                  {/* Owl Container */}
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 flex items-center justify-center hover:scale-110 transition-transform duration-300">
-                    <div className="text-5xl sm:text-6xl lg:text-7xl">
-                      🦉
-                    </div>
-                  </div>
-                  
-                  {/* Speech Bubble Message */}
-                  {showOwlMessage && (
-                    <div className="absolute -bottom-10 -left-32 sm:-left-40 lg:-left-48 bg-white text-gray-800 text-xs sm:text-sm px-3 py-2 rounded-2xl shadow-lg border-2 border-gray-200 transform transition-all duration-300 whitespace-nowrap z-20 max-w-xs">
-                      <div className="font-medium">
-                        "{currentOwlMessage}"
-                      </div>
-                      {/* Speech bubble tail */}
-                      <div className="absolute top-0 right-8 transform -translate-y-1/2 w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-b-4 border-b-gray-200"></div>
-                      <div className="absolute top-0 right-8 transform -translate-y-1/2 translate-y-0.5 w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-b-4 border-b-white"></div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
               <div className="w-full max-w-sm mx-auto">
-                <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 lg:mb-6 text-center lg:text-left">LOGIN</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 lg:mb-6 text-center lg:text-left">CREATE ACCOUNT</h2>
 
                 <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+                  {/* Name Inputs */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="First Name"
+                        value={formData.firstName}
+                        onChange={(e) => handleInputChange('firstName', e.target.value)}
+                        className="w-full px-3 py-2.5 sm:py-3 bg-slate-800/70 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300 text-sm"
+                      />
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Last Name"
+                        value={formData.lastName}
+                        onChange={(e) => handleInputChange('lastName', e.target.value)}
+                        className="w-full px-3 py-2.5 sm:py-3 bg-slate-800/70 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300 text-sm"
+                      />
+                    </div>
+                  </div>
+
                   {/* Email Input */}
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <User className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
+                      <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
                     </div>
                     <input
                       type="email"
                       placeholder="Email"
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
+                      className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-slate-800/70 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300 text-sm"
+                    />
+                  </div>
+
+                  {/* Phone Input */}
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
+                    </div>
+                    <input
+                      type="tel"
+                      placeholder="Phone (Optional)"
+                      value={formData.phone}
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                      className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-slate-800/70 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300 text-sm"
+                    />
+                  </div>
+
+                  {/* University Input */}
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="University/College"
+                      value={formData.university}
+                      onChange={(e) => handleInputChange('university', e.target.value)}
                       className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-slate-800/70 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300 text-sm"
                     />
                   </div>
@@ -356,25 +490,57 @@ const LoginPage = () => {
                     </button>
                   </div>
 
-                  {/* Sign In Button */}
+                  {/* Confirm Password Input */}
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
+                    </div>
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Confirm Password"
+                      value={formData.confirmPassword}
+                      onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                      className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-2.5 sm:py-3 bg-slate-800/70 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300 text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-cyan-400 transition-colors"
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
+                    </button>
+                  </div>
+
+                  {/* Terms Agreement */}
+                  <div className="flex items-start gap-3 mt-4">
+                    <input
+                      type="checkbox"
+                      id="agreeToTermsDesktop"
+                      checked={formData.agreeToTerms}
+                      onChange={(e) => handleInputChange('agreeToTerms', e.target.checked)}
+                      className="mt-1 w-4 h-4 text-cyan-600 bg-slate-700 border-slate-600 rounded focus:ring-cyan-500 focus:ring-2"
+                    />
+                    <label htmlFor="agreeToTermsDesktop" className="text-xs sm:text-sm text-slate-300">
+                      I agree to the{' '}
+                      <Link href="/terms" className="text-cyan-400 hover:text-cyan-300 underline">
+                        Terms of Service
+                      </Link>
+                      {' '}and{' '}
+                      <Link href="/privacy" className="text-cyan-400 hover:text-cyan-300 underline">
+                        Privacy Policy
+                      </Link>
+                    </label>
+                  </div>
+
+                  {/* Create Account Button */}
                   <button
                     type="submit"
-                    className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-cyan-500/25 flex items-center justify-center gap-2 text-sm"
+                    className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-cyan-500/25 flex items-center justify-center gap-2 text-sm mt-4"
                   >
-                    <span>LOGIN</span>
+                    <span>CREATE ACCOUNT</span>
                     <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                 </form>
-
-                {/* Forgot Password */}
-                <div className="text-center mt-3 sm:mt-4">
-                  <Link 
-                    href="/forgot-password" 
-                    className="text-cyan-400 hover:text-cyan-300 transition-colors text-xs sm:text-sm"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
 
                 {/* Divider */}
                 <div className="relative my-4 sm:my-6">
@@ -388,9 +554,9 @@ const LoginPage = () => {
                   </div>
                 </div>
 
-                {/* Google Login */}
+                {/* Google Sign Up */}
                 <button
-                  onClick={handleGoogleLogin}
+                  onClick={handleGoogleSignUp}
                   className="w-full flex items-center justify-center gap-3 px-4 py-2.5 sm:py-3 bg-white hover:bg-gray-100 text-gray-700 font-medium rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg border border-gray-200"
                 >
                   {/* Custom Google G Icon */}
@@ -404,6 +570,30 @@ const LoginPage = () => {
                   </div>
                   <span className="text-sm">Continue with Google</span>
                 </button>
+              </div>
+              
+              {/* Desktop Owl Mascot - Sitting on border */}
+              <div className="absolute -bottom-6 right-222 z-10">
+                <div className="relative cursor-pointer" onClick={handleOwlClick}>
+                  {/* Owl Container */}
+                  <div className="w-25 h-25 flex items-center justify-center hover:scale-110 transition-transform duration-300">
+                    <div className="text-5xl">
+                      🦉
+                    </div>
+                  </div>
+                  
+                  {/* Speech Bubble Message */}
+                  {showOwlMessage && (
+                    <div className="absolute -top-20 -left-32 sm:-left-40 bg-white text-gray-800 text-xs sm:text-sm px-3 py-2 rounded-2xl shadow-lg border-2 border-gray-200 transform transition-all duration-300 whitespace-nowrap z-20 max-w-xs">
+                      <div className="font-medium">
+                        "{currentOwlMessage}"
+                      </div>
+                      {/* Speech bubble tail pointing down */}
+                      <div className="absolute bottom-0 right-8 transform translate-y-1/2 w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 border-t-gray-200"></div>
+                      <div className="absolute bottom-0 right-8 transform translate-y-1/2 -translate-y-0.5 w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 border-t-white"></div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -450,4 +640,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default RegisterPage;

@@ -6,15 +6,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import logoImage from '../assets/images/logounishare1.png';
 import { Search, Globe, Bell, Sun, Moon, User, LogOut, Menu, X, Settings, Camera, Edit3, Shield, HelpCircle, Info, ChevronRight } from 'lucide-react';
-import { useLanguage } from "../_providers/LanguageProvider";
+// ...removed useLanguage import...
 
 export default function HeaderMobile({ darkMode, onThemeToggle }) {
   const [searchFocused, setSearchFocused] = useState(false);
   const [logoRotation, setLogoRotation] = useState(0);
   const logoRef = useRef(null);
   const [searchValue, setSearchValue] = useState('');
-  const [isLanguageActive, setIsLanguageActive] = useState(false);
-  const { language, toggleLanguage } = useLanguage();
+  // ...removed language state and hooks...
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifInlineOpen, setNotifInlineOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -34,13 +33,9 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
   });
   
   const router = useRouter();
-  const { t } = useLanguage();
+  // ...removed t from useLanguage...
 
-  const handleLanguageToggle = () => {
-    setIsLanguageActive(true);
-    toggleLanguage();
-    setTimeout(() => setIsLanguageActive(false), 200);
-  };
+  // ...removed handleLanguageToggle...
 
   const handleLogout = () => {
     try {
@@ -289,7 +284,7 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
                   <Search className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
                   <input
                     type="text"
-                    placeholder={t('common.searchPlaceholder')}
+                    placeholder="Search..."
                     value={searchValue}
                     onChange={(e) => setSearchValue(e.target.value)}
                     onFocus={() => setSearchFocused(true)}
@@ -317,7 +312,7 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
                 >
                   <div className="flex items-center gap-3">
                     <Bell className="w-5 h-5" />
-                    <span className="font-medium">{t('common.notifications')}</span>
+                    <span className="font-medium">Notifications</span>
                   </div>
                   <div className="flex items-center gap-2">
                     {notifications.some(n => !n.read) && (
@@ -416,7 +411,7 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
                 >
                   <div className="flex items-center gap-3">
                     {darkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                    <span className="font-medium">{t('common.toggleTheme')}</span>
+                    <span className="font-medium">Toggle Theme</span>
                   </div>
                   <span className={`text-xs px-2 py-1 rounded-full ${
                     darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600'
@@ -426,25 +421,7 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
                 </button>
               </li>
 
-              {/* Language */}
-              <li>
-                <button
-                  onClick={handleLanguageToggle}
-                  className={`w-full flex items-center justify-between px-6 py-3 text-left transition-colors duration-200 ${
-                    darkMode ? 'text-gray-200 hover:bg-gray-800/50' : 'text-gray-900 hover:bg-gray-100/50'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Globe className="w-5 h-5" />
-                    <span className="font-medium">{t('common.language')}</span>
-                  </div>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600'
-                  }`}>
-                    {language}
-                  </span>
-                </button>
-              </li>
+              {/* Removed Language toggle */}
 
               {/* Settings */}
               <li>
@@ -511,7 +488,7 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
                   }`}
                 >
                   <User className="w-5 h-5" />
-                  <span className="font-medium">{t('common.loginProfile')}</span>
+                  <span className="font-medium">Login / Profile</span>
                 </Link>
               </li>
 
@@ -524,7 +501,7 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
                   }`}
                 >
                   <LogOut className="w-5 h-5" />
-                  <span className="font-medium">{t('common.logout')}</span>
+                  <span className="font-medium">Logout</span>
                 </button>
               </li>
             </ul>

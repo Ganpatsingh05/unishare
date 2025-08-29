@@ -8,15 +8,14 @@ import logoImage from '../assets/images/logounishare1.png'; // Adjust path as ne
 import { Search, Globe, Bell, Sun, Moon, User, LogOut, Settings, FileText, HelpCircle, UserCircle, Menu, X } from 'lucide-react';
 import NotificationPanel from './NotificationPanel';
 import HeaderMobile from './HeaderMobile';
-import { useLanguage } from "../_providers/LanguageProvider";
+//
 
 const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [isNotificationActive, setIsNotificationActive] = useState(false);
-  const [isLanguageActive, setIsLanguageActive] = useState(false);
-  const { language, toggleLanguage } = useLanguage();
+  //
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifInlineOpen, setNotifInlineOpen] = useState(false);
@@ -36,11 +35,7 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
     setNotifOpen(true);
   };
 
-  const handleLanguageToggle = () => {
-    setIsLanguageActive(true);
-    toggleLanguage();
-    setTimeout(() => setIsLanguageActive(false), 200);
-  };
+  //
 
   const handleThemeToggle = () => {
     onThemeToggle();
@@ -203,21 +198,7 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
             {/* Action Buttons */}
             <div className="flex items-center gap-2">
               
-              {/* Enhanced Language Toggle */}
-              <button 
-                className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl border-2 font-medium text-sm tracking-wide transition-all duration-300 transform hover:scale-105 active:scale-95 cursor-pointer ${
-                  isLanguageActive 
-                    ? `animate-pulse ${darkMode ? 'border-yellow-400 bg-yellow-400/20' : 'border-blue-600 bg-blue-600/20'}`
-                    : `${darkMode 
-                        ? 'border-yellow-300 bg-gray-800 text-yellow-300 hover:bg-yellow-300/10 hover:shadow-lg hover:shadow-yellow-300/20' 
-                        : 'border-blue-500 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:shadow-lg hover:shadow-blue-500/20'
-                      }`
-                }`}
-                onClick={handleLanguageToggle}
-              >
-                <Globe className="w-4 h-4 transition-transform duration-300 group-hover:rotate-12" />
-                <span>{language === 'EN' ? 'EN | HI' : 'HI | EN'}</span>
-              </button>
+              {/* Removed language toggle button */}
 
               {/* Enhanced Notifications */}
               <button 
@@ -301,38 +282,7 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
                 </div>
               </div>
             </li>
-            {/* Language with EN | HI labels on toggle */}
-            <li>
-              <div className={`flex items-center justify-between py-2.5 px-3 ${darkMode ? 'text-gray-200 hover:bg-gray-800' : 'text-gray-900 hover:bg-gray-100'}`}>
-                <div className="inline-flex items-center gap-3">
-                  <Globe className="w-5 h-5" />
-                  <span>Language</span>
-                </div>
-                <button
-                  role="switch"
-                  aria-checked={language === 'HI'}
-                  onClick={handleLanguageToggle}
-                  className={`relative inline-flex h-7 w-24 items-center rounded-full border transition-colors duration-200 ${
-                    darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-300 border-gray-200'
-                  }`}
-                  title={`Language: ${language}`}
-                >
-                  {/* Labels */}
-                  <span className={`absolute left-2 text-[10px] font-semibold tracking-wide ${
-                    language === 'EN' ? (darkMode ? 'text-yellow-300' : 'text-blue-700') : (darkMode ? 'text-gray-300' : 'text-gray-700')
-                  }`}>EN</span>
-                  <span className={`absolute right-2 text-[10px] font-semibold tracking-wide ${
-                    language === 'HI' ? (darkMode ? 'text-yellow-300' : 'text-blue-700') : (darkMode ? 'text-gray-300' : 'text-gray-700')
-                  }`}>HI</span>
-                  {/* Knob */}
-                  <span
-                    className={`absolute h-6 w-12 rounded-full bg-white shadow transition-transform duration-200 ${
-                      language === 'HI' ? 'translate-x-12' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
-            </li>
+            {/* Removed language toggle from mobile menu */}
             {/* Notifications */}
             <li>
               <button
