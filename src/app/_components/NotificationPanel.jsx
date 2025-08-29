@@ -70,13 +70,14 @@ export default function NotificationPanel({ open, onClose, darkMode, notificatio
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] md:z-50" aria-modal="true" role="dialog">
+    <div className="fixed inset-0 z-[60] md:z-50" aria-modal="true" role="dialog" onClick={onClose}>
       {/* Mobile bottom sheet */}
       <div
         ref={panelRef}
         className={`md:hidden absolute inset-x-0 bottom-0 rounded-t-2xl shadow-2xl border-t max-h-[85vh] flex flex-col overflow-hidden ${
           darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'
         } animate-slide-up-soft`}
+        onClick={(e) => e.stopPropagation()}
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         {/* Grab handle */}
@@ -165,7 +166,7 @@ export default function NotificationPanel({ open, onClose, darkMode, notificatio
       </div>
 
       {/* Desktop dropdown */}
-      <div className="hidden md:block absolute right-4 top-24">
+  <div className="hidden md:block absolute right-4 top-24" onClick={(e) => e.stopPropagation()}>
         <div className={`w-[22rem] rounded-2xl shadow-2xl border overflow-hidden ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'} animate-dropdown-in`}>
           <div className="px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">

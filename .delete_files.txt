@@ -1,2 +1,0 @@
-src/app/_providers/LanguageProvider.jsx
-src/app/_i18n/dictionary.js

@@ -32,7 +32,8 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
   const handleNotificationClick = () => {
     setIsNotificationActive(true);
     setTimeout(() => setIsNotificationActive(false), 150);
-    setNotifOpen(true);
+  // Toggle notification panel on desktop
+  setNotifOpen((prev) => !prev);
   };
 
   //

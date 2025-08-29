@@ -33,7 +33,7 @@ export default function HeroSlider({ darkMode = true }) {
         id: "study-notes",
         bgImage: "/assets/images/banners/banner4.jpg",
         alt: "Study Notes",
-        cta: { label: "Explore Notes", href: "/notes" }
+        cta: { label: "Explore Notes", href: "/resources" }
       },
       {
         id: "housing",
