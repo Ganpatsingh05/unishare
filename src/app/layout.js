@@ -1,6 +1,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 // ...removed LanguageProvider import...
+import CookieConsent from "./_components/CookieConsent";
+import RouteChangeOverlay from "./_components/RouteChangeOverlay";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,6 +24,9 @@ export default function RootLayout({ children }) {
     <html lang="en" suppressHydrationWarning={true}>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning={true}>
   {children}
+  <CookieConsent />
+  {/* Client-side route change loader overlay */}
+  <RouteChangeOverlay />
       </body>
     </html>
   );

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { 
   User, 
   Mail, 
@@ -11,7 +12,8 @@ import {
   EyeOff, 
   ArrowRight,
   Home,
-  ArrowLeft
+  ArrowLeft,
+  ChevronRight
 } from 'lucide-react';
 import logoImage from '../assets/images/logounishare1.png';
 
@@ -19,6 +21,7 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showOwlMessage, setShowOwlMessage] = useState(false);
   const [currentOwlMessage, setCurrentOwlMessage] = useState('');
+  const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -76,18 +79,23 @@ const LoginPage = () => {
     <>
       {/* Mobile Layout (hidden on lg and above) */}
       <div className="lg:hidden min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col">
+        {/* Navigation Breadcrumb - Mobile */}
+        <div className="pl-2 pt-4">
+          <div className="flex items-center gap-2 text-sm mb-4 justify-start">
+            <button 
+              onClick={() => router.push('/')}
+              className="flex items-center gap-2 text-slate-400 hover:text-yellow-300 transition-colors duration-200"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Home
+            </button>
+            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <span className="text-yellow-300">Login</span>
+          </div>
+        </div>
+
         {/* Mobile Header */}
         <div className="relative p-6 text-center">
-          {/* Back to Home Button */}
-          <div className="absolute top-6 left-6 z-20">
-            <Link 
-              href="/" 
-              className="flex items-center justify-center w-10 h-10 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300 hover:text-white rounded-xl transition-all duration-300 backdrop-blur-sm border border-slate-600/50"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-          </div>
-
           {/* Background Effects */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl"></div>
@@ -242,19 +250,23 @@ const LoginPage = () => {
 
       {/* Desktop Layout (hidden below lg) */}
       <div className="hidden lg:flex min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex-col">
+        {/* Navigation Breadcrumb - Desktop */}
+        <div className="pl-8 pt-8">
+          <div className="flex items-center gap-2 text-sm mb-8 justify-start">
+            <button 
+              onClick={() => router.push('/')}
+              className="flex items-center gap-2 text-slate-400 hover:text-yellow-300 transition-colors duration-200"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Home
+            </button>
+            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <span className="text-yellow-300">Login</span>
+          </div>
+        </div>
+
         {/* Main Content */}
         <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
-          {/* Back to Home Button */}
-          <div className="absolute top-8 left-8 z-20">
-            <Link 
-              href="/" 
-              className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300 hover:text-white rounded-xl transition-all duration-300 backdrop-blur-sm border border-slate-600/50"
-            >
-              <Home className="w-4 h-4" />
-              <span className="text-sm font-medium">Home</span>
-            </Link>
-          </div>
-
           {/* Background Effects */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-1/4 left-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-cyan-500/10 rounded-full blur-3xl"></div>

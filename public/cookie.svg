@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F6BD60"/>
+      <stop offset="100%" stop-color="#D58A3A"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+  <!-- Cookie base with a small bite -->
+  <g filter="url(#shadow)">
+    <path d="M92 16c-2.5 6.8 2.3 13 9.4 13.9C101.5 40.2 116 50 116 64c0 26.5-24.3 48-54 48S8 90.5 8 64 32.3 16 62 16c4.3 0 8.5.4 12.4 1.3 2.3.5 4.7-.6 5.6-2.8z" fill="url(#g)"/>
+  </g>
+  <!-- Chocolate chips -->
+  <circle cx="38" cy="46" r="6" fill="#5A3E2B"/>
+  <circle cx="56" cy="34" r="4.5" fill="#5A3E2B"/>
+  <circle cx="78" cy="50" r="5.5" fill="#5A3E2B"/>
+  <circle cx="46" cy="72" r="5" fill="#5A3E2B"/>
+  <circle cx="74" cy="80" r="4" fill="#5A3E2B"/>
+  <circle cx="92" cy="70" r="5" fill="#5A3E2B"/>
+</svg>
