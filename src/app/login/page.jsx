@@ -3,50 +3,19 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { 
-  User, 
-  Mail, 
-  Lock, 
-  Eye, 
-  EyeOff, 
-  ArrowRight,
   Home,
-  ArrowLeft,
-  ChevronRight
+  ArrowLeft
 } from 'lucide-react';
 import logoImage from '../assets/images/logounishare1.png';
+import { startGoogleLogin } from '../lib/api';
 
 const LoginPage = () => {
-  const [showPassword, setShowPassword] = useState(false);
   const [showOwlMessage, setShowOwlMessage] = useState(false);
   const [currentOwlMessage, setCurrentOwlMessage] = useState('');
-  const router = useRouter();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (formData.email && formData.password) {
-      localStorage.setItem('isLoggedIn', 'true');
-      window.location.href = '/profile';
-    } else {
-      alert('Please fill in all required fields');
-    }
-  };
 
   const handleGoogleLogin = () => {
-    // Google OAuth logic would go here
-    console.log('Google login clicked');
+    startGoogleLogin();
   };
 
   const handleOwlClick = () => {
@@ -79,23 +48,18 @@ const LoginPage = () => {
     <>
       {/* Mobile Layout (hidden on lg and above) */}
       <div className="lg:hidden min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col">
-        {/* Navigation Breadcrumb - Mobile */}
-        <div className="pl-2 pt-4">
-          <div className="flex items-center gap-2 text-sm mb-4 justify-start">
-            <button 
-              onClick={() => router.push('/')}
-              className="flex items-center gap-2 text-slate-400 hover:text-yellow-300 transition-colors duration-200"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Home
-            </button>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
-            <span className="text-yellow-300">Login</span>
-          </div>
-        </div>
-
         {/* Mobile Header */}
         <div className="relative p-6 text-center">
+          {/* Back to Home Button */}
+          <div className="absolute top-6 left-6 z-20">
+            <Link 
+              href="/" 
+              className="flex items-center justify-center w-10 h-10 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300 hover:text-white rounded-xl transition-all duration-300 backdrop-blur-sm border border-slate-600/50"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+          </div>
+
           {/* Background Effects */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl"></div>
@@ -143,69 +107,6 @@ const LoginPage = () => {
 
             <h2 className="text-xl font-bold text-white mb-6 text-center">LOGIN</h2>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Mobile Email Input */}
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <User className="w-5 h-5 text-slate-400" />
-                </div>
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 bg-slate-700/70 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300"
-                />
-              </div>
-
-              {/* Mobile Password Input */}
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Lock className="w-5 h-5 text-slate-400" />
-                </div>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={(e) => handleInputChange('password', e.target.value)}
-                  className="w-full pl-12 pr-12 py-3 bg-slate-700/70 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-cyan-400 transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-
-              {/* Mobile Sign In Button */}
-              <button
-                type="submit"
-                className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-cyan-500/25 flex items-center justify-center gap-2"
-              >
-                <span>LOGIN</span>
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            </form>
-
-            {/* Mobile Forgot Password */}
-            <div className="text-center mt-4">
-              <Link href="/forgot-password" className="text-cyan-400 hover:text-cyan-300 transition-colors text-sm">
-                Forgot password?
-              </Link>
-            </div>
-
-            {/* Mobile Divider */}
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-600"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-slate-800/50 text-slate-400">Or continue with</span>
-              </div>
-            </div>
-
             {/* Mobile Google Login */}
             <button
               onClick={handleGoogleLogin}
@@ -250,23 +151,19 @@ const LoginPage = () => {
 
       {/* Desktop Layout (hidden below lg) */}
       <div className="hidden lg:flex min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex-col">
-        {/* Navigation Breadcrumb - Desktop */}
-        <div className="pl-8 pt-8">
-          <div className="flex items-center gap-2 text-sm mb-8 justify-start">
-            <button 
-              onClick={() => router.push('/')}
-              className="flex items-center gap-2 text-slate-400 hover:text-yellow-300 transition-colors duration-200"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Home
-            </button>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
-            <span className="text-yellow-300">Login</span>
-          </div>
-        </div>
-
         {/* Main Content */}
         <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+          {/* Back to Home Button */}
+          <div className="absolute top-8 left-8 z-20">
+            <Link 
+              href="/" 
+              className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300 hover:text-white rounded-xl transition-all duration-300 backdrop-blur-sm border border-slate-600/50"
+            >
+              <Home className="w-4 h-4" />
+              <span className="text-sm font-medium">Home</span>
+            </Link>
+          </div>
+
           {/* Background Effects */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-1/4 left-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-cyan-500/10 rounded-full blur-3xl"></div>
@@ -331,74 +228,6 @@ const LoginPage = () => {
 
               <div className="w-full max-w-sm mx-auto">
                 <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 lg:mb-6 text-center lg:text-left">LOGIN</h2>
-
-                <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
-                  {/* Email Input */}
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <User className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
-                    </div>
-                    <input
-                      type="email"
-                      placeholder="Email"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-slate-800/70 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300 text-sm"
-                    />
-                  </div>
-
-                  {/* Password Input */}
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
-                    </div>
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Password"
-                      value={formData.password}
-                      onChange={(e) => handleInputChange('password', e.target.value)}
-                      className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-2.5 sm:py-3 bg-slate-800/70 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300 text-sm"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-cyan-400 transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
-                    </button>
-                  </div>
-
-                  {/* Sign In Button */}
-                  <button
-                    type="submit"
-                    className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-cyan-500/25 flex items-center justify-center gap-2 text-sm"
-                  >
-                    <span>LOGIN</span>
-                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </button>
-                </form>
-
-                {/* Forgot Password */}
-                <div className="text-center mt-3 sm:mt-4">
-                  <Link 
-                    href="/forgot-password" 
-                    className="text-cyan-400 hover:text-cyan-300 transition-colors text-xs sm:text-sm"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
-
-                {/* Divider */}
-                <div className="relative my-4 sm:my-6">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-slate-600"></div>
-                  </div>
-                  <div className="relative flex justify-center text-xs sm:text-sm">
-                    <span className="px-2 bg-slate-700/50 text-slate-400">
-                      Or continue with
-                    </span>
-                  </div>
-                </div>
 
                 {/* Google Login */}
                 <button

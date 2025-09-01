@@ -1,280 +1,452 @@
-"use client";
+//housing/page.jsx
+'use client';
+import { useState, useEffect } from 'react';
+import { Moon, Sun, Home, MapPin, Bed, Calendar, Mail, Phone, Instagram, Camera, Upload, LogIn, User } from 'lucide-react';
+import { postRoom, fetchCurrentUser, startGoogleLogin } from '../../lib/api';
 
-import { useEffect, useState } from "react";
-import { UploadCloud, Image as ImageIcon, IndianRupee, MapPin, Calendar, Phone, Instagram, Mail, Link2, Plus, Trash2 } from "lucide-react";
-import Header from "../../_components/Header";
-import Footer from "../../_components/Footer";
-
-export default function PostRoomPage() {
-  const [title, setTitle] = useState("");
-  const [rent, setRent] = useState("");
-  const [location, setLocation] = useState("");
-  const [landmark, setLandmark] = useState("");
-  const [bedrooms, setBedrooms] = useState(1);
-  const [availableFrom, setAvailableFrom] = useState("");
-  const [desc, setDesc] = useState("");
+export default function AuthProtectedRoomForm() {
   const [darkMode, setDarkMode] = useState(true);
-  const [logoRotation, setLogoRotation] = useState(0);
-  const [contacts, setContacts] = useState([
-    { id: 1, type: "mobile", value: "" },
-  ]);
-  const [preferences, setPreferences] = useState("");
-  const [images, setImages] = useState([]); // File[]
-  const [previews, setPreviews] = useState([]); // string[]
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [form, setForm] = useState({
+    title: '',
+    rent: '',
+    location: '',
+    beds: '',
+    move_in_date: '',
+    email: '',
+    mobile: '',
+    instagram: ''
+  });
 
+  const [images, setImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+
+  // Check authentication on component mount
   useEffect(() => {
-    const onMouseMove = (e) => {
-      const cx = window.innerWidth / 2;
-      const cy = window.innerHeight / 2;
-      const rot = Math.atan2(e.clientY - cy, e.clientX - cx) * (180 / Math.PI) * 0.1;
-      setLogoRotation((prev) => (Math.abs(prev - rot) < 0.1 ? prev : rot));
+    const checkAuth = async () => {
+      try {
+        const currentUser = await fetchCurrentUser();
+        setUser(currentUser);
+        
+        // Pre-fill email if user is logged in
+        if (currentUser?.email) {
+          setForm(prev => ({ ...prev, email: currentUser.email }));
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+      } finally {
+        setAuthLoading(false);
+      }
     };
-    window.addEventListener("mousemove", onMouseMove, { passive: true });
-    return () => window.removeEventListener("mousemove", onMouseMove);
+
+    checkAuth();
   }, []);
 
-  const handleThemeToggle = () => setDarkMode((p) => !p);
-
-  const pageBg = darkMode
-    ? "bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 text-gray-100"
-    : "bg-gradient-to-br from-gray-50 via-white to-gray-50 text-gray-800";
-  const labelClr = darkMode ? "text-gray-300" : "text-gray-700";
-  const inputBg = darkMode ? "bg-gray-900 border-gray-800 text-gray-100" : "bg-white border-gray-200 text-gray-900";
-  const titleClr = darkMode ? "text-gray-100" : "text-gray-900";
-  const textMuted = darkMode ? "text-gray-300" : "text-gray-600";
-  const dropBorder = darkMode ? "border-gray-800" : "border-gray-300";
-  const divider = darkMode ? "bg-gray-800" : "bg-gray-200";
-
-  // Contacts helpers
-  const iconForType = (type) => {
-    switch (type) {
-      case 'mobile': return Phone;
-      case 'instagram': return Instagram;
-      case 'email': return Mail;
-      case 'link': return Link2;
-      default: return Link2;
-    }
-  };
-  const placeholderForType = (type) => {
-    switch (type) {
-      case 'mobile': return '+91 98765 43210';
-      case 'instagram': return '@username';
-      case 'email': return 'name@university.edu';
-      case 'link': return 'https://...';
-      default: return '';
-    }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Image previews
-  useEffect(() => {
-    // revoke previous URLs
-    return () => {
-      previews.forEach((url) => URL.revokeObjectURL(url));
+  const handleImageChange = (e) => {
+    const files = [...e.target.files];
+    setImages(files);
+    
+    // Create preview URLs
+    const previews = files.map(file => URL.createObjectURL(file));
+    setImagePreviews(previews);
+  };
+
+  const removeImage = (index) => {
+    const newImages = images.filter((_, i) => i !== index);
+    const newPreviews = imagePreviews.filter((_, i) => i !== index);
+    
+    // Revoke the removed URL to free memory
+    URL.revokeObjectURL(imagePreviews[index]);
+    
+    setImages(newImages);
+    setImagePreviews(newPreviews);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!user) {
+      setResult({ error: 'Please log in to post a room' });
+      return;
+    }
+
+    setLoading(true);
+    setResult(null);
+
+    const formData = new FormData();
+    formData.append('title', form.title);
+    formData.append('rent', form.rent);
+    formData.append('location', form.location);
+    formData.append('beds', form.beds);
+    formData.append('move_in_date', form.move_in_date);
+
+    const contactInfo = {
+      email: form.email,
+      mobile: form.mobile,
+      instagram: form.instagram
     };
-  }, [previews]);
+    formData.append('contact_info', JSON.stringify(contactInfo));
+
+    images.forEach((file) => {
+      formData.append('photos', file);
+    });
+
+    try {
+      const res = await postRoom(formData);
+      setResult(res);
+      
+      // Reset form on success
+      if (res.success) {
+        setForm({
+          title: '',
+          rent: '',
+          location: '',
+          beds: '',
+          move_in_date: '',
+          email: user.email || '',
+          mobile: '',
+          instagram: ''
+        });
+        setImages([]);
+        setImagePreviews([]);
+      }
+    } catch (err) {
+      console.error(err);
+      setResult({ error: err instanceof Error ? err.message : String(err) });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleTheme = () => {
+    setDarkMode(!darkMode);
+  };
+
+  const themeClasses = darkMode 
+    ? 'bg-gray-900 text-white min-h-screen' 
+    : 'bg-gray-50 text-gray-900 min-h-screen';
+
+  const cardClasses = darkMode
+    ? 'bg-gray-800 border-gray-700 shadow-2xl'
+    : 'bg-white border-gray-200 shadow-xl';
+
+  const inputClasses = darkMode
+    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-400 focus:ring-blue-400'
+    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500';
+
+  const buttonClasses = darkMode
+    ? 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-400'
+    : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500';
+
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <div className={themeClasses}>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className={`text-lg ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              Checking authentication...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login required message if user is not authenticated
+  if (!user) {
+    return (
+      <div className={themeClasses}>
+        <div className="container mx-auto px-4 py-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="flex justify-center items-center gap-4 mb-4">
+              <Home className="w-8 h-8 text-blue-500" />
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+                Post Your Room
+              </h1>
+              <button
+                onClick={toggleTheme}
+                className={`p-2 rounded-full transition-colors ${
+                  darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
+                }`}
+              >
+                {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
+
+          {/* Login Required Card */}
+          <div className={`max-w-md mx-auto rounded-2xl border p-8 text-center ${cardClasses}`}>
+            <LogIn className="w-16 h-16 mx-auto mb-4 text-blue-500" />
+            <h2 className="text-2xl font-bold mb-4">Login Required</h2>
+            <p className={`mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              You need to be logged in to post room listings. This helps ensure the authenticity of listings and allows you to manage your posts.
+            </p>
+            <button
+              onClick={startGoogleLogin}
+              className={`w-full p-4 text-white font-semibold rounded-xl transition-all focus:ring-2 focus:outline-none ${buttonClasses}`}
+            >
+              Login with Google
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className={`min-h-screen ${pageBg}`}>
-      <Header darkMode={darkMode} onThemeToggle={handleThemeToggle} logoRotation={logoRotation} />
-
-      <main className="px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <div className="mx-auto max-w-3xl">
-          <h1 className={`text-xl sm:text-2xl font-semibold ${titleClr}`}>Post a room</h1>
-
-          <form className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-          <div className="sm:col-span-2">
-            <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Title</label>
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Cozy room near campus"
-              className={`w-full px-3 py-2.5 rounded-lg border ${inputBg}`}
-            />
+    <div className={themeClasses}>
+      <div className="container mx-auto px-4 py-8">
+        {/* Header with user info */}
+        <div className="text-center mb-8">
+          <div className="flex justify-center items-center gap-4 mb-4">
+            <Home className="w-8 h-8 text-blue-500" />
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+              Post Your Room
+            </h1>
+            <button
+              onClick={toggleTheme}
+              className={`p-2 rounded-full transition-colors ${
+                darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
+              }`}
+            >
+              {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
           </div>
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <User className="w-5 h-5 text-green-500" />
+            <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              Logged in as {user.name}
+            </span>
+          </div>
+          <p className={`text-lg ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            Find the perfect roommate for your space
+          </p>
+        </div>
 
-          <div>
-            <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Monthly rent (₹)</label>
-            <div className="relative">
-              <IndianRupee className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="number"
-                min="0"
-                value={rent}
-                onChange={(e) => setRent(e.target.value)}
-                placeholder="6500"
-                className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`}
-              />
+        {/* Success/Error Messages */}
+        {result && (
+          <div className={`max-w-2xl mx-auto mb-6 p-4 rounded-xl ${
+            result.success 
+              ? darkMode ? 'bg-green-900/20 border border-green-700 text-green-300' : 'bg-green-50 border border-green-200 text-green-700'
+              : darkMode ? 'bg-red-900/20 border border-red-700 text-red-300' : 'bg-red-50 border border-red-200 text-red-700'
+          }`}>
+            {result.success ? (
+              <div>
+                <h3 className="font-semibold mb-1">Room posted successfully!</h3>
+                <p className="text-sm">Your room listing is now live and visible to potential roommates.</p>
+              </div>
+            ) : (
+              <div>
+                <h3 className="font-semibold mb-1">Error posting room</h3>
+                <p className="text-sm">{result.error}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Form Card */}
+        <div className={`max-w-2xl mx-auto rounded-2xl border p-8 ${cardClasses}`}>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Property Details Section */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <Home className="w-5 h-5 text-blue-500" />
+                Property Details
+              </h2>
+              
+              <div className="relative">
+                <input
+                  type="text"
+                  name="title"
+                  placeholder="Property Title"
+                  value={form.title}
+                  onChange={handleChange}
+                  className={`w-full p-4 pl-12 border rounded-xl transition-all focus:ring-2 focus:outline-none ${inputClasses}`}
+                  required
+                />
+                <Home className="absolute left-4 top-4 w-5 h-5 text-gray-400" />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="relative">
+                  <input
+                    type="number"
+                    name="rent"
+                    placeholder="Monthly Rent ($)"
+                    value={form.rent}
+                    onChange={handleChange}
+                    className={`w-full p-4 pl-12 border rounded-xl transition-all focus:ring-2 focus:outline-none ${inputClasses}`}
+                    required
+                  />
+                  <span className="absolute left-4 top-4 text-gray-400 font-semibold">$</span>
+                </div>
+
+                <div className="relative">
+                  <input
+                    type="number"
+                    name="beds"
+                    placeholder="Number of Beds"
+                    value={form.beds}
+                    onChange={handleChange}
+                    className={`w-full p-4 pl-12 border rounded-xl transition-all focus:ring-2 focus:outline-none ${inputClasses}`}
+                    required
+                  />
+                  <Bed className="absolute left-4 top-4 w-5 h-5 text-gray-400" />
+                </div>
+              </div>
+
+              <div className="relative">
+                <input
+                  type="text"
+                  name="location"
+                  placeholder="Location"
+                  value={form.location}
+                  onChange={handleChange}
+                  className={`w-full p-4 pl-12 border rounded-xl transition-all focus:ring-2 focus:outline-none ${inputClasses}`}
+                  required
+                />
+                <MapPin className="absolute left-4 top-4 w-5 h-5 text-gray-400" />
+              </div>
+
+              <div className="relative">
+                <input
+                  type="date"
+                  name="move_in_date"
+                  value={form.move_in_date}
+                  onChange={handleChange}
+                  className={`w-full p-4 pl-12 border rounded-xl transition-all focus:ring-2 focus:outline-none ${inputClasses}`}
+                  required
+                />
+                <Calendar className="absolute left-4 top-4 w-5 h-5 text-gray-400" />
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Location</label>
-            <div className="relative">
-              <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Area / landmark"
-                className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`}
-              />
-            </div>
-          </div>
+            {/* Contact Information Section */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <Mail className="w-5 h-5 text-blue-500" />
+                Contact Information
+              </h2>
+              
+              <div className="relative">
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email Address"
+                  value={form.email}
+                  onChange={handleChange}
+                  className={`w-full p-4 pl-12 border rounded-xl transition-all focus:ring-2 focus:outline-none ${inputClasses}`}
+                  required
+                />
+                <Mail className="absolute left-4 top-4 w-5 h-5 text-gray-400" />
+              </div>
 
-            <div>
-              <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Landmark (optional)</label>
-              <input
-                value={landmark}
-                onChange={(e) => setLandmark(e.target.value)}
-                placeholder="Near main gate / library / metro"
-                className={`w-full px-3 py-2.5 rounded-lg border ${inputBg}`}
-              />
-            </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="mobile"
+                    placeholder="Phone Number (optional)"
+                    value={form.mobile}
+                    onChange={handleChange}
+                    className={`w-full p-4 pl-12 border rounded-xl transition-all focus:ring-2 focus:outline-none ${inputClasses}`}
+                  />
+                  <Phone className="absolute left-4 top-4 w-5 h-5 text-gray-400" />
+                </div>
 
-          <div>
-            <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Beds</label>
-            <input
-              type="number"
-              min={1}
-                max={6}
-                value={bedrooms}
-                onChange={(e) => setBedrooms(Number(e.target.value))}
-              className={`w-full px-3 py-2.5 rounded-lg border ${inputBg}`}
-            />
-          </div>
-
-          <div>
-            <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Move-in date</label>
-            <div className="relative">
-              <Calendar className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="date"
-                  value={availableFrom}
-                  onChange={(e) => setAvailableFrom(e.target.value)}
-                className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`}
-              />
-            </div>
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Description</label>
-            <textarea
-              value={desc}
-              onChange={(e) => setDesc(e.target.value)}
-              rows={4}
-              placeholder="Share details, preferences, and amenities."
-              className={`w-full px-3 py-2.5 rounded-lg border ${inputBg}`}
-            />
-          </div>
-
-            {/* Preferences / Requirements */}
-            <div className="sm:col-span-2">
-              <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Preferences / Requirements</label>
-              <textarea
-                value={preferences}
-                onChange={(e) => setPreferences(e.target.value)}
-                rows={3}
-                placeholder="e.g., Non-smoker, vegetarian preferred, quiet hours after 10PM"
-                className={`w-full px-3 py-2.5 rounded-lg border ${inputBg}`}
-              />
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="instagram"
+                    placeholder="Instagram (optional)"
+                    value={form.instagram}
+                    onChange={handleChange}
+                    className={`w-full p-4 pl-12 border rounded-xl transition-all focus:ring-2 focus:outline-none ${inputClasses}`}
+                  />
+                  <Instagram className="absolute left-4 top-4 w-5 h-5 text-gray-400" />
+                </div>
+              </div>
             </div>
 
-          <div className="sm:col-span-2">
-            <label className={`block text-xs font-medium mb-2 ${labelClr}`}>Photos</label>
-              <label className={`flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${darkMode ? 'hover:bg-gray-900/50' : 'hover:bg-gray-50'} ${dropBorder}`}>
-                <ImageIcon className="w-6 h-6 text-gray-400" />
-                <span className="text-xs text-gray-600 dark:text-gray-300">Click to upload or drag and drop</span>
+            {/* Photos Section */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <Camera className="w-5 h-5 text-blue-500" />
+                Photos
+              </h2>
+              
+              <div className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors ${
+                darkMode ? 'border-gray-600 hover:border-gray-500' : 'border-gray-300 hover:border-gray-400'
+              }`}>
                 <input
                   type="file"
-                  accept="image/*"
                   multiple
+                  accept="image/*"
+                  onChange={handleImageChange}
                   className="hidden"
-                  onChange={(e) => {
-                    const files = Array.from(e.target.files || []);
-                    setImages(files);
-                    const urls = files.map((f) => URL.createObjectURL(f));
-                    setPreviews(urls);
-                  }}
+                  id="photo-upload"
                 />
-              </label>
+                <label htmlFor="photo-upload" className="cursor-pointer">
+                  <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                  <p className="text-lg font-medium">Click to upload photos</p>
+                  <p className={`text-sm mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    PNG, JPG up to 5MB each
+                  </p>
+                </label>
+              </div>
 
-              {previews.length > 0 && (
-                <div className="mt-3 grid grid-cols-3 sm:grid-cols-4 gap-3">
-                  {previews.map((src, i) => (
-                    <div key={i} className={`relative rounded-lg overflow-hidden border ${dropBorder}`}>
-                      <img src={src} alt={`Preview ${i + 1}`} className="aspect-square object-cover w-full h-full" />
+              {/* Image Previews */}
+              {imagePreviews.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {imagePreviews.map((preview, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={preview}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        ×
+                      </button>
                     </div>
                   ))}
                 </div>
               )}
-          </div>
-
-            {/* Contact Info */}
-            <div className="sm:col-span-2">
-              <div className="flex items-center justify-between mb-2">
-                <label className={`text-xs font-medium ${labelClr}`}>Contact info (your choice)</label>
-                <button
-                  type="button"
-                  onClick={() => setContacts((prev) => [...prev, { id: Date.now(), type: 'mobile', value: '' }])}
-                  className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-blue-600 text-white hover:bg-blue-700"
-                >
-                  <Plus className="w-3 h-3" /> Add
-                </button>
-              </div>
-              <div className="space-y-3">
-                {contacts.map((c, idx) => {
-                  const Icon = iconForType(c.type);
-                  return (
-                    <div key={c.id} className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center">
-                      <select
-                        value={c.type}
-                        onChange={(e) => setContacts((prev) => prev.map((x, i) => i === idx ? { ...x, type: e.target.value } : x))}
-                        className={`sm:col-span-1 px-3 py-2.5 rounded-lg border ${inputBg}`}
-                      >
-                        <option value="mobile">Mobile</option>
-                        <option value="instagram">Instagram</option>
-                        <option value="email">Email</option>
-                        <option value="link">Link</option>
-                      </select>
-                      <div className="sm:col-span-2 relative">
-                        <Icon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input
-                          value={c.value}
-                          onChange={(e) => setContacts((prev) => prev.map((x, i) => i === idx ? { ...x, value: e.target.value } : x))}
-                          placeholder={placeholderForType(c.type)}
-                          className={`w-full pl-9 pr-10 py-2.5 rounded-lg border ${inputBg}`}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setContacts((prev) => prev.filter((x) => x.id !== c.id))}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-red-500/10 text-red-600"
-                          aria-label="Remove contact"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
             </div>
 
-          <div className="sm:col-span-2 flex items-center gap-3">
-            <button type="button" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 text-sm font-medium">
-              <UploadCloud className="w-4 h-4" />
-              Publish listing
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full p-4 text-white font-semibold rounded-xl transition-all focus:ring-2 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${buttonClasses}`}
+            >
+              {loading ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Posting Room...
+                </div>
+              ) : (
+                'Post Room'
+              )}
             </button>
-            <button type="reset" onClick={() => { setTitle(""); setRent(""); setLocation(""); setLandmark(""); setBedrooms(1); setAvailableFrom(""); setDesc(""); setPreferences(""); setContacts([{ id: 1, type: 'mobile', value: '' }]); setImages([]); setPreviews([]); }} className={`px-3 py-2.5 rounded-lg border text-sm ${darkMode ? 'border-gray-700 text-gray-200' : 'border-gray-300 text-gray-800'}`}>
-              Reset
-             </button>
-           </div>
-         </form>
-
-         {/* Placeholder */}
-         <div className={`mt-6 text-xs ${textMuted}`}>Submitting will be wired to backend later.</div>
-       </div>
-     </main>
-
-     <Footer darkMode={darkMode} />
-   </div>
+          </form>
+        </div>
+      </div>
+    </div>
   );
 }

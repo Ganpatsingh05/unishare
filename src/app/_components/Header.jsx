@@ -8,39 +8,60 @@ import logoImage from '../assets/images/logounishare1.png'; // Adjust path as ne
 import { Search, Globe, Bell, Sun, Moon, User, LogOut, Settings, FileText, HelpCircle, UserCircle, Menu, X } from 'lucide-react';
 import NotificationPanel from './NotificationPanel';
 import HeaderMobile from './HeaderMobile';
-//
+import { checkAuthStatus } from '../lib/api';
 
 const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [isNotificationActive, setIsNotificationActive] = useState(false);
-  //
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifInlineOpen, setNotifInlineOpen] = useState(false);
   const [notifInlineFilter, setNotifInlineFilter] = useState('All'); // 'All' | 'Unread'
   const [notifications, setNotifications] = useState(() => [
     { id: '1', title: 'Welcome to UniShare', body: 'Thanks for joining! Explore rides, marketplace, housing and more.', time: 'Just now', type: 'announcement', read: false },
-    { id: '2', title: 'New message', body: 'Alex: “Hey! Are you still selling the calculator?”', time: '5m', type: 'message', read: false },
+    { id: '2', title: 'New message', body: 'Alex: "Hey! Are you still selling the calculator?"', time: '5m', type: 'message', read: false },
     { id: '3', title: 'Safety tip', body: 'Meet in public places for trades. Keep it safe ✨', time: '1h', type: 'info', read: true },
   ]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userAvatar, setUserAvatar] = useState(null);
   const router = useRouter();
 
-  const handleProfileMenuToggle = () => setProfileMenuOpen((prev) => !prev);
+  useEffect(() => {
+    // Check authentication status on component mount
+    const checkAuth = async () => {
+      try {
+        const { authenticated, user } = await checkAuthStatus();
+        setIsLoggedIn(authenticated);
+        if (authenticated && user) {
+          setUserAvatar(user.picture || null);
+        }
+      } catch (error) {
+        console.error('Error checking auth status:', error);
+        setIsLoggedIn(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  const handleProfileMenuToggle = () => {
+    if (isLoggedIn) {
+      setProfileMenuOpen((prev) => !prev);
+    } else {
+      router.push('/login');
+    }
+  };
 
   const handleNotificationClick = () => {
     setIsNotificationActive(true);
     setTimeout(() => setIsNotificationActive(false), 150);
-  // Toggle notification panel on desktop
-  setNotifOpen((prev) => !prev);
+    setNotifOpen((prev) => !prev);
   };
-
-  //
 
   const handleThemeToggle = () => {
     onThemeToggle();
-    // Add a brief animation class
     const button = document.querySelector('[data-theme-toggle]');
     if (button) {
       button.classList.add('animate-spin');
@@ -48,13 +69,28 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     try {
+      // Call your logout API if needed
       localStorage.removeItem('unishare_user');
       localStorage.removeItem('token');
-    } catch (e) {}
+      setIsLoggedIn(false);
+      setUserAvatar(null);
+      setProfileMenuOpen(false);
+      setMobileMenuOpen(false);
+      router.push('/login');
+    } catch (e) {
+      console.error('Logout error:', e);
+    }
+  };
+
+  const handleProfileClick = () => {
+    if (isLoggedIn) {
+      router.push('/profile');
+    } else {
+      router.push('/login');
+    }
     setMobileMenuOpen(false);
-    router.push('/login');
   };
 
   return (
@@ -63,12 +99,18 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
     }`}>
       {/* Mobile-only header */}
       <div className="md:hidden">
-        <HeaderMobile darkMode={darkMode} onThemeToggle={onThemeToggle} logoRotation={logoRotation} />
+        <HeaderMobile 
+          darkMode={darkMode} 
+          onThemeToggle={onThemeToggle} 
+          logoRotation={logoRotation}
+          isLoggedIn={isLoggedIn}
+          userAvatar={userAvatar}
+          onProfileClick={handleProfileClick}
+        />
       </div>
 
       {/* Desktop/Tablet header */}
       <div className="hidden md:block mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
-        {/* 🔧 HEADER HEIGHT CHANGE: Changed from h-16 to h-28 to increase header height for larger logo */}
         <div className="flex h-20 items-center justify-between">
           
           {/* Logo and Search Section */}
@@ -76,7 +118,6 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
             <Link className="block group cursor-pointer" href="/">
               <span className="sr-only">UniShare Home</span>
               <div className="flex items-center gap-3">
-                {/* Enhanced Interactive Logo */}
                 <div 
                   className="h-16 w-16 transition-all duration-300 transform group-hover:scale-125 animate-float"
                   style={{ 
@@ -93,7 +134,6 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
                     priority
                   />
                 </div>
-                {/* Styled Text Logo */}
                 <span className="font-bold text-2xl transition-all duration-300 group-hover:text-opacity-80 whitespace-nowrap">
                   <span className={`transition-colors duration-300 ${
                     darkMode ? 'text-yellow-300 group-hover:text-yellow-200' : 'text-yellow-500 group-hover:text-yellow-600'
@@ -109,7 +149,7 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
               </div>
             </Link>
             
-            {/* Enhanced Search Bar with better positioning */}
+            {/* Enhanced Search Bar */}
             <div className="hidden md:flex items-center relative flex-1 max-w-2xl mx-4">
               <div className={`absolute left-4 transition-all duration-300 z-10 ${
                 searchFocused || searchValue 
@@ -183,24 +223,9 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
 
           {/* Right Section */}
           <div className="flex items-center gap-3">
-            {/* Mobile Hamburger */}
-            <button
-              className={`md:hidden inline-flex items-center justify-center p-3 rounded-xl border transition-all duration-200 cursor-pointer ${
-                darkMode ? 'border-gray-700 text-gray-200 hover:bg-gray-800' : 'border-gray-200 text-gray-700 hover:bg-gray-100'
-              }`}
-              aria-label="Open menu"
-              aria-controls="navbar-hamburger"
-              aria-expanded={mobileMenuOpen ? 'true' : 'false'}
-              onClick={() => setMobileMenuOpen((o) => !o)}
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-
             {/* Action Buttons */}
             <div className="flex items-center gap-2">
               
-              {/* Removed language toggle button */}
-
               {/* Enhanced Notifications */}
               <button 
                 className={`hidden sm:flex p-3 rounded-xl transition-all duration-300 transform hover:scale-110 active:scale-95 relative cursor-pointer ${
@@ -239,28 +264,93 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
 
               {/* Enhanced Profile Dropdown */}
               <div className="relative hidden md:block">
-                <Link 
-                  href="/login"
+                <button 
+                  onClick={handleProfileMenuToggle}
                   className={`overflow-hidden rounded-xl border-2 shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95 cursor-pointer inline-block ${
                     darkMode 
                       ? 'border-gray-600 hover:border-yellow-300 hover:shadow-yellow-300/20' 
                       : 'border-gray-300 hover:border-blue-500 hover:shadow-blue-500/20'
                   }`}
                 >
-                  <span className="sr-only">Login / Profile</span>
+                  <span className="sr-only">{isLoggedIn ? 'Profile' : 'Login'}</span>
                   <div className={`size-12 flex items-center justify-center font-bold text-xl transition-all duration-300 ${
-                    darkMode ? 'bg-gradient-to-br from-yellow-400 to-yellow-300 text-gray-900' : 'bg-gradient-to-br from-blue-600 to-blue-700 text-white'
+                    darkMode 
+                      ? isLoggedIn ? 'bg-gradient-to-br from-yellow-400 to-yellow-300 text-gray-900' : 'bg-gray-700 text-gray-300' 
+                      : isLoggedIn ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white' : 'bg-gray-200 text-gray-600'
                   }`}>
-                    <User className="w-5 h-5" />
+                    {isLoggedIn && userAvatar ? (
+                      <Image
+                        src={userAvatar}
+                        alt="User Avatar"
+                        width={48}
+                        height={48}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User className="w-5 h-5" />
+                    )}
                   </div>
-                </Link>
+                </button>
+
+                {/* Profile Dropdown Menu */}
+                {profileMenuOpen && isLoggedIn && (
+                  <div className={`absolute right-0 mt-2 w-48 rounded-xl shadow-lg border-2 z-50 ${
+                    darkMode 
+                      ? 'bg-gray-800 border-gray-700' 
+                      : 'bg-white border-gray-200'
+                  }`}>
+                    <div className="py-1">
+                      <Link
+                        href="/profile"
+                        className={`block px-4 py-2 text-sm transition-colors duration-200 ${
+                          darkMode 
+                            ? 'text-gray-200 hover:bg-gray-700' 
+                            : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                        onClick={() => setProfileMenuOpen(false)}
+                      >
+                        <div className="flex items-center gap-2">
+                          <User className="w-4 h-4" />
+                          <span>Profile</span>
+                        </div>
+                      </Link>
+                      <Link
+                        href="/settings"
+                        className={`block px-4 py-2 text-sm transition-colors duration-200 ${
+                          darkMode 
+                            ? 'text-gray-200 hover:bg-gray-700' 
+                            : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                        onClick={() => setProfileMenuOpen(false)}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Settings className="w-4 h-4" />
+                          <span>Settings</span>
+                        </div>
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className={`block w-full text-left px-4 py-2 text-sm transition-colors duration-200 ${
+                          darkMode 
+                            ? 'text-red-300 hover:bg-gray-700' 
+                            : 'text-red-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <LogOut className="w-4 h-4" />
+                          <span>Logout</span>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
-  </div>
+        </div>
 
         {/* Flowbite-like collapsible mobile menu */}
-  <div className={`${mobileMenuOpen ? 'block' : 'hidden'} md:hidden w-full mt-2`} id="navbar-hamburger">
+        <div className={`${mobileMenuOpen ? 'block' : 'hidden'} md:hidden w-full mt-2`} id="navbar-hamburger">
           <ul className={`flex flex-col font-medium rounded-lg border overflow-hidden ${
             darkMode ? 'bg-gray-900 border-gray-800' : 'bg-gray-50 border-gray-200'
           }`}>
@@ -283,7 +373,6 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
                 </div>
               </div>
             </li>
-            {/* Removed language toggle from mobile menu */}
             {/* Notifications */}
             <li>
               <button
@@ -390,25 +479,26 @@ const Header = ({ darkMode, onThemeToggle, logoRotation = 0 }) => {
             </li>
             {/* Profile/Login */}
             <li>
-              <Link
-                href="/login"
-                onClick={() => setMobileMenuOpen(false)}
+              <button
+                onClick={handleProfileClick}
                 className={`w-full inline-flex items-center gap-3 py-2.5 px-3 rounded-none ${darkMode ? 'text-gray-200 hover:bg-gray-800' : 'text-gray-900 hover:bg-gray-100'}`}
               >
                 <User className="w-5 h-5" />
-                <span>Login / Profile</span>
-              </Link>
-            </li>
-            {/* Logout */}
-            <li>
-              <button
-                onClick={() => { try { localStorage.removeItem('unishare_user'); localStorage.removeItem('token'); } catch(e){}; setMobileMenuOpen(false); router.push('/login'); }}
-                className={`w-full flex items-center gap-3 py-2.5 px-3 text-left rounded-none ${darkMode ? 'text-red-300 hover:bg-gray-800' : 'text-red-600 hover:bg-gray-100'}`}
-              >
-                <LogOut className="w-5 h-5" />
-                <span>Logout</span>
+                <span>{isLoggedIn ? 'Profile' : 'Login'}</span>
               </button>
             </li>
+            {/* Logout (only show if logged in) */}
+            {isLoggedIn && (
+              <li>
+                <button
+                  onClick={handleLogout}
+                  className={`w-full flex items-center gap-3 py-2.5 px-3 text-left rounded-none ${darkMode ? 'text-red-300 hover:bg-gray-800' : 'text-red-600 hover:bg-gray-100'}`}
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span>Logout</span>
+                </button>
+              </li>
+            )}
           </ul>
         </div>
       </div>

@@ -10,7 +10,7 @@ const nextConfig = {
 	},
 	pageExtensions: ['js', 'jsx', 'ts', 'tsx'],
 	images: {
-		domains: ['uniserver-4hkz.onrender.com', 'res.cloudinary.com' ,'rrdhgqcockacjqfuwyit.supabase.co'],
+		domains: ['uniserver-4hkz.onrender.com', 'res.cloudinary.com' ,'rrdhgqcockacjqfuwyit.supabase.co','lh3.googleusercontent.com'],
 	},
 };
 
