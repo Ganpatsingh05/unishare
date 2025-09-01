@@ -12,40 +12,40 @@ export default function HeroSlider({ darkMode = true }) {
   const slides = useMemo(
     () => [
       {
-        id: "spend-lens",
-        bgImage: "/assets/images/banners/banner1.jpg",
-        alt: "UniShare Campus",
-        cta: { label: "Get Started", href: "/" }
+  id: "buysell",
+  bgImage: "/images/buysell.jpeg",
+  alt: "Buy & Sell on Campus",
+  cta: { label: "Browse Deals", href: "/marketplace/buy" }
       },
       {
-        id: "campus-deals",
-        bgImage: "/assets/images/sliders/sellslider.png",
-        alt: "Campus Deals",
-        cta: { label: "Browse Deals", href: "/marketplace/buy" }
+  id: "announcement",
+  bgImage: "/images/announcement.jpeg",
+  alt: "Announcements",
+  cta: { label: "View Announcements", href: "/announcements" }
       },
       {
-        id: "smart-ride",
-        bgImage: "/assets/images/banners/banner3.jpg",
-        alt: "Share Rides",
-        cta: { label: "Find a Ride", href: "/share-ride" }
+  id: "house",
+  bgImage: "/images/house.jpeg",
+  alt: "Find Housing",
+  cta: { label: "Find Housing", href: "/housing" }
       },
       {
-        id: "study-notes",
-        bgImage: "/assets/images/banners/banner4.jpg",
-        alt: "Study Notes",
-        cta: { label: "Explore Notes", href: "/resources" }
+  id: "lost",
+  bgImage: "/images/Lost.jpeg",
+  alt: "Lost & Found",
+  cta: { label: "Lost & Found", href: "/lost-found" }
       },
       {
-        id: "housing",
-        bgImage: "/assets/images/banners/banner5.jpg",
-        alt: "Housing",
-        cta: { label: "Find Housing", href: "/housing" }
+  id: "rideshare",
+  bgImage: "/images/rideshare.jpeg",
+  alt: "Share a Ride",
+  cta: { label: "Find a Ride", href: "/share-ride" }
       },
       {
-        id: "ridesharingtemp",
-        bgImage: "/assets/images/sliders/ridesharingtemp.jpeg",
-        alt: "Ride Sharing Temp",
-        cta: { label: "Share a Ride", href: "/share-ride" }
+  id: "ticket",
+  bgImage: "/images/ticket.jpeg",
+  alt: "Explore Tickets",
+  cta: { label: "Explore Tickets", href: "/tickets" }
       },
     ],
     []
@@ -60,7 +60,7 @@ export default function HeroSlider({ darkMode = true }) {
     }, 4000); // 4 seconds per slide
     return () => clearInterval(id);
   }, [slides.length, isHovering, paused]);
-
+  
   // Navigation controls
   const pauseAfterInteraction = () => {
     setPaused(true);
@@ -84,10 +84,10 @@ export default function HeroSlider({ darkMode = true }) {
 
   return (
     <section className="w-full pt-8 sm:pt-12">
-      <div className="max-w-6xl mx-auto px-4">
+  <div className="mx-auto px-4 w-full">
         {/* Main Slider Container */}
         <div
-          className="relative group"
+          className="relative group px-4 sm:px-8 md:px-12 lg:px-16"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         >
@@ -98,14 +98,15 @@ export default function HeroSlider({ darkMode = true }) {
               style={{ transform: `translateX(-${index * 100}%)` }}
             >
               {slides.map((slide, slideIdx) => (
-                <div key={slide.id} className="w-full flex-shrink-0 relative">
-                  <div className="relative" style={{ width: '851px', height: '315px', maxWidth: '100%' }}>
-                    {/* Banner image */}
+                <div key={slide.id} className="w-full flex-shrink-0">
+                  <div className="relative w-full">
+                    {/* Banner image (full-width, auto height) */}
                     <Image
                       src={slide.bgImage}
                       alt={slide.alt}
-                      fill
-                      className="object-cover rounded-xl"
+                      width={2659}
+                      height={784}
+                      className="w-full h-auto rounded-xl"
                       priority={slideIdx === 0}
                       sizes="100vw"
                     />

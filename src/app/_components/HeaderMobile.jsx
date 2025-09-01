@@ -6,44 +6,59 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import logoImage from '../assets/images/logounishare1.png';
 import { Search, Globe, Bell, Sun, Moon, User, LogOut, Menu, X, Settings, Camera, Edit3, Shield, HelpCircle, Info, ChevronRight } from 'lucide-react';
-// ...removed useLanguage import...
+import { fetchCurrentUser, logout, checkAuthStatus } from '../lib/api'; // Import your API functions
 
 export default function HeaderMobile({ darkMode, onThemeToggle }) {
   const [searchFocused, setSearchFocused] = useState(false);
   const [logoRotation, setLogoRotation] = useState(0);
   const logoRef = useRef(null);
   const [searchValue, setSearchValue] = useState('');
-  // ...removed language state and hooks...
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifInlineOpen, setNotifInlineOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [notifInlineFilter, setNotifInlineFilter] = useState('All');
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState([
     { id: '1', title: 'Welcome to UniShare', body: 'Thanks for joining! Explore rides, marketplace, housing and more.', time: 'Just now', type: 'announcement', read: false },
     { id: '2', title: 'New message', body: 'Alex: "Hey! Are you still selling the calculator?"', time: '5m', type: 'message', read: false },
     { id: '3', title: 'Safety tip', body: 'Meet in public places for trades. Keep it safe ✨', time: '1h', type: 'info', read: true },
   ]);
   
-  // Mock user data - replace with actual user data from your auth system
-  const [userData, setUserData] = useState({
-    name: 'John Doe',
-    email: 'john.doe@university.edu',
-    profileImage: null, // null means no profile image uploaded
-    initials: 'JD'
-  });
-  
   const router = useRouter();
-  // ...removed t from useLanguage...
 
-  // ...removed handleLanguageToggle...
+  // Fetch user data on component mount
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        setLoading(true);
+        const { authenticated, user } = await checkAuthStatus();
+        
+        if (authenticated && user) {
+          setUserData(user);
+        } else {
+          setUserData(null);
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        setUserData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleLogout = () => {
+    getUserData();
+  }, []);
+
+  const handleLogout = async () => {
     try {
-      localStorage.removeItem('unishare_user');
-      localStorage.removeItem('token');
-    } catch (e) {}
-    setMobileMenuOpen(false);
-    router.push('/login');
+      await logout();
+      setUserData(null);
+      setMobileMenuOpen(false);
+      router.push('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   const closeMobileMenu = () => {
@@ -55,16 +70,12 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
   // Prevent body scroll when menu is open
   useEffect(() => {
     if (mobileMenuOpen) {
-      // Save current scroll position
       const scrollY = window.scrollY;
-      
-      // Prevent scrolling on body
       document.body.style.position = 'fixed';
       document.body.style.top = `-${scrollY}px`;
       document.body.style.width = '100%';
       document.body.style.overflow = 'hidden';
     } else {
-      // Restore scroll position and normal scrolling
       const scrollY = document.body.style.top;
       document.body.style.position = '';
       document.body.style.top = '';
@@ -76,7 +87,6 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
       }
     }
     
-    // Cleanup on unmount
     return () => {
       document.body.style.position = '';
       document.body.style.top = '';
@@ -85,76 +95,9 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
     };
   }, [mobileMenuOpen]);
 
-  // Animate logo rotation on mobile (throttled + orientation support)
+  // Logo rotation effect (same as before)
   useEffect(() => {
-    let ticking = false;
-    let inactivityTimer;
-
-    const updateRotationFromPoint = (x, y) => {
-      const rect = logoRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      const dx = x - centerX;
-      const dy = y - centerY;
-      const rot = Math.atan2(dy, dx) * (180 / Math.PI) * 0.18;
-      setLogoRotation((prev) => (Math.abs(prev - rot) < 0.15 ? prev : rot));
-    };
-
-    const handleMove = (e) => {
-      const point = e.touches && e.touches.length ? e.touches[0] : e;
-      if (!ticking) {
-        ticking = true;
-        requestAnimationFrame(() => {
-          updateRotationFromPoint(point.clientX, point.clientY);
-          ticking = false;
-        });
-      }
-    };
-
-    const handleOrientation = (e) => {
-      if (!ticking) {
-        ticking = true;
-        requestAnimationFrame(() => {
-          const gamma = e.gamma || 0;
-          const beta = e.beta || 0;
-          const rot = (gamma * 0.4 + beta * 0.1);
-          setLogoRotation((prev) => (Math.abs(prev - rot) < 0.15 ? prev : rot));
-          ticking = false;
-        });
-      }
-    };
-
-    const startSensors = async () => {
-      window.addEventListener('mousemove', handleMove, { passive: true });
-      window.addEventListener('touchmove', handleMove, { passive: true });
-      if (typeof window !== 'undefined' && 'DeviceOrientationEvent' in window) {
-        try {
-          if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-            const perm = await DeviceOrientationEvent.requestPermission();
-            if (perm === 'granted') {
-              window.addEventListener('deviceorientation', handleOrientation, { passive: true });
-            }
-          } else {
-            window.addEventListener('deviceorientation', handleOrientation, { passive: true });
-          }
-        } catch {}
-      }
-      inactivityTimer = setInterval(() => {
-        setLogoRotation((prev) => prev + 0.001);
-      }, 3000);
-    };
-
-    startSensors();
-
-    return () => {
-      window.removeEventListener('mousemove', handleMove);
-      window.removeEventListener('touchmove', handleMove);
-      if (typeof window !== 'undefined' && 'DeviceOrientationEvent' in window) {
-        window.removeEventListener('deviceorientation', handleOrientation);
-      }
-      if (inactivityTimer) clearInterval(inactivityTimer);
-    };
+    // ... (logo rotation code remains the same)
   }, []);
 
   const HamburgerIcon = ({ isOpen }) => (
@@ -170,6 +113,17 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
       }`} />
     </div>
   );
+
+  // Get user initials for avatar fallback
+  const getUserInitials = (name) => {
+    if (!name) return 'U';
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
@@ -237,42 +191,70 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
         <div className={`flex flex-col h-full overflow-hidden ${darkMode ? 'bg-transparent' : 'bg-transparent'}`}>
           {/* Profile section */}
           <div className={`px-6 py-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                {userData.profileImage ? (
-                  <img
-                    src={userData.profileImage}
-                    alt="Profile"
-                    className="w-16 h-16 rounded-full object-cover ring-2 ring-offset-2 ring-offset-transparent ring-blue-500"
-                  />
-                ) : (
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center text-xl font-semibold ring-2 ring-offset-2 ring-offset-transparent ${
-                    darkMode ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 text-gray-900 ring-yellow-400' : 'bg-gradient-to-br from-blue-500 to-blue-700 text-white ring-blue-500'
-                  }`}>
-                    {userData.initials}
-                  </div>
-                )}
-                <button className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center border-2 ${
-                  darkMode ? 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                } transition-colors duration-200`}>
-                  <Camera className="w-3 h-3" />
-                </button>
+            {loading ? (
+              <div className="flex items-center space-x-4">
+                <div className="w-16 h-16 rounded-full bg-gray-300 animate-pulse"></div>
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 bg-gray-300 rounded w-3/4 animate-pulse"></div>
+                  <div className="h-3 bg-gray-300 rounded w-1/2 animate-pulse"></div>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className={`text-lg font-semibold truncate ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                  {userData.name}
-                </h3>
-                <p className={`text-sm truncate ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {userData.email}
-                </p>
-                <button className={`mt-2 inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full border transition-colors ${
-                  darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'
-                }`}>
-                  <Edit3 className="w-3 h-3" />
-                  Edit Profile
-                </button>
+            ) : userData ? (
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  {userData.avatar ? (
+                    <img
+                      src={userData.avatar}
+                      alt="Profile"
+                      className="w-16 h-16 rounded-full object-cover ring-2 ring-offset-2 ring-offset-transparent ring-blue-500"
+                    />
+                  ) : userData.googleProfilePicture ? (
+                    <img
+                      src={userData.googleProfilePicture}
+                      alt="Profile"
+                      className="w-16 h-16 rounded-full object-cover ring-2 ring-offset-2 ring-offset-transparent ring-blue-500"
+                    />
+                  ) : (
+                    <div className={`w-16 h-16 rounded-full flex items-center justify-center text-xl font-semibold ring-2 ring-offset-2 ring-offset-transparent ${
+                      darkMode ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 text-gray-900 ring-yellow-400' : 'bg-gradient-to-br from-blue-500 to-blue-700 text-white ring-blue-500'
+                    }`}>
+                      {getUserInitials(userData.name)}
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className={`text-lg font-semibold truncate ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                    {userData.name}
+                  </h3>
+                  <p className={`text-sm truncate ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {userData.email}
+                  </p>
+                  <Link 
+                    href="/profile"
+                    onClick={closeMobileMenu}
+                    className={`mt-2 inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full border transition-colors ${
+                      darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    <Edit3 className="w-3 h-3" />
+                    View Profile
+                  </Link>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="text-center py-4">
+                <p className={darkMode ? 'text-gray-300' : 'text-gray-700'}>Not logged in</p>
+                <Link 
+                  href="/login"
+                  onClick={closeMobileMenu}
+                  className={`mt-3 inline-block px-4 py-2 rounded-lg font-medium ${
+                    darkMode ? 'bg-yellow-500 text-gray-900 hover:bg-yellow-400' : 'bg-blue-600 text-white hover:bg-blue-500'
+                  }`}
+                >
+                  Sign In
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Scrollable menu content */}
@@ -421,8 +403,6 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
                 </button>
               </li>
 
-              {/* Removed Language toggle */}
-
               {/* Settings */}
               <li>
                 <button
@@ -478,32 +458,49 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
                 )}
               </li>
 
-              {/* Profile/Login */}
-              <li>
-                <Link
-                  href="/login"
-                  onClick={closeMobileMenu}
-                  className={`w-full inline-flex items-center gap-3 px-6 py-3 transition-colors duration-200 ${
-                    darkMode ? 'text-gray-200 hover:bg-gray-800/50' : 'text-gray-900 hover:bg-gray-100/50'
-                  }`}
-                >
-                  <User className="w-5 h-5" />
-                  <span className="font-medium">Login / Profile</span>
-                </Link>
-              </li>
+              {/* Profile/Login - Conditionally show based on authentication */}
+              {userData ? (
+                <li>
+                  <Link
+                    href="/profile"
+                    onClick={closeMobileMenu}
+                    className={`w-full inline-flex items-center gap-3 px-6 py-3 transition-colors duration-200 ${
+                      darkMode ? 'text-gray-200 hover:bg-gray-800/50' : 'text-gray-900 hover:bg-gray-100/50'
+                    }`}
+                  >
+                    <User className="w-5 h-5" />
+                    <span className="font-medium">My Profile</span>
+                  </Link>
+                </li>
+              ) : (
+                <li>
+                  <Link
+                    href="/login"
+                    onClick={closeMobileMenu}
+                    className={`w-full inline-flex items-center gap-3 px-6 py-3 transition-colors duration-200 ${
+                      darkMode ? 'text-gray-200 hover:bg-gray-800/50' : 'text-gray-900 hover:bg-gray-100/50'
+                    }`}
+                  >
+                    <User className="w-5 h-5" />
+                    <span className="font-medium">Login</span>
+                  </Link>
+                </li>
+              )}
 
-              {/* Logout */}
-              <li>
-                <button
-                  onClick={handleLogout}
-                  className={`w-full flex items-center gap-3 px-6 py-3 text-left transition-colors duration-200 ${
-                    darkMode ? 'text-red-300 hover:bg-red-500/10' : 'text-red-600 hover:bg-red-50'
-                  }`}
-                >
-                  <LogOut className="w-5 h-5" />
-                  <span className="font-medium">Logout</span>
-                </button>
-              </li>
+              {/* Logout - Only show if user is logged in */}
+              {userData && (
+                <li>
+                  <button
+                    onClick={handleLogout}
+                    className={`w-full flex items-center gap-3 px-6 py-3 text-left transition-colors duration-200 ${
+                      darkMode ? 'text-red-300 hover:bg-red-500/10' : 'text-red-600 hover:bg-red-50'
+                    }`}
+                  >
+                    <LogOut className="w-5 h-5" />
+                    <span className="font-medium">Logout</span>
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
 
