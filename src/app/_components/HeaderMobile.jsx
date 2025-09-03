@@ -6,55 +6,52 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import logoImage from '../assets/images/logounishare1.png';
 import { Search, Globe, Bell, Sun, Moon, User, LogOut, Menu, X, Settings, Camera, Edit3, Shield, HelpCircle, Info, ChevronRight } from 'lucide-react';
-import { fetchCurrentUser, logout, checkAuthStatus } from '../lib/api'; // Import your API functions
+import { useAuth, useNotifications, useUI } from '../lib/contexts/UniShareContext';
 
-export default function HeaderMobile({ darkMode, onThemeToggle }) {
-  const [searchFocused, setSearchFocused] = useState(false);
-  const [logoRotation, setLogoRotation] = useState(0);
+export default function HeaderMobile() {
+  const router = useRouter();
   const logoRef = useRef(null);
-  const [searchValue, setSearchValue] = useState('');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Context hooks
+  const { 
+    isAuthenticated, 
+    user, 
+    authLoading, 
+    logout: contextLogout, 
+    userInitials, 
+    userAvatar 
+  } = useAuth();
+  
+  const {
+    notifications,
+    unreadCount,
+    hasUnread,
+    markNotificationRead,
+    markAllNotificationsRead
+  } = useNotifications();
+  
+  const {
+    darkMode,
+    mobileMenuOpen,
+    searchValue,
+    searchFocused,
+    toggleDarkMode,
+    setMobileMenu,
+    toggleMobileMenu,
+    setSearchValue,
+    setSearchFocused
+  } = useUI();
+
+  // Local state for mobile menu sections
+  const [logoRotation, setLogoRotation] = useState(0);
   const [notifInlineOpen, setNotifInlineOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [notifInlineFilter, setNotifInlineFilter] = useState('All');
-  const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [notifications, setNotifications] = useState([
-    { id: '1', title: 'Welcome to UniShare', body: 'Thanks for joining! Explore rides, marketplace, housing and more.', time: 'Just now', type: 'announcement', read: false },
-    { id: '2', title: 'New message', body: 'Alex: "Hey! Are you still selling the calculator?"', time: '5m', type: 'message', read: false },
-    { id: '3', title: 'Safety tip', body: 'Meet in public places for trades. Keep it safe ✨', time: '1h', type: 'info', read: true },
-  ]);
-  
-  const router = useRouter();
-
-  // Fetch user data on component mount
-  useEffect(() => {
-    const getUserData = async () => {
-      try {
-        setLoading(true);
-        const { authenticated, user } = await checkAuthStatus();
-        
-        if (authenticated && user) {
-          setUserData(user);
-        } else {
-          setUserData(null);
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        setUserData(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getUserData();
-  }, []);
 
   const handleLogout = async () => {
     try {
-      await logout();
-      setUserData(null);
-      setMobileMenuOpen(false);
+      await contextLogout();
+      setMobileMenu(false);
       router.push('/');
     } catch (error) {
       console.error('Logout error:', error);
@@ -62,7 +59,7 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
   };
 
   const closeMobileMenu = () => {
-    setMobileMenuOpen(false);
+    setMobileMenu(false);
     setNotifInlineOpen(false);
     setSettingsOpen(false);
   };
@@ -95,9 +92,30 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
     };
   }, [mobileMenuOpen]);
 
-  // Logo rotation effect (same as before)
+  // Logo rotation effect
   useEffect(() => {
-    // ... (logo rotation code remains the same)
+    const handleMouseMove = (e) => {
+      if (!logoRef.current) return;
+      
+      const rect = logoRef.current.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      
+      const deltaX = e.clientX - centerX;
+      const deltaY = e.clientY - centerY;
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      
+      if (distance < 100) {
+        const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+        const intensity = Math.max(0, (100 - distance) / 100);
+        setLogoRotation(angle * intensity * 0.3);
+      } else {
+        setLogoRotation(0);
+      }
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    return () => document.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   const HamburgerIcon = ({ isOpen }) => (
@@ -113,17 +131,6 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
       }`} />
     </div>
   );
-
-  // Get user initials for avatar fallback
-  const getUserInitials = (name) => {
-    if (!name) return 'U';
-    return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   return (
     <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
@@ -168,7 +175,7 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
           aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
           aria-controls="navbar-hamburger"
           aria-expanded={mobileMenuOpen ? 'true' : 'false'}
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          onClick={toggleMobileMenu}
         >
           <HamburgerIcon isOpen={mobileMenuOpen} />
         </button>
@@ -191,7 +198,7 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
         <div className={`flex flex-col h-full overflow-hidden ${darkMode ? 'bg-transparent' : 'bg-transparent'}`}>
           {/* Profile section */}
           <div className={`px-6 py-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-            {loading ? (
+            {authLoading ? (
               <div className="flex items-center space-x-4">
                 <div className="w-16 h-16 rounded-full bg-gray-300 animate-pulse"></div>
                 <div className="space-y-2 flex-1">
@@ -199,18 +206,12 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
                   <div className="h-3 bg-gray-300 rounded w-1/2 animate-pulse"></div>
                 </div>
               </div>
-            ) : userData ? (
+            ) : isAuthenticated && user ? (
               <div className="flex items-center space-x-4">
                 <div className="relative">
-                  {userData.avatar ? (
+                  {userAvatar ? (
                     <img
-                      src={userData.avatar}
-                      alt="Profile"
-                      className="w-16 h-16 rounded-full object-cover ring-2 ring-offset-2 ring-offset-transparent ring-blue-500"
-                    />
-                  ) : userData.googleProfilePicture ? (
-                    <img
-                      src={userData.googleProfilePicture}
+                      src={userAvatar}
                       alt="Profile"
                       className="w-16 h-16 rounded-full object-cover ring-2 ring-offset-2 ring-offset-transparent ring-blue-500"
                     />
@@ -218,16 +219,16 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
                     <div className={`w-16 h-16 rounded-full flex items-center justify-center text-xl font-semibold ring-2 ring-offset-2 ring-offset-transparent ${
                       darkMode ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 text-gray-900 ring-yellow-400' : 'bg-gradient-to-br from-blue-500 to-blue-700 text-white ring-blue-500'
                     }`}>
-                      {getUserInitials(userData.name)}
+                      {userInitials}
                     </div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className={`text-lg font-semibold truncate ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                    {userData.name}
+                    {user.name}
                   </h3>
                   <p className={`text-sm truncate ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {userData.email}
+                    {user.email}
                   </p>
                   <Link 
                     href="/profile"
@@ -297,11 +298,11 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
                     <span className="font-medium">Notifications</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    {notifications.some(n => !n.read) && (
+                    {hasUnread && (
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                         darkMode ? 'bg-red-500/20 text-red-300' : 'bg-red-100 text-red-700'
                       }`}>
-                        {notifications.filter(n => !n.read).length}
+                        {unreadCount}
                       </span>
                     )}
                     <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${notifInlineOpen ? 'rotate-90' : ''}`} />
@@ -314,7 +315,7 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
                       <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                         darkMode ? 'bg-yellow-400/20 text-yellow-300' : 'bg-blue-100 text-blue-700'
                       }`}>
-                        {notifications.filter(n => !n.read).length} unread
+                        {unreadCount} unread
                       </span>
                       <div className="flex items-center gap-2">
                         <button
@@ -326,7 +327,7 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
                           {notifInlineFilter === 'All' ? 'Unread' : 'All'}
                         </button>
                         <button
-                          onClick={() => setNotifications(prev => prev.map(n => ({ ...n, read: true })))}
+                          onClick={markAllNotificationsRead}
                           className={`px-2 py-1 rounded-md text-xs font-medium border transition-colors ${
                             darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'
                           }`}
@@ -362,7 +363,7 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
                                     {n.body}
                                   </p>
                                   <button
-                                    onClick={() => setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, read: !x.read } : x))}
+                                    onClick={() => markNotificationRead(n.id)}
                                     className={`text-xs underline transition-colors ${
                                       darkMode ? 'text-gray-400 hover:text-yellow-300' : 'text-gray-600 hover:text-blue-700'
                                     }`}
@@ -386,7 +387,7 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
               {/* Theme toggle */}
               <li>
                 <button
-                  onClick={onThemeToggle}
+                  onClick={toggleDarkMode}
                   className={`w-full flex items-center justify-between px-6 py-3 text-left transition-colors duration-200 ${
                     darkMode ? 'text-gray-200 hover:bg-gray-800/50' : 'text-gray-900 hover:bg-gray-100/50'
                   }`}
@@ -459,7 +460,7 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
               </li>
 
               {/* Profile/Login - Conditionally show based on authentication */}
-              {userData ? (
+              {isAuthenticated ? (
                 <li>
                   <Link
                     href="/profile"
@@ -488,7 +489,7 @@ export default function HeaderMobile({ darkMode, onThemeToggle }) {
               )}
 
               {/* Logout - Only show if user is logged in */}
-              {userData && (
+              {isAuthenticated && (
                 <li>
                   <button
                     onClick={handleLogout}

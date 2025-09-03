@@ -1,36 +1,53 @@
-//markateplace/buy/page.jsx
 "use client";
-import React, { useMemo, useState, useEffect } from "react";
-import { Search, SlidersHorizontal, Tag, MapPin, DollarSign, Star, ArrowUpDown, ImageIcon, IndianRupee, Calendar, Phone, Instagram, Mail, Link2, AlertCircle, Loader } from "lucide-react";
+
+import React, { useState, useEffect } from "react";
+import { 
+  Search, 
+  SlidersHorizontal, 
+  Tag, 
+  MapPin, 
+  DollarSign, 
+  Star, 
+  ArrowUpDown, 
+  ImageIcon, 
+  IndianRupee, 
+  Calendar, 
+  Phone, 
+  Instagram, 
+  Mail, 
+  Link2, 
+  AlertCircle, 
+  Loader,
+  X,
+  ArrowLeft
+} from "lucide-react";
+import Link from 'next/link';
 import { fetchMarketplaceItems } from "../../lib/api";
-
-// Mock components - replace with your actual components
-const Header = ({ darkMode, onThemeToggle }) => (
-  <div className="p-4 border-b">
-    <button onClick={onThemeToggle}>Toggle {darkMode ? 'Light' : 'Dark'} Mode</button>
-  </div>
-);
-
-const Footer = ({ darkMode }) => (
-  <div className="p-4 border-t">Footer Content</div>
-);
+import { 
+  useUniShare, 
+  useAuth, 
+  useMessages, 
+  useUI 
+} from "../../lib/contexts/UniShareContext";
 
 export default function MarketplaceBuyPage() {
-  const [darkMode, setDarkMode] = useState(true);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { isAuthenticated, user } = useAuth();
+  const { error, success, loading, setError, clearError, setLoading } = useMessages();
+  const { darkMode, toggleDarkMode, searchValue, setSearchValue } = useUI();
+
+  // Local state
   const [items, setItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
 
-  // Filters & sorting
-  const [query, setQuery] = useState("");
+  // Filter states
   const [category, setCategory] = useState("all");
   const [condition, setCondition] = useState("all");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [location, setLocation] = useState("");
-  const [sort, setSort] = useState("recent"); // recent | price-asc | price-desc
+  const [sort, setSort] = useState("recent");
 
+  // Theme classes
   const labelClr = darkMode ? "text-gray-300" : "text-gray-700";
   const inputBg = darkMode ? "bg-gray-900 border-gray-800 text-gray-100 placeholder-gray-500" : "bg-white border-gray-200 text-gray-900 placeholder-gray-500";
   const cardBg = darkMode ? "bg-gray-950 border-gray-900" : "bg-white border-gray-200";
@@ -40,11 +57,11 @@ export default function MarketplaceBuyPage() {
   // Fetch items from backend
   const fetchItems = async () => {
     setLoading(true);
-    setError("");
+    clearError();
     
     try {
       const filters = {
-        search: query || undefined,
+        search: searchValue || undefined,
         category: category !== 'all' ? category : undefined,
         condition: condition !== 'all' ? condition : undefined,
         min_price: minPrice || undefined,
@@ -74,17 +91,17 @@ export default function MarketplaceBuyPage() {
   // Fetch items on component mount and when filters change
   useEffect(() => {
     fetchItems();
-  }, [query, category, condition, minPrice, maxPrice, location, sort]);
+  }, [searchValue, category, condition, minPrice, maxPrice, location, sort]);
 
   const handleReset = () => {
-    setQuery("");
+    setSearchValue("");
     setCategory("all");
     setCondition("all");
     setMinPrice("");
     setMaxPrice("");
     setLocation("");
     setSort("recent");
-    setError("");
+    clearError();
   };
 
   const formatDate = (dateString) => {
@@ -115,61 +132,104 @@ export default function MarketplaceBuyPage() {
     }
   };
 
-  // Item detail modal/card component
-  const ItemDetailCard = ({ item, onClose }) => (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={onClose}>
-      <div className={`max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-2xl border ${cardBg} p-6`} onClick={e => e.stopPropagation()}>
-        <div className="flex items-start justify-between mb-4">
-          <h2 className={`text-xl font-semibold ${titleClr}`}>{item.title}</h2>
-          <button onClick={onClose} className={`p-2 rounded-lg hover:bg-gray-100 ${darkMode ? 'hover:bg-gray-800' : ''}`}>
-            ✕
+  // Item detail modal component
+  const ItemDetailModal = ({ item, onClose }) => (
+    <div 
+      className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm" 
+      onClick={onClose}
+    >
+      <div 
+        className={`max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-2xl border shadow-2xl ${cardBg} p-6`} 
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between mb-6">
+          <h2 className={`text-2xl font-bold ${titleClr}`}>{item.title}</h2>
+          <button 
+            onClick={onClose} 
+            className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}
+          >
+            <X className="w-5 h-5" />
           </button>
         </div>
         
-        <div className="space-y-4">
+        <div className="space-y-6">
+          {/* Item photos placeholder */}
+          <div className={`w-full h-64 rounded-xl flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
+            {item.photos && item.photos.length > 0 ? (
+              <img 
+                src={item.photos[0]} 
+                alt={item.title}
+                className="w-full h-full object-cover rounded-xl"
+              />
+            ) : (
+              <ImageIcon className="w-16 h-16 text-gray-400" />
+            )}
+          </div>
+
+          {/* Price and tags */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1 text-2xl font-bold text-emerald-500">
-              <IndianRupee size={20} />
+            <div className="flex items-center gap-1 text-3xl font-bold text-emerald-500">
+              <IndianRupee size={24} />
               {item.price}
             </div>
-            <div className="flex items-center gap-3 text-sm">
-              <span className={`px-2 py-1 rounded-full ${darkMode ? 'bg-gray-800' : 'bg-gray-100'} ${subClr}`}>
+            <div className="flex items-center gap-3">
+              <span className={`px-3 py-1 rounded-full text-sm ${darkMode ? 'bg-gray-800' : 'bg-gray-100'} ${subClr}`}>
                 {item.category}
               </span>
-              <span className={`px-2 py-1 rounded-full ${darkMode ? 'bg-gray-800' : 'bg-gray-100'} ${subClr}`}>
+              <span className={`px-3 py-1 rounded-full text-sm ${
+                item.condition === 'new' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
+                item.condition === 'like-new' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
+                item.condition === 'good' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                item.condition === 'fair' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' :
+                'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+              }`}>
                 {item.condition}
               </span>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className={`flex items-center gap-2 ${subClr}`}>
-              <MapPin size={16} />
-              {item.location}
+          {/* Location and availability */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className={`flex items-center gap-3 p-3 rounded-xl ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+              <MapPin className="w-5 h-5 text-purple-500" />
+              <div>
+                <p className={`text-xs ${subClr}`}>Location</p>
+                <p className={`font-medium ${titleClr}`}>{item.location}</p>
+              </div>
             </div>
-            <div className={`flex items-center gap-2 ${subClr}`}>
-              <Calendar size={16} />
-              Available from {formatDate(item.available_from)}
+            <div className={`flex items-center gap-3 p-3 rounded-xl ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+              <Calendar className="w-5 h-5 text-blue-500" />
+              <div>
+                <p className={`text-xs ${subClr}`}>Available from</p>
+                <p className={`font-medium ${titleClr}`}>{formatDate(item.available_from)}</p>
+              </div>
             </div>
           </div>
 
+          {/* Description */}
           {item.description && (
             <div>
-              <h3 className={`font-medium mb-2 ${titleClr}`}>Description</h3>
-              <p className={`text-sm ${subClr}`}>{item.description}</p>
+              <h3 className={`font-semibold mb-3 ${titleClr}`}>Description</h3>
+              <p className={`leading-relaxed ${subClr}`}>{item.description}</p>
             </div>
           )}
 
+          {/* Contact Information */}
           {item.contact_info && Object.keys(item.contact_info).length > 0 && (
             <div>
-              <h3 className={`font-medium mb-2 ${titleClr}`}>Contact Information</h3>
-              <div className="space-y-2">
+              <h3 className={`font-semibold mb-3 ${titleClr}`}>Contact Information</h3>
+              <div className="space-y-3">
                 {Object.entries(item.contact_info).map(([type, value]) => {
                   const Icon = getContactIcon(type);
                   return (
-                    <div key={type} className={`flex items-center gap-3 p-2 rounded-lg ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-                      <Icon size={16} className="text-gray-400" />
-                      <span className="text-sm">{formatContactValue(type, value)}</span>
+                    <div key={type} className={`flex items-center gap-3 p-3 rounded-xl border ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-gray-50 border-gray-200'}`}>
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
+                        <Icon size={18} className="text-white" />
+                      </div>
+                      <div>
+                        <p className={`text-xs ${subClr} capitalize`}>{type}</p>
+                        <p className={`font-medium ${titleClr}`}>{formatContactValue(type, value)}</p>
+                      </div>
                     </div>
                   );
                 })}
@@ -177,8 +237,28 @@ export default function MarketplaceBuyPage() {
             </div>
           )}
 
-          <div className={`text-xs ${subClr} pt-4 border-t ${darkMode ? 'border-gray-800' : 'border-gray-200'}`}>
-            Listed by {item.users?.name || 'Anonymous'} on {formatDate(item.created_at)}
+          {/* Seller info */}
+          <div className={`pt-4 border-t ${darkMode ? 'border-gray-800' : 'border-gray-200'}`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className={`text-sm ${subClr}`}>Listed by</p>
+                <p className={`font-medium ${titleClr}`}>{item.users?.name || 'Anonymous'}</p>
+              </div>
+              <div className="text-right">
+                <p className={`text-sm ${subClr}`}>Posted on</p>
+                <p className={`font-medium ${titleClr}`}>{formatDate(item.created_at)}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex gap-3 pt-2">
+            <button className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-medium transition-all shadow-md hover:shadow-lg">
+              Contact Seller
+            </button>
+            <button className={`px-4 py-3 rounded-xl border transition-colors ${darkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-300 hover:bg-gray-50'}`}>
+              <Star className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </div>
@@ -186,26 +266,27 @@ export default function MarketplaceBuyPage() {
   );
 
   return (
-    <div className={darkMode ? "min-h-screen bg-black" : "min-h-screen bg-white"}>
-      <Header darkMode={darkMode} onThemeToggle={() => setDarkMode(p => !p)} />
+    <div className={darkMode ? "min-h-screen bg-gradient-to-br from-gray-900 to-gray-800" : "min-h-screen bg-gradient-to-br from-gray-50 to-gray-100"}>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10">
-        <div className={`rounded-2xl border p-4 sm:p-6 ${darkMode ? 'bg-gray-950/60 border-gray-900' : 'bg-gray-50 border-gray-200'}`}>
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <h1 className={`text-xl sm:text-2xl font-semibold ${titleClr}`}>Buy Items</h1>
+        <div className={`rounded-2xl border shadow-xl p-4 sm:p-6 ${darkMode ? 'bg-gray-950/60 border-gray-900' : 'bg-white/80 border-gray-200'} backdrop-blur-sm`}>
+          
+          {/* Search and filters header */}
+          <div className="flex items-center justify-between gap-3 flex-wrap mb-6">
+            <h2 className={`text-xl sm:text-2xl font-semibold ${titleClr}`}>Browse Items</h2>
             <div className="flex items-center gap-2">
               <div className="relative">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input 
-                  value={query} 
-                  onChange={(e) => setQuery(e.target.value)} 
+                  value={searchValue} 
+                  onChange={(e) => setSearchValue(e.target.value)} 
                   placeholder="Search items..." 
-                  className={`w-56 sm:w-64 pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`} 
+                  className={`w-56 sm:w-64 pl-9 pr-3 py-2.5 rounded-lg border shadow-sm ${inputBg}`} 
                 />
               </div>
               <button 
                 onClick={handleReset} 
-                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm ${darkMode ? 'border-gray-800 text-gray-300 hover:bg-gray-900' : 'border-gray-200 text-gray-700 hover:bg-gray-100'}`}
+                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${darkMode ? 'border-gray-800 text-gray-300 hover:bg-gray-900' : 'border-gray-200 text-gray-700 hover:bg-gray-100'}`}
               >
                 <SlidersHorizontal className="w-4 h-4" /> Reset
               </button>
@@ -213,11 +294,15 @@ export default function MarketplaceBuyPage() {
           </div>
 
           {/* Filters */}
-          <div className="mt-4 grid grid-cols-2 md:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
             <div className="col-span-1">
               <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Category</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value)} className={`w-full px-3 py-2.5 rounded-lg border ${inputBg}`}>
-                <option value="all">All</option>
+              <select 
+                value={category} 
+                onChange={(e) => setCategory(e.target.value)} 
+                className={`w-full px-3 py-2.5 rounded-lg border ${inputBg}`}
+              >
+                <option value="all">All Categories</option>
                 <option value="electronics">Electronics</option>
                 <option value="books">Books</option>
                 <option value="furniture">Furniture</option>
@@ -227,8 +312,12 @@ export default function MarketplaceBuyPage() {
             </div>
             <div className="col-span-1">
               <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Condition</label>
-              <select value={condition} onChange={(e) => setCondition(e.target.value)} className={`w-full px-3 py-2.5 rounded-lg border ${inputBg}`}>
-                <option value="all">All</option>
+              <select 
+                value={condition} 
+                onChange={(e) => setCondition(e.target.value)} 
+                className={`w-full px-3 py-2.5 rounded-lg border ${inputBg}`}
+              >
+                <option value="all">All Conditions</option>
                 <option value="new">New</option>
                 <option value="like-new">Like New</option>
                 <option value="good">Good</option>
@@ -276,8 +365,12 @@ export default function MarketplaceBuyPage() {
               <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Sort by</label>
               <div className="relative">
                 <ArrowUpDown className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <select value={sort} onChange={(e) => setSort(e.target.value)} className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`}>
-                  <option value="recent">Most recent</option>
+                <select 
+                  value={sort} 
+                  onChange={(e) => setSort(e.target.value)} 
+                  className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`}
+                >
+                  <option value="recent">Most Recent</option>
                   <option value="price-asc">Price: Low to High</option>
                   <option value="price-desc">Price: High to Low</option>
                 </select>
@@ -287,68 +380,107 @@ export default function MarketplaceBuyPage() {
 
           {/* Error Message */}
           {error && (
-            <div className="mt-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-2">
+            <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 backdrop-blur-sm">
               <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-              <span className="text-red-500 text-sm">{error}</span>
+              <span className="text-red-500">{error}</span>
+              <button onClick={clearError} className="ml-auto">
+                <X className="w-4 h-4 text-red-500" />
+              </button>
             </div>
           )}
 
           {/* Loading State */}
           {loading && (
-            <div className="mt-6 flex items-center justify-center py-8">
-              <Loader className="w-6 h-6 animate-spin text-blue-500" />
-              <span className={`ml-2 text-sm ${subClr}`}>Loading items...</span>
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <Loader className="w-8 h-8 animate-spin text-blue-500 mx-auto mb-3" />
+                <p className={`text-sm ${subClr}`}>Finding the best items for you...</p>
+              </div>
             </div>
           )}
 
           {/* Results */}
           {!loading && (
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {items.length === 0 && !error && (
-                <div className={`col-span-full text-center py-8 ${subClr}`}>
-                  <ImageIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>No items match your filters.</p>
-                  <button 
-                    onClick={handleReset}
-                    className="mt-2 text-blue-500 hover:text-blue-600 text-sm"
+            <div>
+              {/* Results count */}
+              <div className="flex items-center justify-between mb-4">
+                <p className={`text-sm ${subClr}`}>
+                  {items.length} {items.length === 1 ? 'item' : 'items'} found
+                </p>
+              </div>
+
+              {/* Items grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {items.length === 0 && !error && (
+                  <div className={`col-span-full text-center py-12 ${subClr}`}>
+                    <ImageIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                    <h3 className="text-lg font-medium mb-2">No items found</h3>
+                    <p className="mb-4">Try adjusting your filters or search terms</p>
+                    <button 
+                      onClick={handleReset}
+                      className="text-blue-500 hover:text-blue-600 font-medium"
+                    >
+                      Clear all filters
+                    </button>
+                  </div>
+                )}
+                
+                {items.map((item) => (
+                  <div 
+                    key={item.id} 
+                    className={`group rounded-xl border p-4 cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${cardBg}`} 
+                    onClick={() => setSelectedItem(item)}
                   >
-                    Clear all filters
-                  </button>
-                </div>
-              )}
-              
-              {items.map((item) => (
-                <div key={item.id} className={`rounded-xl border p-4 ${cardBg} hover:shadow-sm cursor-pointer transition-shadow`} onClick={() => setSelectedItem(item)}>
-                  <div className="flex items-start gap-3">
-                    <div className={`w-14 h-14 rounded-lg flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
-                      <ImageIcon className={darkMode ? 'text-gray-400' : 'text-gray-500'} size={20} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className={`text-sm font-medium ${titleClr} truncate`}>{item.title}</div>
-                      <div className="mt-1 flex items-center gap-3 text-xs">
-                        <span className={`${subClr} inline-flex items-center gap-1`}>
-                          <Tag size={12} /> {item.category}
-                        </span>
-                        <span className={`${subClr}`}>{item.condition}</span>
+                    <div className="space-y-3">
+                      {/* Item image */}
+                      <div className={`w-full h-40 rounded-lg flex items-center justify-center overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
+                        {item.photos && item.photos.length > 0 ? (
+                          <img 
+                            src={item.photos[0]} 
+                            alt={item.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          />
+                        ) : (
+                          <ImageIcon className="w-12 h-12 text-gray-400" />
+                        )}
                       </div>
-                      <div className="mt-2 flex items-center justify-between">
-                        <div className="inline-flex items-center gap-1 text-emerald-500 font-semibold">
-                          <IndianRupee size={16} /> {item.price}
+
+                      {/* Item details */}
+                      <div>
+                        <h3 className={`font-semibold ${titleClr} line-clamp-2 mb-2`}>{item.title}</h3>
+                        
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-1 text-emerald-500 font-bold text-lg">
+                            <IndianRupee size={18} />
+                            {item.price}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2 py-1 rounded-full text-xs ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
+                              {item.category}
+                            </span>
+                          </div>
                         </div>
-                        <div className={`text-xs ${subClr}`}>
-                          {formatDate(item.created_at)}
+
+                        <div className={`flex items-center gap-4 text-xs ${subClr} mb-3`}>
+                          <span className="flex items-center gap-1">
+                            <MapPin size={12} />
+                            {item.location}
+                          </span>
+                          <span>{item.condition}</span>
                         </div>
-                      </div>
-                      <div className={`mt-2 text-xs ${subClr} inline-flex items-center gap-1`}>
-                        <MapPin size={12} /> {item.location}
+
+                        <div className={`text-xs ${subClr} mb-3`}>
+                          Posted {formatDate(item.created_at)}
+                        </div>
+
+                        <button className="w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg group-hover:scale-[1.02]">
+                          View Details
+                        </button>
                       </div>
                     </div>
                   </div>
-                  <button className={`mt-4 w-full text-sm py-2.5 rounded-lg font-medium ${darkMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}>
-                    View details
-                  </button>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -356,13 +488,11 @@ export default function MarketplaceBuyPage() {
 
       {/* Item Detail Modal */}
       {selectedItem && (
-        <ItemDetailCard 
+        <ItemDetailModal 
           item={selectedItem} 
           onClose={() => setSelectedItem(null)} 
         />
       )}
-
-      <Footer darkMode={darkMode} />
     </div>
   );
 }

@@ -19,17 +19,16 @@ import {
   ChevronRight,
   CheckCircle,
 } from "lucide-react";
-import Header from "./_components/Header";
 import Main from "./_components/Main";
 import HeroSlider from "./_components/HeroSlider";
 import Footer from "./_components/Footer";
-import FloatingActionButton from "./_components/FloatingActionButton"; // Add this import
+import FloatingActionButton from "./_components/FloatingActionButton";
 
 /**
  * Page component with interactive hero section and enhanced scroll effects
  */
 export default function Page() {
-  // Set default theme to dark
+  // Get theme state from ClientHeader context if needed, or manage locally
   const [darkMode, setDarkMode] = useState(true);
   const [offset, setOffset] = useState(0);
   const [hoveredFeature, setHoveredFeature] = useState(null);
@@ -37,8 +36,6 @@ export default function Page() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isMainVisible, setIsMainVisible] = useState(false);
   const [visibleStats, setVisibleStats] = useState([]);
-  const [logoRotation, setLogoRotation] = useState(0);
-  const [noticeVisible, setNoticeVisible] = useState(true);
   
   // Interactive How It Works states
   const [activeStep, setActiveStep] = useState(0);
@@ -54,38 +51,6 @@ export default function Page() {
 
   // Static main quote
   const mainQuote = "Where Students Connect, Share, and Thrive Together";
-
-  // More realistic, human-centered features
-  const features = [
-    { 
-      icon: Car, 
-      label: "Catch a Ride", 
-      count: "2.1k", 
-      color: "from-blue-500 to-cyan-500",
-      description: "Never walk alone again"
-    },
-    { 
-      icon: ShoppingCart, 
-      label: "Buy & Sell Stuff", 
-      count: "847", 
-      color: "from-green-500 to-emerald-500",
-      description: "From textbooks to furniture"
-    },
-    { 
-      icon: HomeIcon, 
-      label: "Find a Place", 
-      count: "203", 
-      color: "from-purple-500 to-violet-500",
-      description: "Rooms that don't suck"
-    },
-    { 
-      icon: BookOpen, 
-      label: "Share Notes", 
-      count: "512", 
-      color: "from-orange-500 to-red-500",
-      description: "Study smarter, not harder"
-    },
-  ];
 
   // Enhanced How It Works steps
   const howItWorksSteps = [
@@ -130,8 +95,8 @@ export default function Page() {
     checkMobile();
     window.addEventListener('resize', checkMobile);
 
-    // Smooth, throttled scroll/mouse handlers using requestAnimationFrame
-    const ticking = { scroll: false, mouse: false };
+    // Smooth, throttled scroll handler using requestAnimationFrame
+    const ticking = { scroll: false };
 
     const onScroll = () => {
       if (!ticking.scroll) {
@@ -179,30 +144,7 @@ export default function Page() {
       }
     };
 
-    const onMouseMove = (e) => {
-      if (!ticking.mouse) {
-        ticking.mouse = true;
-        requestAnimationFrame(() => {
-          if (heroRef.current) {
-            const rect = heroRef.current.getBoundingClientRect();
-            setMousePosition({
-              x: ((e.clientX - rect.left) / rect.width - 0.5) * 100,
-              y: ((e.clientY - rect.top) / rect.height - 0.5) * 100,
-            });
-          }
-          const centerX = window.innerWidth / 2;
-          const centerY = window.innerHeight / 2;
-          const deltaX = e.clientX - centerX;
-          const deltaY = e.clientY - centerY;
-          const rotation = Math.atan2(deltaY, deltaX) * (180 / Math.PI) * 0.1;
-          setLogoRotation((prev) => (Math.abs(prev - rotation) < 0.1 ? prev : rotation));
-          ticking.mouse = false;
-        });
-      }
-    };
-
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("mousemove", onMouseMove, { passive: true });
 
     // Generate enhanced particles
     const p = Array.from({ length: 20 }).map((_, i) => ({
@@ -220,12 +162,9 @@ export default function Page() {
 
     return () => {
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener('resize', checkMobile);
     };
   }, [visibleStats.length, visibleSteps]);
-
-  const handleThemeToggle = () => setDarkMode((prev) => !prev);
 
   const scrollToMain = () => {
     mainRef.current?.scrollIntoView({ 
@@ -383,38 +322,6 @@ export default function Page() {
           : "bg-gradient-to-br from-blue-50 via-gray-50 to-green-50 text-gray-800"
       }`}
     >
-      {/* Announcement / Notice bar */}
-      {noticeVisible && (
-        <div
-          className={`w-full transition-all duration-300 border-b backdrop-blur-md ${
-            darkMode
-              ? 'bg-gradient-to-r from-gray-900/95 via-gray-900/80 to-gray-900/95 border-gray-800'
-              : 'bg-gradient-to-r from-yellow-50 via-blue-50 to-yellow-50 border-gray-200'
-          }`}
-        >
-          <div className="mx-auto max-w-screen-xl px-4 sm:px-6">
-            <div className="flex items-center gap-3 py-2.5 sm:py-3">
-              <p className={`flex-1 text-center text-xs sm:text-sm tracking-wide ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                <Megaphone className={`inline-block w-4 h-4 mr-2 align-[-2px] ${darkMode ? 'text-yellow-300' : 'text-blue-600'}`} />
-                Welcome to <span className={`${darkMode ? 'text-yellow-300' : 'text-yellow-600'} font-semibold`}>Uni</span>
-                <span className={`${darkMode ? 'text-sky-300' : 'text-sky-600'} font-semibold`}>Share</span> — your campus hub for rides, deals, rooms, and notes.
-                <span className={`ml-2 hidden sm:inline ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Stay tuned for weekly updates and new features.</span>
-              </p>
-              <button
-                aria-label="Dismiss notice"
-                onClick={() => setNoticeVisible(false)}
-                className={`flex h-8 w-8 flex-none items-center justify-center rounded-full border transition-colors ${
-                  darkMode ? 'border-gray-700 text-gray-300 hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <Header darkMode={darkMode} onThemeToggle={handleThemeToggle} logoRotation={logoRotation} />
 
       {/* SLIDER SECTION (replacing previous hero) */}
       <HeroSlider darkMode={darkMode} />
