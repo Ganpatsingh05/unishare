@@ -32,52 +32,62 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { 
-  fetchCurrentUser, 
   fetchMyRooms, 
   fetchMyItems, 
   updateUserProfile, 
   deleteRoom, 
-  deleteItem,
-  checkAuthStatus 
+  deleteItem 
 } from '../lib/api';
+import { 
+  useUniShare, 
+  useAuth, 
+  useMessages, 
+  useUI, 
+  useUserData 
+} from '../lib/contexts/UniShareContext';
 
 const ProfilePage = () => {
-  const [darkMode, setDarkMode] = useState(true);
+  // Context hooks
+  const { user, isAuthenticated, authLoading, updateUser } = useAuth();
+  const { error, success, loading, setError, clearError, setSuccess, clearSuccess, setLoading } = useMessages();
+  const { darkMode, toggleDarkMode } = useUI();
+  const { 
+    userRooms, 
+    userItems, 
+    setUserRooms, 
+    setUserItems, 
+    removeUserRoom, 
+    removeUserItem 
+  } = useUserData();
+
+  // Local component state
   const [isEditing, setIsEditing] = useState(false);
   const [showFullBio, setShowFullBio] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [avatarHover, setAvatarHover] = useState(false);
+  
+  // Local user profile state for editing
+  const [editedProfile, setEditedProfile] = useState(null);
 
-  // Real API data states
-  const [userProfile, setUserProfile] = useState(null);
-  const [userRooms, setUserRooms] = useState([]);
-  const [userItems, setUserItems] = useState([]);
-
+  // Initialize edited profile when user data is available
   useEffect(() => {
-    loadUserData();
-  }, []);
+    if (user && !editedProfile) {
+      setEditedProfile({ ...user });
+    }
+  }, [user, editedProfile]);
+
+  // Load user data on component mount
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      loadUserData();
+    }
+  }, [isAuthenticated, user]);
 
   const loadUserData = async () => {
     try {
       setLoading(true);
-      setError('');
-
-      // Check authentication first
-      const { authenticated, user } = await checkAuthStatus();
-      console.log(user.picture); // this is printing the url of the avatar 
-      if (!authenticated || !user) {
-        setIsAuthenticated(false);
-        setLoading(false);
-        return;
-      }
-
-      setIsAuthenticated(true);
-      setUserProfile(user);
+      clearError();
 
       // Fetch user's rooms and items in parallel
       const [roomsResult, itemsResult] = await Promise.allSettled([
@@ -122,33 +132,35 @@ const ProfilePage = () => {
     : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500';
 
   const handleProfileUpdate = (field, value) => {
-    setUserProfile(prev => ({ ...prev, [field]: value }));
+    setEditedProfile(prev => ({ ...prev, [field]: value }));
   };
 
   const saveProfile = async () => {
     try {
-      setError('');
+      clearError();
       setLoading(true);
 
       const profileData = {
-      name: userProfile.name,
-      email: userProfile.email,
-      phone: userProfile.phone,
-      bio: userProfile.bio,
-      location: userProfile.location,
-      college: userProfile.college,
-      year: userProfile.year,
-      branch: userProfile.branch,
-      googleAvatar: userProfile.googleAvatar || userProfile.avatar || null, // ✅ safe
-    };
+        name: editedProfile.name,
+        email: editedProfile.email,
+        phone: editedProfile.phone,
+        bio: editedProfile.bio,
+        location: editedProfile.location,
+        college: editedProfile.college,
+        year: editedProfile.year,
+        branch: editedProfile.branch,
+        googleAvatar: editedProfile.googleAvatar || editedProfile.avatar || null,
+      };
 
       const result = await updateUserProfile(profileData);
       
       if (result.success) {
-        setUserProfile(result.data);
+        // Update context with new user data
+        updateUser(result.data);
+        setEditedProfile(result.data);
         setIsEditing(false);
         setSuccess('Profile updated successfully!');
-        setTimeout(() => setSuccess(''), 3000);
+        setTimeout(() => clearSuccess(), 3000);
       } else {
         throw new Error(result.message || 'Failed to update profile');
       }
@@ -168,9 +180,9 @@ const ProfilePage = () => {
       const result = await deleteRoom(roomId);
       
       if (result.success) {
-        setUserRooms(prev => prev.filter(room => room.id !== roomId));
+        removeUserRoom(roomId);
         setSuccess(`Room "${roomTitle}" deleted successfully!`);
-        setTimeout(() => setSuccess(''), 3000);
+        setTimeout(() => clearSuccess(), 3000);
       } else {
         throw new Error(result.message || 'Failed to delete room');
       }
@@ -190,9 +202,9 @@ const ProfilePage = () => {
       const result = await deleteItem(itemId);
       
       if (result.success) {
-        setUserItems(prev => prev.filter(item => item.id !== itemId));
+        removeUserItem(itemId);
         setSuccess(`Item "${itemTitle}" deleted successfully!`);
-        setTimeout(() => setSuccess(''), 3000);
+        setTimeout(() => clearSuccess(), 3000);
       } else {
         throw new Error(result.message || 'Failed to delete item');
       }
@@ -219,8 +231,8 @@ const ProfilePage = () => {
     { id: 'settings', label: 'Settings', icon: Settings }
   ];
 
-  // Show loading state
-  if (loading) {
+  // Show loading state during authentication
+  if (authLoading) {
     return (
       <div className={themeClasses}>
         <div className="flex flex-col items-center justify-center min-h-screen">
@@ -248,7 +260,7 @@ const ProfilePage = () => {
               </Link>
               <h1 className="text-white/90 font-semibold">Profile Dashboard</h1>
               <button
-                onClick={() => setDarkMode(!darkMode)}
+                onClick={toggleDarkMode}
                 className="p-2 rounded-full bg-white/15 text-white hover:bg-white/25 transition-colors"
               >
                 {darkMode ? '☀️' : '🌙'}
@@ -285,7 +297,7 @@ const ProfilePage = () => {
   }
 
   // Show error state if user profile couldn't be loaded
-  if (!userProfile) {
+  if (!user) {
     return (
       <div className={themeClasses}>
         <div className="flex items-center justify-center min-h-screen">
@@ -310,19 +322,9 @@ const ProfilePage = () => {
   return (
     <div className={themeClasses}>
       {/* Header */}
-      <div className="relative h-56 md:h-64 bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
+      <div className="relative h-48 md:h-48 bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
         <div className="absolute inset-x-0 top-0 z-50 px-4 py-3">
           <div className="flex items-center justify-between">
-            <Link href="/" className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors">
-              <ArrowLeft className="w-6 h-6 text-white" />
-            </Link>
-            <h1 className="text-white/90 font-semibold">Profile Dashboard</h1>
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className="p-2 rounded-full bg-white/15 text-white hover:bg-white/25 transition-colors"
-            >
-              {darkMode ? '☀️' : '🌙'}
-            </button>
           </div>
         </div>
         
@@ -339,7 +341,7 @@ const ProfilePage = () => {
               <div className="mb-4 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 backdrop-blur-sm">
                 <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
                 <span className="text-red-500">{error}</span>
-                <button onClick={() => setError('')} className="ml-auto">
+                <button onClick={clearError} className="ml-auto">
                   <X className="w-4 h-4 text-red-500" />
                 </button>
               </div>
@@ -348,7 +350,7 @@ const ProfilePage = () => {
               <div className="mb-4 p-4 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center gap-3 backdrop-blur-sm">
                 <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
                 <span className="text-green-500">{success}</span>
-                <button onClick={() => setSuccess('')} className="ml-auto">
+                <button onClick={clearSuccess} className="ml-auto">
                   <X className="w-4 h-4 text-green-500" />
                 </button>
               </div>
@@ -370,25 +372,18 @@ const ProfilePage = () => {
                   onMouseEnter={() => setAvatarHover(true)}
                   onMouseLeave={() => setAvatarHover(false)}
                 >
-                  {userProfile.avatar ? (
-                  <img 
-                    src={userProfile.avatar} 
-                    alt="Profile" 
-                    className="w-full h-full object-cover transition-transform duration-300 ease-in-out"
-                    style={{ transform: avatarHover ? 'scale(1.1)' : 'scale(1)' }}
-                  />
-                ) : userProfile.googleAvatar ? (
-                  <img 
-                    src={userProfile.googleAvatar} 
-                    alt="Profile" 
-                    className="w-full h-full object-cover transition-transform duration-300 ease-in-out"
-                    style={{ transform: avatarHover ? 'scale(1.1)' : 'scale(1)' }}
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                    <span className="text-3xl font-bold">{userProfile.name?.charAt(0) || 'U'}</span>
-                  </div>
-                )}
+                  {user.picture || user.googleAvatar || user.avatar ? (
+                    <img 
+                      src={user.picture || user.googleAvatar || user.avatar} 
+                      alt="Profile" 
+                      className="w-full h-full object-cover transition-transform duration-300 ease-in-out"
+                      style={{ transform: avatarHover ? 'scale(1.1)' : 'scale(1)' }}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                      <span className="text-3xl font-bold">{user.name?.charAt(0) || 'U'}</span>
+                    </div>
+                  )}
 
                   <div className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-300 ${avatarHover ? 'opacity-100' : 'opacity-0'}`}>
                     <Camera className="w-6 h-6 text-white" />
@@ -405,44 +400,44 @@ const ProfilePage = () => {
                 {isEditing ? (
                   <input
                     type="text"
-                    value={userProfile.name || ''}
+                    value={editedProfile?.name || ''}
                     onChange={(e) => handleProfileUpdate('name', e.target.value)}
                     className={`text-2xl md:text-3xl font-bold mb-2 px-3 py-2 rounded-lg ${inputClasses} w-full md:w-auto`}
                     placeholder="Your name"
                   />
                 ) : (
-                  <h2 className="text-2xl md:text-3xl font-bold mb-2">{userProfile.name || 'User'}</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold mb-2">{user.name || 'User'}</h2>
                 )}
 
                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-4">
-                  {userProfile.year && (
+                  {user.year && (
                     <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800">
-                      {userProfile.year}
+                      {user.year}
                     </span>
                   )}
-                  {userProfile.branch && (
+                  {user.branch && (
                     <span className="px-3 py-1 text-xs font-medium rounded-full bg-violet-100 text-violet-700 border border-violet-200 dark:bg-violet-900/30 dark:text-violet-300 dark:border-violet-800">
-                      {userProfile.branch}
+                      {user.branch}
                     </span>
                   )}
-                  {userProfile.college && (
+                  {user.college && (
                     <span className="px-3 py-1 text-xs font-medium rounded-full bg-slate-100 text-slate-700 border border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
-                      {userProfile.college}
+                      {user.college}
                     </span>
                   )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {userProfile.location && (
+                  {user.location && (
                     <div className={`flex items-center gap-2 p-3 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
                       <MapPin className="w-4 h-4 text-purple-600" />
-                      <p className="text-sm">{userProfile.location}</p>
+                      <p className="text-sm">{user.location}</p>
                     </div>
                   )}
-                  {userProfile.created_at && (
+                  {user.created_at && (
                     <div className={`flex items-center gap-2 p-3 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
                       <Calendar className="w-4 h-4 text-orange-600" />
-                      <p className="text-sm">Member since {formatDate(userProfile.created_at)}</p>
+                      <p className="text-sm">Member since {formatDate(user.created_at)}</p>
                     </div>
                   )}
                 </div>
@@ -465,7 +460,10 @@ const ProfilePage = () => {
                 </button>
                 {isEditing && (
                   <button
-                    onClick={() => setIsEditing(false)}
+                    onClick={() => {
+                      setIsEditing(false);
+                      setEditedProfile({ ...user });
+                    }}
                     className={`p-2 rounded-lg border transition-colors ${darkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'}`}
                   >
                     <X className="w-4 h-4" />
@@ -500,7 +498,7 @@ const ProfilePage = () => {
             </div>
           </div>
 
-          {/* Tab Content */}
+          {/* Tab Content - Profile */}
           {activeTab === 'profile' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* About Section */}
@@ -511,7 +509,7 @@ const ProfilePage = () => {
                 </h3>
                 {isEditing ? (
                   <textarea
-                    value={userProfile.bio || ''}
+                    value={editedProfile?.bio || ''}
                     onChange={(e) => handleProfileUpdate('bio', e.target.value)}
                     rows={5}
                     className={`w-full p-3 border rounded-xl resize-none ${inputClasses}`}
@@ -519,12 +517,12 @@ const ProfilePage = () => {
                   />
                 ) : (
                   <div>
-                    {userProfile.bio ? (
+                    {user.bio ? (
                       <>
                         <p className="leading-relaxed">
-                          {showFullBio || (userProfile.bio.length <= 160) ? userProfile.bio : `${userProfile.bio.slice(0, 160)}...`}
+                          {showFullBio || (user.bio.length <= 160) ? user.bio : `${user.bio.slice(0, 160)}...`}
                         </p>
-                        {userProfile.bio.length > 160 && (
+                        {user.bio.length > 160 && (
                           <button
                             onClick={() => setShowFullBio(!showFullBio)}
                             className="text-blue-600 text-sm font-medium mt-2 hover:text-blue-700 transition-colors"
@@ -559,13 +557,13 @@ const ProfilePage = () => {
                       {isEditing ? (
                         <input
                           type="email"
-                          value={userProfile.email || ''}
+                          value={editedProfile?.email || ''}
                           onChange={(e) => handleProfileUpdate('email', e.target.value)}
-                          className={`font-medium bg-transparent border-b ${darkMode ? 'border-gray-600' : 'border-gray-300'} outline-none w-full ${inputClasses}`}
+                          className={`font-medium bg-transparent border-b ${darkMode ? 'border-gray-600' : 'border-gray-300'} outline-none w-full`}
                           placeholder="your.email@example.com"
                         />
                       ) : (
-                        <p className="font-medium">{userProfile.email || 'Not provided'}</p>
+                        <p className="font-medium">{user.email || 'Not provided'}</p>
                       )}
                     </div>
                   </div>
@@ -580,13 +578,13 @@ const ProfilePage = () => {
                       {isEditing ? (
                         <input
                           type="tel"
-                          value={userProfile.phone || ''}
+                          value={editedProfile?.phone || ''}
                           onChange={(e) => handleProfileUpdate('phone', e.target.value)}
-                          className={`font-medium bg-transparent border-b ${darkMode ? 'border-gray-600' : 'border-gray-300'} outline-none w-full ${inputClasses}`}
+                          className={`font-medium bg-transparent border-b ${darkMode ? 'border-gray-600' : 'border-gray-300'} outline-none w-full`}
                           placeholder="+91 98765 43210"
                         />
                       ) : (
-                        <p className="font-medium">{userProfile.phone || 'Not provided'}</p>
+                        <p className="font-medium">{user.phone || 'Not provided'}</p>
                       )}
                     </div>
                   </div>
@@ -638,6 +636,7 @@ const ProfilePage = () => {
             </div>
           )}
 
+          {/* Tab Content - Rooms */}
           {activeTab === 'rooms' && (
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -734,6 +733,7 @@ const ProfilePage = () => {
             </div>
           )}
 
+          {/* Tab Content - Items */}
           {activeTab === 'items' && (
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -838,6 +838,7 @@ const ProfilePage = () => {
             </div>
           )}
 
+          {/* Tab Content - Settings */}
           {activeTab === 'settings' && (
             <div className={`rounded-2xl shadow-xl border p-6 ${cardClasses}`}>
               <h2 className="text-xl font-semibold mb-6">Settings</h2>
@@ -850,7 +851,7 @@ const ProfilePage = () => {
                     </p>
                   </div>
                   <button
-                    onClick={() => setDarkMode(!darkMode)}
+                    onClick={toggleDarkMode}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                       darkMode ? 'bg-blue-600' : 'bg-gray-300'
                     }`}
@@ -907,7 +908,10 @@ const ProfilePage = () => {
         <div className="fixed bottom-6 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:max-w-2xl z-50 animate-fade-in">
           <div className={`rounded-2xl shadow-2xl border p-4 flex gap-3 backdrop-blur-sm ${darkMode ? 'bg-gray-800/90 border-gray-700' : 'bg-white/95 border-gray-200'}`}>
             <button
-              onClick={() => setIsEditing(false)}
+              onClick={() => {
+                setIsEditing(false);
+                setEditedProfile({ ...user });
+              }}
               className={`flex-1 py-3 px-4 rounded-xl transition-colors ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
             >
               <X className="w-5 h-5 inline mr-2" />

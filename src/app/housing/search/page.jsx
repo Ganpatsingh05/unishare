@@ -5,28 +5,6 @@ import { useEffect, useState } from "react";
 import { Search, MapPin, IndianRupee, Calendar, Bed, Heart, Share2, Phone, Mail, Instagram, Filter, ChevronDown, Eye } from "lucide-react";
 import { fetchhousedata } from "../../lib/api";
 
-// Mock Header and Footer components since they're not provided
-const Header = ({ darkMode, onThemeToggle, logoRotation }) => (
-  <header className={`border-b ${darkMode ? 'border-gray-800 bg-gray-900' : 'border-gray-200 bg-white'} p-4`}>
-    <div className="flex items-center justify-between max-w-6xl mx-auto">
-      <div className="flex items-center gap-2">
-        <div 
-          className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center"
-          style={{ transform: `rotate(${logoRotation}deg)` }}
-        >
-          <span className="text-white font-bold text-sm">R</span>
-        </div>
-        <span className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>RoomFinder</span>
-      </div>
-      <button 
-        onClick={onThemeToggle}
-        className={`px-3 py-1 rounded-lg ${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-gray-100 text-gray-800'}`}
-      >
-        {darkMode ? '☀️' : '🌙'}
-      </button>
-    </div>
-  </header>
-);
 
 const Footer = ({ darkMode }) => (
   <footer className={`border-t ${darkMode ? 'border-gray-800 bg-gray-900' : 'border-gray-200 bg-white'} p-4 mt-12`}>
@@ -280,19 +258,9 @@ export default function HousingSearchPage() {
 
   return (
     <div className={`min-h-screen ${pageBg}`}>
-      <Header darkMode={darkMode} onThemeToggle={handleThemeToggle} logoRotation={logoRotation} />
 
       <main className="px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="mx-auto max-w-6xl">
-          {/* Header Section */}
-          <div className="text-center mb-8">
-            <h1 className={`text-3xl sm:text-4xl font-bold ${titleClr} mb-2`}>
-              Find Your Perfect Room
-            </h1>
-            <p className={`text-lg ${textMuted}`}>
-              Discover comfortable rooms and great roommates in your area
-            </p>
-          </div>
 
           {/* Search Form */}
           <div onSubmit={handleSearch} className={`mb-8 p-6 rounded-2xl border ${boxBorder} ${boxBg}`}>

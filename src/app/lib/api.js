@@ -14,6 +14,7 @@ const apiCall = async (endpoint, options = {}) => {
     });
 
     const data = await response.json();
+    console.log("data: ",data);
 
     if (!response.ok) {
       throw new Error(data.message || data.error || `HTTP ${response.status}`);
@@ -53,6 +54,7 @@ const apiCallFormData = async (endpoint, formData, method = 'POST') => {
 export const fetchCurrentUser = async () => {
   try {
     const data = await apiCall('/auth/me');
+    console.log("User: ",data);
     return data.user;
   } catch (error) {
     return null;
@@ -70,7 +72,7 @@ export const checkAuthStatus = async () => {
 
 export const logout = async () => {
   try {
-    await apiCall('/auth/logout', { method: 'POST' }); 
+    await apiCall('/auth/logout', { method: 'GET' }); 
     return true;
   } catch (error) {
     console.error('Logout error:', error);

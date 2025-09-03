@@ -1,13 +1,14 @@
-//housing/page.jsx
 'use client';
 import { useState, useEffect } from 'react';
 import { Moon, Sun, Home, MapPin, Bed, Calendar, Mail, Phone, Instagram, Camera, Upload, LogIn, User } from 'lucide-react';
-import { postRoom, fetchCurrentUser, startGoogleLogin } from '../../lib/api';
+import { postRoom, startGoogleLogin } from '../../lib/api';
+import { useAuth, useUI, useMessages } from '../../lib/contexts/UniShareContext';
 
 export default function AuthProtectedRoomForm() {
-  const [darkMode, setDarkMode] = useState(true);
-  const [user, setUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const { isAuthenticated, user, authLoading, userAvatar, userInitials } = useAuth();
+  const { darkMode, toggleDarkMode } = useUI();
+  const { setError, setSuccess, showTemporaryMessage, loading, setLoading } = useMessages();
+
   const [form, setForm] = useState({
     title: '',
     rent: '',
@@ -21,29 +22,13 @@ export default function AuthProtectedRoomForm() {
 
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
 
-  // Check authentication on component mount
+  // Pre-fill email when user data is available
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const currentUser = await fetchCurrentUser();
-        setUser(currentUser);
-        
-        // Pre-fill email if user is logged in
-        if (currentUser?.email) {
-          setForm(prev => ({ ...prev, email: currentUser.email }));
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-      } finally {
-        setAuthLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, []);
+    if (user?.email && !form.email) {
+      setForm(prev => ({ ...prev, email: user.email }));
+    }
+  }, [user?.email]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -73,13 +58,12 @@ export default function AuthProtectedRoomForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!user) {
-      setResult({ error: 'Please log in to post a room' });
+    if (!isAuthenticated) {
+      setError('Please log in to post a room');
       return;
     }
 
     setLoading(true);
-    setResult(null);
 
     const formData = new FormData();
     formData.append('title', form.title);
@@ -101,10 +85,11 @@ export default function AuthProtectedRoomForm() {
 
     try {
       const res = await postRoom(formData);
-      setResult(res);
       
-      // Reset form on success
       if (res.success) {
+        showTemporaryMessage('Room posted successfully! Your listing is now live and visible to potential roommates.', true, 5000);
+        
+        // Reset form on success
         setForm({
           title: '',
           rent: '',
@@ -117,17 +102,15 @@ export default function AuthProtectedRoomForm() {
         });
         setImages([]);
         setImagePreviews([]);
+      } else {
+        setError(res.error || 'Failed to post room');
       }
     } catch (err) {
       console.error(err);
-      setResult({ error: err instanceof Error ? err.message : String(err) });
+      setError(err instanceof Error ? err.message : 'An error occurred while posting the room');
     } finally {
       setLoading(false);
     }
-  };
-
-  const toggleTheme = () => {
-    setDarkMode(!darkMode);
   };
 
   const themeClasses = darkMode 
@@ -163,7 +146,7 @@ export default function AuthProtectedRoomForm() {
   }
 
   // Show login required message if user is not authenticated
-  if (!user) {
+  if (!isAuthenticated) {
     return (
       <div className={themeClasses}>
         <div className="container mx-auto px-4 py-8">
@@ -175,7 +158,7 @@ export default function AuthProtectedRoomForm() {
                 Post Your Room
               </h1>
               <button
-                onClick={toggleTheme}
+                onClick={toggleDarkMode}
                 className={`p-2 rounded-full transition-colors ${
                   darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
                 }`}
@@ -215,7 +198,7 @@ export default function AuthProtectedRoomForm() {
               Post Your Room
             </h1>
             <button
-              onClick={toggleTheme}
+              onClick={toggleDarkMode}
               className={`p-2 rounded-full transition-colors ${
                 darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
               }`}
@@ -224,7 +207,17 @@ export default function AuthProtectedRoomForm() {
             </button>
           </div>
           <div className="flex items-center justify-center gap-2 mb-4">
-            <User className="w-5 h-5 text-green-500" />
+            {userAvatar ? (
+              <img 
+                src={userAvatar} 
+                alt="User avatar" 
+                className="w-6 h-6 rounded-full"
+              />
+            ) : (
+              <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-medium">
+                {userInitials}
+              </div>
+            )}
             <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               Logged in as {user.name}
             </span>
@@ -233,27 +226,6 @@ export default function AuthProtectedRoomForm() {
             Find the perfect roommate for your space
           </p>
         </div>
-
-        {/* Success/Error Messages */}
-        {result && (
-          <div className={`max-w-2xl mx-auto mb-6 p-4 rounded-xl ${
-            result.success 
-              ? darkMode ? 'bg-green-900/20 border border-green-700 text-green-300' : 'bg-green-50 border border-green-200 text-green-700'
-              : darkMode ? 'bg-red-900/20 border border-red-700 text-red-300' : 'bg-red-50 border border-red-200 text-red-700'
-          }`}>
-            {result.success ? (
-              <div>
-                <h3 className="font-semibold mb-1">Room posted successfully!</h3>
-                <p className="text-sm">Your room listing is now live and visible to potential roommates.</p>
-              </div>
-            ) : (
-              <div>
-                <h3 className="font-semibold mb-1">Error posting room</h3>
-                <p className="text-sm">{result.error}</p>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Form Card */}
         <div className={`max-w-2xl mx-auto rounded-2xl border p-8 ${cardClasses}`}>
