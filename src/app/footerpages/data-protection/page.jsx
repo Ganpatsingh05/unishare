@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
   ArrowLeft, 
   ChevronRight, 
@@ -9,34 +9,29 @@ import {
   Database, 
   Key, 
   Eye, 
-  Server, 
-  Globe,
-  CheckCircle,
-  AlertTriangle,
-  Download,
-  Trash2,
-  Settings,
   FileText,
   Calendar,
   Mail,
-  Phone,
-  MapPin,
   Clock,
-  RefreshCw,
   UserCheck,
+  CheckCircle,
+  Settings,
+  Scale,
+  Download,
+  Trash2,
+  AlertTriangle,
+  RefreshCw,
   AlertCircle,
-  Info,
-  ExternalLink,
-  Scale
+  Info
 } from 'lucide-react';
-import Header from '../../_components/Header';
 import Footer from '../../_components/Footer';
 import Reveal from '../../_components/Reveal';
 import MobileQuickNav from '../../_components/MobileQuickNav';
 import { useRouter } from 'next/navigation';
+import { useUI } from '../../lib/contexts/UniShareContext';
 
 export default function DataProtectionPage() {
-  const [darkMode, setDarkMode] = useState(true);
+  const { darkMode } = useUI();
   const [activeSection, setActiveSection] = useState('overview');
   const [gdprRequest, setGdprRequest] = useState('');
   const router = useRouter();
@@ -48,7 +43,6 @@ export default function DataProtectionPage() {
     { id: 'legal-basis', title: 'Legal Basis', icon: FileText },
     { id: 'data-collection', title: 'Data Collection', icon: Database },
     { id: 'data-processing', title: 'Data Processing', icon: Settings },
-    { id: 'data-sharing', title: 'Data Sharing', icon: Globe },
     { id: 'security', title: 'Security Measures', icon: Lock },
     { id: 'retention', title: 'Data Retention', icon: Clock },
     { id: 'rights', title: 'Your Rights', icon: UserCheck },
@@ -272,7 +266,6 @@ export default function DataProtectionPage() {
 
   const handleGdprRequest = (requestType) => {
     setGdprRequest(requestType);
-    // In a real app, this would redirect to a form or email
     window.open(`mailto:dpo@unishare.com?subject=GDPR Request: ${requestType}&body=Please provide details about your ${requestType} request.`);
   };
 
@@ -282,7 +275,6 @@ export default function DataProtectionPage() {
         ? "bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 text-gray-100"
         : "bg-gradient-to-br from-blue-50 via-gray-50 to-green-50 text-gray-800"
     }`}>
-      <Header darkMode={darkMode} onThemeToggle={() => setDarkMode(!darkMode)} />
       
       {/* Navigation Breadcrumb */}
       <div className="max-w-6xl mx-auto px-4 pt-8">
@@ -775,105 +767,6 @@ export default function DataProtectionPage() {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div className={`p-4 rounded-xl border ${
-                    darkMode
-                      ? 'bg-gray-700/30 border-gray-600'
-                      : 'bg-gray-50 border-gray-200'
-                  }`}>
-                    <h3 className={`font-semibold mb-3 ${
-                      darkMode ? 'text-white' : 'text-gray-900'
-                    }`}>
-                      Contact Information
-                    </h3>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Mail className={`w-4 h-4 ${
-                          darkMode ? 'text-yellow-300' : 'text-blue-600'
-                        }`} />
-                        <span className={`text-sm ${
-                          darkMode ? 'text-gray-300' : 'text-gray-700'
-                        }`}>
-                          dpo@unishare.com
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Phone className={`w-4 h-4 ${
-                          darkMode ? 'text-yellow-300' : 'text-blue-600'
-                        }`} />
-                        <span className={`text-sm ${
-                          darkMode ? 'text-gray-300' : 'text-gray-700'
-                        }`}>
-                          +1 (555) 123-4567 ext. 301
-                        </span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <MapPin className={`w-4 h-4 mt-0.5 ${
-                          darkMode ? 'text-yellow-300' : 'text-blue-600'
-                        }`} />
-                        <span className={`text-sm ${
-                          darkMode ? 'text-gray-300' : 'text-gray-700'
-                        }`}>
-                          Data Protection Officer<br />
-                          UniShare Inc.<br />
-                          123 Student Street<br />
-                          University City, CA 90210
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className={`p-4 rounded-xl border ${
-                    darkMode
-                      ? 'bg-gray-700/30 border-gray-600'
-                      : 'bg-gray-50 border-gray-200'
-                  }`}>
-                    <h3 className={`font-semibold mb-3 ${
-                      darkMode ? 'text-white' : 'text-gray-900'
-                    }`}>
-                      Response Times
-                    </h3>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className={`text-sm ${
-                          darkMode ? 'text-gray-300' : 'text-gray-700'
-                        }`}>
-                          General Inquiries
-                        </span>
-                        <span className={`text-sm font-medium ${
-                          darkMode ? 'text-yellow-300' : 'text-blue-600'
-                        }`}>
-                          24-48 hours
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className={`text-sm ${
-                          darkMode ? 'text-gray-300' : 'text-gray-700'
-                        }`}>
-                          Data Subject Requests
-                        </span>
-                        <span className={`text-sm font-medium ${
-                          darkMode ? 'text-yellow-300' : 'text-blue-600'
-                        }`}>
-                          Within 30 days
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className={`text-sm ${
-                          darkMode ? 'text-gray-300' : 'text-gray-700'
-                        }`}>
-                          Urgent Privacy Matters
-                        </span>
-                        <span className={`text-sm font-medium ${
-                          darkMode ? 'text-yellow-300' : 'text-blue-600'
-                        }`}>
-                          Within 24 hours
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
                 <div className="flex flex-col sm:flex-row gap-4">
                   <button 
                     onClick={() => window.open('mailto:dpo@unishare.com')}
@@ -902,14 +795,14 @@ export default function DataProtectionPage() {
         </div>
       </div>
 
-        {/* Mobile Quick Navigation */}
-        <MobileQuickNav
-          sections={sections}
-          activeSection={activeSection}
-          onSelect={scrollToSection}
-          darkMode={darkMode}
-          label="Quick Navigation"
-        />
+      {/* Mobile Quick Navigation */}
+      <MobileQuickNav
+        sections={sections}
+        activeSection={activeSection}
+        onSelect={scrollToSection}
+        darkMode={darkMode}
+        label="Quick Navigation"
+      />
 
       <Footer darkMode={darkMode} />
     </div>

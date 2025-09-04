@@ -25,9 +25,10 @@ import {
 	Lightbulb,
 	Rocket,
 } from "lucide-react";
+import { useUI } from "../../lib/contexts/UniShareContext";
 
 export default function MissionPage() {
-	const [darkMode, setDarkMode] = useState(true);
+	const {darkMode} = useUI();
 		const [activeGoal, setActiveGoal] = useState(0);
 		const isMobile = useIsMobile();
 	const router = useRouter();
@@ -142,8 +143,6 @@ export default function MissionPage() {
 					: "bg-gradient-to-br from-blue-50 via-gray-50 to-green-50 text-gray-800"
 			}`}
 		>
-			<Header darkMode={darkMode} onThemeToggle={handleThemeToggle} />
-
 			{/* Breadcrumb */}
 			<div className="max-w-6xl mx-auto px-4 pt-8">
 				<div className="flex items-center gap-2 text-sm mb-8">

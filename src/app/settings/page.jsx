@@ -23,16 +23,17 @@ import {
   Camera,
   Toggle
 } from 'lucide-react';
+import { useUI } from '../lib/contexts/UniShareContext';
 
 const SettingsPage = () => {
-  const [darkMode, setDarkMode] = useState(true);
+  const {darkMode} = useUI();
   const [settings, setSettings] = useState({
     // Profile Settings
-    name: 'Sarah Johnson',
-    email: 'sarah.johnson@college.edu',
+    name: 'UniShare User',
+    email: 'UniShare.User@Unishare.in',
     phone: '+1 (555) 123-4567',
     location: 'Palo Alto, CA',
-    bio: 'Passionate about technology and connecting with fellow students.',
+    bio: 'This Is an Default Defined User in the System.',
     
     // Privacy Settings
     profileVisibility: 'public', // public, friends, private

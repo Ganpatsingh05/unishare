@@ -26,8 +26,10 @@ import {
   MessageCircle,
   ArrowUp
 } from 'lucide-react';
+import { useUI } from '../lib/contexts/UniShareContext';
 
-const Footer = ({ darkMode }) => {
+const Footer = () => {
+  const {darkMode} = useUI();
   const [email, setEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(true);

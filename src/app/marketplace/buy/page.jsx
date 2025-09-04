@@ -21,7 +21,7 @@ import {
   X,
   ArrowLeft
 } from "lucide-react";
-import Link from 'next/link';
+import Footer from "../../_components/Footer";
 import { fetchMarketplaceItems } from "../../lib/api";
 import { 
   useUniShare, 
@@ -140,7 +140,12 @@ export default function MarketplaceBuyPage() {
     >
       <div 
         className={`max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-2xl border shadow-2xl ${cardBg} p-6`} 
-        onClick={e => e.stopPropagation()}
+        // onClick={e => e.stopPropagation()}
+        onClick={() => {
+          console.log("Selected item:", item);
+          setSelectedItem(item);
+        }}
+
       >
         <div className="flex items-start justify-between mb-6">
           <h2 className={`text-2xl font-bold ${titleClr}`}>{item.title}</h2>
@@ -155,9 +160,9 @@ export default function MarketplaceBuyPage() {
         <div className="space-y-6">
           {/* Item photos placeholder */}
           <div className={`w-full h-64 rounded-xl flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
-            {item.photos && item.photos.length > 0 ? (
-              <img 
-                src={item.photos[0]} 
+            {item.image_url && item.photos.length > 0 ? (
+              <img
+                src={item.image_url}
                 alt={item.title}
                 className="w-full h-full object-cover rounded-xl"
               />
@@ -433,8 +438,14 @@ export default function MarketplaceBuyPage() {
                   >
                     <div className="space-y-3">
                       {/* Item image */}
-                      <div className={`w-full h-40 rounded-lg flex items-center justify-center overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
-                        {item.photos && item.photos.length > 0 ? (
+                     <div className={`w-full h-40 rounded-lg flex items-center justify-center overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
+                        {item.image_url ? (
+                          <img 
+                            src={item.image_url} 
+                            alt={item.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          />
+                        ) : item.photos && item.photos.length > 0 ? (
                           <img 
                             src={item.photos[0]} 
                             alt={item.title}
@@ -444,6 +455,7 @@ export default function MarketplaceBuyPage() {
                           <ImageIcon className="w-12 h-12 text-gray-400" />
                         )}
                       </div>
+
 
                       {/* Item details */}
                       <div>
@@ -493,6 +505,8 @@ export default function MarketplaceBuyPage() {
           onClose={() => setSelectedItem(null)} 
         />
       )}
+      <Footer darkMode={darkMode} />
+
     </div>
   );
 }

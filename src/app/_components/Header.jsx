@@ -67,12 +67,15 @@ const Header = ({ logoRotation = 0 }) => {
     }
   };
 
-  const handleLogout = async () => {
+   const handleLogout = async () => {
     try {
+      // Call the logout function from context
       await logout();
       setProfileMenuOpen(false);
       setMobileMenu(false);
-      router.push('/login');
+      
+      // Force a full page reload to clear any cached state
+      window.location.href = '/login';
     } catch (e) {
       console.error('Logout error:', e);
     }

@@ -1,15 +1,12 @@
 "use client";
 
 import { useState } from 'react';
-import Header from '../../_components/Header';
 import Footer from '../../_components/Footer';
 import { Code, Users, Heart, Coffee, MapPin, Clock, DollarSign, Laptop, BookOpen, Zap, ArrowRight, CheckCircle } from 'lucide-react';
 
 export default function CareersPage() {
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode] = useState(true);
   const [selectedDepartment, setSelectedDepartment] = useState('all');
-
-  const handleThemeToggle = () => setDarkMode((prev) => !prev);
 
   const perks = [
     {
@@ -139,8 +136,6 @@ export default function CareersPage() {
         ? "bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 text-gray-100"
         : "bg-gradient-to-br from-blue-50 via-gray-50 to-green-50 text-gray-800"
     }`}>
-      <Header darkMode={darkMode} onThemeToggle={handleThemeToggle} />
-
       {/* Hero Section */}
       <div className="pt-8 pb-16 px-4">
         <div className="max-w-4xl mx-auto text-center">

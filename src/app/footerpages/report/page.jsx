@@ -27,9 +27,10 @@ import {
 import Header from '../../_components/Header';
 import Footer from '../../_components/Footer';
 import { useRouter } from 'next/navigation';
+import { useUI } from '../../lib/contexts/UniShareContext';
 
 export default function ReportIssues() {
-  const [darkMode, setDarkMode] = useState(true);
+  const {darkMode} = useUI();
   const [reportType, setReportType] = useState('');
   const [reportDetails, setReportDetails] = useState('');
   const [urgency, setUrgency] = useState('medium');
@@ -167,7 +168,6 @@ export default function ReportIssues() {
           ? "bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 text-gray-100"
           : "bg-gradient-to-br from-blue-50 via-gray-50 to-green-50 text-gray-800"
       }`}>
-        <Header darkMode={darkMode} onThemeToggle={() => setDarkMode(!darkMode)} />
         
         <div className="max-w-4xl mx-auto px-4 pt-16 pb-16">
           <div className="text-center">
@@ -261,7 +261,6 @@ export default function ReportIssues() {
         ? "bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 text-gray-100"
         : "bg-gradient-to-br from-blue-50 via-gray-50 to-green-50 text-gray-800"
     }`}>
-      <Header darkMode={darkMode} onThemeToggle={() => setDarkMode(!darkMode)} />
       
       {/* Navigation Breadcrumb */}
       <div className="max-w-6xl mx-auto px-4 pt-8">
