@@ -106,7 +106,14 @@ export default function HeroSlider({ darkMode = true }) {
                       alt={slide.alt}
                       width={2659}
                       height={784}
-                      className="w-full h-auto rounded-xl"
+                      className="
+                        w-full 
+                        h-auto          /* good for mobile */
+                        md:h-[400px]    /* fix height for desktops */
+                        lg:h-[500px] 
+                        object-cover 
+                        rounded-xl
+                      "
                       priority={slideIdx === 0}
                       sizes="100vw"
                     />
@@ -114,7 +121,19 @@ export default function HeroSlider({ darkMode = true }) {
                     <div className="absolute bottom-4 left-4 z-10">
                       <Link
                         href={slide.cta.href}
-                        className="inline-block bg-[#5B46F6] hover:bg-[#4a38e5] text-white font-semibold px-3 py-2 sm:px-5 sm:py-3 rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105 text-sm sm:text-base"
+                        className="
+                          inline-block 
+                          bg-[#5B46F6] hover:bg-[#4a38e5] 
+                          text-white font-semibold
+                          px-2 py-1       /* smaller padding on mobile */
+                          sm:px-4 sm:py-2 /* medium padding on tablet */
+                          md:px-5 md:py-3 /* full size on desktop */
+                          rounded-lg sm:rounded-xl
+                          shadow-md sm:shadow-lg
+                          transition-all duration-200 
+                          hover:shadow-xl hover:scale-105
+                          text-xs sm:text-sm md:text-base /* font scales up */
+                        "
                       >
                         {slide.cta.label}
                       </Link>

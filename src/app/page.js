@@ -23,13 +23,15 @@ import Main from "./_components/Main";
 import HeroSlider from "./_components/HeroSlider";
 import Footer from "./_components/Footer";
 import FloatingActionButton from "./_components/FloatingActionButton";
+import { useUI } from "./lib/contexts/UniShareContext";
 
 /**
  * Page component with interactive hero section and enhanced scroll effects
  */
 export default function Page() {
-  // Get theme state from ClientHeader context if needed, or manage locally
-  const [darkMode, setDarkMode] = useState(true);
+  // Use theme from context instead of local state
+  const { darkMode } = useUI();
+  
   const [offset, setOffset] = useState(0);
   const [hoveredFeature, setHoveredFeature] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -315,13 +317,13 @@ export default function Page() {
   };
 
   return (
-    <div
-      className={`min-h-screen transition-all duration-500 ${
-        darkMode
-          ? "bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 text-gray-100"
-          : "bg-gradient-to-br from-blue-50 via-gray-50 to-green-50 text-gray-800"
-      }`}
-    >
+      <div
+    className={`min-h-screen transition-all duration-500 ${
+      darkMode
+        ? "bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 text-gray-100"
+        : "bg-gradient-to-br from-orange-100 via-orange-200 to-orange-300 text-gray-900"
+    }`}
+  >
 
       {/* SLIDER SECTION (replacing previous hero) */}
       <HeroSlider darkMode={darkMode} />

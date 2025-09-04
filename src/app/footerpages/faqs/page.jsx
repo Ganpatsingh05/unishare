@@ -25,12 +25,13 @@ import {
   Filter,
   RotateCw
 } from 'lucide-react';
-import Header from '../../_components/Header';
 import Footer from '../../_components/Footer';
 import { useRouter } from 'next/navigation';
+import { useUI } from '../../lib/contexts/UniShareContext';
+import { format } from "date-fns";
 
 export default function FAQs() {
-  const [darkMode, setDarkMode] = useState(true);
+  const {darkMode} = useUI();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [expandedFAQ, setExpandedFAQ] = useState(null);
@@ -445,7 +446,6 @@ export default function FAQs() {
         ? "bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 text-gray-100"
         : "bg-gradient-to-br from-blue-50 via-gray-50 to-green-50 text-gray-800"
     }`}>
-      <Header darkMode={darkMode} onThemeToggle={() => setDarkMode(!darkMode)} />
       
       {/* Navigation Breadcrumb */}
       <div className="max-w-6xl mx-auto px-4 pt-8">
@@ -715,7 +715,7 @@ export default function FAQs() {
                         <div className={`text-xs ${
                           darkMode ? 'text-gray-500' : 'text-gray-400'
                         }`}>
-                          Updated {new Date(faq.lastUpdated).toLocaleDateString()}
+                          Updated {format(new Date(faq.lastUpdated), "dd/MM/yyyy")}
                         </div>
                       </div>
                       <h3 className={`text-xl font-bold mb-2 ${

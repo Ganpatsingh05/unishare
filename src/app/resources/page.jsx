@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import Header from "../_components/Header";
+import { useUI } from "../lib/contexts/UniShareContext";
 import Footer from "../_components/Footer";
 import { Search, Link2, ExternalLink, Copy, Check, BookOpen, GraduationCap, Globe, Wrench, FileText, Video, Tag, Plus } from "lucide-react";
 
@@ -15,7 +15,7 @@ const CATEGORIES = [
 ];
 
 export default function ResourcesPage() {
-  const [darkMode, setDarkMode] = useState(true);
+  const {darkMode} = useUI();
   const [mode, setMode] = useState('browse'); // 'browse' | 'suggest'
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('all');
@@ -59,7 +59,7 @@ export default function ResourcesPage() {
 
   return (
     <div className={darkMode ? "min-h-dvh bg-black" : "min-h-dvh bg-white"}>
-      <Header darkMode={darkMode} onThemeToggle={() => setDarkMode(p => !p)} />
+   
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10">
         <div className={`rounded-2xl border p-4 sm:p-6 ${darkMode ? 'bg-gray-950/60 border-gray-900' : 'bg-gray-50 border-gray-200'}`}>

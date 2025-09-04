@@ -6,31 +6,24 @@ import {
   ChevronRight, 
   Cookie, 
   Settings, 
-  Eye, 
   BarChart3, 
   Shield, 
-  Globe, 
-  Zap,
   Target,
   Calendar,
   Info,
   CheckCircle,
-  XCircle,
   ToggleLeft,
   ToggleRight,
-  Trash2,
-  Download,
-  RefreshCw,
   Mail
 } from 'lucide-react';
-import Header from '../../_components/Header';
 import Footer from '../../_components/Footer';
 import Reveal from '../../_components/Reveal';
 import MobileQuickNav from '../../_components/MobileQuickNav';
 import { useRouter } from 'next/navigation';
+import { useUI } from '../../lib/contexts/UniShareContext';
 
 export default function CookiesPage() {
-  const [darkMode, setDarkMode] = useState(true);
+  const { darkMode } = useUI();
   const [activeSection, setActiveSection] = useState('overview');
   const [cookieSettings, setCookieSettings] = useState({
     essential: true,
@@ -167,7 +160,6 @@ export default function CookiesPage() {
         ? "bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 text-gray-100"
         : "bg-gradient-to-br from-blue-50 via-gray-50 to-green-50 text-gray-800"
     }`}>
-      <Header darkMode={darkMode} onThemeToggle={() => setDarkMode(!darkMode)} />
       
       {/* Navigation Breadcrumb */}
       <div className="max-w-6xl mx-auto px-4 pt-8">
@@ -481,10 +473,10 @@ export default function CookiesPage() {
                 })}
               </div>
 
-        <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <button
                   onClick={saveSettings}
-          className={`flex-1 px-6 py-4 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 ${
+                  className={`flex-1 px-6 py-4 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 ${
                     darkMode 
                       ? 'bg-yellow-400 text-gray-900 hover:bg-yellow-300' 
                       : 'bg-blue-600 text-white hover:bg-blue-700'
@@ -494,7 +486,7 @@ export default function CookiesPage() {
                 </button>
                 <button
                   onClick={clearAllCookies}
-          className={`flex-1 px-6 py-4 border-2 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 ${
+                  className={`flex-1 px-6 py-4 border-2 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 ${
                     darkMode 
                       ? 'border-red-600 text-red-400 hover:bg-red-900/20' 
                       : 'border-red-500 text-red-600 hover:bg-red-50'
@@ -513,7 +505,7 @@ export default function CookiesPage() {
             } backdrop-blur-md`}>
               <Reveal>
                 <div className="flex items-center gap-3 mb-6">
-                  <Globe className={`w-6 h-6 ${darkMode ? 'text-yellow-300' : 'text-blue-600'}`} />
+                  <Shield className={`w-6 h-6 ${darkMode ? 'text-yellow-300' : 'text-blue-600'}`} />
                   <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                     Third-Party Services
                   </h2>
@@ -636,14 +628,14 @@ export default function CookiesPage() {
         </div>
       </div>
 
-        {/* Mobile Quick Navigation */}
-        <MobileQuickNav
-          sections={sections}
-          activeSection={activeSection}
-          onSelect={scrollToSection}
-          darkMode={darkMode}
-          label="Quick Navigation"
-        />
+      {/* Mobile Quick Navigation */}
+      <MobileQuickNav
+        sections={sections}
+        activeSection={activeSection}
+        onSelect={scrollToSection}
+        darkMode={darkMode}
+        label="Quick Navigation"
+      />
 
       <Footer darkMode={darkMode} />
     </div>

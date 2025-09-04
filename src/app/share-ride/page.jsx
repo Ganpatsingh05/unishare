@@ -18,6 +18,7 @@ import {
   Trash2,
   IndianRupee,
 } from "lucide-react";
+import { useUI } from "../lib/contexts/UniShareContext";
 
 // Loading Component
 function LoadingScreen({ onComplete }) {
@@ -115,7 +116,7 @@ function LoadingScreen({ onComplete }) {
 }
 
 export default function ShareRidePage() {
-  const [darkMode, setDarkMode] = useState(true);
+  const {darkMode} = useUI();
   const [mode, setMode] = useState("find"); // 'find' | 'offer'
   const [heroSrc, setHeroSrc] = useState("/assets/images/rideunishare.png");
   const [isLoading, setIsLoading] = useState(true);
@@ -246,7 +247,6 @@ export default function ShareRidePage() {
           : "bg-gradient-to-br from-blue-50 via-gray-50 to-green-50"
       }`}
     >
-      <Header darkMode={darkMode} onThemeToggle={() => setDarkMode((p) => !p)} />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10">
         {/* Brand-themed hero banner with image (place /public/rideunishare.jpg) */}

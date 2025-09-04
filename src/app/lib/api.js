@@ -14,7 +14,7 @@ const apiCall = async (endpoint, options = {}) => {
     });
 
     const data = await response.json();
-    console.log("data: ",data);
+    console.log("Api data: ",data);
 
     if (!response.ok) {
       throw new Error(data.message || data.error || `HTTP ${response.status}`);

@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { Megaphone, X } from "lucide-react";
+import { useUI } from "../lib/contexts/UniShareContext";
 
 export default function AnnouncementBar() {
   const [noticeVisible, setNoticeVisible] = useState(true);
-  const [darkMode, setDarkMode] = useState(true); // You can get this from context later
+  const { darkMode } = useUI();
 
   if (!noticeVisible) return null;
 

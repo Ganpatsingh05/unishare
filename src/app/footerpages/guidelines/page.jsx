@@ -36,9 +36,10 @@ import Footer from '../../_components/Footer';
 import { useRouter } from 'next/navigation';
 import Reveal from '../../_components/Reveal';
 import MobileQuickNav from '../../_components/MobileQuickNav';
+import { useUI } from '../../lib/contexts/UniShareContext';
 
 export default function GuidelinesPage() {
-  const [darkMode, setDarkMode] = useState(true);
+  const {darkMode} = useUI();
   const [activeSection, setActiveSection] = useState('overview');
   const [reportType, setReportType] = useState('');
   const router = useRouter();
@@ -291,7 +292,6 @@ export default function GuidelinesPage() {
         ? "bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 text-gray-100"
         : "bg-gradient-to-br from-blue-50 via-gray-50 to-green-50 text-gray-800"
     }`}>
-      <Header darkMode={darkMode} onThemeToggle={() => setDarkMode(!darkMode)} />
       
       {/* Navigation Breadcrumb */}
       <div className="max-w-6xl mx-auto px-4 pt-8">

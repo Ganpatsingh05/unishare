@@ -1,18 +1,15 @@
 "use client";
 
 import { useState } from 'react';
-import Header from '../../_components/Header';
 import Footer from '../../_components/Footer';
 import Reveal from '../../_components/Reveal';
 import useIsMobile from '../../_components/useIsMobile';
 import { Users, Heart, Zap, Target, Globe, BookOpen, Car, ShoppingBag, Home, MessageCircle, ArrowRight, Check, Star } from 'lucide-react';
 
 export default function AboutPage() {
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode] = useState(true);
   const [activeTab, setActiveTab] = useState('story');
   const isMobile = useIsMobile();
-
-  const handleThemeToggle = () => setDarkMode((prev) => !prev);
 
   const stats = [
     { number: '2,500+', label: 'Active Students', icon: Users },
@@ -94,9 +91,7 @@ export default function AboutPage() {
         ? "bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 text-gray-100"
         : "bg-gradient-to-br from-blue-50 via-gray-50 to-green-50 text-gray-800"
     }`}>
-      <Header darkMode={darkMode} onThemeToggle={handleThemeToggle} />
-
-    {/* Hero Section */}
+      {/* Hero Section */}
       <div className="pt-8 pb-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
       <Reveal className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 ${
