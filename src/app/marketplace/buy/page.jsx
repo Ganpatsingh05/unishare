@@ -271,7 +271,7 @@ export default function MarketplaceBuyPage() {
   );
 
   return (
-    <div className={darkMode ? "min-h-screen bg-gradient-to-br from-gray-900 to-gray-800" : "min-h-screen bg-gradient-to-br from-gray-50 to-gray-100"}>
+    <div className="min-h-screen">
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10">
         <div className={`rounded-2xl border shadow-xl p-4 sm:p-6 ${darkMode ? 'bg-gray-950/60 border-gray-900' : 'bg-white/80 border-gray-200'} backdrop-blur-sm`}>

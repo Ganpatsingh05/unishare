@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Header from "../../_components/Header";
 import Footer from "../../_components/Footer";
 import { Calendar, Clock, MapPin, Image as ImageIcon, Phone, Instagram, Mail, Link2, Plus, Trash2 } from "lucide-react";
 
@@ -37,7 +36,6 @@ export default function ReportLostFoundPage() {
 
   const handleThemeToggle = () => setDarkMode((p) => !p);
 
-  const pageBg = darkMode ? "bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 text-gray-100" : "bg-gradient-to-br from-gray-50 via-white to-gray-50 text-gray-800";
   const labelClr = darkMode ? "text-gray-300" : "text-gray-700";
   const inputBg = darkMode ? "bg-gray-900 border-gray-800 text-gray-100" : "bg-white border-gray-200 text-gray-900";
   const titleClr = darkMode ? "text-gray-100" : "text-gray-900";
@@ -65,8 +63,7 @@ export default function ReportLostFoundPage() {
   };
 
   return (
-    <div className={`min-h-screen ${pageBg}`}>
-      <Header darkMode={darkMode} onThemeToggle={handleThemeToggle} logoRotation={logoRotation} />
+    <div className="min-h-screen">
       <main className="px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="mx-auto max-w-3xl">
           <div className="flex items-center justify-between flex-wrap gap-3">

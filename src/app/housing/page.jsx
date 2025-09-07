@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Search, UploadCloud, Users, ArrowRight } from "lucide-react";
-import Header from "../_components/Header";
 import Footer from "../_components/Footer";
 
 export default function HousingHubPage() {
@@ -23,9 +22,6 @@ export default function HousingHubPage() {
 
   const handleThemeToggle = () => setDarkMode((p) => !p);
 
-  const pageBg = darkMode
-    ? "bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 text-gray-100"
-    : "bg-gradient-to-br from-gray-50 via-white to-gray-50 text-gray-800";
   const cardBorder = darkMode ? "border-gray-800" : "border-gray-200";
   const cardBg = darkMode ? "bg-gray-900/70" : "bg-white/80";
   const textMuted = darkMode ? "text-gray-300" : "text-gray-600";
@@ -36,7 +32,7 @@ export default function HousingHubPage() {
   const badgeGreen = darkMode ? "text-emerald-300 bg-emerald-500/10" : "text-emerald-600 bg-emerald-50";
 
   return (
-    <div className={`min-h-screen ${pageBg}`}>
+    <div className="min-h-screen">
 
       <main className="px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="mx-auto max-w-3xl">

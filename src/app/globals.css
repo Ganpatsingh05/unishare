@@ -3,6 +3,14 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Theme text tokens (light defaults) */
+  --text-primary: #0f172a; /* slate-900 */
+  --text-secondary: #334155; /* slate-700 */
+  --text-muted: #64748b; /* slate-500 */
+  /* Panel (frosted/glass) text tokens for light */
+  --panel-text-primary: #0b1220; /* deep slate for light frosted */
+  --panel-text-secondary: #334155;
+  --panel-text-muted: #475569;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -10,6 +18,16 @@
   /* Global easing for subtle spring-like motion */
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-soft: cubic-bezier(0.5, 0, 0.75, 0);
+}
+
+/* Dark theme token overrides (driven by UniShareProvider setting html[data-theme]) */
+html[data-theme='dark'] {
+  --text-primary: #e6f0ff; /* blue-50 */
+  --text-secondary: #cde0ff; /* soft light blue */
+  --text-muted: #a8c1e6; /* desaturated light blue */
+  --panel-text-primary: #eaf4ff; /* for frosted blue panels */
+  --panel-text-secondary: #d3e8ff;
+  --panel-text-muted: #b6d2f2;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -20,11 +38,73 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  /* Base text uses theme token for better contrast */
+  color: var(--text-primary);
   font-family: Arial, Helvetica, sans-serif;
   overflow-x: hidden;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
+
+body::-webkit-scrollbar {
+  width: 0px !important;
+  height: 0px !important;
+  background: transparent !important;
+  display: none !important;
+}
+
+/* =========================
+   🌟 Global Theme Backgrounds
+   ========================= */
+.theme-bg-light {
+  background: linear-gradient(to bottom right, #fff7ed, #fed7aa, #fdba74);
+  color: #1f2937;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-bg-dark {
+  background: linear-gradient(to bottom right, #111827, #030712, #111827);
+  color: #f3f4f6;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/*
+  Theme-aware text utility helpers (opt-in)
+  Use: add class `text-primary`, `text-secondary`, or `text-muted` where needed.
+*/
+.text-primary { color: var(--text-primary) !important; }
+.text-secondary { color: var(--text-secondary) !important; }
+.text-muted { color: var(--text-muted) !important; }
+
+/*
+  Frosted/glass panels: ensure readable text by default.
+  Any container with backdrop blur will inherit panel text colors.
+*/
+.backdrop-blur-sm,
+.backdrop-blur,
+.backdrop-blur-md,
+.backdrop-blur-lg,
+.backdrop-blur-xl,
+.backdrop-blur-2xl {
+  color: var(--panel-text-primary);
+}
+
+/* Inside frosted containers, keep text color consistent */
+.backdrop-blur-sm [class*='text-'],
+.backdrop-blur [class*='text-'],
+.backdrop-blur-md [class*='text-'],
+.backdrop-blur-lg [class*='text-'],
+.backdrop-blur-xl [class*='text-'],
+.backdrop-blur-2xl [class*='text-'] {
+  color: inherit !important;
+}
+
+/* Utility: apply panel text tokens even without blur */
+.panel-text {
+  color: var(--panel-text-primary) !important;
+}
+.panel-text .text-secondary { color: var(--panel-text-secondary) !important; }
+.panel-text .text-muted { color: var(--panel-text-muted) !important; }
 
 /* =========================
    🌟 Core Animations
@@ -237,6 +317,15 @@ html {
   max-width: 100vw;
   overflow-x: clip;
   font-size: 90%; /* Slightly reduced scale */
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+html::-webkit-scrollbar {
+  width: 0px !important;
+  height: 0px !important;
+  background: transparent !important;
+  display: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -250,9 +339,71 @@ html {
 }
 
 /* =========================
-   🌟 Custom Scrollbar
+   🌟 Hide Scrollbar
    ========================= */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); }
-::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.5); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(59, 130, 246, 0.7); }
+::-webkit-scrollbar { 
+  width: 0px !important;
+  height: 0px !important;
+  background: transparent !important;
+  display: none !important;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent !important;
+  display: none !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent !important;
+  display: none !important;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent !important;
+  display: none !important;
+}
+
+/* Hide scrollbar for Firefox */
+html {
+  scrollbar-width: none !important;
+  scrollbar-color: transparent transparent !important;
+}
+
+/* Hide scrollbar for IE and Edge */
+body {
+  -ms-overflow-style: none !important;
+}
+
+/* Additional scrollbar hiding for all elements */
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+*::-webkit-scrollbar {
+  width: 0px !important;
+  height: 0px !important;
+  background: transparent !important;
+  display: none !important;
+}
+
+/* Override any Tailwind scrollbar utilities */
+.scrollbar-thin::-webkit-scrollbar,
+.scrollbar-track-gray-100::-webkit-scrollbar-track,
+.scrollbar-thumb-gray-300::-webkit-scrollbar-thumb,
+.overflow-y-auto::-webkit-scrollbar,
+.overflow-x-auto::-webkit-scrollbar,
+.overflow-auto::-webkit-scrollbar {
+  width: 0px !important;
+  height: 0px !important;
+  background: transparent !important;
+  display: none !important;
+}
+
+/* Force hide scrollbars on overflow containers */
+.overflow-y-auto,
+.overflow-x-auto,
+.overflow-auto {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}

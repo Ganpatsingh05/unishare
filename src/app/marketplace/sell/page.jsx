@@ -248,7 +248,7 @@ export default function MarketplaceSellPage() {
   // Show loading while checking auth
   if (authLoading) {
     return (
-      <div className={darkMode ? "min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white" : "min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900"}>
+      <div className="min-h-screen">
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <Loader className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-500" />
@@ -262,7 +262,7 @@ export default function MarketplaceSellPage() {
   // Show login prompt if not authenticated
   if (!isAuthenticated) {
     return (
-      <div className={darkMode ? "min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white" : "min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900"}>
+      <div className="min-h-screen">
         {/* Header */}
         <div className="sticky top-0 z-40 backdrop-blur-md border-b">
           <div className={`${darkMode ? 'bg-gray-900/80 border-gray-800' : 'bg-white/80 border-gray-200'}`}>
@@ -308,7 +308,7 @@ export default function MarketplaceSellPage() {
   }
 
   return (
-    <div className={darkMode ? "min-h-screen bg-gradient-to-br from-gray-900 to-gray-800" : "min-h-screen bg-gradient-to-br from-gray-50 to-gray-100"}>
+    <div className="min-h-screen">
       
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10">

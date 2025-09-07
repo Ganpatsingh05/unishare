@@ -83,7 +83,7 @@ export default function HeroSlider({ darkMode = true }) {
   };
 
   return (
-    <section className="w-full pt-8 sm:pt-12">
+    <section className="w-full pt-1 sm:pt-2">
   <div className="mx-auto px-4 w-full">
         {/* Main Slider Container */}
         <div
