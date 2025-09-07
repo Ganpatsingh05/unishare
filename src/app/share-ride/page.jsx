@@ -2,7 +2,6 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import Image from "next/image";
-import Header from "../_components/Header";
 import Footer from "../_components/Footer";
 import {
   Car,
@@ -240,13 +239,7 @@ export default function ShareRidePage() {
   }
 
   return (
-    <div
-      className={`min-h-dvh transition-colors ${
-        darkMode
-          ? "bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900"
-          : "bg-gradient-to-br from-blue-50 via-gray-50 to-green-50"
-      }`}
-    >
+    <div className="min-h-dvh">
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10">
         {/* Brand-themed hero banner with image (place /public/rideunishare.jpg) */}

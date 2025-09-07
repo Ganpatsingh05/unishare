@@ -246,9 +246,6 @@ export default function HousingSearchPage() {
 
   const handleThemeToggle = () => setDarkMode((p) => !p);
 
-  const pageBg = darkMode
-    ? "bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 text-gray-100"
-    : "bg-gradient-to-br from-gray-50 via-white to-gray-50 text-gray-800";
   const labelClr = darkMode ? "text-gray-300" : "text-gray-700";
   const inputBg = darkMode ? "bg-gray-900 border-gray-800 text-gray-100" : "bg-white border-gray-200 text-gray-900";
   const titleClr = darkMode ? "text-gray-100" : "text-gray-900";
@@ -257,7 +254,7 @@ export default function HousingSearchPage() {
   const boxBg = darkMode ? "bg-gray-900/60" : "bg-gray-50";
 
   return (
-    <div className={`min-h-screen ${pageBg}`}>
+    <div className="min-h-screen">
 
       <main className="px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="mx-auto max-w-6xl">

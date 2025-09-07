@@ -28,7 +28,15 @@ import {
 import Footer from '../../_components/Footer';
 import { useRouter } from 'next/navigation';
 import { useUI } from '../../lib/contexts/UniShareContext';
-import { format } from "date-fns";
+
+// Simple date formatting function to replace date-fns
+const formatDate = (date) => {
+  const d = new Date(date);
+  const day = d.getDate().toString().padStart(2, '0');
+  const month = (d.getMonth() + 1).toString().padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+};
 
 export default function FAQs() {
   const {darkMode} = useUI();
@@ -441,11 +449,7 @@ export default function FAQs() {
     .slice(0, 4);
 
   return (
-    <div className={`min-h-screen transition-all duration-500 ${
-      darkMode
-        ? "bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 text-gray-100"
-        : "bg-gradient-to-br from-blue-50 via-gray-50 to-green-50 text-gray-800"
-    }`}>
+    <div className="min-h-screen">
       
       {/* Navigation Breadcrumb */}
       <div className="max-w-6xl mx-auto px-4 pt-8">
@@ -715,7 +719,7 @@ export default function FAQs() {
                         <div className={`text-xs ${
                           darkMode ? 'text-gray-500' : 'text-gray-400'
                         }`}>
-                          Updated {format(new Date(faq.lastUpdated), "dd/MM/yyyy")}
+                          Updated {formatDate(new Date(faq.lastUpdated))}
                         </div>
                       </div>
                       <h3 className={`text-xl font-bold mb-2 ${

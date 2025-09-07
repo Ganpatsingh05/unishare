@@ -11,13 +11,13 @@ import {
   EyeOff, 
   ArrowRight,
   Phone,
-  GraduationCap,
-  Home,
-  ArrowLeft
+  GraduationCap
 } from 'lucide-react';
 import logoImage from '../assets/images/logounishare1.png';
+import { useUI } from '../lib/contexts/UniShareContext';
 
 const RegisterPage = () => {
+  const { darkMode } = useUI();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showOwlMessage, setShowOwlMessage] = useState(false);
@@ -101,16 +101,6 @@ const RegisterPage = () => {
       <div className="lg:hidden min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col">
         {/* Mobile Header */}
         <div className="relative p-6 text-center">
-          {/* Back to Home Button */}
-          <div className="absolute top-6 left-6 z-20">
-            <Link 
-              href="/" 
-              className="flex items-center justify-center w-10 h-10 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300 hover:text-white rounded-xl transition-all duration-300 backdrop-blur-sm border border-slate-600/50"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-          </div>
-
           {/* Background Effects */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl"></div>
@@ -150,7 +140,7 @@ const RegisterPage = () => {
                   <div className="absolute -bottom-8 -left-28 bg-white text-gray-800 text-xs px-3 py-2 rounded-2xl shadow-lg border-2 border-gray-200 transform transition-all duration-300 z-20 max-w-xs">
                     <div className="font-medium">"{currentOwlMessage}"</div>
                     <div className="absolute top-0 right-6 transform -translate-y-1/2 w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-b-4 border-b-gray-200"></div>
-                    <div className="absolute top-0 right-6 transform -translate-y-1/2 translate-y-0.5 w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-b-4 border-b-white"></div>
+                    <div className="absolute top-0 right-6 transform -translate-y-2 w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-b-4 border-b-white"></div>
                   </div>
                 )}
               </div>
@@ -336,14 +326,55 @@ const RegisterPage = () => {
         </div>
 
         {/* Mobile Footer */}
-        <footer className="bg-slate-900/50 backdrop-blur-sm border-t border-slate-700/50 py-4 px-6">
+        <footer className={`backdrop-blur-sm border-t py-6 px-6 ${
+          darkMode 
+            ? 'bg-slate-900/50 border-slate-700/50' 
+            : 'bg-white/50 border-orange-200/50'
+        }`}>
           <div className="text-center">
-            <div className="flex flex-wrap justify-center gap-4 text-xs text-slate-400 mb-3">
-              <Link href="/terms" className="hover:text-cyan-400 transition-colors">Terms</Link>
-              <Link href="/privacy" className="hover:text-cyan-400 transition-colors">Privacy</Link>
-              <Link href="/support" className="hover:text-cyan-400 transition-colors">Support</Link>
+            {/* Main Footer Links */}
+            <div className={`flex flex-wrap justify-center gap-6 text-sm mb-4 ${
+              darkMode ? 'text-slate-300' : 'text-gray-700'
+            }`}>
+              <Link href="/footerpages/about" className={`transition-colors ${
+                darkMode ? 'hover:text-cyan-400' : 'hover:text-orange-600'
+              }`}>About</Link>
+              <Link href="/footerpages/privacy" className={`transition-colors ${
+                darkMode ? 'hover:text-cyan-400' : 'hover:text-orange-600'
+              }`}>Privacy</Link>
+              <Link href="/footerpages/terms" className={`transition-colors ${
+                darkMode ? 'hover:text-cyan-400' : 'hover:text-orange-600'
+              }`}>Terms</Link>
+              <Link href="/footerpages/help" className={`transition-colors ${
+                darkMode ? 'hover:text-cyan-400' : 'hover:text-orange-600'
+              }`}>Help</Link>
             </div>
-            <div className="text-xs text-slate-500">© 2024-2025 UniShare. All rights reserved.</div>
+            
+            {/* Secondary Links */}
+            <div className={`flex flex-wrap justify-center gap-4 text-xs mb-4 ${
+              darkMode ? 'text-slate-400' : 'text-gray-600'
+            }`}>
+              <Link href="/footerpages/careers" className={`transition-colors ${
+                darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
+              }`}>Careers</Link>
+              <Link href="/support" className={`transition-colors ${
+                darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
+              }`}>Support</Link>
+              <Link href="/footerpages/guidelines" className={`transition-colors ${
+                darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
+              }`}>Guidelines</Link>
+              <Link href="/footerpages/faqs" className={`transition-colors ${
+                darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
+              }`}>FAQs</Link>
+              <Link href="/footerpages/cookies" className={`transition-colors ${
+                darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
+              }`}>Cookies</Link>
+            </div>
+            
+            {/* Copyright */}
+            <div className={`text-xs ${darkMode ? 'text-slate-500' : 'text-gray-500'}`}>
+              © 2024-2025 UniShare. All rights reserved.
+            </div>
           </div>
         </footer>
       </div>
@@ -352,17 +383,6 @@ const RegisterPage = () => {
       <div className="hidden lg:flex min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex-col">
         {/* Main Content */}
         <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
-          {/* Back to Home Button */}
-          <div className="absolute top-8 left-8 z-20">
-            <Link 
-              href="/" 
-              className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300 hover:text-white rounded-xl transition-all duration-300 backdrop-blur-sm border border-slate-600/50"
-            >
-              <Home className="w-4 h-4" />
-              <span className="text-sm font-medium">Home</span>
-            </Link>
-          </div>
-
           {/* Background Effects */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-1/4 left-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-cyan-500/10 rounded-full blur-3xl"></div>
@@ -590,7 +610,7 @@ const RegisterPage = () => {
                       </div>
                       {/* Speech bubble tail pointing down */}
                       <div className="absolute bottom-0 right-8 transform translate-y-1/2 w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 border-t-gray-200"></div>
-                      <div className="absolute bottom-0 right-8 transform translate-y-1/2 -translate-y-0.5 w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 border-t-white"></div>
+                      <div className="absolute bottom-0 right-8 transform translate-y-2 w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 border-t-white"></div>
                     </div>
                   )}
                 </div>
@@ -600,37 +620,88 @@ const RegisterPage = () => {
         </div>
         
         {/* Desktop Footer */}
-        <footer className="relative z-10 bg-slate-900/50 backdrop-blur-sm border-t border-slate-700/50 py-4 px-4 sm:px-6 lg:px-8">
+        <footer className={`relative z-10 backdrop-blur-sm border-t py-6 px-4 sm:px-6 lg:px-8 ${
+          darkMode 
+            ? 'bg-slate-900/50 border-slate-700/50' 
+            : 'bg-white/50 border-orange-200/50'
+        }`}>
           <div className="max-w-5xl mx-auto">
-            {/* Footer Links */}
-            <div className="flex flex-wrap justify-center lg:justify-between items-center gap-4 mb-4">
-              <div className="flex flex-wrap justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-slate-400">
-                <Link href="/about" className="hover:text-cyan-400 transition-colors">
+            {/* Main Footer Links */}
+            <div className="flex flex-wrap justify-center lg:justify-between items-center gap-6 mb-4">
+              <div className={`flex flex-wrap justify-center gap-6 sm:gap-8 text-sm ${
+                darkMode ? 'text-slate-300' : 'text-gray-700'
+              }`}>
+                <Link href="/footerpages/about" className={`transition-colors ${
+                  darkMode ? 'hover:text-cyan-400' : 'hover:text-orange-600'
+                }`}>
                   About UniShare
                 </Link>
-                <Link href="/support" className="hover:text-cyan-400 transition-colors">
+                <Link href="/footerpages/careers" className={`transition-colors ${
+                  darkMode ? 'hover:text-cyan-400' : 'hover:text-orange-600'
+                }`}>
+                  Careers
+                </Link>
+                <Link href="/support" className={`transition-colors ${
+                  darkMode ? 'hover:text-cyan-400' : 'hover:text-orange-600'
+                }`}>
                   Support
                 </Link>
-                <Link href="/contact" className="hover:text-cyan-400 transition-colors">
-                  Contact Us
-                </Link>
-                <Link href="/terms" className="hover:text-cyan-400 transition-colors">
-                  Terms of Use
-                </Link>
-                <Link href="/privacy" className="hover:text-cyan-400 transition-colors">
-                  Privacy Policy
+                <Link href="/footerpages/help" className={`transition-colors ${
+                  darkMode ? 'hover:text-cyan-400' : 'hover:text-orange-600'
+                }`}>
+                  Help Center
                 </Link>
               </div>
               
               {/* Language Selector */}
-              <div className="flex items-center gap-2 text-slate-400 text-xs sm:text-sm">
+              <div className={`flex items-center gap-2 text-sm ${
+                darkMode ? 'text-slate-400' : 'text-gray-600'
+              }`}>
                 <span>🌐</span>
                 <span>English</span>
               </div>
             </div>
             
+            {/* Secondary Links */}
+            <div className={`flex flex-wrap justify-center gap-4 sm:gap-6 text-xs mb-4 ${
+              darkMode ? 'text-slate-400' : 'text-gray-600'
+            }`}>
+              <Link href="/footerpages/terms" className={`transition-colors ${
+                darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
+              }`}>
+                Terms of Use
+              </Link>
+              <Link href="/footerpages/privacy" className={`transition-colors ${
+                darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
+              }`}>
+                Privacy Policy
+              </Link>
+              <Link href="/footerpages/cookies" className={`transition-colors ${
+                darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
+              }`}>
+                Cookie Policy
+              </Link>
+              <Link href="/footerpages/guidelines" className={`transition-colors ${
+                darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
+              }`}>
+                Community Guidelines
+              </Link>
+              <Link href="/footerpages/faqs" className={`transition-colors ${
+                darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
+              }`}>
+                FAQs
+              </Link>
+              <Link href="/footerpages/data-protection" className={`transition-colors ${
+                darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
+              }`}>
+                Data Protection
+              </Link>
+            </div>
+            
             {/* Copyright */}
-            <div className="text-center text-xs sm:text-sm text-slate-500">
+            <div className={`text-center text-sm ${
+              darkMode ? 'text-slate-500' : 'text-gray-500'
+            }`}>
               © 2024-2025 UniShare Campus Community. All rights reserved.
             </div>
           </div>

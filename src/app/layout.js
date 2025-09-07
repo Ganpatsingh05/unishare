@@ -5,6 +5,7 @@ import RouteChangeOverlay from "./_components/RouteChangeOverlay";
 import { UniShareProvider } from "./lib/contexts/UniShareContext";
 import ClientHeader from "./_components/ClientHeader";
 import AnnouncementBar from "./_components/AnnouncementBar";
+import ThemeWrapper from "./_components/ThemeWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,12 +27,14 @@ export default function RootLayout({ children }) {
     <html lang="en" suppressHydrationWarning={true}>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning={true}>
         <UniShareProvider>
-          <AnnouncementBar />
-          <ClientHeader />
-          {children}
-          <CookieConsent />
-          {/* Client-side route change loader overlay */}
-          <RouteChangeOverlay />
+          <ThemeWrapper>
+            <AnnouncementBar />
+            <ClientHeader />
+            {children}
+            <CookieConsent />
+            {/* Client-side route change loader overlay */}
+            <RouteChangeOverlay />
+          </ThemeWrapper>
         </UniShareProvider>
       </body>
     </html>

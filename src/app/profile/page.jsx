@@ -910,7 +910,7 @@ const ProfilePage = () => {
                     </div>
                     
                     {userRooms && userRooms.length > 0 ? (
-                      <div className="max-h-[32rem] md:max-h-[36rem] lg:max-h-[40rem] xl:max-h-[44rem] overflow-y-auto pr-2 space-y-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                      <div className="max-h-[32rem] md:max-h-[36rem] lg:max-h-[40rem] xl:max-h-[44rem] overflow-y-auto pr-2 space-y-4">
                         {userRooms.map((room, index) => (
                           <motion.div
                             key={room.id || index}
@@ -1060,7 +1060,7 @@ const ProfilePage = () => {
                     </div>
                     
                     {userItems && userItems.length > 0 ? (
-                      <div className="max-h-[32rem] md:max-h-[36rem] lg:max-h-[40rem] xl:max-h-[44rem] overflow-y-auto pr-2 space-y-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                      <div className="max-h-[32rem] md:max-h-[36rem] lg:max-h-[40rem] xl:max-h-[44rem] overflow-y-auto pr-2 space-y-4">
                         {userItems.map((item, index) => (
                           <motion.div
                             key={item.id || index}
@@ -1240,7 +1240,7 @@ const ProfilePage = () => {
                     {selectedListingTab === 'rooms' && (
                       <div className="space-y-4">
                         {userRooms && userRooms.length > 0 ? (
-                          <div className="max-h-[32rem] md:max-h-[36rem] lg:max-h-[40rem] xl:max-h-[44rem] overflow-y-auto pr-2 space-y-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                          <div className="max-h-[32rem] md:max-h-[36rem] lg:max-h-[40rem] xl:max-h-[44rem] overflow-y-auto pr-2 space-y-4">
                             {userRooms.map((room, index) => (
                               <motion.div
                                 key={room.id || index}
@@ -1344,7 +1344,7 @@ const ProfilePage = () => {
                     {selectedListingTab === 'items' && (
                       <div className="space-y-4">
                         {userItems && userItems.length > 0 ? (
-                          <div className="max-h-[32rem] md:max-h-[36rem] lg:max-h-[40rem] xl:max-h-[44rem] overflow-y-auto pr-2 space-y-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                          <div className="max-h-[32rem] md:max-h-[36rem] lg:max-h-[40rem] xl:max-h-[44rem] overflow-y-auto pr-2 space-y-4">
                             {userItems.map((item, index) => (
                               <motion.div
                                 key={item.id || index}

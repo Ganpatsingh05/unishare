@@ -193,11 +193,7 @@ const MobileMain = ({ darkMode, isVisible = false }) => {
     >
       {/* Mobile Header - Compact */}
       <div 
-        className="text-center mb-6 transition-all duration-800"
-        style={{
-          opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
-        }}
+        className="text-center mb-6 transition-all duration-800 opacity-100"
       >
         {/* Compact Welcome Badge */}
         <div 

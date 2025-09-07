@@ -131,11 +131,7 @@ export default function CareersPage() {
   ];
 
   return (
-    <div className={`min-h-screen transition-all duration-500 ${
-      darkMode
-        ? "bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 text-gray-100"
-        : "bg-gradient-to-br from-blue-50 via-gray-50 to-green-50 text-gray-800"
-    }`}>
+    <div className="min-h-screen">
       {/* Hero Section */}
       <div className="pt-8 pb-16 px-4">
         <div className="max-w-4xl mx-auto text-center">

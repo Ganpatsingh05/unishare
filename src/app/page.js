@@ -24,6 +24,7 @@ import HeroSlider from "./_components/HeroSlider";
 import Footer from "./_components/Footer";
 import FloatingActionButton from "./_components/FloatingActionButton";
 import { useUI } from "./lib/contexts/UniShareContext";
+import ParticlesBackground from "./_components/ParticlesBackground";
 
 /**
  * Page component with interactive hero section and enhanced scroll effects
@@ -41,7 +42,7 @@ export default function Page() {
   
   // Interactive How It Works states
   const [activeStep, setActiveStep] = useState(0);
-  const [visibleSteps, setVisibleSteps] = useState([]);
+  const [visibleSteps, setVisibleSteps] = useState([0, 1, 2]); // Show all steps immediately
   const [isMobile, setIsMobile] = useState(false);
   
   const heroRef = useRef(null);
@@ -132,14 +133,7 @@ export default function Page() {
             }
           }
 
-          // Check How It Works steps visibility
-          const stepElements = document.querySelectorAll('[data-step]');
-          stepElements.forEach((el, index) => {
-            const rect = el.getBoundingClientRect();
-            if (rect.top < windowHeight * 0.8 && !visibleSteps.includes(index)) {
-              setVisibleSteps(prev => [...prev, index].sort());
-            }
-          });
+          // How It Works steps are always visible - no scroll detection needed
 
           ticking.scroll = false;
         });
@@ -186,11 +180,8 @@ export default function Page() {
     return (
       <div 
         data-step={index}
-        className={`relative group cursor-pointer transition-all duration-500 ${
-          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-        }`}
+        className="relative group cursor-pointer transition-all duration-500 opacity-100 translate-y-0"
         onClick={() => isMobile && handleStepClick(index)}
-        style={{ transitionDelay: `${index * 150}ms` }}
       >
         {/* Mobile: Card style */}
         {isMobile ? (
@@ -303,13 +294,7 @@ export default function Page() {
         {/* Connection line for mobile */}
         {isMobile && index < howItWorksSteps.length - 1 && (
           <div className="flex justify-center py-3">
-            <div className={`w-0.5 h-8 rounded-full transition-all duration-500 ${
-              visibleSteps.includes(index + 1) 
-                ? `bg-gradient-to-b ${step.color}` 
-                : darkMode 
-                  ? 'bg-gray-700' 
-                  : 'bg-gray-300'
-            }`} />
+            <div className={`w-0.5 h-8 rounded-full transition-all duration-500 bg-gradient-to-b ${step.color}`} />
           </div>
         )}
       </div>
@@ -317,14 +302,12 @@ export default function Page() {
   };
 
   return (
-      <div
-    className={`min-h-screen transition-all duration-500 ${
-      darkMode
-        ? "bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 text-gray-100"
-        : "bg-gradient-to-br from-orange-100 via-orange-200 to-orange-300 text-gray-900"
-    }`}
-  >
+      <div className="min-h-screen relative">
 
+      {/* Interactive Particles Background */}
+      <ParticlesBackground darkMode={darkMode} />
+
+      <div className="relative z-10">
       {/* SLIDER SECTION (replacing previous hero) */}
       <HeroSlider darkMode={darkMode} />
 
@@ -334,9 +317,7 @@ export default function Page() {
       </div>
 
       {/* Interactive How It Works Section */}
-      <section className={`py-16 md:py-20 transition-all duration-300 ${
-        darkMode ? 'bg-gray-900' : 'bg-gray-50'
-      }`}>
+      <section className="py-16 md:py-20 transition-all duration-300">
         <div className="max-w-6xl mx-auto px-4">
           {/* Header */}
           <div className="text-center mb-12 md:mb-16">
@@ -346,7 +327,9 @@ export default function Page() {
               }`}>
                 How does this actually work?
               </h2>
-              <div className={`absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-1 rounded-full bg-gradient-to-r from-blue-500 to-purple-500`} />
+              <div className={`absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-1 rounded-full ${
+                darkMode ? 'bg-gradient-to-r from-orange-400 to-orange-600' : 'bg-gradient-to-r from-orange-500 to-orange-700'
+              }`} />
             </div>
             <p className={`text-lg md:text-xl max-w-2xl mx-auto mt-6 ${
               darkMode ? 'text-gray-300' : 'text-gray-600'
@@ -366,7 +349,7 @@ export default function Page() {
                 step={step}
                 index={index}
                 isActive={activeStep === index}
-                isVisible={visibleSteps.includes(index)}
+                isVisible={true}
               />
             ))}
           </div>
@@ -378,13 +361,7 @@ export default function Page() {
                 {howItWorksSteps.map((step, index) => (
                   <button
                     key={index}
-                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                      visibleSteps.includes(index)
-                        ? `bg-gradient-to-r ${step.color}` 
-                        : darkMode 
-                          ? 'bg-gray-700' 
-                          : 'bg-gray-300'
-                    }`}
+                    className={`w-3 h-3 rounded-full transition-all duration-300 bg-gradient-to-r ${step.color}`}
                     onClick={() => setActiveStep(index)}
                   />
                 ))}
@@ -396,53 +373,63 @@ export default function Page() {
       </section>
 
       {/* Call to Action Section */}
-      <section className={`py-20 transition-all duration-300 ${
-        darkMode 
-          ? 'bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900' 
-          : 'bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800'
-      }`}>
+      <section className="py-20 transition-all duration-300">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+          <h2 className={`text-4xl md:text-5xl font-bold mb-6 ${
+            darkMode ? 'text-white' : 'text-gray-900'
+          }`}>
             Ready to make college less stressful?
           </h2>
-          <p className="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
+          <p className={`text-xl mb-10 max-w-2xl mx-auto ${
+            darkMode ? 'text-gray-300' : 'text-gray-700'
+          }`}>
             Thousands of students are already using UniShare to save money, make friends, and actually enjoy their campus life. Your turn.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/register" className="group px-8 py-4 bg-white text-blue-700 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center justify-center gap-3">
+            <Link href="/register" className={`group px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center justify-center gap-3 ${
+              darkMode 
+                ? 'bg-orange-600 text-white hover:bg-orange-500' 
+                : 'bg-orange-600 text-white hover:bg-orange-700'
+            }`}>
               <span>Let's get started</span>
               <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform duration-300" />
             </Link>
             
-            <Link href="/footerpages/about" className="px-8 py-4 border-2 border-white text-white rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 hover:bg-white hover:text-blue-700">
+            <Link href="/footerpages/about" className={`px-8 py-4 border-2 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 ${
+              darkMode 
+                ? 'border-orange-400 text-orange-400 hover:bg-orange-400 hover:text-gray-900' 
+                : 'border-orange-600 text-orange-600 hover:bg-orange-600 hover:text-white'
+            }`}>
               Tell me more first
             </Link>
           </div>
 
-          <div className="mt-12 flex flex-wrap justify-center items-center gap-6 text-blue-200">
+          <div className={`mt-12 flex flex-wrap justify-center items-center gap-6 ${
+            darkMode ? 'text-gray-400' : 'text-gray-600'
+          }`}>
             <div className="flex items-center gap-2">
-              <span className="text-green-400 text-lg">✓</span>
+              <span className="text-green-500 text-lg">✓</span>
               <span>Totally free</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-green-400 text-lg">✓</span>
+              <span className="text-green-500 text-lg">✓</span>
               <span>University verified</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-green-400 text-lg">✓</span>
+              <span className="text-green-500 text-lg">✓</span>
               <span>Actually safe</span>
             </div>
           </div>
         </div>
       </section>
 
-      <Footer darkMode={darkMode} />
+  <Footer darkMode={darkMode} />
 
       {/* Floating Action Button */}
       <FloatingActionButton darkMode={darkMode} />
       
-      <style jsx>{`
+  <style jsx>{`
         @keyframes bounce-slow {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(18px); }
@@ -492,6 +479,7 @@ export default function Page() {
           animation: fadeInScale 0.5s ease-out;
         }
       `}</style>
+  </div>
     </div>
   );
 }

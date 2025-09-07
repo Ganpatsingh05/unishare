@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Header from "../../_components/Header";
 import Footer from "../../_components/Footer";
 import Reveal from "../../_components/Reveal";
 import useIsMobile from "../../_components/useIsMobile";
@@ -136,13 +135,7 @@ export default function MissionPage() {
 	];
 
 	return (
-		<div
-			className={`min-h-screen transition-all duration-500 ${
-				darkMode
-					? "bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 text-gray-100"
-					: "bg-gradient-to-br from-blue-50 via-gray-50 to-green-50 text-gray-800"
-			}`}
-		>
+		<div className="min-h-screen">
 			{/* Breadcrumb */}
 			<div className="max-w-6xl mx-auto px-4 pt-8">
 				<div className="flex items-center gap-2 text-sm mb-8">

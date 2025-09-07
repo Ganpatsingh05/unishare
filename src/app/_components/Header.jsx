@@ -91,8 +91,8 @@ const Header = ({ logoRotation = 0 }) => {
   };
 
   return (
-    <header className={`sticky top-0 z-50 w-full overflow-x-clip transition-all duration-300 shadow-lg backdrop-blur-md border-b ${
-      darkMode ? 'bg-gray-900/95 border-gray-800 shadow-gray-900/20' : 'bg-white/95 border-gray-200 shadow-gray-200/50'
+    <header className={`sticky top-0 z-50 w-full overflow-x-clip overflow-y-visible transition-all duration-300 backdrop-blur-md ${
+      darkMode ? 'bg-transparent shadow-gray-900/10' : 'bg-transparent shadow-orange-200/20'
     }`}>
       {/* Mobile-only header */}
       <div className="md:hidden">
@@ -103,28 +103,30 @@ const Header = ({ logoRotation = 0 }) => {
 
       {/* Desktop/Tablet header */}
       <div className="hidden md:block mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-20 items-center justify-between">
+        <div className="flex h-24 items-center justify-between">
           
           {/* Logo and Search Section */}
-          <div className="flex items-center gap-4 flex-1">
+          <div className="flex items-center gap-4 flex-1 py-2">
             <Link className="block group cursor-pointer" href="/">
               <span className="sr-only">UniShare Home</span>
               <div className="flex items-center gap-3">
-                <div 
-                  className="h-16 w-16 transition-all duration-300 transform group-hover:scale-125 animate-float"
-                  style={{ 
-                    transform: `scale(1) rotate(${logoRotation}deg)`,
-                    filter: darkMode ? 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.3))' : 'drop-shadow(0 0 15px rgba(59, 130, 246, 0.2))'
-                  }}
-                >
-                  <Image
-                    src={logoImage}
-                    alt="UniShare Logo"
-                    width={100}
-                    height={100}
-                    className="w-full h-full object-contain bg-transparent transition-all duration-300 group-hover:animate-pulse-glow"
-                    priority
-                  />
+                <div className="w-20 h-20 flex items-end justify-center overflow-visible pb-2">
+                  <div 
+                    className="h-16 w-16 transition-all duration-300 transform group-hover:scale-125 animate-float"
+                    style={{ 
+                      transform: `scale(1) rotate(${logoRotation}deg)`,
+                      filter: darkMode ? 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.3))' : 'drop-shadow(0 0 15px rgba(59, 130, 246, 0.2))'
+                    }}
+                  >
+                    <Image
+                      src={logoImage}
+                      alt="UniShare Logo"
+                      width={100}
+                      height={100}
+                      className="w-full h-full object-contain bg-transparent transition-all duration-300 group-hover:animate-pulse-glow"
+                      priority
+                    />
+                  </div>
                 </div>
                 <span className="font-bold text-2xl transition-all duration-300 group-hover:text-opacity-80 whitespace-nowrap">
                   <span className={`transition-colors duration-300 ${

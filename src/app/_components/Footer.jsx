@@ -90,8 +90,8 @@ const Footer = () => {
   return (
     <footer className={`relative transition-all duration-300 ${
       darkMode 
-        ? 'bg-gradient-to-b from-gray-900 to-gray-950 text-gray-100 border-t border-gray-800' 
-        : 'bg-gradient-to-b from-gray-50 to-white text-gray-800 border-t border-gray-200'
+        ? 'bg-gradient-to-b from-gray-900 to-gray-950 text-gray-100' 
+        : 'bg-gradient-to-b from-orange-100 to-orange-50 text-gray-800'
     }`}>
       
       {/* Main Footer Content */}

@@ -19,7 +19,6 @@ import {
   ThumbsUp,
   ThumbsDown
 } from 'lucide-react';
-import Header from '../../_components/Header';
 // import Header from '../_components/Header';
 import Footer from '../../_components/Footer';
 import { useRouter } from 'next/navigation';
@@ -138,11 +137,7 @@ export default function HelpCenter() {
   };
 
   return (
-    <div className={`min-h-screen transition-all duration-500 ${
-      darkMode
-        ? "bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 text-gray-100"
-        : "bg-gradient-to-br from-blue-50 via-gray-50 to-green-50 text-gray-800"
-    }`}>
+    <div className="min-h-screen">
       
       {/* Navigation Breadcrumb */}
       <div className="max-w-6xl mx-auto px-4 pt-8">

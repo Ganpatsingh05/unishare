@@ -4,6 +4,16 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 // Helper function for API calls
 const apiCall = async (endpoint, options = {}) => {
   try {
+    // If no backend URL is configured, return mock data or throw a descriptive error
+    if (!BACKEND_URL) {
+      console.warn('NEXT_PUBLIC_BACKEND_URL is not configured. API calls will be mocked.');
+      // Return mock data for development
+      if (endpoint === '/auth/me') {
+        return { isAuthenticated: false, user: null };
+      }
+      throw new Error('Backend URL not configured');
+    }
+
     const response = await fetch(`${BACKEND_URL}${endpoint}`, {
       credentials: 'include', // Always include cookies
       ...options,
@@ -30,6 +40,12 @@ const apiCall = async (endpoint, options = {}) => {
 // Helper function for FormData calls (file uploads)
 const apiCallFormData = async (endpoint, formData, method = 'POST') => {
   try {
+    // If no backend URL is configured, return mock data or throw a descriptive error
+    if (!BACKEND_URL) {
+      console.warn('NEXT_PUBLIC_BACKEND_URL is not configured. FormData API calls will be mocked.');
+      throw new Error('Backend URL not configured');
+    }
+
     const response = await fetch(`${BACKEND_URL}${endpoint}`, {
       method,
       credentials: 'include',
