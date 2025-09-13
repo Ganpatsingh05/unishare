@@ -106,6 +106,16 @@ body::-webkit-scrollbar {
 .panel-text .text-secondary { color: var(--panel-text-secondary) !important; }
 .panel-text .text-muted { color: var(--panel-text-muted) !important; }
 
+/* ==================================
+   🔰 Brand Wordmark (force colors)
+   Prevent glass/backdrop inheritance from overriding the logo text colors.
+   Apply className="brand-wordmark" + child spans with brand-uni / brand-share.
+   ================================== */
+.brand-wordmark .brand-uni { color: #facc15 !important; /* yellow-400 */ }
+.brand-wordmark .brand-share { color: #38bdf8 !important; /* sky-400 */ }
+.brand-wordmark:hover .brand-uni { color: #fde047 !important; /* yellow-300 */ }
+.brand-wordmark:hover .brand-share { color: #7dd3fc !important; /* sky-300 */ }
+
 /* =========================
    🌟 Core Animations
    ========================= */
