@@ -61,99 +61,7 @@ export default function TicketBuyPage() {
   const titleClr = "text-primary";
   const subClr = "text-muted";
 
-  // Mock data for development - replace with actual API call later
-  const mockTickets = [
-    {
-      id: 1,
-      title: "Concert: Taylor Swift - Eras Tour",
-      price: 8500,
-      event_type: "concert",
-      category: "event",
-      event_date: "2024-12-15T19:00:00Z",
-      venue: "DY Patil Stadium, Mumbai",
-      location: "Mumbai",
-      quantity_available: 2,
-      ticket_type: "Premium",
-      description: "Amazing seats in the premium section. Can't attend due to emergency.",
-      image_url: "/ticket.png",
-      contact_info: {
-        mobile: "+91 98765 43210",
-        instagram: "@musiclover123"
-      },
-      users: { name: "Music Lover" },
-      created_at: "2024-10-01T10:00:00Z"
-    },
-    {
-      id: 2,
-      title: "IPL Match: MI vs CSK",
-      price: 1500,
-      event_type: "sports",
-      category: "event",
-      event_date: "2024-11-20T19:30:00Z",
-      venue: "Wankhede Stadium",
-      location: "Mumbai",
-      quantity_available: 4,
-      ticket_type: "General",
-      description: "Group booking. Selling 4 tickets together at face value.",
-      contact_info: {
-        mobile: "+91 87654 32109",
-        email: "sportsfan@email.com"
-      },
-      users: { name: "Cricket Fan" },
-      created_at: "2024-09-28T14:30:00Z"
-    },
-    {
-      id: 3,
-      title: "Comedy Night: Zakir Khan Live",
-      price: 1200,
-      event_type: "comedy",
-      category: "event",
-      event_date: "2024-11-10T20:00:00Z",
-      venue: "Phoenix MarketCity",
-      location: "Pune",
-      quantity_available: 1,
-      ticket_type: "Standard",
-      description: "Front row seat! Great view of the stage.",
-      contact_info: {
-        instagram: "@comedylover",
-        link: "https://wa.me/919876543210"
-      },
-      users: { name: "Comedy Enthusiast" },
-      created_at: "2024-09-25T16:15:00Z"
-    },
-    {
-      id: 4,
-      title: "Mumbai → Pune AC Bus (Sunday Morning)",
-      price: 550,
-      event_type: "travel",
-      category: "travel",
-      event_date: "2024-10-05T06:30:00.000Z",
-      venue: "Mumbai → Pune",
-      location: "Pune",
-      quantity_available: 1,
-      ticket_type: "Seat",
-      description: "One AC Volvo seat available. Clean bus, punctual operator.",
-      contact_info: { mobile: "+91 90000 11111" },
-      users: { name: "Traveler" },
-      created_at: "2024-10-02T09:10:00Z"
-    },
-    {
-      id: 5,
-      title: "Online Course Access Code (Data Science)",
-      price: 1200,
-      event_type: "other",
-      category: "other",
-      event_date: "2024-12-01T09:00:00.000Z",
-      venue: "Digital Item",
-      location: "Remote",
-      quantity_available: 1,
-      ticket_type: "Access",
-      description: "Unused 3‑month premium course access code.",
-      contact_info: { email: "seller@campus.edu" },
-      users: { name: "Learner" },
-      created_at: "2024-10-02T10:15:00Z"
-    }
-  ];
+
 
   // Fetch tickets from backend
   const fetchTicketData = async () => {
@@ -161,65 +69,51 @@ export default function TicketBuyPage() {
     clearError();
     
     try {
-      // For now, using mock data - replace with actual API call
-      // const filters = {
-      //   search: searchValue || undefined,
-      //   event_type: eventType !== 'all' ? eventType : undefined,
-      //   price_range: priceRange !== 'all' ? priceRange : undefined,
-      //   date_range: dateRange !== 'all' ? dateRange : undefined,
-      //   location: location || undefined,
-      //   sort: sort
-      // };
-      // const result = await fetchTickets(filters);
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Filter mock data based on current filters
-      let filteredTickets = [...mockTickets];
-      
-      if (searchValue) {
-        filteredTickets = filteredTickets.filter(ticket => 
-          ticket.title.toLowerCase().includes(searchValue.toLowerCase()) ||
-          ticket.venue.toLowerCase().includes(searchValue.toLowerCase())
-        );
-      }
-      
-      // Category filter first
-      if (category !== 'all') {
-        filteredTickets = filteredTickets.filter(ticket => (ticket.category || inferCategory(ticket)) === category);
+      // Prepare filters for API call
+      const filters = {
+        search: searchValue || undefined,
+        category: category !== 'all' ? category : undefined,
+        event_type: eventType !== 'all' ? eventType : undefined,
+        location: location || undefined,
+        sort: sort === 'recent' ? 'created_at' : sort.replace('-', '_'),
+        order: sort.includes('asc') ? 'asc' : 'desc'
+      };
+
+      // Handle price range
+      if (priceRange !== 'all') {
+        switch (priceRange) {
+          case 'under-500':
+            filters.max_price = 500;
+            break;
+          case '500-1000':
+            filters.min_price = 500;
+            filters.max_price = 1000;
+            break;
+          case '1000-2000':
+            filters.min_price = 1000;
+            filters.max_price = 2000;
+            break;
+          case 'over-2000':
+            filters.min_price = 2000;
+            break;
+        }
       }
 
-      // Only apply eventType filter when category is event or all (to not hide travel/other inadvertently)
-      if (eventType !== 'all') {
-        filteredTickets = filteredTickets.filter(ticket => (ticket.category || inferCategory(ticket)) === 'event' && ticket.event_type === eventType);
-      }
+      console.log('🎫 Fetching tickets with filters:', filters);
       
-      if (location) {
-        filteredTickets = filteredTickets.filter(ticket => 
-          ticket.location.toLowerCase().includes(location.toLowerCase())
-        );
-      }
+      // Call the real API
+      const result = await fetchTickets(filters);
       
-      // Sort tickets
-      switch (sort) {
-        case 'price-asc':
-          filteredTickets.sort((a, b) => a.price - b.price);
-          break;
-        case 'price-desc':
-          filteredTickets.sort((a, b) => b.price - a.price);
-          break;
-        case 'date':
-          filteredTickets.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
-          break;
-        default:
-          filteredTickets.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      if (result.success) {
+        setTickets(result.data || []);
+        console.log(`✅ Loaded ${result.data?.length || 0} tickets`);
+      } else {
+        throw new Error(result.message || 'Failed to fetch tickets');
       }
-      
-      setTickets(filteredTickets);
       
     } catch (error) {
-      setError(error.message);
+      console.error('❌ Error fetching tickets:', error);
+      setError(error.message || 'Failed to load tickets');
       setTickets([]);
     } finally {
       setLoading(false);
@@ -242,12 +136,7 @@ export default function TicketBuyPage() {
     clearError();
   };
 
-  const inferCategory = (ticket) => {
-    if (ticket.category) return ticket.category;
-    if (["concert","sports","comedy","theater","conference"].includes(ticket.event_type)) return 'event';
-    if (ticket.event_type === 'travel') return 'travel';
-    return 'other';
-  };
+
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-IN', {
@@ -630,7 +519,7 @@ export default function TicketBuyPage() {
                 )}
                 
                 {tickets.map((ticket) => {
-                  const cat = ticket.category || inferCategory(ticket);
+                  const cat = ticket.category || 'other';
                   const EventIcon = getEventTypeIcon(ticket.event_type, cat);
                   return (
                     <div 

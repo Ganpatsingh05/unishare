@@ -20,11 +20,17 @@ import {
   Users,
   Ticket,
   ShoppingCart,
-  CheckCircle
+  CheckCircle,
+  X,
+  Upload,
+  Phone,
+  Instagram,
+  Mail,
+  Link2
 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { fetchMyTickets, deleteTicket, createTicket, formatContactInfo } from "../../lib/api";
+import { fetchMyTickets, deleteTicket, createTicket, updateTicket, formatContactInfo } from "../../lib/api";
 import { 
   useAuth, 
   useMessages, 
@@ -39,6 +45,9 @@ export default function TicketSellPage() {
   const effectiveAuthenticated = isAuthenticated || devBypass;
   const { error, success, loading, setError, clearError, setLoading, showTemporaryMessage } = useMessages();
   const { darkMode } = useUI();
+
+  // Debug authentication state
+  console.log('🔐 Auth Debug:', { isAuthenticated, user: user?.id, devBypass, effectiveAuthenticated });
 
   // Local state
   const [myTickets, setMyTickets] = useState([]);
@@ -136,14 +145,20 @@ export default function TicketSellPage() {
   const fetchMyTicketData = async () => {
     try {
       setLoading(true);
-      // const data = await fetchMyTickets();
-      // setMyTickets(data);
-      // For now, use mock data
-      setMyTickets(mockMyTickets);
+      const result = await fetchMyTickets();
+      if (result.success) {
+        setMyTickets(result.data || []);
+      } else {
+        setMyTickets([]);
+        if (result.error) {
+          setError(result.error);
+        }
+      }
       clearError();
     } catch (err) {
       setError("Failed to fetch your tickets");
       console.error("Error fetching tickets:", err);
+      setMyTickets([]);
     } finally {
       setLoading(false);
     }
@@ -156,11 +171,15 @@ export default function TicketSellPage() {
 
     try {
       setDeletingTicket(ticketId);
-      // await deleteTicket(ticketId);
-      setMyTickets(prev => prev.filter(ticket => ticket.id !== ticketId));
-      showTemporaryMessage("Ticket deleted successfully", "success");
+      const result = await deleteTicket(ticketId);
+      if (result.success) {
+        setMyTickets(prev => prev.filter(ticket => ticket.id !== ticketId));
+        showTemporaryMessage(result.message || "Ticket deleted successfully", "success");
+      } else {
+        throw new Error(result.message || "Failed to delete ticket");
+      }
     } catch (err) {
-      setError("Failed to delete ticket");
+      setError(err.message || "Failed to delete ticket");
     } finally {
       setDeletingTicket(null);
     }
@@ -462,6 +481,53 @@ function TicketCreateModal({ onClose, onTicketCreated, editingTicket, darkMode, 
     if (!travelDate) { const t = new Date(); t.setDate(t.getDate()+1); setTravelDate(t.toISOString().split('T')[0]); }
   }, [eventDate, travelDate]);
   useEffect(()=> ()=> { if (imagePreview) URL.revokeObjectURL(imagePreview); }, [imagePreview]);
+  
+  // Populate form when editing
+  useEffect(() => {
+    if (editingTicket) {
+      setCategory(editingTicket.category || 'event');
+      setTitle(editingTicket.title || '');
+      setPrice(editingTicket.price?.toString() || '');
+      setEventType(editingTicket.event_type || 'concert');
+      setVenue(editingTicket.venue || '');
+      setLocation(editingTicket.location || '');
+      setQuantityAvailable(editingTicket.quantity_available?.toString() || '1');
+      setTicketType(editingTicket.ticket_type || 'Standard');
+      setDescription(editingTicket.description || '');
+      setOrigin(editingTicket.origin || '');
+      setDestination(editingTicket.destination || '');
+      setTransportMode(editingTicket.transport_mode || 'bus');
+      setItemType(editingTicket.item_type || 'General');
+      
+      // Handle dates
+      if (editingTicket.event_date) {
+        const date = new Date(editingTicket.event_date);
+        setEventDate(date.toISOString().split('T')[0]);
+        setEventTime(date.toISOString().split('T')[1]?.slice(0, 5) || '');
+      }
+      if (editingTicket.travel_date) {
+        const date = new Date(editingTicket.travel_date);
+        setTravelDate(date.toISOString().split('T')[0]);
+        setTravelTime(date.toISOString().split('T')[1]?.slice(0, 5) || '');
+      }
+      
+      // Handle contacts
+      if (editingTicket.contact_info && typeof editingTicket.contact_info === 'object') {
+        const contactsArray = Object.entries(editingTicket.contact_info).map(([type, value], index) => ({
+          id: index + 1,
+          type,
+          value
+        }));
+        setContacts(contactsArray.length > 0 ? contactsArray : [{id: 1, type: 'mobile', value: ''}]);
+      }
+      
+      // Handle existing image
+      if (editingTicket.image_url) {
+        setImagePreview(editingTicket.image_url);
+        setImageFile(null); // Don't set file as it's already uploaded
+      }
+    }
+  }, [editingTicket]);
 
   const iconForType = (type) => ({mobile:Phone, instagram:Instagram, email:Mail, link:Link2}[type] || Link2);
   const placeholderForType = (type) => ({mobile:'+91 98765 43210', instagram:'@username', email:'name@university.edu', link:'https://...'}[type] || '');
@@ -492,9 +558,28 @@ function TicketCreateModal({ onClose, onTicketCreated, editingTicket, darkMode, 
       if(category==='event'){ payload = {...payload, event_type:eventType, event_date:eventDateTime, venue:venue.trim(), location:location.trim(), ticket_type:ticketType}; }
       else if(category==='travel'){ payload = {...payload, origin:origin.trim(), destination:destination.trim(), travel_date:travelDateTime, transport_mode:transportMode, event_date:travelDateTime, venue:`${origin.trim()} → ${destination.trim()}`, location:destination.trim(), event_type:'travel'}; }
       else { payload = {...payload, item_type:itemType, location:location.trim(), event_type:'other', event_date:eventDateTime || new Date().toISOString()}; }
-      const result = await createTicket(payload, imageFile);
-      if(result.success){ showTemporaryMessage(`Listing "${result.data.title}" created!`, true, 3500); handleReset(); onTicketCreated && onTicketCreated(result.data); setTimeout(()=> onClose(), 1200); }
-      else { throw new Error(result.message || 'Failed to create listing'); }
+      let result;
+      if (editingTicket) {
+        // Update existing ticket
+        result = await updateTicket(editingTicket.id, payload, imageFile);
+        if(result.success){ 
+          showTemporaryMessage(`Listing "${result.data.title}" updated!`, true, 3500); 
+          handleReset(); 
+          onTicketCreated && onTicketCreated(result.data); 
+          setTimeout(()=> onClose(), 1200); 
+        }
+        else { throw new Error(result.message || 'Failed to update listing'); }
+      } else {
+        // Create new ticket
+        result = await createTicket(payload, imageFile);
+        if(result.success){ 
+          showTemporaryMessage(`Listing "${result.data.title}" created!`, true, 3500); 
+          handleReset(); 
+          onTicketCreated && onTicketCreated(result.data); 
+          setTimeout(()=> onClose(), 1200); 
+        }
+        else { throw new Error(result.message || 'Failed to create listing'); }
+      }
     } catch(err){ setError(err.message); } finally { setLoading(false); }
   };
 
@@ -509,8 +594,12 @@ function TicketCreateModal({ onClose, onTicketCreated, editingTicket, darkMode, 
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center"><Ticket className="w-6 h-6 text-white" /></div>
             <div>
-              <h2 className={`text-xl sm:text-2xl font-semibold ${titleClr}`}>Create Ticket Listing</h2>
-              <p className="text-sm text-muted">Sell event, travel or other tickets</p>
+              <h2 className={`text-xl sm:text-2xl font-semibold ${titleClr}`}>
+                {editingTicket ? 'Edit Ticket Listing' : 'Create Ticket Listing'}
+              </h2>
+              <p className="text-sm text-muted">
+                {editingTicket ? 'Update your ticket listing' : 'Sell event, travel or other tickets'}
+              </p>
             </div>
           </div>
           <button onClick={onClose} className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-gray-800':'hover:bg-gray-100'}`}><X className="w-5 h-5" /></button>
@@ -695,7 +784,7 @@ function TicketCreateModal({ onClose, onTicketCreated, editingTicket, darkMode, 
             </div>
           </div>
           <div className="sm:col-span-2 flex flex-col sm:flex-row items-center gap-3 pt-4">
-            <button type="submit" disabled={loading} className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">{loading ? (<><Loader className="w-5 h-5 animate-spin" /> Saving...</>) : 'Create Listing'}</button>
+            <button type="submit" disabled={loading} className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">{loading ? (<><Loader className="w-5 h-5 animate-spin" /> Saving...</>) : (editingTicket ? 'Update Listing' : 'Create Listing')}</button>
             <button type="button" onClick={handleReset} disabled={loading} className={`w-full sm:w-auto px-6 py-3 rounded-lg border font-medium transition-colors disabled:opacity-50 ${darkMode?'border-gray-700 text-gray-200 hover:bg-gray-800':'border-gray-300 text-gray-800 hover:bg-gray-100'}`}>Reset</button>
             <button type="button" onClick={onClose} disabled={loading} className={`w-full sm:w-auto px-6 py-3 rounded-lg border font-medium transition-colors disabled:opacity-50 ${darkMode?'border-gray-700 text-gray-200 hover:bg-gray-800':'border-gray-300 text-gray-800 hover:bg-gray-100'}`}>Cancel</button>
           </div>
