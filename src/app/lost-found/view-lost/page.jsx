@@ -1,19 +1,21 @@
 "use client";
 import React, { useMemo, useState, useEffect } from "react";
 import Footer from "../../_components/Footer";
-import { Search, Calendar, MapPin, Clock, Image as ImageIcon, Loader } from "lucide-react";
+import { Search, Calendar, MapPin, Clock, Image as ImageIcon, Loader, Package } from "lucide-react";
 import { fetchLostFoundItems } from "../../lib/api";
 import { useMessages } from "../../lib/contexts/UniShareContext";
 
-export default function ViewFoundPage() {
+export default function ViewLostPage() {
+  const { showTemporaryMessage } = useMessages();
   const [darkMode, setDarkMode] = useState(true);
-  // Palette toggle: 'warm', 'cool', 'neutral', 'gradient'
   const [palette, setPalette] = useState('neutral');
+  
+  // Palette-based styling (keeping the same system as view-found)
   const isCool = palette === 'cool';
   const isNeutral = palette === 'neutral';
   const isGradient = palette === 'gradient';
   const isDark = palette === 'dark';
-  // Computed classes based on palette
+  
   const labelClr = isGradient
     ? 'text-white/90'
     : isDark
@@ -21,6 +23,7 @@ export default function ViewFoundPage() {
       : isNeutral
         ? 'text-[#333333]/85'
         : (isCool ? 'text-[#1A1A1A]/85' : 'text-[#2D2D2D]/80');
+        
   const inputBg = isGradient
     ? 'bg-white/10 border-white/25 text-white placeholder-white/70 focus:ring-4 focus:ring-[#FF6F3C33] focus:border-[#FF6F3C]'
     : isDark
@@ -30,17 +33,15 @@ export default function ViewFoundPage() {
         : (isCool
           ? 'bg-white border-[#BBD4FF] text-[#1A1A1A] placeholder-[#1A1A1A]/50 focus:ring-4 focus:ring-[#1E90FF33] focus:border-[#1E90FF]'
           : 'bg-white border-[#FFD1B0] text-[#2D2D2D] placeholder-[#2D2D2D]/50 focus:ring-4 focus:ring-[#FF914D33] focus:border-[#FF914D]');
+          
   const titleClr = (isGradient || isDark)
     ? 'text-white'
     : (isNeutral ? 'text-[#333333]' : (isCool ? 'text-[#1A1A1A]' : 'text-[#2D2D2D]'));
   
-  // Card text colors based on palette
   const cardMainText = isDark ? 'text-[#E5E7EB]' : (isGradient ? 'text-[#333333]' : 'text-[#2D2D2D]');
   const cardSub1Text = isDark ? 'text-[#E5E7EB]/75' : (isGradient ? 'text-[#333333]/70' : 'text-[#2D2D2D]/70');
   const cardSub2Text = isDark ? 'text-[#E5E7EB]/65' : (isGradient ? 'text-[#333333]/60' : 'text-[#2D2D2D]/60');
 
-  const { showTemporaryMessage } = useMessages();
-  
   const [query, setQuery] = useState("");
   const [location, setLocation] = useState("");
   const [dateFrom, setDateFrom] = useState("");
@@ -49,18 +50,18 @@ export default function ViewFoundPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch found items from API
+  // Fetch lost items from API
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
       
       try {
-        console.log('🔍 Fetching found items...');
+        console.log('🔍 Fetching lost items...');
         
         // Create filters for API call
         const filters = {
-          mode: 'found', // Only show found items
+          mode: 'lost', // Only show lost items
           status: 'active',
           search: query.trim() || undefined,
           location: location.trim() || undefined,
@@ -72,14 +73,14 @@ export default function ViewFoundPage() {
         
         if (result.success) {
           setItems(result.data || []);
-          console.log(`✅ Loaded ${result.data?.length || 0} found items`);
+          console.log(`✅ Loaded ${result.data?.length || 0} lost items`);
         } else {
           throw new Error(result.message || 'Failed to fetch items');
         }
       } catch (error) {
-        console.error('❌ Error fetching found items:', error);
+        console.error('❌ Error fetching lost items:', error);
         setError(error.message);
-        showTemporaryMessage('Failed to load found items', 'error');
+        showTemporaryMessage('Failed to load lost items', 'error');
         setItems([]);
       } finally {
         setLoading(false);
@@ -96,7 +97,7 @@ export default function ViewFoundPage() {
     if (!items.length) return [];
     
     return items.filter(item => {
-      const itemDate = item.date_found || item.created_at?.split('T')[0];
+      const itemDate = item.date_lost || item.created_at?.split('T')[0];
       const inFrom = !dateFrom || itemDate >= dateFrom;
       const inTo = !dateTo || itemDate <= dateTo;
       return inFrom && inTo;
@@ -131,61 +132,17 @@ export default function ViewFoundPage() {
                     : 'bg-[#FF914D]'
             }`}></div>
           )}
-          {/* Palette toggle */}
-          <div className="absolute right-4 top-4 flex gap-2">
-            <button
-              onClick={() => setPalette('warm')}
-              className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                isCool ? 'border-[#FF6B35] text-[#FF6B35] bg-transparent' : 'bg-[#FF6B35] text-white border-[#FF6B35]'
-              }`}
-            >
-              Warm
-            </button>
-            <button
-              onClick={() => setPalette('cool')}
-              className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                isCool ? 'bg-[#0056B3] text-white border-[#0056B3]' : 'border-[#1E90FF] text-[#1E90FF] bg-transparent'
-              }`}
-            >
-              Cool
-            </button>
-            <button
-              onClick={() => setPalette('neutral')}
-              className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                isNeutral ? 'bg-[#FF6F3C] text-white border-[#FF6F3C]' : 'border-[#FF6F3C] text-[#FF6F3C] bg-transparent'
-              }`}
-            >
-              Neutral
-            </button>
-            <button
-              onClick={() => setPalette('gradient')}
-              className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                isGradient
-                  ? 'text-white border-transparent'
-                  : 'text-[#FF6F3C] border-[#FF6F3C] bg-transparent'
-              }`}
-              style={isGradient ? { background: 'linear-gradient(135deg, #FF7E5F, #FEB47B)' } : undefined}
-            >
-              Gradient
-            </button>
-            <button
-              onClick={() => setPalette('dark')}
-              className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                isDark ? 'bg-[#111827] text-white border-[#111827]' : 'border-[#111827] text-[#111827] bg-transparent'
-              }`}
-            >
-              Dark
-            </button>
-          </div>
-          <h1 className={`text-xl sm:text-2xl font-semibold ${titleClr}`}>View Found Items</h1>
-          <p className={`${isGradient ? 'text-white/90' : (isDark ? 'text-white/80' : (isNeutral ? 'text-[#333333]/80' : (isCool ? 'text-[#1A1A1A]/80' : 'text-[#2D2D2D]/80')))} mt-1 text-sm`}>Search items that others have reported as found on campus.</p>
 
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <h1 className={`text-xl sm:text-2xl font-bold mb-1 ${titleClr}`}>Lost Items</h1>
+          <p className={`text-sm sm:text-base mb-6 ${labelClr}`}>Help find items reported lost by other students</p>
+
+          {/* Search and filters */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
             <div>
-              <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Keywords</label>
+              <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Search</label>
               <div className="relative">
                 <Search className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${isGradient ? 'text-white' : (isDark ? 'text-[#FF6F3C]' : (isNeutral ? 'text-[#FF6F3C]' : (isCool ? 'text-[#1E90FF]' : 'text-[#FF914D]')))}`} />
-                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="e.g., wallet, bottle, id card" className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`} />
+                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Item name or description" className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`} />
               </div>
             </div>
             <div>
@@ -213,7 +170,7 @@ export default function ViewFoundPage() {
 
           <div className="mt-6">
             <div className="flex items-center justify-between mb-3">
-              <h2 className={`text-sm font-medium ${labelClr}`}>Found Items</h2>
+              <h2 className={`text-sm font-medium ${labelClr}`}>Lost Items</h2>
               {loading && (
                 <div className="flex items-center gap-2">
                   <Loader className="w-4 h-4 animate-spin" />
@@ -231,7 +188,7 @@ export default function ViewFoundPage() {
               
               {!loading && !error && filtered.length === 0 && (
                 <div className={`col-span-full text-sm ${isGradient ? 'text-white/85' : (isDark ? 'text-white/80' : (isNeutral ? 'text-[#333333]/70' : (isCool ? 'text-[#1A1A1A]/70' : 'text-[#2D2D2D]/70')))}`}>
-                  No found items match your filters.
+                  No lost items match your filters.
                 </div>
               )}
               
@@ -271,7 +228,7 @@ export default function ViewFoundPage() {
                           className="w-full h-full object-cover rounded-lg"
                         />
                       ) : (
-                        <ImageIcon className={`${isGradient ? 'text-[#FF6F3C]' : (isDark ? 'text-[#FF6F3C]' : (isNeutral ? 'text-[#FF6F3C]' : (isCool ? 'text-[#1E90FF]' : 'text-[#FF914D]')))}`} size={18} />
+                        <Package className={`${isGradient ? 'text-[#FF6F3C]' : (isDark ? 'text-[#FF6F3C]' : (isNeutral ? 'text-[#FF6F3C]' : (isCool ? 'text-[#1E90FF]' : 'text-[#FF914D]')))}`} size={18} />
                       )}
                     </div>
                     <div className="flex-1">
@@ -280,11 +237,11 @@ export default function ViewFoundPage() {
                       </div>
                       <div className={`text-xs mt-1 ${cardSub1Text} flex items-center gap-1`}>
                         <MapPin className="w-3 h-3" />
-                        {item.where_found}
+                        Last seen: {item.where_last_seen}
                       </div>
                       <div className={`text-xs mt-1 ${cardSub2Text} flex items-center gap-1`}>
                         <Calendar className="w-3 h-3" />
-                        Found: {item.date_found ? new Date(item.date_found).toLocaleDateString() : 'Date not specified'}
+                        Lost: {item.date_lost ? new Date(item.date_lost).toLocaleDateString() : 'Date not specified'}
                       </div>
                       {item.description && (
                         <div className={`text-xs mt-2 ${cardSub2Text} line-clamp-2`}>
@@ -307,4 +264,3 @@ export default function ViewFoundPage() {
     </div>
   );
 }
-

@@ -62,8 +62,6 @@ export default function AnnouncementsPage() {
 
   return (
     <div className={darkMode ? "min-h-dvh bg-black" : "min-h-dvh bg-white"}>
-      <Header darkMode={darkMode} onThemeToggle={() => setDarkMode(p => !p)} />
-
       <main className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10">
         <div className={`rounded-2xl border p-4 sm:p-6 ${darkMode ? 'bg-gray-950/60 border-gray-900' : 'bg-gray-50 border-gray-200'}`}>
           <div className="flex items-center justify-between gap-3 flex-wrap">

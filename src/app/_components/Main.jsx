@@ -95,7 +95,7 @@ const sections = [
     title: 'Report Lost/Found Items',
     description: 'Report lost items or help others find their missing belongings.',
     icon: <Search className="w-10 h-10" />,
-    href: '/lost-found/report',
+    href: '/lost-found',
     color: 'from-indigo-500 to-blue-500',
     category: 'community',
     features: ['AI matching', 'Photo recognition', 'Community help']
@@ -357,7 +357,14 @@ const Main = ({ darkMode, isVisible = false }) => {
       {/* Services Grid */}
       {filteredSections.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          {filteredSections.map((section, index) => (
+          {filteredSections.map((section, index) => {
+            // Hide "View Found Items" card on large screens for perfect 3x3 grid
+            const isViewFoundItems = section.title === 'View Found Items';
+            if (isViewFoundItems && !isMobile) {
+              return null;
+            }
+            
+            return (
             <Link
               key={index}
               href={section.href}
@@ -366,6 +373,7 @@ const Main = ({ darkMode, isVisible = false }) => {
               onMouseLeave={() => setHoveredSection(null)}
               onClick={() => handleSectionClick(index)}
             >
+            
               <div
                 className={`relative h-full p-8 rounded-3xl border transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 ${
                   clickedSection === index ? 'scale-95' : ''
@@ -450,7 +458,8 @@ const Main = ({ darkMode, isVisible = false }) => {
                 </div>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className={`text-center py-16 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
