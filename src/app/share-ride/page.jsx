@@ -1,704 +1,298 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
-import Image from "next/image";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import Footer from "../_components/Footer";
-import {
-  Car,
-  MapPin,
-  Calendar,
-  Clock,
-  Users,
-  Phone,
-  Instagram,
-  Mail,
-  Link2,
-  Plus,
-  Trash2,
-  IndianRupee,
-} from "lucide-react";
+import { Car, Users, Search, Plus, ArrowRight, Calendar, MapPin, Eye, Navigation } from "lucide-react";
 import { useUI } from "../lib/contexts/UniShareContext";
 
-// Loading Component
-function LoadingScreen({ onComplete }) {
-  const [progress, setProgress] = useState(0);
-  const [loadingText, setLoadingText] = useState("Loading");
-  const [dots, setDots] = useState("");
+export default function ShareRideHubPage() {
+  const { darkMode } = useUI();
+  const [logoRotation, setLogoRotation] = useState(0);
+  const [recentRides, setRecentRides] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Progress bar animation
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(progressInterval);
-          setTimeout(onComplete, 200); // Small delay after 100%
-          return 100;
-        }
-        return prev + 2; // 2% every 100ms = 5 seconds total
-      });
-    }, 100);
-
-    // Animated dots
-    const dotsInterval = setInterval(() => {
-      setDots((prev) => {
-        if (prev.length >= 3) return "";
-        return prev + ".";
-      });
-    }, 500);
-
-    // Loading text variations
-    const textVariations = [
-      "Finding rides",
-      "Loading drivers",
-      "Searching routes",
-      "Almost ready",
-      "Start sharing"
-    ];
-    let textIndex = 0;
-    const textInterval = setInterval(() => {
-      setLoadingText(textVariations[textIndex]);
-      textIndex = (textIndex + 1) % textVariations.length;
-    }, 1000);
-
-    return () => {
-      clearInterval(progressInterval);
-      clearInterval(dotsInterval);
-      clearInterval(textInterval);
+    const onMouseMove = (e) => {
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+      const rot = Math.atan2(e.clientY - cy, e.clientX - cx) * (180 / Math.PI) * 0.1;
+      setLogoRotation((prev) => (Math.abs(prev - rot) < 0.1 ? prev : rot));
     };
-  }, [onComplete]);
+    window.addEventListener("mousemove", onMouseMove, { passive: true });
+    return () => window.removeEventListener("mousemove", onMouseMove);
+  }, []);
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900">
-      <div className="relative z-10 text-center">
-        {/* GIF Container - Larger size */}
-        <div className="mb-8 relative">
-          <div className="w-56 h-56 mx-auto mb-4 rounded-3xl overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20 shadow-2xl flex items-center justify-center">
-            <img 
-              src="/rideshare.gif" 
-              alt="RideShare Navigator" 
-              className="w-full h-full object-cover"
-            />
-          </div>
-          {/* Pulsing ring around gif */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-64 h-64 border-2 border-emerald-400/40 rounded-full animate-ping" />
-          </div>
-          {/* Secondary pulsing ring */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-72 h-72 border border-blue-400/30 rounded-full animate-pulse" />
-          </div>
-        </div>
+  // Fetch recent rides from API
+  useEffect(() => {
+    const fetchRecentRides = async () => {
+      try {
+        const { fetchRides } = await import('../lib/api');
+        
+        const result = await fetchRides({
+          sort: 'created_at',
+          order: 'desc',
+          limit: 6
+        });
+        
+        if (result.success) {
+          // Transform backend data to match frontend format
+          const transformedRides = result.data.map(ride => ({
+            id: ride.id,
+            driver: ride.driver_name || ride.users?.name || 'Anonymous',
+            from: ride.from_location,
+            to: ride.to_location,
+            date: ride.date,
+            time: ride.time,
+            seats: ride.available_seats,
+            price: ride.price
+          }));
+          
+          setRecentRides(transformedRides);
+        }
+      } catch (error) {
+        console.error('Error fetching recent rides:', error);
+        setRecentRides([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchRecentRides();
+  }, []);
 
-        {/* Loading Text */}
-        <h2 className="text-2xl font-bold text-white mb-2">
-          {loadingText}{dots}
-        </h2>
-        <p className="text-blue-100 mb-8 text-sm">
-          Connecting riders and drivers...
-        </p>
-
-        {/* Progress Bar */}
-        <div className="w-64 mx-auto">
-          <div className="bg-white/20 rounded-full h-2 overflow-hidden backdrop-blur-sm">
-            <div 
-              className="bg-gradient-to-r from-emerald-400 via-blue-400 to-purple-400 h-full rounded-full transition-all duration-100 ease-out shadow-lg"
-              style={{ width: `${progress}%` }}
-            />
+  // Loading Component
+  function LoadingScreen() {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900">
+        <div className="relative z-10 text-center">
+          <div className="mb-8 relative">
+            <div className="w-56 h-56 mx-auto mb-4 rounded-3xl overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20 shadow-2xl flex items-center justify-center">
+              <img 
+                src="/rideshare.gif" 
+                alt="RideShare Navigator" 
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-64 h-64 border-2 border-emerald-400/40 rounded-full animate-ping" />
+            </div>
           </div>
-          <div className="mt-2 text-white/80 text-xs font-medium">
-            {progress}%
-          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">Loading...</h2>
+          <p className="text-blue-100 mb-8 text-sm">
+            Connecting riders and drivers...
+          </p>
         </div>
       </div>
-    </div>
-  );
-}
-
-export default function ShareRidePage() {
-  const {darkMode} = useUI();
-  const [mode, setMode] = useState("find"); // 'find' | 'offer'
-  const [heroSrc, setHeroSrc] = useState("/assets/images/rideunishare.png");
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Common styles
-  const labelClr = darkMode ? "text-gray-300" : "text-gray-700";
-  const inputBg = darkMode
-    ? "bg-gray-900 border-gray-800 text-gray-100 placeholder-gray-500"
-    : "bg-white border-gray-200 text-gray-900 placeholder-gray-500";
-  const titleClr = darkMode ? "text-white" : "text-gray-900";
-
-  // Find ride filters
-  const [fromLoc, setFromLoc] = useState("");
-  const [toLoc, setToLoc] = useState("");
-  const [date, setDate] = useState("");
-  const [seatsNeeded, setSeatsNeeded] = useState(1);
-
-  // Offer ride form
-  const [ofFrom, setOfFrom] = useState("");
-  const [ofTo, setOfTo] = useState("");
-  const [ofDate, setOfDate] = useState("");
-  const [ofTime, setOfTime] = useState("");
-  const [ofSeats, setOfSeats] = useState(1);
-  const [ofPrice, setOfPrice] = useState("");
-  const [vehicle, setVehicle] = useState("");
-  const [contacts, setContacts] = useState([{ id: 1, type: "mobile", value: "" }]);
-
-  const handleLoadingComplete = () => setIsLoading(false);
-
-  const iconForType = (type) => {
-    switch (type) {
-      case "mobile":
-        return Phone;
-      case "instagram":
-        return Instagram;
-      case "email":
-        return Mail;
-      case "link":
-        return Link2;
-      default:
-        return Link2;
-    }
-  };
-  const placeholderForType = (type) => {
-    switch (type) {
-      case "mobile":
-        return "+91 98765 43210";
-      case "instagram":
-        return "@username";
-      case "email":
-        return "example@gmail.com";
-      case "link":
-        return "https://...";
-      default:
-        return "";
-    }
-  };
-
-  // Sample rides (client-only)
-  const rides = useMemo(
-    () => [
-      {
-        id: 1,
-        driver: "Sumanth Jupudi",
-        from: "BH3 Maingate",
-        to: "LawGate to meet Balaji",
-        date: "2025-08-20",
-        time: "09:00",
-        seats: 3,
-        price: 60,
-      },
-      {
-        id: 2,
-        driver: "Balaji",
-        from: "LawGate",
-        to: "BH3 Maingate to meet jupudi",
-        date: "2025-08-20",
-        time: "8:30",
-        seats: 2,
-        price: 120,
-      },
-      {
-        id: 3,
-        driver: "Teja",
-        from: "LawGate ",
-        to: "LPU Library (to meet GF)",
-        date: "2025-08-20",
-        time: "9:00",
-        seats: 1,
-        price: 200,
-      },
-      {
-        id: 4,
-        driver: "Neha",
-        from: "Dorm C",
-        to: "Airport",
-        date: "2025-08-17",
-        time: "06:30",
-        seats: 3,
-        price: 400,
-      },
-    ],
-    []
-  );
-
-  const filteredRides = useMemo(() => {
-    return rides.filter((r) => {
-      const f = fromLoc.trim().toLowerCase();
-      const t = toLoc.trim().toLowerCase();
-      const inFrom = !f || r.from.toLowerCase().includes(f);
-      const inTo = !t || r.to.toLowerCase().includes(t);
-      const inDate = !date || r.date === date;
-      const inSeats = !seatsNeeded || r.seats >= Number(seatsNeeded);
-      return inFrom && inTo && inDate && inSeats;
-    });
-  }, [rides, fromLoc, toLoc, date, seatsNeeded]);
-
-  // Show loading screen
-  if (isLoading) {
-    return <LoadingScreen onComplete={handleLoadingComplete} />;
+    );
   }
 
-  return (
-    <div className="min-h-dvh">
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10">
-        {/* Brand-themed hero banner with image (place /public/rideunishare.jpg) */}
-        <section
-          className="relative mb-6 sm:mb-10 rounded-2xl overflow-hidden border shadow-xl animate-dropdown-in"
-          aria-label="Rides Hero"
-        >
-          <div
-            className={`${
-              darkMode ? "border-gray-800" : "border-gray-200"
-            } absolute inset-0 pointer-events-none`}
-          />
-          <div className="relative aspect-[16/9]">
-            <Image
-              src={heroSrc}
-              alt="Share rides with UniShare"
-              fill
-              priority
-              sizes="(max-width: 768px) 100vw, 768px"
-              className="object-scale-down"
-              onError={() => setHeroSrc('/rideunishare.svg')}
-            />
-            <div
-              className={`absolute inset-0 ${
-                darkMode
-                  ? "bg-gradient-to-tr from-gray-950/80 via-gray-900/50 to-transparent"
-                  : "bg-gradient-to-tr from-blue-600/15 via-yellow-400/15 to-white/0"
-              }`}
-            />
+  const cardBg = darkMode
+    ? "bg-gradient-to-br from-gray-900 to-gray-800 border-gray-700"
+    : "bg-gradient-to-br from-white to-gray-50 border-gray-200";
+  
+  const textPrimary = darkMode ? "text-white" : "text-gray-900";
+  const textSecondary = darkMode ? "text-gray-300" : "text-gray-600";
+
+  return (
+    <div className={`min-h-screen ${darkMode ? "bg-gray-950" : "bg-gray-50"}`}>
+      <main className="max-w-6xl mx-auto px-4 py-8">
+        {/* Hero Section */}
+        <section className="text-center mb-12">
+          <div className="relative inline-block mb-6">
+            <div 
+              className="w-24 h-24 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center shadow-2xl"
+              style={{ transform: `rotate(${logoRotation}deg)` }}
+            >
+              <Car className="w-12 h-12 text-white" />
+            </div>
+            <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/20 to-emerald-500/20 rounded-full blur-xl opacity-60 animate-pulse" />
           </div>
-          <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6">
-            <div className="max-w-xl animate-slide-up-soft">
-              <h1
-                className={`text-2xl sm:text-3xl font-extrabold drop-shadow ${
-                  darkMode ? "text-white" : "text-gray-900"
-                }`}
-              >
-                Share a Ride, Save Together
-              </h1>
-              <p
-                className={`${
-                  darkMode ? "text-gray-300" : "text-gray-700"
-                } mt-1 text-sm sm:text-base`}
-              >
-                Find a lift or offer seats in seconds—made for campus life.
+          
+          <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${textPrimary}`}>
+            Share Your Ride
+          </h1>
+          <p className={`text-lg md:text-xl mb-8 max-w-2xl mx-auto ${textSecondary}`}>
+            Connect with fellow students to share rides, save money, and reduce your carbon footprint. 
+            Find rides or offer yours to help the community.
+          </p>
+        </section>
+
+        {/* Action Cards */}
+        <section className="grid md:grid-cols-2 gap-6 mb-12">
+          {/* Find Ride Card */}
+          <Link href="/share-ride/findride">
+            <div className={`p-8 rounded-2xl border-2 hover:border-blue-400 transition-all duration-300 cursor-pointer group hover:shadow-2xl ${cardBg}`}>
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl group-hover:scale-110 transition-transform">
+                  <Search className="w-8 h-8 text-white" />
+                </div>
+                <ArrowRight className="w-6 h-6 text-blue-500 group-hover:translate-x-2 transition-transform" />
+              </div>
+              
+              <h3 className={`text-2xl font-bold mb-3 ${textPrimary}`}>
+                Find a Ride
+              </h3>
+              <p className={`text-base mb-4 ${textSecondary}`}>
+                Search for available rides to your destination. Filter by location, time, and available seats.
               </p>
+              
+              <div className="flex flex-wrap gap-2">
+                <span className={`px-3 py-1 rounded-full text-sm ${darkMode ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-700'}`}>
+                  Search filters
+                </span>
+                <span className={`px-3 py-1 rounded-full text-sm ${darkMode ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-700'}`}>
+                  Real-time updates
+                </span>
+                <span className={`px-3 py-1 rounded-full text-sm ${darkMode ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-700'}`}>
+                  Contact drivers
+                </span>
+              </div>
+            </div>
+          </Link>
+
+          {/* Post Ride Card */}
+          <Link href="/share-ride/postride">
+            <div className={`p-8 rounded-2xl border-2 hover:border-emerald-400 transition-all duration-300 cursor-pointer group hover:shadow-2xl ${cardBg}`}>
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl group-hover:scale-110 transition-transform">
+                  <Plus className="w-8 h-8 text-white" />
+                </div>
+                <ArrowRight className="w-6 h-6 text-emerald-500 group-hover:translate-x-2 transition-transform" />
+              </div>
+              
+              <h3 className={`text-2xl font-bold mb-3 ${textPrimary}`}>
+                Offer a Ride
+              </h3>
+              <p className={`text-base mb-4 ${textSecondary}`}>
+                Share your ride with others going in the same direction. Set your route, price, and available seats.
+              </p>
+              
+              <div className="flex flex-wrap gap-2">
+                <span className={`px-3 py-1 rounded-full text-sm ${darkMode ? 'bg-emerald-900/30 text-emerald-300' : 'bg-emerald-100 text-emerald-700'}`}>
+                  Easy posting
+                </span>
+                <span className={`px-3 py-1 rounded-full text-sm ${darkMode ? 'bg-emerald-900/30 text-emerald-300' : 'bg-emerald-100 text-emerald-700'}`}>
+                  Set your price
+                </span>
+                <span className={`px-3 py-1 rounded-full text-sm ${darkMode ? 'bg-emerald-900/30 text-emerald-300' : 'bg-emerald-100 text-emerald-700'}`}>
+                  Manage bookings
+                </span>
+              </div>
+            </div>
+          </Link>
+        </section>
+
+        {/* Recent Rides Section */}
+        <section className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className={`text-2xl font-bold ${textPrimary}`}>Recent Rides</h2>
+            <Link 
+              href="/share-ride/findride" 
+              className="text-blue-500 hover:text-blue-600 font-medium flex items-center gap-2 group"
+            >
+              View All
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+          
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {recentRides.map((ride) => (
+              <div key={ride.id} className={`p-6 rounded-xl border transition-all hover:shadow-lg ${cardBg}`}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-emerald-500 rounded-full flex items-center justify-center">
+                    <Users className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className={`font-semibold ${textPrimary}`}>{ride.driver}</p>
+                    <p className={`text-sm ${textSecondary}`}>Driver</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-blue-500" />
+                    <span className={`text-sm ${textSecondary}`}>
+                      {ride.from} → {ride.to}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-emerald-500" />
+                    <span className={`text-sm ${textSecondary}`}>
+                      {ride.date} at {ride.time}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className={`font-bold text-lg ${textPrimary}`}>₹{ride.price}</span>
+                  <span className={`text-sm px-2 py-1 rounded-full ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+                    {ride.seats} seats
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {recentRides.length === 0 && (
+            <div className={`text-center py-12 rounded-xl border-2 border-dashed ${darkMode ? 'border-gray-700' : 'border-gray-300'}`}>
+              <Navigation className={`w-16 h-16 mx-auto mb-4 ${textSecondary}`} />
+              <h3 className={`text-xl font-semibold mb-2 ${textPrimary}`}>No Recent Rides</h3>
+              <p className={`${textSecondary} mb-4`}>Be the first to post a ride and start building the community!</p>
+              <Link 
+                href="/share-ride/postride"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-emerald-500 text-white rounded-lg hover:shadow-lg transition-all"
+              >
+                <Plus className="w-5 h-5" />
+                Post Your Ride
+              </Link>
+            </div>
+          )}
+        </section>
+
+        {/* Features Section */}
+        <section className="text-center">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className={`p-6 rounded-xl ${cardBg}`}>
+              <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <Search className="w-6 h-6 text-blue-500" />
+              </div>
+              <h3 className={`font-semibold mb-2 ${textPrimary}`}>Smart Search</h3>
+              <p className={`text-sm ${textSecondary}`}>Find rides with advanced filters</p>
+            </div>
+            
+            <div className={`p-6 rounded-xl ${cardBg}`}>
+              <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <Users className="w-6 h-6 text-emerald-500" />
+              </div>
+              <h3 className={`font-semibold mb-2 ${textPrimary}`}>Safe Community</h3>
+              <p className={`text-sm ${textSecondary}`}>Verified student drivers</p>
+            </div>
+            
+            <div className={`p-6 rounded-xl ${cardBg}`}>
+              <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <Car className="w-6 h-6 text-purple-500" />
+              </div>
+              <h3 className={`font-semibold mb-2 ${textPrimary}`}>Easy Booking</h3>
+              <p className={`text-sm ${textSecondary}`}>One-click ride requests</p>
+            </div>
+            
+            <div className={`p-6 rounded-xl ${cardBg}`}>
+              <div className="w-12 h-12 bg-orange-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <Navigation className="w-6 h-6 text-orange-500" />
+              </div>
+              <h3 className={`font-semibold mb-2 ${textPrimary}`}>Real-time Updates</h3>
+              <p className={`text-sm ${textSecondary}`}>Live ride status tracking</p>
             </div>
           </div>
         </section>
-
-        <div
-          className={`rounded-2xl border p-4 sm:p-6 ${
-            darkMode
-              ? "bg-gray-950/60 border-gray-900"
-              : "bg-gray-50 border-gray-200"
-          }`}
-        >
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <h1 className={`text-xl sm:text-2xl font-semibold ${titleClr}`}>
-              Share a Ride
-            </h1>
-            <div
-              className={`inline-flex p-1 rounded-xl border ${
-                darkMode
-                  ? "border-gray-800 bg-gray-900"
-                  : "border-gray-200 bg-white"
-              }`}
-            >
-              <button
-                type="button"
-                onClick={() => setMode("find")}
-                className={`px-3 py-1.5 text-sm rounded-lg ${
-                  mode === "find"
-                    ? "bg-blue-600 text-white"
-                    : darkMode
-                    ? "text-gray-300"
-                    : "text-gray-700"
-                }`}
-              >
-                Find Ride
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode("offer")}
-                className={`px-3 py-1.5 text-sm rounded-lg ${
-                  mode === "offer"
-                    ? "bg-emerald-600 text-white"
-                    : darkMode
-                    ? "text-gray-300"
-                    : "text-gray-700"
-                }`}
-              >
-                Offer Ride
-              </button>
-            </div>
-          </div>
-
-          {mode === "find" ? (
-            <section className="mt-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>
-                    From
-                  </label>
-                  <div className="relative">
-                    <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      value={fromLoc}
-                      onChange={(e) => setFromLoc(e.target.value)}
-                      placeholder="Pickup location"
-                      className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>
-                    To
-                  </label>
-                  <div className="relative">
-                    <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      value={toLoc}
-                      onChange={(e) => setToLoc(e.target.value)}
-                      placeholder="Drop location"
-                      className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>
-                    Date
-                  </label>
-                  <div className="relative">
-                    <Calendar className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="date"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                      className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>
-                    Seats needed
-                  </label>
-                  <div className="relative">
-                    <Users className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="number"
-                      min={1}
-                      value={seatsNeeded}
-                      onChange={(e) =>
-                        setSeatsNeeded(Number(e.target.value) || 1)
-                      }
-                      className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <h2 className={`text-sm font-medium ${labelClr}`}>Available rides</h2>
-                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {filteredRides.length === 0 && (
-                    <div
-                      className={`${darkMode ? "text-gray-400" : "text-gray-600"} text-sm`}
-                    >
-                      No rides match your filters.
-                    </div>
-                  )}
-                  {filteredRides.map((r) => (
-                    <div
-                      key={r.id}
-                      className={`rounded-xl border p-4 ${
-                        darkMode
-                          ? "bg-gray-950 border-gray-900"
-                          : "bg-white border-gray-200"
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div
-                          className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                            darkMode ? "bg-gray-900" : "bg-gray-100"
-                          }`}
-                        >
-                          <Car
-                            className={darkMode ? "text-gray-400" : "text-gray-500"}
-                            size={18}
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className={`text-sm font-medium ${titleClr}`}>
-                            {r.from} → {r.to}
-                          </div>
-                          <div className="mt-1 text-xs flex items-center gap-3">
-                            <span
-                              className={`${
-                                darkMode ? "text-gray-400" : "text-gray-600"
-                              } inline-flex items-center gap-1`}
-                            >
-                              <Calendar size={14} /> {r.date}
-                            </span>
-                            <span
-                              className={`${
-                                darkMode ? "text-gray-400" : "text-gray-600"
-                              } inline-flex items-center gap-1`}
-                            >
-                              <Clock size={14} /> {r.time}
-                            </span>
-                            <span
-                              className={`${
-                                darkMode ? "text-gray-400" : "text-gray-600"
-                              } inline-flex items-center gap-1`}
-                            >
-                              <Users size={14} /> {r.seats} seats
-                            </span>
-                          </div>
-                          <div className="mt-2 flex items-center justify-between">
-                            <div className="inline-flex items-center gap-1 text-emerald-500 font-semibold">
-                              <IndianRupee size={16} /> {r.price} / seat
-                            </div>
-                            <div
-                              className={`${
-                                darkMode ? "text-gray-400" : "text-gray-600"
-                              } text-xs`}
-                            >
-                              Driver: {r.driver}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <button
-                        className={`mt-4 w-full text-sm py-2.5 rounded-lg font-medium ${
-                          darkMode
-                            ? "bg-blue-600 hover:bg-blue-700 text-white"
-                            : "bg-blue-600 hover:bg-blue-700 text-white"
-                        }`}
-                      >
-                        Request seat
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          ) : (
-            <section className="mt-6">
-              <form className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>
-                    From
-                  </label>
-                  <div className="relative">
-                    <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      value={ofFrom}
-                      onChange={(e) => setOfFrom(e.target.value)}
-                      placeholder="Pickup location"
-                      className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>
-                    To
-                  </label>
-                  <div className="relative">
-                    <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      value={ofTo}
-                      onChange={(e) => setOfTo(e.target.value)}
-                      placeholder="Drop location"
-                      className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>
-                    Date
-                  </label>
-                  <div className="relative">
-                    <Calendar className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="date"
-                      value={ofDate}
-                      onChange={(e) => setOfDate(e.target.value)}
-                      className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>
-                    Time
-                  </label>
-                  <div className="relative">
-                    <Clock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="time"
-                      value={ofTime}
-                      onChange={(e) => setOfTime(e.target.value)}
-                      className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>
-                    Seats available
-                  </label>
-                  <div className="relative">
-                    <Users className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="number"
-                      min={1}
-                      value={ofSeats}
-                      onChange={(e) => setOfSeats(Number(e.target.value) || 1)}
-                      className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>
-                    Price per seat
-                  </label>
-                  <div className="relative">
-                    <IndianRupee className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      value={ofPrice}
-                      onChange={(e) => setOfPrice(e.target.value.replace(/[^0-9]/g, ""))}
-                      placeholder="100"
-                      className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`}
-                    />
-                  </div>
-                </div>
-                <div className="sm:col-span-2">
-                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>
-                    Vehicle details (optional)
-                  </label>
-                  <input
-                    value={vehicle}
-                    onChange={(e) => setVehicle(e.target.value)}
-                    placeholder="e.g., White Swift, RJ-14 AB 1234"
-                    className={`w-full px-3 py-2.5 rounded-lg border ${inputBg}`}
-                  />
-                </div>
-
-                {/* Contact */}
-                <div className="sm:col-span-2">
-                  <div className="flex items-center justify-between mb-2">
-                    <label className={`text-xs font-medium ${labelClr}`}>
-                      Contact info
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setContacts((p) => [
-                          ...p,
-                          { id: Date.now(), type: "mobile", value: "" },
-                        ])
-                      }
-                      className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-blue-600 text-white hover:bg-blue-700"
-                    >
-                      <Plus className="w-3 h-3" /> Add
-                    </button>
-                  </div>
-                  <div className="space-y-3">
-                    {contacts.map((c, idx) => {
-                      const Icon = iconForType(c.type);
-                      return (
-                        <div
-                          key={c.id}
-                          className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center"
-                        >
-                          <select
-                            value={c.type}
-                            onChange={(e) =>
-                              setContacts((prev) =>
-                                prev.map((x, i) =>
-                                  i === idx ? { ...x, type: e.target.value } : x
-                                )
-                              )
-                            }
-                            className={`sm:col-span-1 px-3 py-2.5 rounded-lg border ${inputBg}`}
-                          >
-                            <option value="mobile">Mobile</option>
-                            <option value="instagram">Instagram</option>
-                            <option value="email">Email</option>
-                            <option value="link">Link</option>
-                          </select>
-                          <div className="sm:col-span-2 relative">
-                            <Icon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                            <input
-                              value={c.value}
-                              onChange={(e) =>
-                                setContacts((prev) =>
-                                  prev.map((x, i) =>
-                                    i === idx
-                                      ? { ...x, value: e.target.value }
-                                      : x
-                                  )
-                                )
-                              }
-                              placeholder={placeholderForType(c.type)}
-                              className={`w-full pl-9 pr-10 py-2.5 rounded-lg border ${inputBg}`}
-                            />
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setContacts((prev) =>
-                                  prev.filter((x) => x.id !== c.id)
-                                )
-                              }
-                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-red-500/10 text-red-600"
-                              aria-label="Remove contact"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="sm:col-span-2 flex items-center gap-3">
-                  <button
-                    type="button"
-                    className="px-4 py-2.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 text-sm font-medium"
-                  >
-                    Post ride
-                  </button>
-                  <button
-                    type="reset"
-                    onClick={() => {
-                      setOfFrom("");
-                      setOfTo("");
-                      setOfDate("");
-                      setOfTime("");
-                      setOfSeats(1);
-                      setOfPrice("");
-                      setVehicle("");
-                      setContacts([{ id: 1, type: "mobile", value: "" }]);
-                    }}
-                    className={`px-3 py-2.5 rounded-lg border text-sm ${
-                      darkMode
-                        ? "border-gray-700 text-gray-200"
-                        : "border-gray-300 text-gray-800"
-                    }`}
-                  >
-                    Reset
-                  </button>
-                </div>
-              </form>
-            </section>
-          )}
-        </div>
       </main>
 
-      <Footer darkMode={darkMode} />
+      <Footer />
     </div>
   );
 }

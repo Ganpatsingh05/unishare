@@ -567,6 +567,147 @@ export const fetchTicket = async (ticketId) => {
   }
 };
 
+// ============== LOST & FOUND ==============
+
+export const fetchLostFoundItems = async (filters = {}) => {
+  try {
+    const queryString = new URLSearchParams(Object.entries(filters).filter(([_, value]) => value !== undefined && value !== null && value !== '')).toString();
+    const endpoint = queryString ? `/api/lostfound?${queryString}` : '/api/lostfound';
+    const data = await apiCall(endpoint, { method: 'GET' });
+    return data;
+  } catch (error) {
+    console.error('Error fetching lost/found items:', error);
+    throw error;
+  }
+};
+
+export const fetchMyLostFoundItems = async (options = {}) => {
+  try {
+    const queryString = new URLSearchParams(Object.entries(options).filter(([_, value]) => value !== undefined && value !== null && value !== '')).toString();
+    const endpoint = queryString ? `/api/lostfound/my?${queryString}` : '/api/lostfound/my';
+    const data = await apiCall(endpoint, { method: 'GET' });
+    return data;
+  } catch (error) {
+    console.error('Error fetching user lost/found items:', error);
+    if (error.message.includes('401')) {
+      throw new Error('Please log in to view your lost/found items');
+    }
+    throw error;
+  }
+};
+
+// Create a new lost/found item with backend image upload
+export const createLostFoundItem = async (itemData, imageFiles = []) => {
+  try {
+    console.log('Creating lost/found item with backend upload:', { 
+      itemName: itemData.itemName, 
+      mode: itemData.mode, 
+      images: imageFiles?.length || 0 
+    });
+
+    const formData = new FormData();
+
+    // Add item data as JSON string (backend expects it this way)
+    formData.append('itemData', JSON.stringify(itemData));
+
+    // Add images if provided (backend expects 'images' field for multiple files)
+    if (imageFiles && imageFiles.length > 0) {
+      imageFiles.forEach(file => {
+        formData.append('images', file);
+      });
+    }
+
+    const data = await apiCallFormData('/api/lostfound/create', formData, 'POST');
+    return data;
+  } catch (error) {
+    console.error('Error creating lost/found item:', error);
+    if (error.message.includes('401')) {
+      throw new Error('Please log in to report lost/found items');
+    }
+    throw error;
+  }
+};
+
+export const updateLostFoundItem = async (itemId, updateData) => {
+  try {
+    const data = await apiCall(`/api/lostfound/${itemId}`, {
+      method: 'PUT',
+      body: JSON.stringify(updateData)
+    });
+    return data;
+  } catch (error) {
+    console.error('Error updating lost/found item:', error);
+    if (error.message.includes('401')) {
+      throw new Error('Please log in to update this item');
+    }
+    if (error.message.includes('403')) {
+      throw new Error('You can only update your own items');
+    }
+    throw error;
+  }
+};
+
+export const deleteLostFoundItem = async (itemId) => {
+  try {
+    const data = await apiCall(`/api/lostfound/${itemId}`, { method: 'DELETE' });
+    return data;
+  } catch (error) {
+    console.error('Error deleting lost/found item:', error);
+    if (error.message.includes('401')) {
+      throw new Error('Please log in to delete this item');
+    }
+    if (error.message.includes('403')) {
+      throw new Error('You can only delete your own items');
+    }
+    throw error;
+  }
+};
+
+export const fetchLostFoundItem = async (itemId) => {
+  try {
+    const data = await apiCall(`/api/lostfound/${itemId}`, { method: 'GET' });
+    return data;
+  } catch (error) {
+    console.error('Error fetching lost/found item:', error);
+    if (error.message.includes('404')) {
+      throw new Error('Item not found');
+    }
+    throw error;
+  }
+};
+
+export const contactLostFoundItem = async (itemId, contactData) => {
+  try {
+    const data = await apiCall(`/api/lostfound/${itemId}/contact`, {
+      method: 'POST',
+      body: JSON.stringify(contactData)
+    });
+    return data;
+  } catch (error) {
+    console.error('Error sending contact message:', error);
+    if (error.message.includes('401')) {
+      throw new Error('Please log in to send messages');
+    }
+    if (error.message.includes('404')) {
+      throw new Error('Item not found');
+    }
+    throw error;
+  }
+};
+
+export const getLostFoundStats = async () => {
+  try {
+    const data = await apiCall('/api/lostfound/stats', { method: 'GET' });
+    return data;
+  } catch (error) {
+    console.error('Error fetching lost/found stats:', error);
+    if (error.message.includes('401')) {
+      throw new Error('Please log in to view statistics');
+    }
+    throw error;
+  }
+};
+
 // ============== UNIFIED DASHBOARD DATA ==============
 
 export const fetchUserDashboardData = async () => {
@@ -786,4 +927,336 @@ export const validateImageFile = (file, options = {}) => {
   }
   
   return true;
+};
+
+// ===========================
+// RIDESHARE API FUNCTIONS
+// ===========================
+
+// Fetch rides with filtering options
+export const fetchRides = async (filters = {}) => {
+  try {
+    const queryParams = new URLSearchParams();
+    
+    if (filters.from) queryParams.append('from', filters.from);
+    if (filters.to) queryParams.append('to', filters.to);
+    if (filters.date) queryParams.append('date', filters.date);
+    if (filters.seatsNeeded) queryParams.append('seatsNeeded', filters.seatsNeeded);
+    if (filters.sort) queryParams.append('sort', filters.sort);
+    if (filters.order) queryParams.append('order', filters.order);
+    if (filters.limit) queryParams.append('limit', filters.limit);
+    if (filters.offset) queryParams.append('offset', filters.offset);
+
+    const endpoint = `/api/shareride${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    const response = await apiCall(endpoint, { method: 'GET' });
+
+    return {
+      success: true,
+      data: response.data || [],
+      total: response.total || 0,
+      pagination: response.pagination || {}
+    };
+  } catch (error) {
+    console.error('Error fetching rides:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// Create a new ride offer
+export const createRide = async (rideData) => {
+  try {
+    // Validate required fields
+    const requiredFields = ['from', 'to', 'date', 'time', 'seats', 'price', 'vehicle'];
+    const missingFields = requiredFields.filter(field => !rideData[field]);
+    
+    if (missingFields.length > 0) {
+      throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+    }
+
+    // Validate date is in the future
+    const rideDateTime = new Date(`${rideData.date}T${rideData.time}`);
+    if (rideDateTime <= new Date()) {
+      throw new Error('Ride date and time must be in the future');
+    }
+
+    // Validate price and seats
+    if (isNaN(rideData.price) || rideData.price <= 0) {
+      throw new Error('Price must be a positive number');
+    }
+    
+    if (isNaN(rideData.seats) || rideData.seats <= 0 || rideData.seats > 6) {
+      throw new Error('Seats must be between 1 and 6');
+    }
+
+    // Validate contacts
+    if (!rideData.contacts || rideData.contacts.length === 0) {
+      throw new Error('At least one contact method is required');
+    }
+
+    // Format contact info for backend
+    const contactInfo = {};
+    rideData.contacts.forEach(contact => {
+      if (contact.value && contact.value.trim()) {
+        contactInfo[contact.type] = contact.value.trim();
+      }
+    });
+
+    const processedData = {
+      from: rideData.from.trim(),
+      to: rideData.to.trim(),
+      date: rideData.date,
+      time: rideData.time,
+      seats: Number(rideData.seats),
+      price: Number(rideData.price),
+      vehicle: rideData.vehicle.trim(),
+      description: rideData.description?.trim() || '',
+      contact_info: contactInfo,
+      contacts: rideData.contacts.filter(contact => contact.value.trim())
+    };
+
+    console.log('Creating ride with data:', processedData);
+
+    const response = await apiCall('/api/shareride/create', {
+      method: 'POST',
+      body: JSON.stringify(processedData)
+    });
+
+    return {
+      success: true,
+      data: response.data || response,
+      message: 'Ride posted successfully!'
+    };
+  } catch (error) {
+    console.error('Error creating ride:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// Get rides posted by the current user
+export const getMyRides = async () => {
+  try {
+    const response = await apiCall('/api/shareride/my', { method: 'GET' });
+
+    return {
+      success: true,
+      data: response.data || []
+    };
+  } catch (error) {
+    console.error('Error fetching my rides:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// Update a ride
+export const updateRide = async (rideId, updateData) => {
+  try {
+    if (!rideId) {
+      throw new Error('Ride ID is required');
+    }
+
+    const response = await apiCall(`/api/shareride/${rideId}`, {
+      method: 'PUT',
+      body: JSON.stringify(updateData)
+    });
+
+    return {
+      success: true,
+      data: response.data || response,
+      message: 'Ride updated successfully!'
+    };
+  } catch (error) {
+    console.error('Error updating ride:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// Delete a ride
+export const deleteRide = async (rideId) => {
+  try {
+    if (!rideId) {
+      throw new Error('Ride ID is required');
+    }
+
+    const response = await apiCall(`/api/shareride/${rideId}`, {
+      method: 'DELETE'
+    });
+
+    return {
+      success: true,
+      message: 'Ride cancelled successfully!'
+    };
+  } catch (error) {
+    console.error('Error deleting ride:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// Request to join a ride
+export const requestRideJoin = async (rideId, requestData) => {
+  try {
+    if (!rideId) {
+      throw new Error('Ride ID is required');
+    }
+
+    const processedData = {
+      seatsRequested: requestData.seatsRequested || 1,
+      message: requestData.message?.trim() || 'Hi, I would like to join your ride.',
+      contactMethod: requestData.contactMethod || 'mobile',
+      pickupLocation: requestData.pickupLocation?.trim() || ''
+    };
+
+    const response = await apiCall(`/api/shareride/${rideId}/request`, {
+      method: 'POST',
+      body: JSON.stringify(processedData)
+    });
+
+    return {
+      success: true,
+      data: response.data || response,
+      message: 'Join request sent successfully!'
+    };
+  } catch (error) {
+    console.error('Error requesting to join ride:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// Get join requests for a ride (for ride owner)
+export const getRideRequests = async () => {
+  try {
+    const response = await apiCall('/api/shareride/my/requests', { method: 'GET' });
+
+    return {
+      success: true,
+      data: response.data || []
+    };
+  } catch (error) {
+    console.error('Error fetching ride requests:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// Respond to a join request (confirm/decline)
+export const respondToRideRequest = async (requestId, action, message = '') => {
+  try {
+    if (!requestId) {
+      throw new Error('Request ID is required');
+    }
+
+    if (!['confirm', 'decline'].includes(action)) {
+      throw new Error('Action must be either "confirm" or "decline"');
+    }
+
+    const response = await apiCall(`/api/shareride/requests/${requestId}/respond`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        action,
+        message: message.trim()
+      })
+    });
+
+    return {
+      success: true,
+      data: response.data || response,
+      message: `Request ${action}ed successfully!`
+    };
+  } catch (error) {
+    console.error('Error responding to ride request:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// Get ride details by ID
+export const getRideById = async (rideId) => {
+  try {
+    if (!rideId) {
+      throw new Error('Ride ID is required');
+    }
+
+    const response = await apiCall(`/api/shareride/${rideId}`, { method: 'GET' });
+
+    return {
+      success: true,
+      data: response.data || response
+    };
+  } catch (error) {
+    console.error('Error fetching ride details:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// Get ride statistics for the current user
+export const getRideStats = async () => {
+  try {
+    const response = await apiCall('/api/shareride/stats', { method: 'GET' });
+
+    return {
+      success: true,
+      data: response.data || {}
+    };
+  } catch (error) {
+    console.error('Error fetching ride stats:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// Validation helper for ride data
+export const validateRideData = (rideData) => {
+  const errors = [];
+  
+  if (!rideData.from?.trim()) errors.push('Starting location is required');
+  if (!rideData.to?.trim()) errors.push('Destination is required');
+  if (!rideData.date) errors.push('Date is required');
+  if (!rideData.time) errors.push('Time is required');
+  if (!rideData.vehicle?.trim()) errors.push('Vehicle information is required');
+  if (!rideData.price || isNaN(rideData.price) || rideData.price <= 0) {
+    errors.push('Valid price is required');
+  }
+  if (!rideData.seats || isNaN(rideData.seats) || rideData.seats < 1 || rideData.seats > 6) {
+    errors.push('Seats must be between 1 and 6');
+  }
+  
+  // Validate contacts
+  const validContacts = rideData.contacts?.filter(c => c.value?.trim()) || [];
+  if (validContacts.length === 0) {
+    errors.push('At least one contact method is required');
+  }
+  
+  // Validate date is in future
+  const rideDateTime = new Date(`${rideData.date}T${rideData.time}`);
+  if (rideDateTime <= new Date()) {
+    errors.push('Ride date and time must be in the future');
+  }
+  
+  return errors;
 };
