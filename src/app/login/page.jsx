@@ -1,18 +1,63 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import logoImage from '../assets/images/logounishare1.png';
 import { startGoogleLogin } from '../lib/api';
-import { useUI } from '../lib/contexts/UniShareContext';
+import { useUI, useAuth } from '../lib/contexts/UniShareContext';
 
 const LoginPage = () => {
   const [showOwlMessage, setShowOwlMessage] = useState(false);
   const [currentOwlMessage, setCurrentOwlMessage] = useState('');
+  const [authMessage, setAuthMessage] = useState('');
   const { darkMode } = useUI();
+  const { isAuthenticated, user } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Handle OAuth callback and redirect logic
+  useEffect(() => {
+    // Check if user is already authenticated
+    if (isAuthenticated && user) {
+      const redirectUrl = searchParams.get('redirect') || '/';
+      console.log('User already authenticated, redirecting to:', redirectUrl);
+      router.push(redirectUrl);
+      return;
+    }
+
+    // Handle OAuth callback parameters
+    const authStatus = searchParams.get('auth');
+    if (authStatus) {
+      switch (authStatus) {
+        case 'success':
+          setAuthMessage('Login successful! Redirecting...');
+          setTimeout(() => {
+            const redirectUrl = searchParams.get('redirect') || '/';
+            router.push(redirectUrl);
+          }, 1500);
+          break;
+        case 'failed':
+          setAuthMessage('Authentication failed. Please try again.');
+          break;
+        case 'session_error':
+          setAuthMessage('Session error. Please try logging in again.');
+          break;
+        case 'error':
+          setAuthMessage('An error occurred during login. Please try again.');
+          break;
+      }
+    }
+  }, [isAuthenticated, user, router, searchParams]);
 
   const handleGoogleLogin = () => {
+    // Add redirect parameter if present
+    const redirect = searchParams.get('redirect');
+    if (redirect) {
+      // Store redirect in sessionStorage for after OAuth
+      sessionStorage.setItem('oauth_redirect', redirect);
+    }
     startGoogleLogin();
   };
 

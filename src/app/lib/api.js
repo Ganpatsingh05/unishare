@@ -6,12 +6,13 @@ const apiCall = async (endpoint, options = {}) => {
   try {
     // If no backend URL is configured, return mock data or throw a descriptive error
     if (!BACKEND_URL) {
-      console.warn('NEXT_PUBLIC_BACKEND_URL is not configured. API calls will be mocked.');
+      console.error('NEXT_PUBLIC_BACKEND_URL is not configured. Please set it in .env.local file.');
+      console.error('Current BACKEND_URL:', BACKEND_URL);
       // Return mock data for development
       if (endpoint === '/auth/me') {
         return { isAuthenticated: false, user: null };
       }
-      throw new Error('Backend URL not configured');
+      throw new Error('Backend URL not configured. Please set NEXT_PUBLIC_BACKEND_URL in .env.local');
     }
 
     const response = await fetch(`${BACKEND_URL}${endpoint}`, {
@@ -84,9 +85,15 @@ const apiCallFormData = async (endpoint, formData, method = 'POST') => {
 export const fetchCurrentUser = async () => {
   try {
     const data = await apiCall('/auth/me');
-    console.log("User: ",data);
-    return data.user;
+    console.log("User data from backend:", data);
+    
+    // Your backend returns { success: true, user: {...} } or { success: true, user: null }
+    if (data.success) {
+      return data.user;
+    }
+    return null;
   } catch (error) {
+    console.error('Error fetching current user:', error);
     return null;
   }
 };
@@ -94,19 +101,58 @@ export const fetchCurrentUser = async () => {
 export const checkAuthStatus = async () => {
   try {
     const user = await fetchCurrentUser();
-    return { authenticated: !!user, user };
+    return { 
+      authenticated: !!user, 
+      user,
+      isAuthenticated: !!user // Add for backward compatibility
+    };
   } catch (error) {
-    return null;
+    console.error('Error checking auth status:', error);
+    return { authenticated: false, user: null, isAuthenticated: false };
   }
 };
 
 export const logout = async () => {
   try {
-    await apiCall('/auth/logout', { method: 'GET' }); 
+    // Use your backend logout endpoint which handles session destruction and redirects
+    window.location.href = `${BACKEND_URL}/auth/logout`;
     return true;
   } catch (error) {
     console.error('Logout error:', error);
     return false;
+  }
+};
+
+// Check if current user is admin based on backend logic
+export const checkAdminStatus = async () => {
+  try {
+    const user = await fetchCurrentUser();
+    
+    if (!user) {
+      return { isAdmin: false, user: null, loading: false };
+    }
+
+    // Define the same admin emails as your backend
+    const ADMIN_EMAILS = [
+      'itspracin750@gmail.com',
+      'ask.gsinghr@gmail.com', 
+      'mishrilalparihar30221@gmail.com',
+      'sumanthjupudi22@gmail.com'
+    ];
+
+    const isAdmin = ADMIN_EMAILS.includes(user.email);
+    
+    console.log('Admin status check:', { userEmail: user.email, isAdmin });
+    
+    return { 
+      isAdmin, 
+      user,
+      loading: false,
+      adminEmails: ADMIN_EMAILS 
+    };
+  } catch (error) {
+    console.error('Error checking admin status:', error);
+    return { isAdmin: false, user: null, loading: false };
   }
 };
 
@@ -1259,4 +1305,434 @@ export const validateRideData = (rideData) => {
   }
   
   return errors;
+};
+
+// ===== ADMIN FUNCTIONS =====
+
+// Admin Dashboard Stats
+export const getAdminDashboardStats = async () => {
+  return apiCall('/admin/dashboard/stats');
+};
+
+// Admin User Management  
+export const getAdminUsers = async (filters = {}) => {
+  try {
+    // Use your actual backend endpoint
+    const data = await apiCall('/auth/admin/users');
+    console.log('Admin users data from backend:', data);
+    
+    // Your backend returns { success: true, users: [...], message: "..." }
+    if (data.success) {
+      return {
+        success: true,
+        users: data.users || [],
+        message: data.message,
+        requestedBy: data.requestedBy,
+        timestamp: data.timestamp
+      };
+    }
+    
+    throw new Error(data.message || 'Failed to fetch admin users');
+  } catch (error) {
+    console.error('Error fetching admin users:', error);
+    // Handle authentication errors
+    if (error.message.includes('401') || error.message.includes('Authentication required')) {
+      throw new Error('Authentication required for admin access');
+    }
+    if (error.message.includes('403') || error.message.includes('Access denied')) {
+      throw new Error('Access denied. Super user privileges required.');
+    }
+    throw error;
+  }
+};
+
+export const updateUserRole = async (userId, role) => {
+  return apiCall(`/admin/users/${userId}/role`, {
+    method: 'PATCH',
+    body: JSON.stringify({ role }),
+  });
+};
+
+export const updateUserStatus = async (userId, status) => {
+  return apiCall(`/admin/users/${userId}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
+};
+
+export const suspendUser = async (userId, duration, reason) => {
+  return apiCall(`/admin/users/${userId}/suspend`, {
+    method: 'POST',
+    body: JSON.stringify({ duration, reason }),
+  });
+};
+
+export const deleteUser = async (userId) => {
+  return apiCall(`/admin/users/${userId}`, {
+    method: 'DELETE',
+  });
+};
+
+export const bulkUserAction = async (userIds, action, data = {}) => {
+  return apiCall('/admin/users/bulk-action', {
+    method: 'POST',
+    body: JSON.stringify({ userIds, action, data }),
+  });
+};
+
+// Admin Analytics - Updated to match backend API
+export const getAdminAnalytics = async () => {
+  try {
+    const data = await apiCall('/auth/admin/analytics');
+    console.log('Admin analytics data from backend:', data);
+    
+    if (data.success) {
+      return {
+        success: true,
+        analytics: data,
+        overview: data.overview,
+        userStats: data.userStats,
+        contentStats: data.contentStats,
+        systemStats: data.systemStats
+      };
+    }
+    
+    throw new Error(data.message || 'Failed to fetch admin analytics');
+  } catch (error) {
+    console.error('Error fetching admin analytics:', error);
+    if (error.message.includes('401') || error.message.includes('Authentication required')) {
+      throw new Error('Authentication required for admin access');
+    }
+    if (error.message.includes('403') || error.message.includes('Access denied')) {
+      throw new Error('Access denied. Super user privileges required.');
+    }
+    throw error;
+  }
+};
+
+// Admin Content Moderation - Updated to match backend API
+export const getAdminReports = async (filters = {}) => {
+  try {
+    const queryParams = new URLSearchParams(filters);
+    const data = await apiCall(`/auth/admin/reports?${queryParams}`);
+    console.log('Admin reports data from backend:', data);
+    
+    if (data.success) {
+      return {
+        success: true,
+        reports: data.reports || [],
+        summary: data.summary,
+        pagination: data.pagination,
+        message: data.message,
+        requestedBy: data.requestedBy,
+        timestamp: data.timestamp
+      };
+    }
+    
+    throw new Error(data.message || 'Failed to fetch admin reports');
+  } catch (error) {
+    console.error('Error fetching admin reports:', error);
+    if (error.message.includes('401') || error.message.includes('Authentication required')) {
+      throw new Error('Authentication required for admin access');
+    }
+    if (error.message.includes('403') || error.message.includes('Access denied')) {
+      throw new Error('Access denied. Super user privileges required.');
+    }
+    throw error;
+  }
+};
+
+export const updateReportStatus = async (reportId, status, action, notes) => {
+  try {
+    const data = await apiCall(`/auth/admin/reports/${reportId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ status, action, notes }),
+    });
+    
+    if (data.success) {
+      return data;
+    }
+    
+    throw new Error(data.message || 'Failed to update report');
+  } catch (error) {
+    console.error('Error updating report:', error);
+    if (error.message.includes('401') || error.message.includes('Authentication required')) {
+      throw new Error('Authentication required for admin access');
+    }
+    if (error.message.includes('403') || error.message.includes('Access denied')) {
+      throw new Error('Access denied. Super user privileges required.');
+    }
+    throw error;
+  }
+};
+
+// Get recent activity using real-time backend endpoint
+export const getAdminRecentActivity = async (limit = 10) => {
+  try {
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
+    
+    // Use the new real-time activity endpoint
+    const response = await fetch(`${backendUrl}/auth/admin/activity?limit=${limit}`, {
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch activity: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error(data.message || 'Failed to fetch activity data');
+    }
+
+    // Transform backend activity data to match frontend expectations
+    const transformedActivities = (data.activities || []).map(activity => ({
+      id: activity.id,
+      type: activity.type,
+      action: activity.action,
+      user: activity.user,
+      time: activity.time,
+      icon: activity.icon,
+      color: activity.color,
+      details: activity.details
+    }));
+
+    return {
+      success: true,
+      activities: transformedActivities
+    };
+
+  } catch (error) {
+    // Fallback: if real-time endpoint fails, use combined data approach
+    const [usersResponse, reportsResponse, roomsResponse] = await Promise.all([
+      getAdminUsers().catch(() => ({ success: false, users: [] })),
+      getAdminReports({ limit: 5 }).catch(() => ({ success: false, reports: [] })),
+      fetchhousedata({ limit: 10 }).catch(() => ({ data: [] }))
+    ]);
+
+    const activities = [];
+    
+    // Add recent user registrations
+    if (usersResponse.success && usersResponse.users) {
+      const recentUsers = usersResponse.users
+        .filter(user => user.created_at)
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 3);
+      
+      recentUsers.forEach(user => {
+        activities.push({
+          id: `user-${user.id}`,
+          type: 'user',
+          action: 'New user registered',
+          user: user.email || user.name || 'Unknown user',
+          time: formatTimeAgo(user.created_at),
+          icon: 'Users',
+          color: 'bg-green-500',
+          timestamp: new Date(user.created_at)
+        });
+      });
+    }
+
+    // Add recent reports
+    if (reportsResponse.success && reportsResponse.reports) {
+      const recentReports = reportsResponse.reports
+        .sort((a, b) => new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at))
+        .slice(0, 2);
+      
+      recentReports.forEach(report => {
+        activities.push({
+          id: `report-${report.id}`,
+          type: 'report',
+          action: `Content reported: ${report.type || 'Unknown'}`,
+          user: report.reportedBy || 'Unknown user',
+          time: formatTimeAgo(report.createdAt || report.created_at),
+          icon: 'AlertTriangle', 
+          color: 'bg-red-500',
+          timestamp: new Date(report.createdAt || report.created_at)
+        });
+      });
+    }
+
+    // Add recent room listings
+    if (roomsResponse.data && roomsResponse.data.length > 0) {
+      const recentRooms = roomsResponse.data
+        .filter(room => room.created_at || room.createdAt)
+        .sort((a, b) => new Date(b.created_at || b.createdAt) - new Date(a.created_at || a.createdAt))
+        .slice(0, 3);
+      
+      recentRooms.forEach(room => {
+        activities.push({
+          id: `room-${room.id}`,
+          type: 'room',
+          action: `New room listed: ${room.title || 'Untitled Room'}`,
+          user: room.owner_email || room.ownerEmail || room.contact_email || 'Unknown user',
+          time: formatTimeAgo(room.created_at || room.createdAt),
+          icon: 'Package',
+          color: 'bg-purple-500',
+          timestamp: new Date(room.created_at || room.createdAt)
+        });
+      });
+    }
+
+    // Sort all activities by timestamp (newest first)
+    const sortedActivities = activities
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, limit);
+
+    return {
+      success: true,
+      activities: sortedActivities,
+      message: `Found ${sortedActivities.length} recent activities`
+    };
+    
+  } 
+};
+
+// Helper function to format time ago
+const formatTimeAgo = (dateString) => {
+  if (!dateString) return 'Unknown time';
+  
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffMinutes < 1) return 'Just now';
+  if (diffMinutes < 60) return `${diffMinutes} minutes ago`;
+  if (diffHours < 24) return `${diffHours} hours ago`;
+  if (diffDays < 7) return `${diffDays} days ago`;
+  
+  return date.toLocaleDateString();
+};
+
+export const dismissReport = async (reportId, reason) => {
+  return apiCall(`/admin/moderation/reports/${reportId}/dismiss`, {
+    method: 'POST',
+    body: JSON.stringify({ reason }),
+  });
+};
+
+export const bulkModerationAction = async (reportIds, action, data = {}) => {
+  return apiCall('/admin/moderation/reports/bulk-action', {
+    method: 'POST',
+    body: JSON.stringify({ reportIds, action, data }),
+  });
+};
+
+// Admin Content Management
+export const getContentForModeration = async (category, status = 'pending') => {
+  return apiCall(`/admin/moderation/content/${category}?status=${status}`);
+};
+
+export const moderateContent = async (contentId, action, reason) => {
+  return apiCall(`/admin/moderation/content/${contentId}`, {
+    method: 'POST',
+    body: JSON.stringify({ action, reason }),
+  });
+};
+
+export const deleteContent = async (contentId, contentType, reason) => {
+  return apiCall(`/admin/moderation/content/${contentId}/delete`, {
+    method: 'DELETE',
+    body: JSON.stringify({ contentType, reason }),
+  });
+};
+
+export const restoreContent = async (contentId, reason) => {
+  return apiCall(`/admin/moderation/content/${contentId}/restore`, {
+    method: 'POST',
+    body: JSON.stringify({ reason }),
+  });
+};
+
+// Admin System Management
+export const getSystemLogs = async (level = 'all', limit = 100) => {
+  return apiCall(`/admin/system/logs?level=${level}&limit=${limit}`);
+};
+
+export const getSystemHealth = async () => {
+  return apiCall('/admin/system/health');
+};
+
+export const getSystemSettings = async () => {
+  return apiCall('/admin/system/settings');
+};
+
+export const updateSystemSettings = async (settings) => {
+  return apiCall('/admin/system/settings', {
+    method: 'PATCH',
+    body: JSON.stringify(settings),
+  });
+};
+
+export const performSystemMaintenance = async (action) => {
+  return apiCall('/admin/system/maintenance', {
+    method: 'POST',
+    body: JSON.stringify({ action }),
+  });
+};
+
+// Admin Notifications
+export const sendAdminNotification = async (users, message, type = 'info') => {
+  return apiCall('/admin/notifications/send', {
+    method: 'POST',
+    body: JSON.stringify({ users, message, type }),
+  });
+};
+
+export const createSystemAnnouncement = async (announcement) => {
+  return apiCall('/admin/announcements', {
+    method: 'POST',
+    body: JSON.stringify(announcement),
+  });
+};
+
+export const getSystemAnnouncements = async () => {
+  return apiCall('/admin/announcements');
+};
+
+export const updateSystemAnnouncement = async (announcementId, updates) => {
+  return apiCall(`/admin/announcements/${announcementId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates),
+  });
+};
+
+export const deleteSystemAnnouncement = async (announcementId) => {
+  return apiCall(`/admin/announcements/${announcementId}`, {
+    method: 'DELETE',
+  });
+};
+
+// Admin Backup & Export
+export const createDataBackup = async () => {
+  return apiCall('/admin/backup/create', {
+    method: 'POST',
+  });
+};
+
+export const getBackupHistory = async () => {
+  return apiCall('/admin/backup/history');
+};
+
+export const restoreFromBackup = async (backupId) => {
+  return apiCall(`/admin/backup/restore/${backupId}`, {
+    method: 'POST',
+  });
+};
+
+export const exportUserData = async (filters = {}) => {
+  const queryParams = new URLSearchParams(filters);
+  return apiCall(`/admin/export/users?${queryParams}`);
+};
+
+export const exportContentData = async (contentType, filters = {}) => {
+  const queryParams = new URLSearchParams(filters);
+  return apiCall(`/admin/export/content/${contentType}?${queryParams}`);
 };
