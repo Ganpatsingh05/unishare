@@ -128,17 +128,9 @@ const Header = ({ logoRotation = 0 }) => {
                     />
                   </div>
                 </div>
-                <span className="font-bold text-2xl transition-all duration-300 group-hover:text-opacity-80 whitespace-nowrap">
-                  <span className={`transition-colors duration-300 ${
-                    darkMode ? 'text-yellow-300 group-hover:text-yellow-200' : 'text-yellow-500 group-hover:text-yellow-600'
-                  }`}>
-                    Uni
-                  </span>
-                  <span className={`transition-colors duration-300 ${
-                    darkMode ? 'text-sky-300 group-hover:text-sky-200' : 'text-sky-500 group-hover:text-sky-600'
-                  }`}>
-                    Share
-                  </span>
+                <span className="brand-wordmark font-bold text-2xl transition-all duration-300 group-hover:opacity-90 whitespace-nowrap">
+                  <span className="brand-uni">Uni</span>
+                  <span className="brand-share">Share</span>
                 </span>
               </div>
             </Link>

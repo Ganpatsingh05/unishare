@@ -45,7 +45,7 @@ export default function HeroSlider({ darkMode = true }) {
   id: "ticket",
   bgImage: "/images/ticket.jpeg",
   alt: "Explore Tickets",
-  cta: { label: "Explore Tickets", href: "/tickets" }
+  cta: { label: "Explore Tickets", href: "/ticket" }
       },
     ],
     []

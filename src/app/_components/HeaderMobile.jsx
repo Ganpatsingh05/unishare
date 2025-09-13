@@ -161,9 +161,9 @@ export default function HeaderMobile() {
         </Link>
         
         <div className="absolute left-0 right-0 mx-auto flex justify-center items-center h-16 pointer-events-none">
-          <span className="font-bold text-xl whitespace-nowrap">
-            <span className={darkMode ? 'text-yellow-300' : 'text-yellow-500'}>Uni</span>
-            <span className={darkMode ? 'text-sky-300' : 'text-sky-500'}>Share</span>
+          <span className="brand-wordmark font-bold text-xl whitespace-nowrap">
+            <span className="brand-uni">Uni</span>
+            <span className="brand-share">Share</span>
           </span>
         </div>
 
@@ -509,9 +509,9 @@ export default function HeaderMobile() {
           <div className={`px-4 py-3 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
             <div className="flex items-center justify-center">
               <div className="flex items-center gap-1">
-                <span className="text-xs font-semibold tracking-wide">
-                  <span className={darkMode ? 'text-yellow-300' : 'text-yellow-500'}>Uni</span>
-                  <span className={darkMode ? 'text-sky-300' : 'text-sky-500'}>Share</span>
+                <span className="brand-wordmark text-xs font-semibold tracking-wide">
+                  <span className="brand-uni">Uni</span>
+                  <span className="brand-share">Share</span>
                 </span>
                 <span className={`text-xs ml-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                   ™

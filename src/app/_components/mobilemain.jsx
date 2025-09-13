@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from 'next/link';
-import { Car, ShoppingCart, Tag, Search, Star, Home, Megaphone, BookOpen, Phone, Users, RotateCw, CheckCircle, Filter, TrendingUp, Zap, Menu, X } from 'lucide-react';
+import { Car, ShoppingCart, Tag, Search, Star, Home, Megaphone, BookOpen, Phone, Users, RotateCw, CheckCircle, Filter, TrendingUp, Zap, Menu, X, Ticket } from 'lucide-react';
 import Image from 'next/image';
 import logoImage from '../assets/images/logounishare1.png';
 
@@ -71,6 +71,15 @@ const sections = [
     color: 'from-purple-500 to-violet-500',
     category: 'marketplace',
     keyFeature: 'Easy listing'
+  },
+  {
+    title: 'Buy/Sell Tickets',
+    description: 'Browse campus event tickets or list extras securely.',
+    icon: <Ticket className="w-6 h-6" />,
+    href: '/ticket',
+    color: 'from-pink-500 to-rose-500',
+    category: 'marketplace',
+    keyFeature: 'Secure transfers'
   },
   {
     title: 'Find Housing',
@@ -308,39 +317,24 @@ const MobileMain = ({ darkMode, isVisible = false }) => {
                   darkMode
                     ? 'bg-gray-800/60 border-gray-700/50 active:bg-gray-800/80'
                     : 'bg-white/60 border-gray-200/50 active:bg-white/80'
-                } backdrop-blur-sm shadow-md active:shadow-lg`}
+                } backdrop-blur-sm shadow-md active:shadow-lg flex flex-col min-h-[175px]`}
               >
-                {/* Gradient overlay */}
                 <div 
                   className={`absolute inset-0 rounded-2xl opacity-0 group-active:opacity-10 transition-opacity duration-200 bg-gradient-to-br ${section.color}`}
                 />
-                
-                <div className="relative z-10">
-                  {/* Icon */}
-                  <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl mb-3 transition-all duration-200 group-active:scale-110 bg-gradient-to-br ${section.color} text-white shadow-md`}>
-                    {section.icon}
+                <div className="relative z-10 flex flex-col h-full">
+                  <div>
+                    <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl mb-3 transition-all duration-200 group-active:scale-110 bg-gradient-to-br ${section.color} text-white shadow-md`}>
+                      {section.icon}
+                    </div>
+                    <h3 className={`text-sm font-bold mb-1 leading-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>{section.title}</h3>
+                    <p className={`text-xs leading-relaxed line-clamp-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{section.description}</p>
                   </div>
-
-                  {/* Title */}
-                  <h3 className={`text-sm font-bold mb-2 leading-tight ${
-                    darkMode ? 'text-white' : 'text-gray-900'
-                  }`}>
-                    {section.title}
-                  </h3>
-
-                  {/* Description */}
-                  <p className={`text-xs mb-2 leading-relaxed ${
-                    darkMode ? 'text-gray-400' : 'text-gray-600'
-                  }`}>
-                    {section.description}
-                  </p>
-
-                  {/* Key Feature Badge */}
-                  <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                    darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'
-                  }`}>
-                    <div className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${section.color}`} />
-                    <span>{section.keyFeature}</span>
+                  <div className="mt-auto pt-2">
+                    <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+                      <div className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${section.color}`} />
+                      <span className="truncate max-w-[80px]">{section.keyFeature}</span>
+                    </div>
                   </div>
                 </div>
               </div>

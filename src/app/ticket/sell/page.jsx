@@ -1,0 +1,706 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { 
+  Search, 
+  Plus,
+  Tag, 
+  MapPin, 
+  DollarSign, 
+  Star, 
+  Edit3,
+  Trash2,
+  Eye,
+  IndianRupee, 
+  Calendar, 
+  AlertCircle, 
+  Loader,
+  ArrowLeft,
+  Clock,
+  Users,
+  Ticket,
+  ShoppingCart,
+  CheckCircle
+} from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { fetchMyTickets, deleteTicket, createTicket, formatContactInfo } from "../../lib/api";
+import { 
+  useAuth, 
+  useMessages, 
+  useUI 
+} from "../../lib/contexts/UniShareContext";
+
+export default function TicketSellPage() {
+  const { isAuthenticated, user } = useAuth();
+  // Dev bypass via query param ?dev=1 so you can view the page locally without logging in
+  const searchParams = useSearchParams();
+  const devBypass = searchParams?.get('dev') === '1';
+  const effectiveAuthenticated = isAuthenticated || devBypass;
+  const { error, success, loading, setError, clearError, setLoading, showTemporaryMessage } = useMessages();
+  const { darkMode } = useUI();
+
+  // Local state
+  const [myTickets, setMyTickets] = useState([]);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingTicket, setEditingTicket] = useState(null);
+  const [deletingTicket, setDeletingTicket] = useState(null);
+
+  // Theme classes using global CSS custom properties and consistent focus states
+  const labelClr = "text-secondary";
+  const cardBg = darkMode ? "bg-gray-950/60 border-gray-900" : "bg-white/80 border-gray-200";
+  const titleClr = "text-primary";
+  const subClr = "text-muted";
+
+  // Mock data for user's tickets - replace with actual API call
+  const mockMyTickets = [
+    {
+      id: 1,
+      title: "Concert: Taylor Swift - Eras Tour",
+      price: 8500,
+      event_type: "concert",
+      category: "event",
+      event_date: "2024-12-15T19:00:00Z",
+      venue: "DY Patil Stadium, Mumbai",
+      location: "Mumbai",
+      quantity_available: 2,
+      ticket_type: "Premium",
+      description: "Amazing seats in the premium section. Can't attend due to emergency.",
+      image_url: "/ticket.png",
+      status: "active",
+      views: 45,
+      inquiries: 8,
+      created_at: "2024-10-01T10:00:00Z"
+    },
+    {
+      id: 2,
+      title: "Tech Conference 2024",
+      price: 2500,
+      event_type: "conference",
+      category: "event",
+      event_date: "2024-11-10T09:00:00Z",
+      venue: "Bombay Exhibition Centre",
+      location: "Mumbai",
+      quantity_available: 1,
+      ticket_type: "Early Bird",
+      description: "Early bird ticket for the biggest tech conference of the year.",
+      status: "sold",
+      views: 32,
+      inquiries: 12,
+      created_at: "2024-09-15T14:30:00Z"
+    },
+    {
+      id: 3,
+      title: "Mumbai → Pune AC Bus (Sunday Morning)",
+      price: 550,
+      event_type: "travel",
+      category: "travel",
+      event_date: "2024-10-05T06:30:00.000Z",
+      venue: "Mumbai → Pune",
+      location: "Pune",
+      origin: "Mumbai",
+      destination: "Pune",
+      transport_mode: "bus",
+      quantity_available: 1,
+      description: "One AC Volvo seat available. Clean bus, on-time operator.",
+      status: "active",
+      views: 10,
+      inquiries: 2,
+      created_at: "2024-10-02T09:00:00Z"
+    },
+    {
+      id: 4,
+      title: "Online Course Access Code (Data Science)",
+      price: 1200,
+      event_type: "other",
+      category: "other",
+      event_date: "2024-12-01T09:00:00.000Z",
+      venue: "Digital Item",
+      location: "Remote",
+      item_type: "Course Access",
+      quantity_available: 1,
+      description: "Unused access code for a 3-month premium data science course.",
+      status: "active",
+      views: 5,
+      inquiries: 1,
+      created_at: "2024-10-02T10:15:00Z"
+    }
+  ];
+
+  useEffect(() => {
+    if (effectiveAuthenticated) {
+      fetchMyTicketData();
+    }
+  }, [effectiveAuthenticated]);
+
+  const fetchMyTicketData = async () => {
+    try {
+      setLoading(true);
+      // const data = await fetchMyTickets();
+      // setMyTickets(data);
+      // For now, use mock data
+      setMyTickets(mockMyTickets);
+      clearError();
+    } catch (err) {
+      setError("Failed to fetch your tickets");
+      console.error("Error fetching tickets:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteTicket = async (ticketId) => {
+    if (!window.confirm("Are you sure you want to delete this ticket?")) {
+      return;
+    }
+
+    try {
+      setDeletingTicket(ticketId);
+      // await deleteTicket(ticketId);
+      setMyTickets(prev => prev.filter(ticket => ticket.id !== ticketId));
+      showTemporaryMessage("Ticket deleted successfully", "success");
+    } catch (err) {
+      setError("Failed to delete ticket");
+    } finally {
+      setDeletingTicket(null);
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    const statusConfig = {
+      active: {
+        bg: "bg-green-100 text-green-800",
+        bgDark: "bg-green-900/30 text-green-400",
+        text: "Active"
+      },
+      sold: {
+        bg: "bg-gray-100 text-gray-800",
+        bgDark: "bg-gray-900/30 text-gray-400",
+        text: "Sold"
+      },
+      expired: {
+        bg: "bg-red-100 text-red-800",
+        bgDark: "bg-red-900/30 text-red-400",
+        text: "Expired"
+      }
+    };
+
+    const config = statusConfig[status] || statusConfig.active;
+    
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+        darkMode ? config.bgDark : config.bg
+      }`}>
+        {config.text}
+      </span>
+    );
+  };
+
+  if (!effectiveAuthenticated) {
+    return (
+      <div className="min-h-screen pt-20 pb-16">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <div className={`p-8 rounded-2xl ${cardBg} border backdrop-blur-sm`}>
+            <Ticket className={`w-16 h-16 mx-auto mb-4 ${titleClr}`} />
+            <h2 className={`text-2xl font-bold mb-4 ${titleClr}`}>Login Required</h2>
+            <p className={`mb-6 ${subClr}`}>
+              You need to be logged in to sell tickets
+            </p>
+            <Link 
+              href="/login"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all"
+            >
+              Login to Continue
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="min-h-screen pt-20 pb-16">
+        <div className="max-w-6xl mx-auto px-4">
+          {/* Header */}
+          <div className={`mb-8 p-6 rounded-2xl ${cardBg} border backdrop-blur-sm`}>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+                  <Tag className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className={`text-xl sm:text-2xl font-semibold ${titleClr}`}>Sell Event Tickets</h2>
+                  <p className={`text-sm ${subClr}`}>Create listings and manage your ticket sales</p>
+                  {devBypass && (
+                    <span className="mt-1 inline-block px-2 py-1 text-xs rounded-md bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                      Dev Mode (auth bypass)
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => setShowCreateForm(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg"
+                >
+                  <Plus className="w-4 h-4" /> Create Listing
+                </button>
+                <Link 
+                  href="/ticket/buy"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg"
+                >
+                  <ShoppingCart className="w-4 h-4" /> Browse Tickets
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 backdrop-blur-sm">
+              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+              <span className="text-red-700 dark:text-red-300">{error}</span>
+            </div>
+          )}
+
+          {/* Success Message */}
+          {success && (
+            <div className="mb-6 p-4 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center gap-3 backdrop-blur-sm">
+              <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+              <span className="text-green-700 dark:text-green-300">{success}</span>
+            </div>
+          )}
+
+          {/* Loading State */}
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader className="w-8 h-8 animate-spin text-blue-500" />
+              <span className={`ml-3 ${subClr}`}>Loading your tickets...</span>
+            </div>
+          ) : (
+            <>
+              {/* Stats Overview */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                {[
+                  {
+                    label: "Active Listings",
+                    value: myTickets.filter(t => t.status === 'active').length,
+                    icon: <Ticket className="w-6 h-6" />,
+                    color: "from-blue-500 to-cyan-500"
+                  },
+                  {
+                    label: "Total Views",
+                    value: myTickets.reduce((sum, t) => sum + (t.views || 0), 0),
+                    icon: <Eye className="w-6 h-6" />,
+                    color: "from-green-500 to-emerald-500"
+                  },
+                  {
+                    label: "Total Inquiries",
+                    value: myTickets.reduce((sum, t) => sum + (t.inquiries || 0), 0),
+                    icon: <Users className="w-6 h-6" />,
+                    color: "from-purple-500 to-pink-500"
+                  }
+                ].map((stat, index) => (
+                  <div key={index} className={`p-6 rounded-2xl ${cardBg} border backdrop-blur-sm`}>
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-2xl bg-gradient-to-r ${stat.color} flex items-center justify-center text-white`}>
+                        {stat.icon}
+                      </div>
+                      <div>
+                        <div className={`text-2xl font-bold ${titleClr}`}>{stat.value}</div>
+                        <div className={`text-sm ${subClr}`}>{stat.label}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* My Tickets */}
+              {myTickets.length === 0 ? (
+                <div className="text-center py-16">
+                  <Ticket className={`w-16 h-16 mx-auto mb-4 ${subClr}`} />
+                  <h3 className={`text-xl font-medium mb-2 ${titleClr}`}>No tickets listed yet</h3>
+                  <p className={`mb-6 ${subClr}`}>Create your first ticket listing to get started</p>
+                  <button 
+                    onClick={() => setShowCreateForm(true)}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg"
+                  >
+                    <Plus className="w-4 h-4" /> Create Your First Listing
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {myTickets.map((ticket) => (
+                    <div key={ticket.id} className={`p-6 rounded-2xl ${cardBg} border backdrop-blur-sm hover:shadow-lg transition-shadow`}>
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className={`text-lg font-semibold ${titleClr}`}>{ticket.title}</h3>
+                            {getStatusBadge(ticket.status)}
+                          </div>
+                          <div className="flex items-center gap-4 mb-3">
+                            <div className="flex items-center gap-1">
+                              <IndianRupee className={`w-4 h-4 ${subClr}`} />
+                              <span className={`font-medium ${titleClr}`}>₹{ticket.price.toLocaleString()}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Calendar className={`w-4 h-4 ${subClr}`} />
+                              <span className={subClr}>{new Date(ticket.event_date).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 mb-2">
+                            <MapPin className={`w-4 h-4 ${subClr}`} />
+                            <span className={subClr}>{ticket.venue}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Stats */}
+                      <div className="flex items-center gap-4 mb-4 text-sm">
+                        <div className="flex items-center gap-1">
+                          <Eye className={`w-4 h-4 ${subClr}`} />
+                          <span className={subClr}>{ticket.views || 0} views</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Users className={`w-4 h-4 ${subClr}`} />
+                          <span className={subClr}>{ticket.inquiries || 0} inquiries</span>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => setEditingTicket(ticket)}
+                          className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                            darkMode 
+                              ? 'border-gray-700 text-gray-300 hover:bg-gray-800' 
+                              : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          <Edit3 className="w-4 h-4 inline mr-1" />
+                          Edit
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteTicket(ticket.id)}
+                          disabled={deletingTicket === ticket.id}
+                          className="px-3 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium transition-colors disabled:opacity-50"
+                        >
+                          {deletingTicket === ticket.id ? (
+                            <Loader className="w-4 h-4 animate-spin inline mr-1" />
+                          ) : (
+                            <Trash2 className="w-4 h-4 inline mr-1" />
+                          )}
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Create/Edit Form Modal (inlined) */}
+      {(showCreateForm || editingTicket) && (
+        <TicketCreateModal
+          darkMode={darkMode}
+          onClose={() => { setShowCreateForm(false); setEditingTicket(null); }}
+          onTicketCreated={() => { fetchMyTicketData(); setShowCreateForm(false); setEditingTicket(null); }}
+          editingTicket={editingTicket}
+          isAuthenticated={effectiveAuthenticated}
+          showTemporaryMessage={showTemporaryMessage}
+          setError={setError}
+          clearError={clearError}
+          error={error}
+          loading={loading}
+          setLoading={setLoading}
+        />
+      )}
+    </>
+  );
+}
+
+// Inlined TicketCreateModal with category support (event, travel, other)
+function TicketCreateModal({ onClose, onTicketCreated, editingTicket, darkMode, isAuthenticated, showTemporaryMessage, setError, clearError, error, loading, setLoading }) {
+  const labelClr = "text-secondary";
+  const inputStyles = darkMode 
+    ? "bg-gray-900 border-gray-800 text-gray-100 placeholder-gray-500 focus:ring-yellow-400/30 focus:border-yellow-400" 
+    : "bg-white border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-blue-500/30 focus:border-blue-500";
+  const titleClr = "text-primary";
+  const cardBg = "glass-card";
+  const dropBorder = darkMode ? "border-gray-800" : "border-gray-300";
+
+  const [category, setCategory] = useState('event');
+  const [title, setTitle] = useState(editingTicket?.title || "");
+  const [price, setPrice] = useState(editingTicket?.price?.toString() || "");
+  const [eventType, setEventType] = useState(editingTicket?.event_type || "concert");
+  const [eventDate, setEventDate] = useState("");
+  const [eventTime, setEventTime] = useState("");
+  const [venue, setVenue] = useState(editingTicket?.venue || "");
+  const [location, setLocation] = useState(editingTicket?.location || "");
+  const [quantityAvailable, setQuantityAvailable] = useState(editingTicket?.quantity_available?.toString() || "1");
+  const [ticketType, setTicketType] = useState(editingTicket?.ticket_type || "Standard");
+  const [description, setDescription] = useState(editingTicket?.description || "");
+  const [contacts, setContacts] = useState([{ id: 1, type: 'mobile', value: '' }]);
+  // Travel
+  const [origin, setOrigin] = useState('');
+  const [destination, setDestination] = useState('');
+  const [travelDate, setTravelDate] = useState('');
+  const [travelTime, setTravelTime] = useState('');
+  const [transportMode, setTransportMode] = useState('bus');
+  // Other
+  const [itemType, setItemType] = useState('General');
+  // Image
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+
+  useEffect(() => {
+    if (!eventDate) { const t = new Date(); t.setDate(t.getDate()+1); setEventDate(t.toISOString().split('T')[0]); }
+    if (!travelDate) { const t = new Date(); t.setDate(t.getDate()+1); setTravelDate(t.toISOString().split('T')[0]); }
+  }, [eventDate, travelDate]);
+  useEffect(()=> ()=> { if (imagePreview) URL.revokeObjectURL(imagePreview); }, [imagePreview]);
+
+  const iconForType = (type) => ({mobile:Phone, instagram:Instagram, email:Mail, link:Link2}[type] || Link2);
+  const placeholderForType = (type) => ({mobile:'+91 98765 43210', instagram:'@username', email:'name@university.edu', link:'https://...'}[type] || '');
+  const handleImageSelect = (e) => { const file = e.target.files?.[0]; if(!file) return; const allowed=['image/jpeg','image/png','image/webp','image/jpg']; if(!allowed.includes(file.type)) { setError('Please upload a valid image file (JPEG, PNG, or WebP)'); return;} if(file.size>5*1024*1024){ setError('Image must be less than 5MB'); return;} if(imagePreview) URL.revokeObjectURL(imagePreview); setImageFile(file); setImagePreview(URL.createObjectURL(file)); clearError(); };
+  const handleRemoveImage = () => { if(imagePreview) URL.revokeObjectURL(imagePreview); setImageFile(null); setImagePreview(null); const el=document.getElementById('ticketImageInput'); if(el) el.value=''; };
+  const addContact = () => setContacts(p=>[...p,{id:Date.now(), type:'mobile', value:''}]);
+  const updateContact = (idx, field, value) => setContacts(p=>p.map((c,i)=> i===idx?{...c,[field]:value}:c));
+  const removeContact = (id) => setContacts(p=>p.filter(c=>c.id!==id));
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if(!isAuthenticated){ setError('Please log in to create a ticket listing'); return; }
+    setLoading(true); clearError();
+    try {
+      if(!title.trim()) throw new Error('Title is required');
+      if(!price || isNaN(price) || parseFloat(price)<=0) throw new Error('Valid price is required');
+      if(!quantityAvailable || parseInt(quantityAvailable)<=0) throw new Error('Valid quantity is required');
+      if(category==='event'){ if(!venue.trim()) throw new Error('Venue is required'); if(!location.trim()) throw new Error('City is required'); if(!eventDate) throw new Error('Event date is required'); }
+      if(category==='travel'){ if(!origin.trim()) throw new Error('Origin is required'); if(!destination.trim()) throw new Error('Destination is required'); if(!travelDate) throw new Error('Travel date is required'); }
+      if(category==='other'){ if(!location.trim()) throw new Error('Location/City is required'); }
+      const dt = (d,t) => t? `${d}T${t}:00.000Z` : `${d}T09:00:00.000Z`;
+      const eventDateTime = dt(eventDate, eventTime);
+      const travelDateTime = dt(travelDate, travelTime);
+      const contactInfo = formatContactInfo(contacts);
+      if(Object.keys(contactInfo).length===0) throw new Error('At least one contact method is required');
+      const base = { title:title.trim(), price:parseFloat(price), category, quantity_available:parseInt(quantityAvailable), description:description.trim(), contact_info:contactInfo };
+      let payload = {...base};
+      if(category==='event'){ payload = {...payload, event_type:eventType, event_date:eventDateTime, venue:venue.trim(), location:location.trim(), ticket_type:ticketType}; }
+      else if(category==='travel'){ payload = {...payload, origin:origin.trim(), destination:destination.trim(), travel_date:travelDateTime, transport_mode:transportMode, event_date:travelDateTime, venue:`${origin.trim()} → ${destination.trim()}`, location:destination.trim(), event_type:'travel'}; }
+      else { payload = {...payload, item_type:itemType, location:location.trim(), event_type:'other', event_date:eventDateTime || new Date().toISOString()}; }
+      const result = await createTicket(payload, imageFile);
+      if(result.success){ showTemporaryMessage(`Listing "${result.data.title}" created!`, true, 3500); handleReset(); onTicketCreated && onTicketCreated(result.data); setTimeout(()=> onClose(), 1200); }
+      else { throw new Error(result.message || 'Failed to create listing'); }
+    } catch(err){ setError(err.message); } finally { setLoading(false); }
+  };
+
+  const handleReset = () => {
+    setCategory('event'); setTitle(''); setPrice(''); setEventType('concert'); setEventDate(''); setEventTime(''); setVenue(''); setLocation(''); setQuantityAvailable('1'); setTicketType('Standard'); setDescription(''); setContacts([{id:1,type:'mobile',value:''}]); setOrigin(''); setDestination(''); setTravelDate(''); setTravelTime(''); setTransportMode('bus'); setItemType('General'); handleRemoveImage(); clearError();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm overflow-y-auto" onClick={onClose}>
+      <div className={`max-w-3xl w-full max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl ${cardBg} p-6 m-4`} onClick={e=>e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center"><Ticket className="w-6 h-6 text-white" /></div>
+            <div>
+              <h2 className={`text-xl sm:text-2xl font-semibold ${titleClr}`}>Create Ticket Listing</h2>
+              <p className="text-sm text-muted">Sell event, travel or other tickets</p>
+            </div>
+          </div>
+          <button onClick={onClose} className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-gray-800':'hover:bg-gray-100'}`}><X className="w-5 h-5" /></button>
+        </div>
+        {error && (
+          <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-3"><AlertCircle className="w-5 h-5 text-red-500" /><span className="text-red-500">{error}</span><button onClick={clearError} className="ml-auto"><X className="w-4 h-4 text-red-500" /></button></div>
+        )}
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+          <div className="sm:col-span-2">
+            <label className={`block text-sm font-medium mb-2 ${labelClr}`}>Category *</label>
+            <select value={category} onChange={e=>setCategory(e.target.value)} className={`w-full px-4 py-3 rounded-lg border ${inputStyles}`}>
+              <option value="event">Event</option>
+              <option value="travel">Travel</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div className="sm:col-span-2">
+            <label className={`block text-sm font-medium mb-2 ${labelClr}`}>{category==='travel' ? 'Trip Title *':'Title *'}</label>
+            <input value={title} onChange={e=>setTitle(e.target.value)} placeholder={category==='travel'? 'e.g., Mumbai to Pune Weekend Ride':'e.g., Concert: XYZ Live'} className={`w-full px-4 py-3 rounded-lg border ${inputStyles}`} required />
+          </div>
+          <div>
+            <label className={`block text-sm font-medium mb-2 ${labelClr}`}>Price per {category==='travel' ? 'Seat/Ticket':'Ticket'} *</label>
+            <div className="relative">
+              <IndianRupee className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input value={price} onChange={e=>setPrice(e.target.value.replace(/[^0-9.]/g,''))} placeholder="250" className={`w-full pl-10 pr-4 py-3 rounded-lg border ${inputStyles}`} required />
+            </div>
+          </div>
+          {category==='event' && (
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${labelClr}`}>Event Type *</label>
+              <select value={eventType} onChange={e=>setEventType(e.target.value)} className={`w-full px-4 py-3 rounded-lg border ${inputStyles}`} required>
+                <option value="concert">Concert</option>
+                <option value="sports">Sports</option>
+                <option value="comedy">Comedy</option>
+                <option value="theater">Theater</option>
+                <option value="conference">Conference</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          )}
+          {category==='travel' && (
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${labelClr}`}>Transport Mode *</label>
+              <select value={transportMode} onChange={e=>setTransportMode(e.target.value)} className={`w-full px-4 py-3 rounded-lg border ${inputStyles}`} required>
+                <option value="bus">Bus</option>
+                <option value="train">Train</option>
+                <option value="flight">Flight</option>
+                <option value="carpool">Car / Ride Share</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          )}
+          {category==='other' && (
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${labelClr}`}>Item Type</label>
+              <input value={itemType} onChange={e=>setItemType(e.target.value)} className={`w-full px-4 py-3 rounded-lg border ${inputStyles}`} />
+            </div>
+          )}
+          {category==='event' && (<>
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${labelClr}`}>Event Date *</label>
+              <div className="relative">
+                <Calendar className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input type="date" value={eventDate} onChange={e=>setEventDate(e.target.value)} className={`w-full pl-10 pr-4 py-3 rounded-lg border ${inputStyles}`} min={new Date().toISOString().split('T')[0]} required />
+              </div>
+            </div>
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${labelClr}`}>Event Time</label>
+              <div className="relative">
+                <Clock className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input type="time" value={eventTime} onChange={e=>setEventTime(e.target.value)} className={`w-full pl-10 pr-4 py-3 rounded-lg border ${inputStyles}`} />
+              </div>
+            </div>
+          </>)}
+          {category==='travel' && (<>
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${labelClr}`}>Travel Date *</label>
+              <div className="relative">
+                <Calendar className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input type="date" value={travelDate} onChange={e=>setTravelDate(e.target.value)} className={`w-full pl-10 pr-4 py-3 rounded-lg border ${inputStyles}`} min={new Date().toISOString().split('T')[0]} required />
+              </div>
+            </div>
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${labelClr}`}>Travel Time</label>
+              <div className="relative">
+                <Clock className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input type="time" value={travelTime} onChange={e=>setTravelTime(e.target.value)} className={`w-full pl-10 pr-4 py-3 rounded-lg border ${inputStyles}`} />
+              </div>
+            </div>
+          </>)}
+          {category==='event' && (
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${labelClr}`}>Venue *</label>
+              <input value={venue} onChange={e=>setVenue(e.target.value)} placeholder="e.g., Stadium / Hall" className={`w-full px-4 py-3 rounded-lg border ${inputStyles}`} required />
+            </div>
+          )}
+          {category==='travel' && (
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${labelClr}`}>Origin *</label>
+              <input value={origin} onChange={e=>setOrigin(e.target.value)} placeholder="Start city / point" className={`w-full px-4 py-3 rounded-lg border ${inputStyles}`} required />
+            </div>
+          )}
+          {category==='travel' && (
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${labelClr}`}>Destination *</label>
+              <input value={destination} onChange={e=>setDestination(e.target.value)} placeholder="Destination city" className={`w-full px-4 py-3 rounded-lg border ${inputStyles}`} required />
+            </div>
+          )}
+          {category==='event' && (
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${labelClr}`}>City *</label>
+              <div className="relative">
+                <MapPin className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input value={location} onChange={e=>setLocation(e.target.value)} placeholder="City" className={`w-full pl-10 pr-4 py-3 rounded-lg border ${inputStyles}`} required />
+              </div>
+            </div>
+          )}
+          {category==='other' && (
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${labelClr}`}>Location / City *</label>
+              <div className="relative">
+                <MapPin className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input value={location} onChange={e=>setLocation(e.target.value)} placeholder="City" className={`w-full pl-10 pr-4 py-3 rounded-lg border ${inputStyles}`} required />
+              </div>
+            </div>
+          )}
+          <div>
+            <label className={`block text-sm font-medium mb-2 ${labelClr}`}>{category==='travel' ? 'Seats Available *':'Tickets Available *'}</label>
+            <div className="relative">
+              <Users className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input type="number" min="1" max="50" value={quantityAvailable} onChange={e=>setQuantityAvailable(e.target.value)} className={`w-full pl-10 pr-4 py-3 rounded-lg border ${inputStyles}`} required />
+            </div>
+          </div>
+          {category==='event' && (
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${labelClr}`}>Ticket Type</label>
+              <select value={ticketType} onChange={e=>setTicketType(e.target.value)} className={`w-full px-4 py-3 rounded-lg border ${inputStyles}`}>
+                <option value="General">General</option>
+                <option value="Standard">Standard</option>
+                <option value="Premium">Premium</option>
+                <option value="VIP">VIP</option>
+                <option value="Front Row">Front Row</option>
+              </select>
+            </div>
+          )}
+          <div className="sm:col-span-2">
+            <label className={`block text-sm font-medium mb-2 ${labelClr}`}>Additional Details</label>
+            <textarea value={description} onChange={e=>setDescription(e.target.value)} rows={4} placeholder={category==='travel' ? 'Any luggage rules, meeting point, flexibility...' : 'Describe seats, reason for selling...'} className={`w-full px-4 py-3 rounded-lg border ${inputStyles} resize-none`} />
+          </div>
+          <div className="sm:col-span-2">
+            <label className={`block text-sm font-medium mb-3 ${labelClr}`}>Photo (Optional)</label>
+            {!imagePreview ? (
+              <label className={`flex flex-col items-center justify-center gap-4 p-8 border-2 border-dashed rounded-xl cursor-pointer transition-all ${darkMode ? 'hover:bg-gray-900/50 border-gray-700 hover:border-gray-600' : 'hover:bg-gray-50 border-gray-300 hover:border-gray-400'} ${dropBorder}`}>
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center"><Upload className="w-8 h-8 text-white" /></div>
+                <div className="text-center"><p className={`text-base font-medium ${titleClr} mb-1`}>Upload Photo</p><p className="text-sm text-muted">JPEG, PNG, or WebP up to 5MB</p></div>
+                <input id="ticketImageInput" type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
+              </label>
+            ) : (
+              <div className="relative"><img src={imagePreview} alt="Preview" className="w-full h-64 object-cover rounded-xl border shadow-lg" /><button type="button" onClick={handleRemoveImage} className="absolute top-3 right-3 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all shadow-lg" title="Remove image"><X className="w-5 h-5" /></button></div>
+            )}
+          </div>
+          <div className="sm:col-span-2">
+            <div className="flex items-center justify-between mb-3"><label className={`text-sm font-medium ${labelClr}`}>Contact Information *</label><button type="button" onClick={addContact} className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"><Plus className="w-4 h-4" /> Add Contact</button></div>
+            <div className="space-y-4">
+              {contacts.map((contact, idx) => { const Icon = iconForType(contact.type); return (
+                <div key={contact.id} className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-900 border-gray-800':'bg-gray-50 border-gray-200'}`}>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <select value={contact.type} onChange={e=>updateContact(idx,'type',e.target.value)} className={`px-4 py-3 rounded-lg border ${inputStyles}`}>
+                      <option value="mobile">Mobile</option>
+                      <option value="instagram">Instagram</option>
+                      <option value="email">Email</option>
+                      <option value="link">Link</option>
+                    </select>
+                    <div className="sm:col-span-2 relative">
+                      <Icon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <input value={contact.value} onChange={e=>updateContact(idx,'value',e.target.value)} placeholder={placeholderForType(contact.type)} className={`w-full pl-10 ${contacts.length>1?'pr-12':'pr-4'} py-3 rounded-lg border ${inputStyles}`} />
+                      {contacts.length>1 && (<button type="button" onClick={()=>removeContact(contact.id)} className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-red-500/10 text-red-600 transition-colors" title="Remove contact"><Trash2 className="w-4 h-4" /></button>)}
+                    </div>
+                  </div>
+                </div>
+              );})}
+            </div>
+          </div>
+          <div className="sm:col-span-2 flex flex-col sm:flex-row items-center gap-3 pt-4">
+            <button type="submit" disabled={loading} className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">{loading ? (<><Loader className="w-5 h-5 animate-spin" /> Saving...</>) : 'Create Listing'}</button>
+            <button type="button" onClick={handleReset} disabled={loading} className={`w-full sm:w-auto px-6 py-3 rounded-lg border font-medium transition-colors disabled:opacity-50 ${darkMode?'border-gray-700 text-gray-200 hover:bg-gray-800':'border-gray-300 text-gray-800 hover:bg-gray-100'}`}>Reset</button>
+            <button type="button" onClick={onClose} disabled={loading} className={`w-full sm:w-auto px-6 py-3 rounded-lg border font-medium transition-colors disabled:opacity-50 ${darkMode?'border-gray-700 text-gray-200 hover:bg-gray-800':'border-gray-300 text-gray-800 hover:bg-gray-100'}`}>Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

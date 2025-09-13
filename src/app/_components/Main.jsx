@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from 'next/link';
-import { Car, ShoppingCart, Tag, Search, Star, Home, Megaphone, BookOpen, Phone, Users, RotateCw, CheckCircle, Filter, TrendingUp, Zap } from 'lucide-react';
+import { Car, ShoppingCart, Tag, Search, Star, Home, Megaphone, BookOpen, Phone, Users, RotateCw, CheckCircle, Filter, TrendingUp, Zap, Ticket } from 'lucide-react';
 import Image from 'next/image';
 import logoImage from '../assets/images/logounishare1.png';
 import MobileMain from "./mobilemain";
@@ -72,6 +72,15 @@ const sections = [
     color: 'from-purple-500 to-violet-500',
     category: 'marketplace',
     features: ['Easy listing', 'Price suggestions', 'Quick sales']
+  },
+  {
+    title: 'Buy & Sell Tickets',
+    description: 'Buy event tickets or sell your extra tickets to fellow students.',
+    icon: <Ticket className="w-10 h-10" />,
+    href: '/ticket',
+    color: 'from-pink-500 to-rose-500',
+    category: 'marketplace',
+    features: ['Event verification', 'Secure transfers', 'Price protection']
   },
   {
     title: 'Find Housing & Roommates',
