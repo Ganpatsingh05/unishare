@@ -46,16 +46,30 @@ const apiCallFormData = async (endpoint, formData, method = 'POST') => {
       throw new Error('Backend URL not configured');
     }
 
+    console.log(`FormData API call to: ${BACKEND_URL}${endpoint}`);
+    console.log('FormData contents:', Array.from(formData.entries()));
+
     const response = await fetch(`${BACKEND_URL}${endpoint}`, {
       method,
       credentials: 'include',
       body: formData // Don't set Content-Type, let browser handle it for FormData
     });
 
-    const data = await response.json();
+    console.log('Response status:', response.status);
+    console.log('Response headers:', response.headers);
+
+    let data;
+    try {
+      data = await response.json();
+    } catch (parseError) {
+      console.error('Failed to parse JSON response:', parseError);
+      throw new Error(`Server returned non-JSON response (${response.status})`);
+    }
+
+    console.log('Response data:', data);
 
     if (!response.ok) {
-      throw new Error(data.message || data.error || `HTTP ${response.status}`);
+      throw new Error(data.message || data.error || data.details || `HTTP ${response.status}`);
     }
 
     return data;
@@ -437,7 +451,7 @@ export const fetchTickets = async (filters = {}) => {
     const queryString = new URLSearchParams(
       Object.entries(filters).filter(([_, value]) => value !== '' && value != null)
     ).toString();
-    const endpoint = queryString ? `/tickets?${queryString}` : '/tickets';
+    const endpoint = queryString ? `/api/tickets?${queryString}` : '/api/tickets';
     const data = await apiCall(endpoint, { method: 'GET' });
     return data;
   } catch (error) {
@@ -453,7 +467,7 @@ export const fetchMyTickets = async (options = {}) => {
     if (options.offset) queryParams.set('offset', options.offset);
     if (options.sort) queryParams.set('sort', options.sort);
     const queryString = queryParams.toString();
-    const endpoint = queryString ? `/tickets/mine?${queryString}` : '/tickets/mine';
+    const endpoint = queryString ? `/api/tickets/my?${queryString}` : '/api/tickets/my';
     const data = await apiCall(endpoint, { method: 'GET' });
     return data;
   } catch (error) {
@@ -475,24 +489,15 @@ export const createTicket = async (ticketData, imageFile = null) => {
     // Prepare FormData for backend
     const formData = new FormData();
     
-    // Add ticket data
-    formData.append('title', ticketData.title);
-    formData.append('price', ticketData.price);
-    formData.append('event_type', ticketData.event_type);
-    formData.append('event_date', ticketData.event_date);
-    formData.append('venue', ticketData.venue);
-    formData.append('location', ticketData.location);
-    formData.append('quantity_available', ticketData.quantity_available);
-    formData.append('ticket_type', ticketData.ticket_type);
-    formData.append('description', ticketData.description || '');
-    formData.append('contact_info', JSON.stringify(ticketData.contact_info || {}));
+    // Add ticket data as JSON string (backend expects it this way)
+    formData.append('ticketData', JSON.stringify(ticketData));
     
     // Add image file if provided
     if (imageFile) {
       formData.append('image', imageFile);
     }
 
-    const data = await apiCallFormData('/tickets', formData, 'POST');
+    const data = await apiCallFormData('/api/tickets/create', formData, 'POST');
     return data;
   } catch (error) {
     console.error('Error creating ticket:', error);
@@ -511,24 +516,15 @@ export const updateTicket = async (ticketId, ticketData, imageFile = null) => {
     // Prepare FormData for backend
     const formData = new FormData();
     
-    // Add ticket data
-    formData.append('title', ticketData.title);
-    formData.append('price', ticketData.price);
-    formData.append('event_type', ticketData.event_type);
-    formData.append('event_date', ticketData.event_date);
-    formData.append('venue', ticketData.venue);
-    formData.append('location', ticketData.location);
-    formData.append('quantity_available', ticketData.quantity_available);
-    formData.append('ticket_type', ticketData.ticket_type);
-    formData.append('description', ticketData.description || '');
-    formData.append('contact_info', JSON.stringify(ticketData.contact_info || {}));
+    // Add ticket data as JSON string (backend expects it this way)
+    formData.append('ticketData', JSON.stringify(ticketData));
     
     // Add new image file if provided
     if (imageFile) {
       formData.append('image', imageFile);
     }
 
-    const data = await apiCallFormData(`/tickets/${ticketId}`, formData, 'PUT');
+    const data = await apiCallFormData(`/api/tickets/${ticketId}`, formData, 'PUT');
     return data;
   } catch (error) {
     console.error('Error updating ticket:', error);
@@ -544,7 +540,7 @@ export const updateTicket = async (ticketId, ticketData, imageFile = null) => {
 
 export const deleteTicket = async (ticketId) => {
   try {
-    const data = await apiCall(`/tickets/${ticketId}`, { method: 'DELETE' });
+    const data = await apiCall(`/api/tickets/${ticketId}`, { method: 'DELETE' });
     return data;
   } catch (error) {
     console.error('Error deleting ticket:', error);
@@ -560,7 +556,7 @@ export const deleteTicket = async (ticketId) => {
 
 export const fetchTicket = async (ticketId) => {
   try {
-    const data = await apiCall(`/tickets/${ticketId}`, { method: 'GET' });
+    const data = await apiCall(`/api/tickets/${ticketId}`, { method: 'GET' });
     return data;
   } catch (error) {
     console.error('Error fetching ticket:', error);
