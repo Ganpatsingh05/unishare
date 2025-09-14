@@ -3,9 +3,8 @@ import "./globals.css";
 import CookieConsent from "./_components/CookieConsent";
 import RouteChangeOverlay from "./_components/RouteChangeOverlay";
 import { UniShareProvider } from "./lib/contexts/UniShareContext";
-import ClientHeader from "./_components/ClientHeader";
-import AnnouncementBar from "./_components/AnnouncementBar";
 import ThemeWrapper from "./_components/ThemeWrapper";
+import SiteChrome from "./_components/SiteChrome";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,9 +27,9 @@ export default function RootLayout({ children }) {
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning={true}>
         <UniShareProvider>
           <ThemeWrapper>
-            <AnnouncementBar />
-            <ClientHeader />
-            {children}
+            <SiteChrome>
+              {children}
+            </SiteChrome>
             <CookieConsent />
             {/* Client-side route change loader overlay */}
             <RouteChangeOverlay />

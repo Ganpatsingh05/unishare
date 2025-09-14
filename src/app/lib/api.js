@@ -1679,10 +1679,23 @@ export const performSystemMaintenance = async (action) => {
 };
 
 // Admin Notifications
-export const sendAdminNotification = async (users, message, type = 'info') => {
+// Admin Notifications - flexible signature
+// Usage:
+// sendAdminNotification(['ALL'], 'Message text', 'info')
+// sendAdminNotification({ users:['a@example.com'], message:'Hello', type:'success', title:'Greeting'})
+export const sendAdminNotification = async (users, message, type = 'info', title) => {
+  let payload;
+  if (Array.isArray(users)) {
+    payload = { users, message, type };
+    if (title) payload.title = title;
+  } else if (typeof users === 'object' && users !== null) {
+    payload = users; // already shaped
+  } else {
+    throw new Error('sendAdminNotification first argument must be users array or config object');
+  }
   return apiCall('/admin/notifications/send', {
     method: 'POST',
-    body: JSON.stringify({ users, message, type }),
+    body: JSON.stringify(payload),
   });
 };
 
@@ -1735,4 +1748,106 @@ export const exportUserData = async (filters = {}) => {
 export const exportContentData = async (contentType, filters = {}) => {
   const queryParams = new URLSearchParams(filters);
   return apiCall(`/admin/export/content/${contentType}?${queryParams}`);
+};
+
+// ============== CONTACTS DIRECTORY (ADMIN) ==============
+// These helpers provide a future-proof interface. Currently they fallback to localStorage
+// using the same key leveraged by the admin contacts panel. Replace endpoints when backend ready.
+
+const CONTACTS_STORAGE_KEY = 'campusContacts';
+
+export const getContactsDirectory = async () => {
+  // If backend URL exists you could call: return apiCall('/admin/contacts');
+  try {
+    if (typeof window !== 'undefined') {
+      const raw = localStorage.getItem(CONTACTS_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          return { success: true, data: parsed };
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Contacts local fallback failed', e);
+  }
+  return { success: true, data: [] };
+};
+
+export const createContactEntry = async (contact) => {
+  try {
+    if (typeof window !== 'undefined') {
+      const current = (JSON.parse(localStorage.getItem(CONTACTS_STORAGE_KEY) || '[]'));
+      const next = { ...contact, id: contact.id || (Math.max(0, ...current.map(c => c.id || 0)) + 1) };
+      const updated = [...current, next];
+      localStorage.setItem(CONTACTS_STORAGE_KEY, JSON.stringify(updated));
+      return { success: true, data: next };
+    }
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+  return { success: false, error: 'Unavailable' };
+};
+
+export const updateContactEntry = async (id, updates) => {
+  try {
+    if (typeof window !== 'undefined') {
+      const current = (JSON.parse(localStorage.getItem(CONTACTS_STORAGE_KEY) || '[]'));
+      const updated = current.map(c => c.id === id ? { ...c, ...updates } : c);
+      localStorage.setItem(CONTACTS_STORAGE_KEY, JSON.stringify(updated));
+      const item = updated.find(c => c.id === id) || null;
+      return { success: true, data: item };
+    }
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+  return { success: false, error: 'Unavailable' };
+};
+
+export const deleteContactEntry = async (id) => {
+  try {
+    if (typeof window !== 'undefined') {
+      const current = (JSON.parse(localStorage.getItem(CONTACTS_STORAGE_KEY) || '[]'));
+      const updated = current.filter(c => c.id !== id);
+      localStorage.setItem(CONTACTS_STORAGE_KEY, JSON.stringify(updated));
+      return { success: true };
+    }
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+  return { success: false, error: 'Unavailable' };
+};
+
+// ============== RESOURCES & NOTES (LOCAL DIRECTORY) ==============
+const RESOURCES_KEY = 'resourcesDirectory';
+const NOTES_KEY = 'notesDirectory';
+
+export const getResources = async () => {
+  try { if (typeof window !== 'undefined') { const raw = localStorage.getItem(RESOURCES_KEY); if (raw) { const parsed = JSON.parse(raw); if (Array.isArray(parsed)) return { success:true, data: parsed }; } } } catch(e){ return { success:false, error:e.message }; }
+  return { success:true, data: [] };
+};
+
+export const saveResource = async (resource) => {
+  try { if (typeof window !== 'undefined') { const list = JSON.parse(localStorage.getItem(RESOURCES_KEY) || '[]'); const next = { ...resource, id: resource.id || (Math.max(0,...list.map(r=> r.id||0))+1) }; const updated = resource.id ? list.map(r=> r.id===resource.id? next: r) : [...list, next]; localStorage.setItem(RESOURCES_KEY, JSON.stringify(updated)); return { success:true, data: next }; } } catch(e){ return { success:false, error:e.message }; }
+  return { success:false, error:'Unavailable' };
+};
+
+export const deleteResource = async (id) => {
+  try { if (typeof window !== 'undefined') { const list = JSON.parse(localStorage.getItem(RESOURCES_KEY) || '[]'); const updated = list.filter(r=> r.id!==id); localStorage.setItem(RESOURCES_KEY, JSON.stringify(updated)); return { success:true }; } } catch(e){ return { success:false, error:e.message }; }
+  return { success:false, error:'Unavailable' };
+};
+
+export const getNotes = async () => {
+  try { if (typeof window !== 'undefined') { const raw = localStorage.getItem(NOTES_KEY); if (raw) { const parsed = JSON.parse(raw); if (Array.isArray(parsed)) return { success:true, data: parsed }; } } } catch(e){ return { success:false, error:e.message }; }
+  return { success:true, data: [] };
+};
+
+export const saveNote = async (note) => {
+  try { if (typeof window !== 'undefined') { const list = JSON.parse(localStorage.getItem(NOTES_KEY) || '[]'); const next = { ...note, id: note.id || (Math.max(0,...list.map(n=> n.id||0))+1) }; const updated = note.id ? list.map(n=> n.id===note.id? next: n) : [...list, next]; localStorage.setItem(NOTES_KEY, JSON.stringify(updated)); return { success:true, data: next }; } } catch(e){ return { success:false, error:e.message }; }
+  return { success:false, error:'Unavailable' };
+};
+
+export const deleteNote = async (id) => {
+  try { if (typeof window !== 'undefined') { const list = JSON.parse(localStorage.getItem(NOTES_KEY) || '[]'); const updated = list.filter(n=> n.id!==id); localStorage.setItem(NOTES_KEY, JSON.stringify(updated)); return { success:true }; } } catch(e){ return { success:false, error:e.message }; }
+  return { success:false, error:'Unavailable' };
 };

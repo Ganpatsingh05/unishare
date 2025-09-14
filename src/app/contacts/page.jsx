@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Header from "../_components/Header";
 import Footer from "../_components/Footer";
 import { Phone, Mail, MapPin, Clock, Search, Copy, Check, ShieldAlert, Building2, GraduationCap, Home, Users } from "lucide-react";
@@ -24,68 +24,32 @@ export default function ContactsPage() {
   const inputBg = darkMode ? "bg-gray-900 border-gray-800 text-gray-100 placeholder-gray-500" : "bg-white border-gray-200 text-gray-900 placeholder-gray-500";
   const titleClr = darkMode ? "text-white" : "text-gray-900";
 
-  const contacts = useMemo(() => ([
-    {
-      id: 1,
-      name: "Campus Security",
-      role: "24x7 Helpline",
-      category: "emergency",
-      phones: ["+91 100"],
-      emails: ["security@university.edu"],
-      location: "Main Gate Booth",
-      hours: "24/7",
-    },
-    {
-      id: 2,
-      name: "Medical Center",
-      role: "On-campus clinic",
-      category: "emergency",
-      phones: ["+91 98765 11111"],
-      emails: ["clinic@university.edu"],
-      location: "Health Block",
-      hours: "Mon-Sun 8:00–20:00",
-    },
-    {
-      id: 3,
-      name: "Admin Office",
-      role: "General Administration",
-      category: "administration",
-      phones: ["+91 98765 22222"],
-      emails: ["admin@university.edu"],
-      location: "A-Block, Room 101",
-      hours: "Mon-Fri 9:00–17:00",
-    },
-    {
-      id: 4,
-      name: "Exam Cell",
-      role: "Examinations & Results",
-      category: "academics",
-      phones: ["+91 98765 33333"],
-      emails: ["examcell@university.edu"],
-      location: "B-Block, Room 210",
-      hours: "Mon-Fri 10:00–16:00",
-    },
-    {
-      id: 5,
-      name: "Hostel Warden - Dorm A",
-      role: "Warden",
-      category: "hostel",
-      phones: ["+91 98765 44444"],
-      emails: ["wardenA@university.edu"],
-      location: "Dorm A Office",
-      hours: "Mon-Sat 9:00–18:00",
-    },
-    {
-      id: 6,
-      name: "Student Affairs",
-      role: "Clubs & Activities",
-      category: "student",
-      phones: ["+91 98765 55555"],
-      emails: ["students@university.edu"],
-      location: "Student Center",
-      hours: "Mon-Fri 9:00–17:00",
-    },
+  // Fallback list mirrors admin seed; admin panel persists to localStorage under this key
+  const FALLBACK = useMemo(() => ([
+    { id: 1, name: "Campus Security", role: "24x7 Helpline", category: "emergency", phones: ["+91 100"], emails: ["security@university.edu"], location: "Main Gate Booth", hours: "24/7" },
+    { id: 2, name: "Medical Center", role: "On-campus clinic", category: "emergency", phones: ["+91 98765 11111"], emails: ["clinic@university.edu"], location: "Health Block", hours: "Mon-Sun 8:00–20:00" },
+    { id: 3, name: "Admin Office", role: "General Administration", category: "administration", phones: ["+91 98765 22222"], emails: ["admin@university.edu"], location: "A-Block, Room 101", hours: "Mon-Fri 9:00–17:00" },
+    { id: 4, name: "Exam Cell", role: "Examinations & Results", category: "academics", phones: ["+91 98765 33333"], emails: ["examcell@university.edu"], location: "B-Block, Room 210", hours: "Mon-Fri 10:00–16:00" },
+    { id: 5, name: "Hostel Warden - Dorm A", role: "Warden", category: "hostel", phones: ["+91 98765 44444"], emails: ["wardenA@university.edu"], location: "Dorm A Office", hours: "Mon-Sat 9:00–18:00" },
+    { id: 6, name: "Student Affairs", role: "Clubs & Activities", category: "student", phones: ["+91 98765 55555"], emails: ["students@university.edu"], location: "Student Center", hours: "Mon-Fri 9:00–17:00" },
   ]), []);
+
+  const [contacts, setContacts] = useState(FALLBACK);
+
+  useEffect(() => {
+    // Client-side only; attempt to pull admin-managed list
+    try {
+      const raw = localStorage.getItem('campusContacts');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length) {
+          setContacts(parsed);
+        }
+      }
+    } catch (e) {
+      // ignore: fallback already set
+    }
+  }, []);
 
   const filtered = useMemo(() => contacts.filter(c => {
     const q = query.trim().toLowerCase();

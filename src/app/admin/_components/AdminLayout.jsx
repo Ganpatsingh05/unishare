@@ -9,7 +9,8 @@ import {
   BarChart3, 
   Shield, 
   Settings, 
-  FileText, 
+  FileText,
+  Phone, 
   Car, 
   Package, 
   Search,   
@@ -18,7 +19,10 @@ import {
   LogOut,
   Home,
   Bell,
-  Activity
+  Activity,
+  Megaphone,
+  BookOpen,
+  NotebookPen
 } from "lucide-react";
 import { useAuth, useUI } from "../../lib/contexts/UniShareContext";
 
@@ -40,6 +44,30 @@ const adminNavItems = [
     href: "/admin/analytics", 
     icon: BarChart3,
     description: "System analytics and reports"
+  },
+  {
+    title: "Announcements",
+    href: "/admin/announcements",
+    icon: Megaphone,
+    description: "Manage site-wide notices"
+  },
+  {
+    title: "Notifications",
+    href: "/admin/notifications",
+    icon: Bell,
+    description: "Broadcast notifications"
+  },
+  {
+    title: "Contacts",
+    href: "/admin/contacts",
+    icon: Phone,
+    description: "Manage public directory"
+  },
+  {
+    title: "Resources & Notes",
+    href: "/admin/resources",
+    icon: BookOpen,
+    description: "Manage shared resources and notes"
   },
   {
     title: "Content Moderation",
@@ -64,6 +92,12 @@ const adminNavItems = [
     href: "/admin/moderation/marketplace",
     icon: Package,
     description: "Moderate marketplace items"
+  },
+  {
+    title: "Tickets",
+    href: "/admin/moderation/ticket",
+    icon: FileText,
+    description: "Moderate ticket listings"
   },
   {
     title: "System Logs",

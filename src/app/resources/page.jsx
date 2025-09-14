@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useUI } from "../lib/contexts/UniShareContext";
 import Footer from "../_components/Footer";
 import { Search, Link2, ExternalLink, Copy, Check, BookOpen, GraduationCap, Globe, Wrench, FileText, Video, Tag, Plus } from "lucide-react";
@@ -16,22 +16,36 @@ const CATEGORIES = [
 
 export default function ResourcesPage() {
   const {darkMode} = useUI();
-  const [mode, setMode] = useState('browse'); // 'browse' | 'suggest'
+  const [mode, setMode] = useState('browse'); // browse mode retained for potential future use
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('all');
   const [copiedId, setCopiedId] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const labelClr = darkMode ? "text-gray-300" : "text-gray-700";
   const inputBg = darkMode ? "bg-gray-900 border-gray-800 text-gray-100 placeholder-gray-500" : "bg-white border-gray-200 text-gray-900 placeholder-gray-500";
   const titleClr = darkMode ? "text-white" : "text-gray-900";
 
-  const resources = useMemo(() => ([
+  const FALLBACK = useMemo(() => ([
     { id: 1, title: 'Academic Calendar', desc: 'Official academic schedule and holidays', category: 'academics', type: 'doc', url: 'https://university.edu/academic-calendar.pdf', tags: ['calendar','dates'] },
     { id: 2, title: 'CS101 Syllabus', desc: 'Course outline and grading policy', category: 'docs', type: 'pdf', url: '#', tags: ['cs','syllabus'] },
     { id: 3, title: 'Library Portal', desc: 'Search books, journals, and e-resources', category: 'campus', type: 'link', url: 'https://library.university.edu', tags: ['library','books'] },
     { id: 4, title: 'Discounted Software', desc: 'Student access to dev tools', category: 'tools', type: 'link', url: 'https://education.github.com/pack', tags: ['software','dev'] },
     { id: 5, title: 'Exam Prep Playlist', desc: 'Video lectures and tips', category: 'videos', type: 'video', url: 'https://youtube.com/playlist?list=123', tags: ['exam','prep'] },
   ]), []);
+  const [resources, setResources] = useState(FALLBACK);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('resourcesDirectory');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length) {
+          setResources(parsed);
+        }
+      }
+    } catch {}
+  }, []);
 
   const filtered = useMemo(() => resources.filter(r => {
     const q = query.trim().toLowerCase();
@@ -65,13 +79,10 @@ export default function ResourcesPage() {
         <div className={`rounded-2xl border p-4 sm:p-6 ${darkMode ? 'bg-gray-950/60 border-gray-900' : 'bg-gray-50 border-gray-200'}`}>
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <h1 className={`text-xl sm:text-2xl font-semibold ${titleClr}`}>Resources</h1>
-            <div className={`inline-flex p-1 rounded-xl border ${darkMode ? 'border-gray-800 bg-gray-900' : 'border-gray-200 bg-white'}`}>
-              <button type="button" onClick={() => setMode('browse')} className={`px-3 py-1.5 text-sm rounded-lg ${mode==='browse' ? 'bg-blue-600 text-white' : (darkMode ? 'text-gray-300' : 'text-gray-700')}`}>Browse</button>
-              <button type="button" onClick={() => setMode('suggest')} className={`px-3 py-1.5 text-sm rounded-lg ${mode==='suggest' ? 'bg-emerald-600 text-white' : (darkMode ? 'text-gray-300' : 'text-gray-700')}`}>Suggest</button>
-            </div>
+            <button type="button" onClick={() => setDrawerOpen(true)} className="px-3 py-2 rounded-lg text-sm bg-emerald-600 text-white hover:bg-emerald-700 inline-flex items-center gap-2"><Plus className="w-4 h-4"/> Suggest Resource</button>
           </div>
 
-          {mode === 'browse' ? (
+          {mode === 'browse' && (
             <section className="mt-6">
               <div className="grid grid-cols-1 gap-3">
                 <div className="relative">
@@ -125,51 +136,56 @@ export default function ResourcesPage() {
                 ))}
               </div>
             </section>
-          ) : (
-            <section className="mt-6">
-              <form className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-                <div className="sm:col-span-2">
-                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Title</label>
-                  <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g., Scholarship Guide 2025" className={`w-full px-3 py-2.5 rounded-lg border ${inputBg}`} />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Description</label>
-                  <textarea value={desc} onChange={(e) => setDesc(e.target.value)} rows={3} placeholder="Short description..." className={`w-full px-3 py-2.5 rounded-lg border ${inputBg}`} />
-                </div>
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Category</label>
-                  <select value={catNew} onChange={(e) => setCatNew(e.target.value)} className={`w-full px-3 py-2.5 rounded-lg border ${inputBg}`}>
-                    {CATEGORIES.filter(c => c.key !== 'all').map(({ key, label }) => (
-                      <option key={key} value={key}>{label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Type</label>
-                  <select value={typeNew} onChange={(e) => setTypeNew(e.target.value)} className={`w-full px-3 py-2.5 rounded-lg border ${inputBg}`}>
-                    <option value="link">Link</option>
-                    <option value="pdf">PDF</option>
-                    <option value="video">Video</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                <div className="sm:col-span-2">
-                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>{typeNew === 'link' ? 'URL' : 'Reference / URL'}</label>
-                  <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder={typeNew === 'link' ? 'https://...' : 'Link to reference or info'} className={`w-full px-3 py-2.5 rounded-lg border ${inputBg}`} />
-                </div>
-                <div className="sm:col-span-2 flex items-center gap-3">
-                  <button type="button" className="px-4 py-2.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 text-sm font-medium inline-flex items-center gap-1.5">
-                    <Plus className="w-4 h-4" /> Submit resource
-                  </button>
-                  <button type="reset" onClick={() => { setTitle(''); setDesc(''); setCatNew('academics'); setTypeNew('link'); setUrl(''); }} className={`px-3 py-2.5 rounded-lg border text-sm ${darkMode ? 'border-gray-700 text-gray-200' : 'border-gray-300 text-gray-800'}`}>Reset</button>
-                </div>
-              </form>
-            </section>
           )}
         </div>
       </main>
 
       <Footer darkMode={darkMode} />
+
+      {drawerOpen && (
+        <div className="fixed inset-0 z-[120] flex">
+          <div className="flex-1 bg-black/60 backdrop-blur-sm" onClick={() => setDrawerOpen(false)} />
+          <div className="w-full max-w-md h-full bg-gray-950 border-l border-gray-900 flex flex-col">
+            <div className="p-4 border-b border-gray-900 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white">Suggest Resource</h2>
+              <button onClick={()=> setDrawerOpen(false)} className="p-1.5 rounded-md hover:bg-gray-900 text-gray-400"><X className="w-4 h-4"/></button>
+            </div>
+            <div className="p-4 overflow-y-auto flex-1 space-y-4">
+              <div className="space-y-1.5">
+                <label className={`text-[11px] uppercase tracking-wide font-medium ${labelClr}`}>Title</label>
+                <input value={title} onChange={e=> setTitle(e.target.value)} className={`w-full px-3 py-2 rounded-lg border ${inputBg}`} placeholder="e.g., Scholarship Guide 2025" />
+              </div>
+              <div className="space-y-1.5">
+                <label className={`text-[11px] uppercase tracking-wide font-medium ${labelClr}`}>Description</label>
+                <textarea value={desc} onChange={e=> setDesc(e.target.value)} rows={3} className={`w-full px-3 py-2 rounded-lg border ${inputBg}`} placeholder="Short description..." />
+              </div>
+              <div className="space-y-1.5">
+                <label className={`text-[11px] uppercase tracking-wide font-medium ${labelClr}`}>Category</label>
+                <select value={catNew} onChange={e=> setCatNew(e.target.value)} className={`w-full px-3 py-2 rounded-lg border ${inputBg}`}>
+                  {CATEGORIES.filter(c=> c.key!=='all').map(c=> <option key={c.key} value={c.key}>{c.label}</option>)}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className={`text-[11px] uppercase tracking-wide font-medium ${labelClr}`}>Type</label>
+                <select value={typeNew} onChange={e=> setTypeNew(e.target.value)} className={`w-full px-3 py-2 rounded-lg border ${inputBg}`}>
+                  <option value="link">Link</option>
+                  <option value="pdf">PDF</option>
+                  <option value="video">Video</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className={`text-[11px] uppercase tracking-wide font-medium ${labelClr}`}>{typeNew==='link' ? 'URL' : 'Reference / URL'}</label>
+                <input value={url} onChange={e=> setUrl(e.target.value)} className={`w-full px-3 py-2 rounded-lg border ${inputBg}`} placeholder={typeNew==='link'? 'https://...' : 'Reference link'} />
+              </div>
+            </div>
+            <div className="p-4 border-t border-gray-900 flex items-center justify-between gap-3">
+              <button onClick={()=> setDrawerOpen(false)} className="px-4 py-2 rounded-lg border border-gray-800 text-gray-300 hover:bg-gray-900 text-xs">Cancel</button>
+              <button onClick={()=> { /* submission placeholder */ setDrawerOpen(false); setTitle(''); setDesc(''); setUrl(''); setCatNew('academics'); setTypeNew('link'); }} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs"><Plus className="w-4 h-4"/> Submit</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
