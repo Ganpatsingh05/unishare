@@ -23,8 +23,10 @@ export default function RouteChangeOverlay() {
     return () => clearTimeout(timerRef.current);
   }, [pathname]);
 
-  // Exclude share-ride and housing pages from showing the loader
-  const excluded = pathname?.startsWith("/share-ride") || pathname?.startsWith("/housing");
+  // Exclude share-ride, housing pages, and ALL admin routes from showing the loader
+  const excluded = pathname?.startsWith("/share-ride") || 
+                   pathname?.startsWith("/housing") || 
+                   pathname?.startsWith("/admin");
   if (!visible || excluded) return null;
 
   // Infer a theme variant from the pathname for nicer visuals
