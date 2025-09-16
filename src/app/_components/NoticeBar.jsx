@@ -18,8 +18,8 @@ export default function AnnouncementBar() {
     let cancelled = false;
     const fetchData = async () => {
       try {
-        const { getSystemAnnouncements } = await import('../lib/api');
-        const res = await getSystemAnnouncements();
+        const { getNoticesForNoticeBar } = await import('../lib/api');
+        const res = await getNoticesForNoticeBar();
         const list = res.announcements || res.data || (Array.isArray(res) ? res : []);
         // Pick most recent active (optionally check expiresAt)
         const active = list

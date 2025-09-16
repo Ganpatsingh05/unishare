@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
-import { Search, RefreshCcw, Eye, Trash2 } from 'lucide-react';
+import { Search, RefreshCcw, Eye, Trash2, AlertTriangle } from 'lucide-react';
 import AdminGuard from "../../_components/AdminGuard";
 import AdminLayout from "../../_components/AdminLayout";
+import { fetchRides, deleteRide } from "../../../lib/api/rideSharing";
 
 /*
   Rideshare Moderation Page
@@ -27,19 +28,64 @@ export default function RideshareModerationPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [detailRide, setDetailRide] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const loadRides = async () => {
     setRefreshing(true);
+    setError(null);
     try {
-      setRides(mockRides);
-    } catch (e) {
+      const result = await fetchRides();
+      if (result.success && result.data) {
+        setRides(result.data.map(ride => ({
+          id: ride.id,
+          from: ride.from_location,
+          to: ride.to_location,
+          date: ride.date,
+          time: ride.time,
+          seats: ride.seats,
+          availableSeats: ride.available_seats,
+          price: ride.price,
+          owner: ride.user_id,
+          ownerName: ride.users?.name || ride.driver_name || 'Anonymous',
+          driverName: ride.driver_name,
+          vehicle: ride.vehicle_info,
+          contact: ride.contact_info,
+          notes: ride.description,
+          status: ride.status,
+          createdAt: ride.created_at,
+          updatedAt: ride.updated_at || ride.created_at
+        })));
+      } else {
+        // Fallback to mock data if API fails
+        setRides(mockRides);
+      }
+    } catch (error) {
+      console.error('Failed to load rides:', error);
+      setError(error.message);
+      // Fallback to mock data on error
       setRides(mockRides);
     } finally {
       setRefreshing(false);
+      setLoading(false);
     }
   };
 
   useEffect(() => { loadRides(); }, []);
+
+  const handleDelete = async (rideId) => {
+    try {
+      setRefreshing(true);
+      await deleteRide(rideId);
+      await loadRides(); // Refresh the list
+      setConfirmDelete(null);
+    } catch (error) {
+      console.error('Failed to delete ride:', error);
+      setError(`Failed to delete ride: ${error.message}`);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const filtered = useMemo(() => rides.filter(r => {
     const q = search.trim().toLowerCase();
@@ -50,10 +96,7 @@ export default function RideshareModerationPage() {
     return matchesSearch && matchesDate;
   }), [rides, search, dateFilter]);
 
-  const deleteRide = (id) => {
-    setRides(prev => prev.filter(r => r.id !== id));
-    setConfirmDelete(null);
-  };
+  // deleteRide function removed - now using handleDelete with API call
 
   const panelBg = 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700';
 
@@ -89,6 +132,24 @@ export default function RideshareModerationPage() {
             </div>
           </div>
 
+          {/* Error Display */}
+          {error && (
+            <div className="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" />
+                {error}
+              </div>
+            </div>
+          )}
+
+          {/* Loading State */}
+          {loading && (
+            <div className="text-center py-8">
+              <RefreshCcw className="w-6 h-6 animate-spin mx-auto mb-2 text-gray-400" />
+              <p className="text-gray-500">Loading rideshare listings...</p>
+            </div>
+          )}
+
           {/* List */}
           <div className={`rounded-xl border ${panelBg}`}>
             <div className="overflow-x-auto">
@@ -98,15 +159,17 @@ export default function RideshareModerationPage() {
                     <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Route</th>
                     <th className="px-4 py-3 text-left font-semibold hidden md:table-cell text-gray-700 dark:text-gray-200">Date</th>
                     <th className="px-4 py-3 text-left font-semibold hidden md:table-cell text-gray-700 dark:text-gray-200">Time</th>
-                    <th className="px-4 py-3 text-left font-semibold hidden lg:table-cell text-gray-700 dark:text-gray-200">Owner</th>
+                    <th className="px-4 py-3 text-left font-semibold hidden lg:table-cell text-gray-700 dark:text-gray-200">Driver</th>
                     <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Seats</th>
                     <th className="px-4 py-3 text-left font-semibold hidden md:table-cell text-gray-700 dark:text-gray-200">Price</th>
+                    <th className="px-4 py-3 text-left font-semibold hidden xl:table-cell text-gray-700 dark:text-gray-200">Vehicle</th>
+                    <th className="px-4 py-3 text-left font-semibold hidden lg:table-cell text-gray-700 dark:text-gray-200">Status</th>
                     <th className="px-4 py-3 text-right font-semibold text-gray-700 dark:text-gray-200">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {filtered.length === 0 && (
-                    <tr><td colSpan={8} className="px-4 py-10 text-center text-gray-500">No rides found.</td></tr>
+                    <tr><td colSpan={9} className="px-4 py-10 text-center text-gray-500">No rides found.</td></tr>
                   )}
                   {filtered.map(r => (
                     <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
@@ -116,12 +179,35 @@ export default function RideshareModerationPage() {
                       </td>
                       <td className="px-4 py-3 hidden md:table-cell text-xs text-gray-700 dark:text-gray-200">{new Date(r.date).toLocaleDateString()}</td>
                       <td className="px-4 py-3 hidden md:table-cell text-xs text-gray-700 dark:text-gray-200">{r.time}</td>
-                      <td className="px-4 py-3 hidden lg:table-cell text-xs text-gray-700 dark:text-gray-200">{r.owner}</td>
+                      <td className="px-4 py-3 hidden lg:table-cell text-xs text-gray-700 dark:text-gray-200">
+                        <div>
+                          <p className="font-medium">{r.ownerName}</p>
+                          <p className="text-gray-500">{r.owner}</p>
+                        </div>
+                      </td>
                       <td className="px-4 py-3">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-600/30 dark:text-blue-200">{r.seats}</span>
+                        <div className="text-xs">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md font-medium bg-blue-100 text-blue-700 dark:bg-blue-600/30 dark:text-blue-200">
+                            {r.availableSeats}/{r.seats} seats
+                          </span>
+                        </div>
                       </td>
                       <td className="px-4 py-3 hidden md:table-cell">
                         <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-600/30 dark:text-purple-200">₹{r.price}</span>
+                      </td>
+                      <td className="px-4 py-3 hidden xl:table-cell text-xs text-gray-700 dark:text-gray-200">
+                        <div className="max-w-32 truncate" title={r.vehicle}>
+                          {r.vehicle || 'Not specified'}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 hidden lg:table-cell">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                          r.status === 'active' 
+                            ? 'bg-green-100 text-green-700 dark:bg-green-600/30 dark:text-green-200' 
+                            : 'bg-gray-100 text-gray-700 dark:bg-gray-600/30 dark:text-gray-200'
+                        }`}>
+                          {r.status}
+                        </span>
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-2">
@@ -144,7 +230,13 @@ export default function RideshareModerationPage() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">Are you sure you want to delete this ride? This action cannot be undone.</p>
                 <div className="mt-6 flex items-center justify-end gap-3">
                   <button onClick={()=>setConfirmDelete(null)} className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Cancel</button>
-                  <button onClick={()=>deleteRide(confirmDelete)} className="px-4 py-2 rounded-lg text-sm font-semibold bg-red-600 text-white hover:bg-red-700">Delete</button>
+                  <button 
+                    onClick={() => handleDelete(confirmDelete)} 
+                    disabled={refreshing}
+                    className="px-4 py-2 rounded-lg text-sm font-semibold bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+                  >
+                    {refreshing ? 'Deleting...' : 'Delete'}
+                  </button>
                 </div>
               </div>
             </div>
@@ -160,40 +252,69 @@ export default function RideshareModerationPage() {
                 </div>
                 <div className="mt-4 space-y-4 text-sm">
                   <div>
+                    <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Driver</p>
+                    <p className="mt-1 font-medium text-gray-900 dark:text-gray-100">{detailRide.driver_name}</p>
+                  </div>
+                  <div>
                     <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Route</p>
-                    <p className="mt-1 font-medium text-gray-900 dark:text-gray-100">{detailRide.from} → {detailRide.to}</p>
+                    <p className="mt-1 font-medium text-gray-900 dark:text-gray-100">{detailRide.from_location} → {detailRide.to_location}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Date</p>
-                      <p className="mt-1 text-gray-800 dark:text-gray-200">{new Date(detailRide.date).toLocaleDateString()}</p>
+                      <p className="mt-1 text-gray-800 dark:text-gray-200">{new Date(detailRide.ride_date).toLocaleDateString()}</p>
                     </div>
                     <div>
                       <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Time</p>
-                      <p className="mt-1 text-gray-800 dark:text-gray-200">{detailRide.time}</p>
+                      <p className="mt-1 text-gray-800 dark:text-gray-200">{detailRide.ride_time}</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Seats</p>
-                      <p className="mt-1 text-gray-800 dark:text-gray-200">{detailRide.seats}</p>
+                      <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Available Seats</p>
+                      <p className="mt-1 text-gray-800 dark:text-gray-200">{detailRide.available_seats} / {detailRide.total_seats} seats</p>
                     </div>
                     <div>
-                      <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Price</p>
-                      <p className="mt-1 text-gray-800 dark:text-gray-200">₹{detailRide.price}</p>
+                      <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Price per Seat</p>
+                      <p className="mt-1 text-gray-800 dark:text-gray-200">₹{detailRide.price_per_seat}</p>
                     </div>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Vehicle</p>
-                    <p className="mt-1 text-gray-800 dark:text-gray-200">{detailRide.vehicle}</p>
+                    <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Vehicle Details</p>
+                    <p className="mt-1 text-gray-800 dark:text-gray-200">{detailRide.vehicle_info}</p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Contact</p>
-                    <p className="mt-1 text-gray-800 dark:text-gray-200">{detailRide.contact}</p>
+                    <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Status</p>
+                    <div className="mt-1">
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                        detailRide.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                        detailRide.status === 'completed' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                        'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                      }`}>
+                        {detailRide.status}
+                      </span>
+                    </div>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Notes</p>
-                    <p className="mt-1 text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{detailRide.notes || '—'}</p>
+                    <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Contact Information</p>
+                    <div className="mt-1 space-y-1">
+                      {detailRide.contact_info?.phone && (
+                        <p className="text-gray-800 dark:text-gray-200">📞 {detailRide.contact_info.phone}</p>
+                      )}
+                      {detailRide.contact_info?.email && (
+                        <p className="text-gray-800 dark:text-gray-200">✉️ {detailRide.contact_info.email}</p>
+                      )}
+                    </div>
+                  </div>
+                  {detailRide.preferences && (
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Preferences</p>
+                      <p className="mt-1 text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{detailRide.preferences}</p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Posted By</p>
+                    <p className="mt-1 text-gray-800 dark:text-gray-200">{detailRide.users?.name || 'Unknown'} (ID: {detailRide.user_id})</p>
                   </div>
                   <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                     <p className="text-xs text-gray-500 dark:text-gray-500">Created {new Date(detailRide.createdAt).toLocaleString()}</p>

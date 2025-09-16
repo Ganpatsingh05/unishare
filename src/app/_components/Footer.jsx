@@ -60,22 +60,22 @@ const Footer = () => {
       { name: 'Community contacts', href: '/contacts', icon: MessageCircle }
     ],
     support: [
-      { name: 'Help Center', href: '/footerpages/help' },
-      { name: 'Safety Guidelines', href: '/footerpages/support-guidelines' },
-      { name: 'Report Issues', href: '/footerpages/report' },
-      { name: 'FAQs', href: '/footerpages/faqs' }
+      { name: 'Help Center', href: '/info/help' },
+      { name: 'Safety Guidelines', href: '/info/support-guidelines' },
+      { name: 'Report Issues', href: '/info/report' },
+      { name: 'FAQs', href: '/info/faqs' }
     ],
     company: [
-      { name: 'About UniShare', href: '/footerpages/about' },
-      { name: 'Our Mission', href: '/footerpages/mission' },
-      { name: 'Careers', href: '/footerpages/careers' }
+      { name: 'About UniShare', href: '/info/about' },
+      { name: 'Our Mission', href: '/info/mission' },
+      { name: 'Careers', href: '/info/careers' }
     ],
     legal: [
-      { name: 'Privacy Policy', href: '/footerpages/privacy' },
-      { name: 'Terms of Service', href: '/footerpages/terms' },
-      { name: 'Cookie Policy', href: '/footerpages/cookies' },
-      { name: 'Community Guidelines', href: '/footerpages/guidelines' },
-      { name: 'Data Protection', href: '/footerpages/data-protection' }
+      { name: 'Privacy Policy', href: '/info/privacy' },
+      { name: 'Terms of Service', href: '/info/terms' },
+      { name: 'Cookie Policy', href: '/info/cookies' },
+      { name: 'Community Guidelines', href: '/info/guidelines' },
+      { name: 'Data Protection', href: '/finfo/data-protection' }
     ]
   };
 

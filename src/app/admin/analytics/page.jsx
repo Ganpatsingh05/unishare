@@ -83,7 +83,7 @@ export default function AdminAnalytics() {
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
-      const { getAdminAnalytics } = await import("../../lib/api");
+      const { getAdminAnalytics } = await import("../lib/api");
       const response = await getAdminAnalytics();
       
       if (response.success) {
@@ -259,7 +259,7 @@ export default function AdminAnalytics() {
             <MetricCard
               title="Active Rooms"
               value={analytics.contentStats?.activeRooms || Math.floor((analytics.contentStats?.postsByCategory?.housing || 0) * 0.75)}
-              change={analytics.contentStats?.roomsGrowth || 0}
+              // change={analytics.contentStats?.roomsGrowth || 0}
               icon={Search}
               color="bg-gradient-to-r from-indigo-500 to-indigo-600"
               subtitle="Available now"

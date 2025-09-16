@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
-import { Search, RefreshCcw, Eye, Trash2, Tag, CheckCircle } from 'lucide-react';
+import { Search, RefreshCcw, Eye, Trash2, Tag, CheckCircle, AlertTriangle } from 'lucide-react';
 import AdminGuard from "../../_components/AdminGuard";
 import AdminLayout from "../../_components/AdminLayout";
+import { fetchMarketplaceItems, deleteItem } from "../../../lib/api/marketplace";
 
 /*
   Marketplace Moderation Page
@@ -30,13 +31,66 @@ export default function MarketplaceModerationPage(){
   const [status, setStatus] = useState('all');
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [detailItem, setDetailItem] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const loadListings = async () => {
     setRefreshing(true);
-    try { setItems(mockListings); } catch(e){ setItems(mockListings); }
-    finally { setRefreshing(false); }
+    setError(null);
+    try {
+      const result = await fetchMarketplaceItems();
+      if (result.data && Array.isArray(result.data)) {
+        setItems(result.data.map(item => ({
+          id: item.id,
+          title: item.title,
+          price: item.price,
+          category: item.category,
+          condition: item.condition,
+          location: item.location,
+          available_from: item.available_from,
+          description: item.description,
+          contact_info: item.contact_info,
+          image_url: item.image_url,
+          photos: item.photos,
+          users: item.users,
+          user_id: item.user_id,
+          status: item.status || 'active',
+          createdAt: item.created_at,
+          updatedAt: item.updated_at || item.created_at,
+          // Legacy fields for backward compatibility
+          seller: item.contact_info?.email || item.users?.email || 'Unknown User',
+          sellerName: item.users?.name || 'Anonymous',
+          images: item.photos ? JSON.parse(item.photos) : []
+        })));
+      } else {
+        // Fallback to mock data if API fails
+        setItems(mockListings);
+      }
+    } catch (error) {
+      console.error('Failed to load marketplace items:', error);
+      setError(error.message);
+      // Fallback to mock data on error
+      setItems(mockListings);
+    } finally {
+      setRefreshing(false);
+      setLoading(false);
+    }
   };
   useEffect(()=>{ loadListings(); },[]);
+
+  const handleDelete = async (itemId) => {
+    try {
+      setRefreshing(true);
+      await deleteItem(itemId);
+      await loadListings(); // Refresh the list
+      setConfirmDelete(null);
+    } catch (error) {
+      console.error('Failed to delete item:', error);
+      setError(`Failed to delete item: ${error.message}`);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const filtered = useMemo(()=> items.filter(i => {
     const q = search.trim().toLowerCase();
@@ -50,10 +104,7 @@ export default function MarketplaceModerationPage(){
     setItems(prev => prev.map(i => i.id === id ? { ...i, status: 'sold', updatedAt: new Date().toISOString() } : i));
   };
 
-  const deleteItem = (id) => {
-    setItems(prev => prev.map(i => i.id === id ? { ...i, status: 'removed', updatedAt: new Date().toISOString() } : i));
-    setConfirmDelete(null);
-  };
+  // deleteItem function removed - now using handleDelete with API call
 
   const panelBg = 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700';
 
@@ -97,6 +148,24 @@ export default function MarketplaceModerationPage(){
             </div>
           </div>
 
+          {/* Error Display */}
+          {error && (
+            <div className="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" />
+                {error}
+              </div>
+            </div>
+          )}
+
+          {/* Loading State */}
+          {loading && (
+            <div className="text-center py-8">
+              <RefreshCcw className="w-6 h-6 animate-spin mx-auto mb-2 text-gray-400" />
+              <p className="text-gray-500">Loading marketplace items...</p>
+            </div>
+          )}
+
           {/* List */}
           <div className={`rounded-xl border ${panelBg}`}>
             <div className="overflow-x-auto">
@@ -120,7 +189,12 @@ export default function MarketplaceModerationPage(){
                         <p className="text-xs mt-1 text-gray-600 dark:text-gray-400">Created {new Date(i.createdAt).toLocaleDateString()}</p>
                       </td>
                       <td className="px-4 py-3 hidden md:table-cell text-xs text-gray-700 dark:text-gray-200">{i.category}</td>
-                      <td className="px-4 py-3 hidden lg:table-cell text-xs text-gray-700 dark:text-gray-200">{i.seller}</td>
+                      <td className="px-4 py-3 hidden lg:table-cell text-xs text-gray-700 dark:text-gray-200">
+                        <div>
+                          <p className="font-medium">{i.sellerName}</p>
+                          <p className="text-gray-500">{i.seller}</p>
+                        </div>
+                      </td>
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-600/30 dark:text-emerald-200">₹{i.price}</span>
                       </td>
@@ -152,7 +226,13 @@ export default function MarketplaceModerationPage(){
                 <p className="text-sm text-gray-600 dark:text-gray-400">This will mark the listing as removed. Continue?</p>
                 <div className="mt-6 flex items-center justify-end gap-3">
                   <button onClick={()=>setConfirmDelete(null)} className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Cancel</button>
-                  <button onClick={()=>deleteItem(confirmDelete)} className="px-4 py-2 rounded-lg text-sm font-semibold bg-red-600 text-white hover:bg-red-700">Remove</button>
+                  <button 
+                    onClick={() => handleDelete(confirmDelete)} 
+                    disabled={refreshing}
+                    className="px-4 py-2 rounded-lg text-sm font-semibold bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+                  >
+                    {refreshing ? 'Removing...' : 'Remove'}
+                  </button>
                 </div>
               </div>
             </div>
@@ -168,7 +248,7 @@ export default function MarketplaceModerationPage(){
                 </div>
                 <div className="mt-4 space-y-4 text-sm">
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Title</p>
+                    <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Item Title</p>
                     <p className="mt-1 font-medium text-gray-900 dark:text-gray-100">{detailItem.title}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -177,21 +257,73 @@ export default function MarketplaceModerationPage(){
                       <p className="mt-1 text-gray-800 dark:text-gray-200">{detailItem.category}</p>
                     </div>
                     <div>
+                      <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Condition</p>
+                      <p className="mt-1 text-gray-800 dark:text-gray-200">{detailItem.condition}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
                       <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Price</p>
                       <p className="mt-1 text-gray-800 dark:text-gray-200">₹{detailItem.price}</p>
                     </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Available From</p>
+                      <p className="mt-1 text-gray-800 dark:text-gray-200">{detailItem.available_from ? new Date(detailItem.available_from).toLocaleDateString() : 'Now'}</p>
+                    </div>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Seller</p>
-                    <p className="mt-1 text-gray-800 dark:text-gray-200">{detailItem.seller}</p>
+                    <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Location</p>
+                    <p className="mt-1 text-gray-800 dark:text-gray-200">📍 {detailItem.location}</p>
                   </div>
                   <div>
                     <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Status</p>
-                    <p className="mt-1 text-gray-800 dark:text-gray-200">{detailItem.status}</p>
+                    <div className="mt-1">
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                        detailItem.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                        detailItem.status === 'sold' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                        'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                      }`}>
+                        {detailItem.status}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Contact Information</p>
+                    <div className="mt-1 space-y-1">
+                      {detailItem.contact_info?.email && (
+                        <p className="text-gray-800 dark:text-gray-200">✉️ {detailItem.contact_info.email}</p>
+                      )}
+                      {detailItem.contact_info?.mobile && (
+                        <p className="text-gray-800 dark:text-gray-200">📱 {detailItem.contact_info.mobile}</p>
+                      )}
+                      {detailItem.contact_info?.instagram && (
+                        <p className="text-gray-800 dark:text-gray-200">📷 {detailItem.contact_info.instagram}</p>
+                      )}
+                      {detailItem.contact_info?.link && (
+                        <p className="text-gray-800 dark:text-gray-200">🔗 <a href={detailItem.contact_info.link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Link</a></p>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Description</p>
                     <p className="mt-1 text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{detailItem.description}</p>
+                  </div>
+                  {detailItem.image_url && (
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Item Image</p>
+                      <div className="mt-2">
+                        <img 
+                          src={detailItem.image_url} 
+                          alt="Item" 
+                          className="w-full max-w-sm rounded-lg border border-gray-200 dark:border-gray-700"
+                          onError={(e) => { e.target.style.display = 'none' }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Posted By</p>
+                    <p className="mt-1 text-gray-800 dark:text-gray-200">{detailItem.users?.name || 'Anonymous'} (ID: {detailItem.user_id})</p>
                   </div>
                   <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                     <p className="text-xs text-gray-500 dark:text-gray-500">Created {new Date(detailItem.createdAt).toLocaleString()}</p>
@@ -199,7 +331,7 @@ export default function MarketplaceModerationPage(){
                   </div>
                   <div className="pt-4 flex justify-end gap-2">
                     {detailItem.status === 'active' && <button onClick={()=>{ markSold(detailItem.id); setDetailItem(x=> x ? { ...x, status: 'sold' } : x); }} className="px-4 py-2 rounded-lg text-sm font-medium bg-green-600 text-white hover:bg-green-700">Mark Sold</button>}
-                    {detailItem.status !== 'removed' && <button onClick={()=>{ deleteItem(detailItem.id); setDetailItem(x=> x ? { ...x, status: 'removed' } : x); }} className="px-4 py-2 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-700">Remove</button>}
+                    {detailItem.status !== 'removed' && <button onClick={()=>{ handleDelete(detailItem.id); setDetailItem(null); }} className="px-4 py-2 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-700">Remove</button>}
                     <button onClick={()=>setDetailItem(null)} className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">Close</button>
                   </div>
                 </div>
