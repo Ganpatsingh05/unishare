@@ -109,7 +109,7 @@ export default function AdminUsers() {
           throw new Error('Backend URL not configured. Please set NEXT_PUBLIC_BACKEND_URL in .env.local file.');
         }
 
-        const { getAdminUsers } = await import("../../lib/api");
+        const { getAdminUsers } = await import("../lib/api");
         const response = await getAdminUsers();
         
         if (response.success) {

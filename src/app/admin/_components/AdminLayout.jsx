@@ -100,10 +100,10 @@ const adminNavItems = [
     description: "Moderate ticket listings"
   },
   {
-    title: "System Logs",
-    href: "/admin/logs",
-    icon: FileText,
-    description: "View system logs"
+    title: "Rooms",
+    href: "/admin/moderation/rooms",
+    icon: Home,
+    description: "Moderate room listings"
   }
 ];
 

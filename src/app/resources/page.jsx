@@ -3,15 +3,16 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useUI } from "../lib/contexts/UniShareContext";
 import Footer from "../_components/Footer";
-import { Search, Link2, ExternalLink, Copy, Check, BookOpen, GraduationCap, Globe, Wrench, FileText, Video, Tag, Plus } from "lucide-react";
+import { Search, Link2, ExternalLink, Copy, Check, BookOpen, GraduationCap, Globe, Wrench, FileText, Video, Tag, Plus, X } from "lucide-react";
+import { getResources, getResourceCategories, submitResourceSuggestion } from "../lib/api/resources";
 
-const CATEGORIES = [
+const DEFAULT_CATEGORIES = [
   { key: 'all', label: 'All' },
   { key: 'academics', label: 'Academics', icon: GraduationCap },
   { key: 'tools', label: 'Tools', icon: Wrench },
   { key: 'campus', label: 'Campus', icon: Globe },
   { key: 'docs', label: 'Docs', icon: FileText },
-  { key: 'videos', label: 'Videos', icon: Video },
+  { key: 'media', label: 'Media', icon: Video },
 ];
 
 export default function ResourcesPage() {
@@ -21,38 +22,100 @@ export default function ResourcesPage() {
   const [category, setCategory] = useState('all');
   const [copiedId, setCopiedId] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  
+  // API state
+  const [resources, setResources] = useState([]);
+  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const labelClr = darkMode ? "text-gray-300" : "text-gray-700";
   const inputBg = darkMode ? "bg-gray-900 border-gray-800 text-gray-100 placeholder-gray-500" : "bg-white border-gray-200 text-gray-900 placeholder-gray-500";
   const titleClr = darkMode ? "text-white" : "text-gray-900";
 
-  const FALLBACK = useMemo(() => ([
-    { id: 1, title: 'Academic Calendar', desc: 'Official academic schedule and holidays', category: 'academics', type: 'doc', url: 'https://university.edu/academic-calendar.pdf', tags: ['calendar','dates'] },
-    { id: 2, title: 'CS101 Syllabus', desc: 'Course outline and grading policy', category: 'docs', type: 'pdf', url: '#', tags: ['cs','syllabus'] },
-    { id: 3, title: 'Library Portal', desc: 'Search books, journals, and e-resources', category: 'campus', type: 'link', url: 'https://library.university.edu', tags: ['library','books'] },
-    { id: 4, title: 'Discounted Software', desc: 'Student access to dev tools', category: 'tools', type: 'link', url: 'https://education.github.com/pack', tags: ['software','dev'] },
-    { id: 5, title: 'Exam Prep Playlist', desc: 'Video lectures and tips', category: 'videos', type: 'video', url: 'https://youtube.com/playlist?list=123', tags: ['exam','prep'] },
-  ]), []);
-  const [resources, setResources] = useState(FALLBACK);
-
+  // Load resources and categories from API
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem('resourcesDirectory');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length) {
-          setResources(parsed);
-        }
-      }
-    } catch {}
+    loadResources();
+    loadCategories();
   }, []);
+
+  const loadResources = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await getResources(category !== 'all' ? category : null);
+      if (result.success) {
+        setResources(result.resources);
+      } else {
+        throw new Error(result.message || 'Failed to load resources');
+      }
+    } catch (error) {
+      console.error('Failed to load resources:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadCategories = async () => {
+    try {
+      const result = await getResourceCategories();
+      if (result.success && result.categories.length > 0) {
+        // Add 'All' option to the beginning
+        const categoriesWithAll = [
+          { key: 'all', label: 'All' },
+          ...result.categories.map(cat => ({
+            ...cat,
+            icon: getCategoryIcon(cat.key)
+          }))
+        ];
+        setCategories(categoriesWithAll);
+      }
+    } catch (error) {
+      console.error('Failed to load categories:', error);
+      // Keep default categories if API fails
+    }
+  };
+
+  // Helper function to get appropriate icon for category
+  const getCategoryIcon = (categoryKey) => {
+    const iconMap = {
+      academics: GraduationCap,
+      tools: Wrench,
+      campus: Globe,
+      docs: FileText,
+      media: Video
+    };
+    return iconMap[categoryKey] || FileText;
+  };
+
+  // Helper function to get appropriate icon for resource type
+  const getTypeIcon = (type) => {
+    switch(type) {
+      case 'pdf': return <FileText className={darkMode ? 'text-red-400' : 'text-red-500'} size={18}/>;
+      case 'image': return <Video className={darkMode ? 'text-blue-400' : 'text-blue-500'} size={18}/>;
+      case 'doc': return <FileText className={darkMode ? 'text-blue-400' : 'text-blue-500'} size={18}/>;
+      case 'link': return <ExternalLink className={darkMode ? 'text-green-400' : 'text-green-500'} size={18}/>;
+      default: return <BookOpen className={darkMode ? 'text-gray-400' : 'text-gray-500'} size={18}/>;
+    }
+  };
+
+  // Reload resources when category changes
+  useEffect(() => {
+    if (category !== 'all') {
+      setLoading(true); // Show loading when changing categories
+    }
+    loadResources();
+  }, [category]);
 
   const filtered = useMemo(() => resources.filter(r => {
     const q = query.trim().toLowerCase();
-    const inText = !q || r.title.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q) || r.tags?.some(t => t.toLowerCase().includes(q));
-    const inCat = category === 'all' || r.category === category;
-    return inText && inCat;
-  }), [resources, query, category]);
+    if (!q) return true; // No text filter, show all resources (category filtering handled by API)
+    
+    return r.title.toLowerCase().includes(q) || 
+           r.desc.toLowerCase().includes(q) || 
+           r.tags?.some(t => t.toLowerCase().includes(q));
+  }), [resources, query]);
 
   const handleCopy = async (id, url) => {
     try {
@@ -70,6 +133,9 @@ export default function ResourcesPage() {
   const [catNew, setCatNew] = useState("academics");
   const [typeNew, setTypeNew] = useState("link");
   const [url, setUrl] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [submitSuccess, setSubmitSuccess] = useState(null);
 
   return (
     <div className={darkMode ? "min-h-dvh bg-black" : "min-h-dvh bg-white"}>
@@ -90,7 +156,7 @@ export default function ResourcesPage() {
                   <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search resources, tags, or descriptions" className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`} />
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {CATEGORIES.map(({ key, label, icon: Icon }) => (
+                  {categories.map(({ key, label, icon: Icon }) => (
                     <button key={key} type="button" onClick={() => setCategory(key)} className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs ${category===key ? 'bg-blue-600 text-white border-blue-600' : (darkMode ? 'border-gray-800 text-gray-300' : 'border-gray-200 text-gray-700')}`}>
                       {Icon && <Icon className="w-4 h-4" />} {label}
                     </button>
@@ -98,15 +164,28 @@ export default function ResourcesPage() {
                 </div>
               </div>
 
+              {error && (
+                <div className="mb-4 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+                  Error loading resources: {error}
+                </div>
+              )}
+
               <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {filtered.length === 0 && (
+                {loading && (
+                  <div className={`col-span-full text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Loading resources...
+                  </div>
+                )}
+                
+                {!loading && filtered.length === 0 && (
                   <div className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>No resources found.</div>
                 )}
-                {filtered.map((r) => (
+                
+                {!loading && filtered.map((r) => (
                   <div key={r.id} className={`rounded-xl border p-4 ${darkMode ? 'bg-gray-950 border-gray-900' : 'bg-white border-gray-200'}`}>
                     <div className="flex items-start gap-3">
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
-                        <BookOpen className={darkMode ? 'text-gray-400' : 'text-gray-500'} size={18} />
+                        {getTypeIcon(r.type)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className={`text-sm font-medium ${titleClr}`}>{r.title}</div>
@@ -162,26 +241,67 @@ export default function ResourcesPage() {
               <div className="space-y-1.5">
                 <label className={`text-[11px] uppercase tracking-wide font-medium ${labelClr}`}>Category</label>
                 <select value={catNew} onChange={e=> setCatNew(e.target.value)} className={`w-full px-3 py-2 rounded-lg border ${inputBg}`}>
-                  {CATEGORIES.filter(c=> c.key!=='all').map(c=> <option key={c.key} value={c.key}>{c.label}</option>)}
+                  {categories.filter(c=> c.key!=='all').map(c=> <option key={c.key} value={c.key}>{c.label}</option>)}
                 </select>
               </div>
               <div className="space-y-1.5">
                 <label className={`text-[11px] uppercase tracking-wide font-medium ${labelClr}`}>Type</label>
                 <select value={typeNew} onChange={e=> setTypeNew(e.target.value)} className={`w-full px-3 py-2 rounded-lg border ${inputBg}`}>
-                  <option value="link">Link</option>
-                  <option value="pdf">PDF</option>
-                  <option value="video">Video</option>
-                  <option value="other">Other</option>
+                  <option value="link">Drive Link</option>
                 </select>
               </div>
               <div className="space-y-1.5">
                 <label className={`text-[11px] uppercase tracking-wide font-medium ${labelClr}`}>{typeNew==='link' ? 'URL' : 'Reference / URL'}</label>
                 <input value={url} onChange={e=> setUrl(e.target.value)} className={`w-full px-3 py-2 rounded-lg border ${inputBg}`} placeholder={typeNew==='link'? 'https://...' : 'Reference link'} />
               </div>
+              {submitError && (
+                <div className="rounded-lg border border-red-900 bg-red-950/40 p-3 text-xs text-red-300">
+                  {submitError}
+                </div>
+              )}
+              {submitSuccess && (
+                <div className="rounded-lg border border-emerald-900 bg-emerald-950/40 p-3 text-xs text-emerald-300">
+                  {submitSuccess}
+                </div>
+              )}
             </div>
             <div className="p-4 border-t border-gray-900 flex items-center justify-between gap-3">
               <button onClick={()=> setDrawerOpen(false)} className="px-4 py-2 rounded-lg border border-gray-800 text-gray-300 hover:bg-gray-900 text-xs">Cancel</button>
-              <button onClick={()=> { /* submission placeholder */ setDrawerOpen(false); setTitle(''); setDesc(''); setUrl(''); setCatNew('academics'); setTypeNew('link'); }} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs"><Plus className="w-4 h-4"/> Submit</button>
+              <button
+                disabled={submitting}
+                onClick={async ()=> {
+                  setSubmitError(null); setSubmitSuccess(null);
+                  // Basic client-side validation
+                  const errors = [];
+                  if (!title.trim()) errors.push('Title is required');
+                  if (!url.trim()) errors.push('URL is required');
+                  if (!catNew) errors.push('Category is required');
+                  if (errors.length) { setSubmitError(errors.join(', ')); return; }
+
+                  try {
+                    setSubmitting(true);
+                    const res = await submitResourceSuggestion({ title: title.trim(), desc: desc.trim(), category: catNew, type: typeNew, url: url.trim() });
+                    if (res.success) {
+                      setSubmitSuccess(res.message || 'Suggestion submitted successfully');
+                      // Reset fields after short delay
+                      setTimeout(() => {
+                        setDrawerOpen(false);
+                        setTitle(''); setDesc(''); setUrl(''); setCatNew('academics'); setTypeNew('link');
+                        setSubmitSuccess(null);
+                      }, 800);
+                    } else {
+                      setSubmitError((res.errors && res.errors[0]) || 'Failed to submit suggestion');
+                    }
+                  } catch (e) {
+                    setSubmitError(e.message || 'Failed to submit suggestion');
+                  } finally {
+                    setSubmitting(false);
+                  }
+                }}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg ${submitting ? 'bg-emerald-700/60' : 'bg-emerald-600 hover:bg-emerald-700'} text-white text-xs disabled:opacity-60`}
+              >
+                <Plus className="w-4 h-4"/> {submitting ? 'Submitting...' : 'Submit'}
+              </button>
             </div>
           </div>
         </div>

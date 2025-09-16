@@ -2,7 +2,7 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
-import AnnouncementBar from "./AnnouncementBar";
+import AnnouncementBar from "./NoticeBar";
 import ClientHeader from "./ClientHeader";
 
 /**

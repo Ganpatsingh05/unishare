@@ -117,7 +117,7 @@ export default function AdminModeration() {
     const fetchReports = async () => {
       setLoading(true);
       try {
-        const { getAdminReports } = await import("../../lib/api");
+        const { getAdminReports } = await import("../lib/api");
         const response = await getAdminReports({
           status: statusFilter !== 'all' ? statusFilter : undefined,
           category: categoryFilter !== 'all' ? categoryFilter : undefined,
@@ -210,7 +210,7 @@ export default function AdminModeration() {
 
   const handleResolveReport = async (reportId, action) => {
     try {
-      const { updateReportStatus } = await import("../../lib/api");
+      const { updateReportStatus } = await import("../lib/api");
       await updateReportStatus(reportId, "resolved", action, `Report resolved with action: ${action}`);
       
       // Update local state
@@ -227,7 +227,7 @@ export default function AdminModeration() {
 
   const handleDismissReport = async (reportId) => {
     try {
-      const { updateReportStatus } = await import("../../lib/api");
+      const { updateReportStatus } = await import("../lib/api");
       await updateReportStatus(reportId, "dismissed", "no_action", "Report dismissed - no action required");
       
       // Update local state

@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Search, RefreshCcw, Eye, CheckCircle, XCircle, Trash2, Flag, Clock, AlertTriangle, Filter } from 'lucide-react';
 import AdminGuard from "../../_components/AdminGuard";
 import AdminLayout from "../../_components/AdminLayout";
+import { fetchLostFoundItems, deleteLostFoundItem } from "../../../lib/api/lostFound";
 
 /*
   Lost & Found Moderation Page
@@ -26,20 +27,71 @@ export default function LostFoundModerationPage() {
   const [modeFilter, setModeFilter] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const loadItems = async () => {
     setRefreshing(true);
+    setError(null);
     try {
-      // Attempt future API fetch here
-      setItems(mockLostFound);
-    } catch (e) {
+      const result = await fetchLostFoundItems();
+      if (result.success && result.data) {
+        setItems(result.data.map(item => ({
+          id: item.id,
+          mode: item.mode,
+          item_name: item.item_name,
+          description: item.description,
+          where_last_seen: item.where_last_seen,
+          where_found: item.where_found,
+          date_lost: item.date_lost,
+          date_found: item.date_found,
+          time_lost: item.time_lost,
+          time_found: item.time_found,
+          contact_info: item.contact_info,
+          image_urls: item.image_urls || [],
+          status: item.status || 'open',
+          users: item.users,
+          user_id: item.user_id,
+          createdAt: item.created_at,
+          updatedAt: item.updated_at || item.created_at,
+          // Legacy fields for backward compatibility
+          itemName: item.item_name,
+          reporter: item.contact_info?.email || item.users?.email || 'Unknown User',
+          reporterName: item.users?.name || 'Anonymous',
+          location: item.where_last_seen || item.where_found,
+          contactInfo: item.contact_info,
+          images: item.image_urls || []
+        })));
+      } else {
+        // Fallback to mock data if API fails
+        setItems(mockLostFound);
+      }
+    } catch (error) {
+      console.error('Failed to load lost/found items:', error);
+      setError(error.message);
+      // Fallback to mock data on error
       setItems(mockLostFound);
     } finally {
       setRefreshing(false);
+      setLoading(false);
     }
   };
 
   useEffect(() => { loadItems(); }, []);
+
+  const handleDelete = async (itemId) => {
+    try {
+      setRefreshing(true);
+      await deleteLostFoundItem(itemId);
+      await loadItems(); // Refresh the list
+      setConfirmDelete(null);
+    } catch (error) {
+      console.error('Failed to delete item:', error);
+      setError(`Failed to delete item: ${error.message}`);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const filtered = useMemo(() => items.filter(i => {
     const q = search.trim().toLowerCase();
@@ -53,10 +105,7 @@ export default function LostFoundModerationPage() {
     setItems(prev => prev.map(i => i.id === id ? { ...i, status, updatedAt: new Date().toISOString() } : i));
   };
 
-  const deleteItem = (id) => {
-    setItems(prev => prev.filter(i => i.id !== id));
-    setConfirmDelete(null);
-  };
+  // deleteItem function removed - now using handleDelete with API call
 
   const panelBg = 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700';
 
@@ -96,37 +145,84 @@ export default function LostFoundModerationPage() {
             </div>
           </div>
 
+          {/* Error Display */}
+          {error && (
+            <div className="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" />
+                {error}
+              </div>
+            </div>
+          )}
+
+          {/* Loading State */}
+          {loading && (
+            <div className="text-center py-8">
+              <RefreshCcw className="w-6 h-6 animate-spin mx-auto mb-2 text-gray-400" />
+              <p className="text-gray-500">Loading lost & found items...</p>
+            </div>
+          )}
+
           {/* List */}
           <div className={`rounded-xl border ${panelBg}`}>
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
                 <thead className="bg-gray-50 dark:bg-gray-700/60">
                   <tr>
-                    <th className="px-4 py-3 text-left font-semibold">Item</th>
-                    <th className="px-4 py-3 text-left font-semibold hidden md:table-cell">Type</th>
-                    <th className="px-4 py-3 text-left font-semibold hidden lg:table-cell">Reporter</th>
-                    <th className="px-4 py-3 text-left font-semibold hidden md:table-cell">Created</th>
-                    <th className="px-4 py-3 text-left font-semibold hidden md:table-cell">Updated</th>
-                    <th className="px-4 py-3 text-left font-semibold">Status</th>
-                    <th className="px-4 py-3 text-right font-semibold">Actions</th>
+                    <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Item Details</th>
+                    <th className="px-4 py-3 text-left font-semibold hidden md:table-cell text-gray-700 dark:text-gray-200">Location & Date</th>
+                    <th className="px-4 py-3 text-left font-semibold hidden lg:table-cell text-gray-700 dark:text-gray-200">Reporter</th>
+                    <th className="px-4 py-3 text-left font-semibold hidden md:table-cell text-gray-700 dark:text-gray-200">Contact</th>
+                    <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-200">Status</th>
+                    <th className="px-4 py-3 text-right font-semibold text-gray-700 dark:text-gray-200">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {filtered.length === 0 && (
-                    <tr><td colSpan={7} className="px-4 py-10 text-center text-gray-500">No lost & found items.</td></tr>
+                    <tr><td colSpan={6} className="px-4 py-10 text-center text-gray-500">No lost & found items.</td></tr>
                   )}
                   {filtered.map(i => (
                     <tr key={i.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                      <td className="px-4 py-3 w-[30%]">
-                        <p className="font-medium text-gray-900 dark:text-gray-100">{i.itemName}</p>
-                        <p className="text-xs mt-1 line-clamp-2 text-gray-600 dark:text-gray-400">{i.description}</p>
+                      <td className="px-4 py-3 max-w-[280px]">
+                        <div>
+                          <p className="font-medium text-gray-900 dark:text-gray-100">{i.item_name}</p>
+                          <p className="text-xs mt-1 line-clamp-2 text-gray-600 dark:text-gray-400">{i.description}</p>
+                          <div className="mt-1">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${i.mode === 'lost' ? 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-200' : 'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200'}`}>
+                              {i.mode}
+                            </span>
+                          </div>
+                        </div>
                       </td>
-                      <td className="px-4 py-3 hidden md:table-cell">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${i.mode === 'lost' ? 'bg-red-500/15 text-red-600 dark:bg-red-500/20 dark:text-red-300' : 'bg-green-500/15 text-green-600 dark:bg-green-500/20 dark:text-green-300'}`}>{i.mode}</span>
+                      <td className="px-4 py-3 hidden md:table-cell text-xs text-gray-700 dark:text-gray-200">
+                        <div>
+                          {i.mode === 'lost' ? (
+                            <>
+                              {i.where_last_seen && <p className="font-medium truncate max-w-[120px]" title={i.where_last_seen}>📍 {i.where_last_seen}</p>}
+                              {i.date_lost && <p className="text-gray-600 dark:text-gray-400">Lost: {new Date(i.date_lost).toLocaleDateString()}</p>}
+                              {i.time_lost && <p className="text-gray-500 text-xs">⏰ {i.time_lost}</p>}
+                            </>
+                          ) : (
+                            <>
+                              {i.where_found && <p className="font-medium truncate max-w-[120px]" title={i.where_found}>📍 {i.where_found}</p>}
+                              {i.date_found && <p className="text-gray-600 dark:text-gray-400">Found: {new Date(i.date_found).toLocaleDateString()}</p>}
+                              {i.time_found && <p className="text-gray-500 text-xs">⏰ {i.time_found}</p>}
+                            </>
+                          )}
+                        </div>
                       </td>
-                      <td className="px-4 py-3 hidden lg:table-cell text-xs text-gray-700 dark:text-gray-300">{i.reporter}</td>
-                      <td className="px-4 py-3 hidden md:table-cell text-xs">{new Date(i.createdAt).toLocaleDateString()}</td>
-                      <td className="px-4 py-3 hidden md:table-cell text-xs">{new Date(i.updatedAt).toLocaleDateString()}</td>
+                      <td className="px-4 py-3 hidden lg:table-cell text-xs text-gray-700 dark:text-gray-300">
+                        <div>
+                          <p className="font-medium">{i.users?.name || 'Anonymous'}</p>
+                          <p className="text-gray-500">ID: {i.user_id}</p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 hidden md:table-cell text-xs text-gray-700 dark:text-gray-200">
+                        <div>
+                          {i.contact_info?.phone && <p>📞 {i.contact_info.phone}</p>}
+                          {i.contact_info?.email && <p>✉️ {i.contact_info.email}</p>}
+                        </div>
+                      </td>
                       <td className="px-4 py-3">
                         <button onClick={()=>updateStatus(i.id, i.status === 'open' ? 'resolved' : 'open')} className={`px-2 py-1 rounded-md text-xs font-medium ${i.status === 'open' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300' : 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'}`}>{i.status === 'open' ? 'Open' : 'Resolved'}</button>
                       </td>
@@ -152,7 +248,13 @@ export default function LostFoundModerationPage() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">Are you sure you want to delete this lost & found entry? This action cannot be undone.</p>
                 <div className="mt-6 flex items-center justify-end gap-3">
                   <button onClick={()=>setConfirmDelete(null)} className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Cancel</button>
-                  <button onClick={()=>deleteItem(confirmDelete)} className="px-4 py-2 rounded-lg text-sm font-semibold bg-red-600 text-white hover:bg-red-700">Delete</button>
+                  <button 
+                    onClick={() => handleDelete(confirmDelete)} 
+                    disabled={refreshing}
+                    className="px-4 py-2 rounded-lg text-sm font-semibold bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+                  >
+                    {refreshing ? 'Deleting...' : 'Delete'}
+                  </button>
                 </div>
               </div>
             </div>
