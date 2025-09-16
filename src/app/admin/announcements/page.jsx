@@ -123,7 +123,7 @@ export default function AdminAnnouncementsPage() {
     if (!form.title.trim() || !form.body.trim()) return;
     setSubmitting(true);
     try {
-      const { createSystemAnnouncement, updateSystemAnnouncement } = await import('../lib/api');
+      const { createSystemAnnouncement, updateSystemAnnouncement } = await import('../../lib/api');
 
       const payload = {
         title: form.title.trim(),
@@ -153,7 +153,7 @@ export default function AdminAnnouncementsPage() {
 
   const toggleActive = async (ann) => {
     try {
-      const { updateSystemAnnouncement } = await import('../lib/api');
+      const { updateSystemAnnouncement } = await import('../../lib/api');
       const newActive = !ann.active;
       await updateSystemAnnouncement(ann.id, { active: newActive });
       setAnnouncements(prev => prev.map(a => a.id === ann.id ? { ...a, active: newActive, updatedAt: new Date().toISOString() } : a));
@@ -165,7 +165,7 @@ export default function AdminAnnouncementsPage() {
 
   const performDelete = async (id) => {
     try {
-      const { deleteSystemAnnouncement } = await import('../lib/api');
+      const { deleteSystemAnnouncement } = await import('../../lib/api');
       await deleteSystemAnnouncement(id);
       setAnnouncements(prev => prev.filter(a => a.id !== id));
       setConfirmDelete(null);
