@@ -16,7 +16,7 @@ export default function AdminDebugTool() {
       
       // Test 2: Test basic API connectivity
       try {
-        const { fetchCurrentUser } = await import("../lib/api");
+        const { fetchCurrentUser } = await import("../../lib/api");
         const currentUser = await fetchCurrentUser();
         results.currentUser = currentUser ? 'User found' : 'No user authenticated';
         results.userEmail = currentUser?.email || 'No email';
@@ -26,7 +26,7 @@ export default function AdminDebugTool() {
 
       // Test 3: Test admin users endpoint
       try {
-        const { getAdminUsers } = await import("../lib/api");
+        const { getAdminUsers } = await import("../../lib/api");
         const adminUsersResponse = await getAdminUsers();
         results.adminUsersSuccess = adminUsersResponse.success;
         results.adminUsersCount = adminUsersResponse.users?.length || 0;

@@ -83,7 +83,7 @@ export default function AdminAnalytics() {
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
-      const { getAdminAnalytics } = await import("../lib/api");
+      const { getAdminAnalytics } = await import("../../lib/api");
       const response = await getAdminAnalytics();
       
       if (response.success) {
