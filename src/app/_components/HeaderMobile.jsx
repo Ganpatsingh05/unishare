@@ -286,103 +286,106 @@ export default function HeaderMobile() {
               </li>
 
               {/* Menu Items */}
-              <li>
-                <button
-                  onClick={() => { setNotifInlineOpen(!notifInlineOpen); setSettingsOpen(false); }}
-                  className={`w-full flex items-center justify-between px-6 py-3 text-left transition-colors duration-200 ${
-                    darkMode ? 'text-gray-200 hover:bg-gray-800/50' : 'text-gray-900 hover:bg-gray-100/50'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Bell className="w-5 h-5" />
-                    <span className="font-medium">Notifications</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {hasUnread && (
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        darkMode ? 'bg-red-500/20 text-red-300' : 'bg-red-100 text-red-700'
-                      }`}>
-                        {unreadCount}
-                      </span>
-                    )}
-                    <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${notifInlineOpen ? 'rotate-90' : ''}`} />
-                  </div>
-                </button>
-                
-                {notifInlineOpen && (
-                  <div className={`mx-4 mb-3 rounded-lg border ${darkMode ? 'border-gray-700 bg-gray-800/30' : 'border-gray-200 bg-gray-50/30'} overflow-hidden`}>
-                    <div className="px-4 pt-3 pb-2 flex items-center justify-between">
-                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                        darkMode ? 'bg-yellow-400/20 text-yellow-300' : 'bg-blue-100 text-blue-700'
-                      }`}>
-                        {unreadCount} unread
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => setNotifInlineFilter(f => f === 'All' ? 'Unread' : 'All')}
-                          className={`px-2 py-1 rounded-md text-xs font-medium border transition-colors ${
-                            darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'
-                          }`}
-                        >
-                          {notifInlineFilter === 'All' ? 'Unread' : 'All'}
-                        </button>
-                        <button
-                          onClick={markAllNotificationsRead}
-                          className={`px-2 py-1 rounded-md text-xs font-medium border transition-colors ${
-                            darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'
-                          }`}
-                        >
-                          Mark All
-                        </button>
+              {/* Notifications - Only show when authenticated */}
+              {isAuthenticated && (
+                <li>
+                  <button
+                    onClick={() => { setNotifInlineOpen(!notifInlineOpen); setSettingsOpen(false); }}
+                    className={`w-full flex items-center justify-between px-6 py-3 text-left transition-colors duration-200 ${
+                      darkMode ? 'text-gray-200 hover:bg-gray-800/50' : 'text-gray-900 hover:bg-gray-100/50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Bell className="w-5 h-5" />
+                      <span className="font-medium">Notifications</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {hasUnread && (
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                          darkMode ? 'bg-red-500/20 text-red-300' : 'bg-red-100 text-red-700'
+                        }`}>
+                          {unreadCount}
+                        </span>
+                      )}
+                      <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${notifInlineOpen ? 'rotate-90' : ''}`} />
+                    </div>
+                  </button>
+                  
+                  {notifInlineOpen && (
+                    <div className={`mx-4 mb-3 rounded-lg border ${darkMode ? 'border-gray-700 bg-gray-800/30' : 'border-gray-200 bg-gray-50/30'} overflow-hidden`}>
+                      <div className="px-4 pt-3 pb-2 flex items-center justify-between">
+                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                          darkMode ? 'bg-yellow-400/20 text-yellow-300' : 'bg-blue-100 text-blue-700'
+                        }`}>
+                          {unreadCount} unread
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setNotifInlineFilter(f => f === 'All' ? 'Unread' : 'All')}
+                            className={`px-2 py-1 rounded-md text-xs font-medium border transition-colors ${
+                              darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+                            }`}
+                          >
+                            {notifInlineFilter === 'All' ? 'Unread' : 'All'}
+                          </button>
+                          <button
+                            onClick={markAllNotificationsRead}
+                            className={`px-2 py-1 rounded-md text-xs font-medium border transition-colors ${
+                              darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+                            }`}
+                          >
+                            Mark All
+                          </button>
+                        </div>
+                      </div>
+                      <div className="max-h-48 overflow-y-auto px-2 pb-2">
+                        {(notifInlineFilter === 'Unread' ? notifications.filter(n => !n.read) : notifications).length === 0 ? (
+                          <div className={`text-center text-xs py-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            No notifications
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            {(notifInlineFilter === 'Unread' ? notifications.filter(n => !n.read) : notifications).map((n) => (
+                              <div key={n.id} className={`px-3 py-2 rounded-md border transition-colors ${
+                                darkMode ? 'border-gray-700 hover:bg-gray-700/30' : 'border-gray-200 hover:bg-gray-50'
+                              }`}>
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      {!n.read && (
+                                        <span className={`inline-block w-2 h-2 rounded-full ${
+                                          darkMode ? 'bg-yellow-400' : 'bg-blue-600'
+                                        }`} />
+                                      )}
+                                      <p className={`text-sm font-medium truncate ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                        {n.title}
+                                      </p>
+                                    </div>
+                                    <p className={`text-xs mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                      {n.body}
+                                    </p>
+                                    <button
+                                      onClick={() => markNotificationRead(n.id)}
+                                      className={`text-xs underline transition-colors ${
+                                        darkMode ? 'text-gray-400 hover:text-yellow-300' : 'text-gray-600 hover:text-blue-700'
+                                      }`}
+                                    >
+                                      {n.read ? 'Mark unread' : 'Mark read'}
+                                    </button>
+                                  </div>
+                                  <span className={`text-xs whitespace-nowrap ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                                    {n.time}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <div className="max-h-48 overflow-y-auto px-2 pb-2">
-                      {(notifInlineFilter === 'Unread' ? notifications.filter(n => !n.read) : notifications).length === 0 ? (
-                        <div className={`text-center text-xs py-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                          No notifications
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          {(notifInlineFilter === 'Unread' ? notifications.filter(n => !n.read) : notifications).map((n) => (
-                            <div key={n.id} className={`px-3 py-2 rounded-md border transition-colors ${
-                              darkMode ? 'border-gray-700 hover:bg-gray-700/30' : 'border-gray-200 hover:bg-gray-50'
-                            }`}>
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    {!n.read && (
-                                      <span className={`inline-block w-2 h-2 rounded-full ${
-                                        darkMode ? 'bg-yellow-400' : 'bg-blue-600'
-                                      }`} />
-                                    )}
-                                    <p className={`text-sm font-medium truncate ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                      {n.title}
-                                    </p>
-                                  </div>
-                                  <p className={`text-xs mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                    {n.body}
-                                  </p>
-                                  <button
-                                    onClick={() => markNotificationRead(n.id)}
-                                    className={`text-xs underline transition-colors ${
-                                      darkMode ? 'text-gray-400 hover:text-yellow-300' : 'text-gray-600 hover:text-blue-700'
-                                    }`}
-                                  >
-                                    {n.read ? 'Mark unread' : 'Mark read'}
-                                  </button>
-                                </div>
-                                <span className={`text-xs whitespace-nowrap ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                                  {n.time}
-                                </span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </li>
+                  )}
+                </li>
+              )}
 
               {/* Theme toggle */}
               <li>

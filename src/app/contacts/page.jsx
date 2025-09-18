@@ -47,10 +47,14 @@ export default function ContactsPage() {
         
         const result = await getPublicContacts();
         
+        console.log('Contacts API result:', result); // Debug log
+        
         if (result.success && result.contacts) {
+          console.log('Using contacts from API:', result.contacts); // Debug log
           // Use contacts from API (includes fallback data when backend unavailable)
           setContacts(result.contacts);
         } else {
+          console.log('Using local fallback contacts'); // Debug log
           // Use local fallback data if API completely fails
           setContacts(FALLBACK);
         }

@@ -3,24 +3,22 @@ import { apiCall } from './base.js';
 
 // ============== PUBLIC RESOURCES ==============
 
-// Get all resources (public endpoint with admin override)
-export const getResources = async (category = null, includeInactive = false) => {
+// Get all active resources (public access)
+export const getResources = async (category = null) => {
   try {
     const params = new URLSearchParams();
     if (category && category !== 'all') {
       params.append('category', category);
     }
-    if (includeInactive) {
-      params.append('includeInactive', 'true');
-    }
     
-    const endpoint = `/admin/resources${params.toString() ? `?${params.toString()}` : ''}`;
-    const data = await apiCall(endpoint);
+    const endpoint = `/api/resources${params.toString() ? `?${params.toString()}` : ''}`;
+    const response = await apiCall(endpoint);
     
     return {
       success: true,
-      resources: Array.isArray(data) ? data : [],
-      message: `Found ${Array.isArray(data) ? data.length : 0} resources`
+      data: response.data || [],
+      resources: response.data || [],
+      message: response.message || `Found ${response.data?.length || 0} resources`
     };
   } catch (error) {
     console.warn('Resources endpoint not available:', error.message);
@@ -55,12 +53,13 @@ export const getResources = async (category = null, includeInactive = false) => 
 // Get available categories (public endpoint)
 export const getResourceCategories = async () => {
   try {
-    const data = await apiCall('/admin/resources/categories');
+    const response = await apiCall('/api/resources/categories');
     
     return {
       success: true,
-      categories: Array.isArray(data) ? data : [],
-      message: 'Categories loaded successfully'
+      data: response.data || [],
+      categories: response.data || [],
+      message: response.message || 'Categories loaded successfully'
     };
   } catch (error) {
     console.warn('Categories endpoint not available:', error.message);
@@ -82,7 +81,193 @@ export const getResourceCategories = async () => {
   }
 };
 
+// Get specific resource by ID (public access)
+export const getResource = async (resourceId) => {
+  try {
+    if (!resourceId) {
+      throw new Error('Resource ID is required');
+    }
+
+    const response = await apiCall(`/api/resources/${resourceId}`);
+    
+    return {
+      success: true,
+      data: response.data,
+      resource: response.data
+    };
+  } catch (error) {
+    console.error('Error fetching resource:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// ============== USER RESOURCE FUNCTIONS ==============
+
+// Get user's own resource suggestions
+export const getMyResources = async () => {
+  try {
+    const response = await apiCall('/api/resources/my', { method: 'GET' });
+    
+    return {
+      success: true,
+      data: response.data || [],
+      resources: response.data || [],
+      message: response.message || `Found ${response.data?.length || 0} resource suggestions`
+    };
+  } catch (error) {
+    console.error('Error fetching my resources:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// Submit resource suggestion (authenticated users)
+export const submitResourceSuggestion = async (resourceData) => {
+  try {
+    const payload = {
+      title: resourceData.title,
+      desc: resourceData.desc || '',
+      category: resourceData.category,
+      type: resourceData.type || 'link',
+      url: resourceData.url,
+      tags: Array.isArray(resourceData.tags) ? resourceData.tags : 
+            (typeof resourceData.tags === 'string' ? resourceData.tags.split(',').map(t=>t.trim()).filter(Boolean) : [])
+    };
+
+    const response = await apiCall('/api/resources/suggest', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+
+    return {
+      success: true,
+      data: response.data,
+      resource: response.data,
+      message: response.message || 'Resource suggestion submitted successfully. It will be reviewed by administrators.'
+    };
+  } catch (error) {
+    console.error('Error submitting resource suggestion:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// Update user's own resource suggestion
+export const updateMyResource = async (resourceId, updateData) => {
+  try {
+    if (!resourceId) {
+      throw new Error('Resource ID is required');
+    }
+
+    const payload = {
+      title: updateData.title,
+      desc: updateData.desc || '',
+      category: updateData.category,
+      type: updateData.type || 'link',
+      url: updateData.url,
+      tags: Array.isArray(updateData.tags) ? updateData.tags : 
+            (typeof updateData.tags === 'string' ? updateData.tags.split(',').map(t=>t.trim()).filter(Boolean) : [])
+    };
+
+    const response = await apiCall(`/api/resources/my/${resourceId}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+
+    return {
+      success: true,
+      data: response.data,
+      resource: response.data,
+      message: response.message || 'Resource suggestion updated successfully'
+    };
+  } catch (error) {
+    console.error('Error updating resource suggestion:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// Delete user's own resource suggestion
+export const deleteMyResource = async (resourceId) => {
+  try {
+    if (!resourceId) {
+      throw new Error('Resource ID is required');
+    }
+
+    const response = await apiCall(`/api/resources/my/${resourceId}`, {
+      method: 'DELETE'
+    });
+
+    return {
+      success: true,
+      data: response.data,
+      message: response.message || 'Resource suggestion deleted successfully'
+    };
+  } catch (error) {
+    console.error('Error deleting resource suggestion:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
 // ============== ADMIN RESOURCES MANAGEMENT ==============
+
+// Get all resources (both active and inactive) for admin use
+export const getAllResources = async (category = null) => {
+  try {
+    const params = new URLSearchParams();
+    params.append('includeInactive', 'true');
+    if (category && category !== 'all') {
+      params.append('category', category);
+    }
+    
+    const response = await apiCall(`/admin/resources?${params.toString()}`);
+    
+    // Handle the response structure - backend returns {success: true, data: [...]}
+    const resourcesArray = response.data || response || [];
+    
+    return {
+      success: true,
+      data: Array.isArray(resourcesArray) ? resourcesArray : [],
+      resources: Array.isArray(resourcesArray) ? resourcesArray : [],
+      message: response.message || `Found ${Array.isArray(resourcesArray) ? resourcesArray.length : 0} resources`
+    };
+  } catch (error) {
+    console.warn('Admin resources endpoint not available, using fallback:', error.message);
+    
+    // Return demo/fallback resources for development when backend is not available
+    const fallbackResources = [
+      { id: 1, title: 'Academic Calendar', desc: 'Official academic schedule and holidays', category: 'academics', type: 'link', url: 'https://drive.google.com/file/d/example1', tags: ['calendar','dates'], active: true, created_at: '2024-01-01T00:00:00Z' },
+      { id: 2, title: 'CS101 Syllabus', desc: 'Course outline and grading policy', category: 'docs', type: 'link', url: 'https://drive.google.com/file/d/example2', tags: ['cs','syllabus'], active: true, created_at: '2024-01-02T00:00:00Z' },
+      { id: 3, title: 'Library Resources', desc: 'Digital library access and study materials', category: 'campus', type: 'link', url: 'https://drive.google.com/folder/d/example3', tags: ['library','books'], active: false, created_at: '2024-01-03T00:00:00Z' },
+      { id: 4, title: 'Student Software Pack', desc: 'Essential software and tools for students', category: 'tools', type: 'link', url: 'https://drive.google.com/folder/d/example4', tags: ['software','tools'], active: true, created_at: '2024-01-04T00:00:00Z' },
+      { id: 5, title: 'Campus Resources', desc: 'Maps, guides and campus information', category: 'media', type: 'link', url: 'https://drive.google.com/folder/d/example5', tags: ['campus','guides'], active: false, created_at: '2024-01-05T00:00:00Z' },
+      { id: 6, title: 'User Suggested Resource', desc: 'A resource suggested by a user awaiting approval', category: 'docs', type: 'link', url: 'https://example.com/user-resource', tags: ['user-suggested'], active: false, created_at: '2024-01-06T00:00:00Z' },
+    ];
+    
+    // Filter by category if specified
+    const filteredResources = category && category !== 'all' 
+      ? fallbackResources.filter(r => r.category === category)
+      : fallbackResources;
+    
+    return { 
+      success: true, 
+      resources: filteredResources,
+      message: 'Using demo resources (backend not available)' 
+    };
+  }
+};
 
 // Create a new resource (admin only)
 export const createResource = async (resourceData) => {
@@ -287,40 +472,5 @@ export const getRequestedResources = async () => {
       requestedResources: [],
       message: error.message || 'Failed to load inactive resources'
     };
-  }
-};
-
-// ============== PUBLIC SUGGESTIONS ==============
-
-// Submit a resource suggestion (public users)
-export const submitResourceSuggestion = async ({ title, desc, category, type = 'link', url, tags = [] }) => {
-  try {
-    const payload = {
-      title,
-      desc: desc || '',
-      category,
-      type: type || 'link',
-      url,
-      tags: Array.isArray(tags) ? tags : (typeof tags === 'string' ? tags.split(',').map(t=>t.trim()).filter(Boolean) : [])
-    };
-    const data = await apiCall('/admin/resources/suggestions', {
-      method: 'POST',
-      body: JSON.stringify(payload)
-    });
-
-    return {
-      success: true,
-      message: data.message || 'Suggestion submitted successfully',
-      suggestion: data.suggestion || null
-    };
-  } catch (error) {
-    // Try to extract validation errors when available
-    if (error.response && error.response.status === 400) {
-      try {
-        const err = await error.response.json();
-        return { success: false, errors: err.errors || [err.error || 'Validation failed'] };
-      } catch {}
-    }
-    return { success: false, errors: [error.message || 'Failed to submit suggestion'] };
   }
 };

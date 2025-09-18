@@ -6,11 +6,16 @@ import { apiCall } from './base.js';
 // Get all active contacts for public display
 export const getPublicContacts = async () => {
   try {
-    const data = await apiCall('/admin/contacts/public');
+    const response = await apiCall('/api/contacts');
+    console.log('Contacts API response:', response); // Debug log
+    
+    // Handle different response structures
+    const contacts = response.data || response.contacts || [];
+    
     return {
       success: true,
-      contacts: data.contacts || [],
-      message: `Found ${data.contacts?.length || 0} contacts`
+      contacts: contacts,
+      message: response.message || `Found ${contacts.length} contacts`
     };
   } catch (error) {
     console.warn('Public contacts endpoint not available:', error.message);
@@ -38,14 +43,19 @@ export const getPublicContacts = async () => {
 // Get all contacts for admin (including inactive)
 export const getAllContacts = async () => {
   try {
-    const data = await apiCall('/admin/contacts', {
+    const response = await apiCall('/admin/contacts', {
       method: 'GET'
     });
     
+    console.log('Admin contacts API response:', response); // Debug log
+    
+    // Handle different response structures
+    const contacts = response.data || response.contacts || [];
+    
     return {
       success: true,
-      contacts: data.contacts || [],
-      message: data.message || `Found ${data.contacts?.length || 0} contacts`
+      contacts: contacts,
+      message: response.message || `Found ${contacts.length} contacts`
     };
   } catch (error) {
     console.warn('Admin contacts endpoint not available:', error.message);

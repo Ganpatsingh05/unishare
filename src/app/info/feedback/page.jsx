@@ -2,140 +2,87 @@
 
 import { useState, useEffect } from 'react';
 import { 
-  Flag, 
-  AlertTriangle, 
-  Shield, 
-  User, 
-  MessageSquare, 
+  MessageCircle, 
+  Star, 
+  Lightbulb, 
+  Zap, 
   Send,
   CheckCircle,
-  Clock,
-  Eye,
-  Lock,
+  ThumbsUp,
+  Smile,
+  Frown,
+  Meh,
   ChevronRight,
   ArrowLeft,
-  FileText,
-  Phone,
-  Mail,
-  Zap,
-  Star,
-  ThumbsUp,
   ExternalLink,
+  Heart,
   Loader2
 } from 'lucide-react';
 import Footer from '../../_components/Footer';
 import { useRouter } from 'next/navigation';
 import { useUI, useAuth } from '../../lib/contexts/UniShareContext';
-import FormfacadeEmbed from "@formfacade/embed-react";
 
-export default function ReportIssues() {
+export default function FeedbackPage() {
   const {darkMode} = useUI();
-  const {user} = useAuth(); // Get user from auth context
-  const [reportType, setReportType] = useState('');
-  const [reportDetails, setReportDetails] = useState('');
-  const [urgency, setUrgency] = useState('medium');
+  const {user} = useAuth();
+  const [feedbackType, setFeedbackType] = useState('');
+  const [feedbackName, setFeedbackName] = useState('');
+  const [feedbackDetails, setFeedbackDetails] = useState('');
+  const [rating, setRating] = useState(5);
   const [submitted, setSubmitted] = useState(false);
   const [submissionStatus, setSubmissionStatus] = useState('idle'); // 'idle', 'pending', 'success', 'error'
   const [activeStep, setActiveStep] = useState(1);
   const router = useRouter();
 
-  const reportTypes = [
+  // Function to handle feedback type selection and clear fields
+  const handleFeedbackTypeSelect = (type) => {
+    setFeedbackType(type);
+    setFeedbackName('');
+    setFeedbackDetails('');
+    setRating(5);
+  };
+
+  const feedbackTypes = [
     {
-      id: 'safety',
-      name: 'Safety Concern',
-      description: 'Unsafe behavior, harassment, or security issues',
-      icon: Shield,
-      color: 'from-red-500 to-rose-500',
-      examples: ['Harassment', 'Unsafe meeting locations', 'Suspicious behavior', 'Threats']
-    },
-    {
-      id: 'fraud',
-      name: 'Fraud/Scam',
-      description: 'Fraudulent activities, fake listings, or scams',
-      icon: AlertTriangle,
-      color: 'from-orange-500 to-yellow-500',
-      examples: ['Fake items', 'Payment scams', 'Identity fraud', 'Fake profiles']
-    },
-    {
-      id: 'user',
-      name: 'User Behavior',
-      description: 'Inappropriate user conduct or violations',
-      icon: User,
-      color: 'from-purple-500 to-violet-500',
-      examples: ['Spam messages', 'Inappropriate content', 'Profile violations', 'Abusive language']
-    },
-    {
-      id: 'technical',
-      name: 'Technical Issue',
-      description: 'App bugs, loading problems, or technical difficulties',
-      icon: Zap,
+      id: 'general',
+      name: 'General Feedback',
+      description: 'Share your overall experience with UniShare',
+      icon: MessageCircle,
       color: 'from-blue-500 to-cyan-500',
-      examples: ['App crashes', 'Loading errors', 'Payment issues', 'Feature not working']
+      examples: ['App experience', 'User interface', 'Navigation', 'Overall satisfaction']
     },
     {
-      id: 'content',
-      name: 'Inappropriate Content',
-      description: 'Offensive, illegal, or inappropriate posted content',
-      icon: Eye,
-      color: 'from-pink-500 to-rose-500',
-      examples: ['Offensive images', 'Inappropriate listings', 'Spam posts', 'Illegal items']
+      id: 'feature',
+      name: 'Feature Request',
+      description: 'Suggest new features or improvements',
+      icon: Lightbulb,
+      color: 'from-yellow-500 to-orange-500',
+      examples: ['New features', 'Improvements', 'Enhancements', 'Functionality']
+    },
+    {
+      id: 'ui',
+      name: 'UI/UX Feedback',
+      description: 'Comments about design and user experience',
+      icon: Star,
+      color: 'from-purple-500 to-violet-500',
+      examples: ['Design feedback', 'Usability', 'Layout suggestions', 'Accessibility']
     },
     {
       id: 'other',
       name: 'Other',
-      description: 'Other issues or concerns not listed above',
-      icon: MessageSquare,
+      description: 'Any other feedback or suggestions',
+      icon: Zap,
       color: 'from-gray-500 to-gray-600',
-      examples: ['General feedback', 'Feature requests', 'Policy questions', 'Other concerns']
+      examples: ['General suggestions', 'Questions', 'Comments', 'Other thoughts']
     }
   ];
 
-  const urgencyLevels = [
-    { 
-      id: 'low', 
-      name: 'Low Priority', 
-      description: 'General feedback or minor issues',
-      color: 'from-green-500 to-emerald-500',
-      responseTime: '3-5 business days'
-    },
-    { 
-      id: 'medium', 
-      name: 'Medium Priority', 
-      description: 'Issues affecting user experience',
-      color: 'from-yellow-500 to-orange-500',
-      responseTime: '1-2 business days'
-    },
-    { 
-      id: 'high', 
-      name: 'High Priority', 
-      description: 'Safety concerns or serious violations',
-      color: 'from-red-500 to-rose-500',
-      responseTime: 'Within 24 hours'
-    }
-  ];
-
-  const contactMethods = [
-    {
-      method: 'Online Form',
-      description: 'Submit detailed reports with attachments',
-      icon: FileText,
-      recommended: true,
-      responseTime: 'Fastest response'
-    },
-    {
-      method: 'Email Support',
-      description: 'Send detailed reports via email',
-      icon: Mail,
-      contact: 'support@unishare.com',
-      responseTime: '24-48 hours'
-    },
-    {
-      method: 'Emergency Line',
-      description: 'For immediate safety concerns only',
-      icon: Phone,
-      contact: '(555) 123-SAFE',
-      responseTime: 'Immediate'
-    }
+  const ratingOptions = [
+    { value: 5, label: 'Excellent', icon: Smile, color: 'text-green-500', description: 'Love it!' },
+    { value: 4, label: 'Good', icon: Smile, color: 'text-blue-500', description: 'Really good' },
+    { value: 3, label: 'Average', icon: Meh, color: 'text-yellow-500', description: 'It\'s okay' },
+    { value: 2, label: 'Poor', icon: Frown, color: 'text-orange-500', description: 'Needs work' },
+    { value: 1, label: 'Very Poor', icon: Frown, color: 'text-red-500', description: 'Not good' }
   ];
 
   // Function to submit via iframe (alternative method)
@@ -143,13 +90,13 @@ export default function ReportIssues() {
     return new Promise((resolve) => {
       const iframe = document.createElement('iframe');
       iframe.style.display = 'none';
-      iframe.name = 'hidden_iframe';
+      iframe.name = 'hidden_iframe_feedback';
       document.body.appendChild(iframe);
 
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = 'https://docs.google.com/forms/d/e/1FAIpQLSe0m0oz-Jzx_QQCPmZtLjbvZY3uUW7gRL3-waTH3jg8-OZuQg/formResponse';
-      form.target = 'hidden_iframe';
+      form.target = 'hidden_iframe_feedback';
       form.style.display = 'none';
 
       // Add form fields
@@ -186,7 +133,8 @@ export default function ReportIssues() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!reportType || !reportDetails.trim()) {
+    // Validation - require feedback type, name, and details
+    if (!feedbackType || !feedbackDetails.trim() || !feedbackName.trim()) {
       return;
     }
 
@@ -201,18 +149,29 @@ export default function ReportIssues() {
       console.log('User object:', user);
       console.log('Extracted name:', userName);
       console.log('Extracted email:', userEmail);
-      console.log('Report Type:', reportType);
-      console.log('Urgency:', urgency);
-      console.log('Report Details:', reportDetails);
+      console.log('Feedback Type:', feedbackType);
+      console.log('Feedback Name:', feedbackName);
+      console.log('Feedback Details:', feedbackDetails);
+      if (feedbackType !== 'feature') {
+        console.log('Rating:', rating);
+      }
     }
 
-    // Prepare form data for Google Forms (using working entry IDs)
+    // Prepare form data for Google Forms (reusing same form with different mapping)
+    let issueField = `Feedback: ${feedbackType}`;
+    let problemField = (feedbackType === 'feature' || feedbackType === 'other') ? 'N/A' : `Rating: ${rating}/5 stars`;
+    
+    // Include feedback name in the issue field if provided
+    if (feedbackName.trim()) {
+      issueField += ` - ${feedbackName}`;
+    }
+
     const formData = {
-      'entry.2005620554': userName,        // Name field
-      'entry.1045781291': userEmail,       // Email field  
-      'entry.1065046570': reportType,      // Issue field
-      'entry.839337160': reportDetails,    // What Happened field
-      'entry.1166974658': urgency          // Problem/Urgency field
+      'entry.2005620554': userName,                    // Name field
+      'entry.1045781291': userEmail,                   // Email field  
+      'entry.1065046570': issueField,                  // Issue field (feedback type + name)
+      'entry.839337160': feedbackDetails,              // What Happened field (feedback details)
+      'entry.1166974658': problemField                 // Problem field (rating or N/A for features)
     };
 
     try {
@@ -220,7 +179,7 @@ export default function ReportIssues() {
       setSubmissionStatus('pending');
       
       try {
-        const response = await fetch('https://docs.google.com/forms/u/0/d/e/1FAIpQLSe0m0oz-Jzx_QQCPmZtLjbvZY3uUW7gRL3-waTH3jg8-OZuQg/formResponse', {
+        const response = await fetch('https://docs.google.com/forms/d/e/1FAIpQLSe0m0oz-Jzx_QQCPmZtLjbvZY3uUW7gRL3-waTH3jg8-OZuQg/formResponse', {
           method: 'POST',
           mode: 'no-cors',
           headers: {
@@ -264,12 +223,12 @@ export default function ReportIssues() {
             <h1 className={`text-4xl font-bold mb-6 ${
               darkMode ? 'text-white' : 'text-gray-900'
             }`}>
-              Report Submitted Successfully
+              Feedback Submitted Successfully
             </h1>
             <p className={`text-xl mb-8 max-w-2xl mx-auto ${
               darkMode ? 'text-gray-300' : 'text-gray-600'
             }`}>
-              Thank you for helping keep UniShare safe. We've received your report and will review it promptly.
+              Thank you for your valuable feedback! Your input helps us improve UniShare for everyone.
             </p>
 
             {/* Submission Confirmation */}
@@ -286,12 +245,12 @@ export default function ReportIssues() {
                   <h4 className={`font-bold mb-2 ${
                     darkMode ? 'text-white' : 'text-gray-900'
                   }`}>
-                    Report Submitted Successfully
+                    Feedback Received Successfully
                   </h4>
                   <p className={`text-sm leading-relaxed mb-3 ${
                     darkMode ? 'text-gray-300' : 'text-gray-600'
                   }`}>
-                    Your report has been submitted to our Google Form system. Our team has been notified and will review your submission.
+                    Your feedback has been submitted to our team. We appreciate you taking the time to help us improve UniShare.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-2">
                     <a
@@ -302,7 +261,6 @@ export default function ReportIssues() {
                         darkMode ? 'text-green-400 hover:text-green-300' : 'text-green-600 hover:text-green-700'
                       }`}
                       onClick={() => {
-                        // Open Google Forms and search for your form
                         window.open('https://docs.google.com/forms/u/0/', '_blank');
                       }}
                     >
@@ -329,21 +287,21 @@ export default function ReportIssues() {
                   <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-bold">1</div>
                   <div className="flex-1 text-left">
                     <h4 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Review</h4>
-                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Our team will review your report within the expected timeframe</p>
+                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Our team will review your feedback and suggestions</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
                   <div className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center text-sm font-bold">2</div>
                   <div className="flex-1 text-left">
-                    <h4 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Investigation</h4>
-                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>If needed, we'll investigate and take appropriate action</p>
+                    <h4 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Implementation</h4>
+                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>We'll work on implementing valuable suggestions and fixing reported issues</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
                   <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-bold">3</div>
                   <div className="flex-1 text-left">
-                    <h4 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Follow-up</h4>
-                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>We'll contact you at {user?.email || user?.emailAddress || 'your email'} with updates if necessary</p>
+                    <h4 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Updates</h4>
+                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>You'll see improvements in future updates based on community feedback</p>
                   </div>
                 </div>
               </div>
@@ -353,9 +311,11 @@ export default function ReportIssues() {
               <button 
                 onClick={() => {
                   setSubmitted(false);
-                  setReportType('');
-                  setReportDetails('');
+                  setFeedbackType('');
+                  setFeedbackDetails('');
+                  setRating(5);
                   setSubmissionStatus('idle');
+                  setActiveStep(1);
                 }}
                 className={`px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 ${
                   darkMode 
@@ -363,7 +323,7 @@ export default function ReportIssues() {
                     : 'bg-blue-600 text-white hover:bg-blue-700'
                 }`}
               >
-                Submit Another Report
+                Submit More Feedback
               </button>
               <button 
                 onClick={() => router.push('/')}
@@ -400,7 +360,7 @@ export default function ReportIssues() {
             Home
           </button>
           <ChevronRight className="w-4 h-4 text-gray-400" />
-          <span className={darkMode ? 'text-yellow-300' : 'text-blue-600'}>Report Issues</span>
+          <span className={darkMode ? 'text-yellow-300' : 'text-blue-600'}>Feedback</span>
         </div>
       </div>
 
@@ -409,82 +369,28 @@ export default function ReportIssues() {
         <div className="text-center mb-16">
           <div className={`inline-flex items-center gap-3 px-6 py-3 rounded-full text-sm font-medium mb-6 transition-all duration-300 ${
             darkMode 
-              ? 'bg-red-500/20 text-red-300 border border-red-500/40' 
-              : 'bg-red-100 text-red-700 border border-red-200'
+              ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40' 
+              : 'bg-blue-100 text-blue-700 border border-blue-200'
           }`}>
-            <Flag className="w-4 h-4" />
-            <span>Report Safety & Security Issues</span>
+            <MessageCircle className="w-4 h-4" />
+            <span>Share Your Feedback</span>
           </div>
 
           <h1 className={`text-4xl md:text-5xl font-bold mb-6 ${
             darkMode ? 'text-white' : 'text-gray-900'
           }`}>
-            Help Keep UniShare Safe
+            Help Us Improve UniShare
           </h1>
           
           <p className={`text-xl mb-8 max-w-3xl mx-auto ${
             darkMode ? 'text-gray-300' : 'text-gray-600'
           }`}>
-            Report safety concerns, inappropriate behavior, technical issues, or any other problems. 
-            Your reports help us maintain a secure and positive environment for all students.
+            Your feedback is valuable to us! Share your thoughts, suggestions, and experiences 
+            to help us make UniShare better for everyone.
           </p>
         </div>
 
-        {/* Contact Methods */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-          {contactMethods.map((method, index) => (
-            <div
-              key={index}
-              className={`p-6 rounded-2xl border transition-all duration-300 ${
-                method.recommended 
-                  ? `border-2 ${darkMode ? 'border-yellow-400 bg-yellow-400/10' : 'border-blue-500 bg-blue-50'}`
-                  : darkMode
-                    ? 'bg-gray-800/50 border-gray-700'
-                    : 'bg-white/50 border-gray-200'
-              } backdrop-blur-md shadow-lg hover:shadow-xl transform hover:scale-105`}
-            >
-              {method.recommended && (
-                <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium mb-4 ${
-                  darkMode ? 'bg-yellow-400/20 text-yellow-300' : 'bg-blue-100 text-blue-700'
-                }`}>
-                  <Star className="w-3 h-3" />
-                  Recommended
-                </div>
-              )}
-              <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4 ${
-                method.recommended 
-                  ? `bg-gradient-to-r ${darkMode ? 'from-yellow-500 to-yellow-400' : 'from-blue-500 to-blue-600'} text-white`
-                  : `${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`
-              }`}>
-                <method.icon className="w-6 h-6" />
-              </div>
-              <h3 className={`text-lg font-bold mb-2 ${
-                darkMode ? 'text-white' : 'text-gray-900'
-              }`}>
-                {method.method}
-              </h3>
-              <p className={`text-sm mb-3 ${
-                darkMode ? 'text-gray-400' : 'text-gray-600'
-              }`}>
-                {method.description}
-              </p>
-              {method.contact && (
-                <p className={`text-sm font-mono mb-2 ${
-                  darkMode ? 'text-yellow-400' : 'text-blue-600'
-                }`}>
-                  {method.contact}
-                </p>
-              )}
-              <p className={`text-xs ${
-                darkMode ? 'text-gray-500' : 'text-gray-500'
-              }`}>
-                {method.responseTime}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Report Form */}
+        {/* Feedback Form */}
         <form onSubmit={handleSubmit} className={`p-8 rounded-2xl border ${
           darkMode 
             ? 'bg-gray-800/50 border-gray-700' 
@@ -515,22 +421,22 @@ export default function ReportIssues() {
             </div>
           </div>
 
-          {/* Step 1: Report Type */}
+          {/* Step 1: Feedback Type */}
           <div className={`transition-all duration-300 ${activeStep === 1 ? 'block' : 'hidden'}`}>
             <h3 className={`text-2xl font-bold mb-6 text-center ${
               darkMode ? 'text-white' : 'text-gray-900'
             }`}>
-              What type of issue would you like to report?
+              What type of feedback would you like to share?
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              {reportTypes.map((type) => (
+              {feedbackTypes.map((type) => (
                 <button
                   key={type.id}
                   type="button"
-                  onClick={() => setReportType(type.id)}
+                  onClick={() => handleFeedbackTypeSelect(type.id)}
                   className={`p-6 rounded-2xl border-2 text-left transition-all duration-300 transform hover:scale-105 ${
-                    reportType === type.id
+                    feedbackType === type.id
                       ? `border-transparent bg-gradient-to-r ${type.color} text-white`
                       : darkMode
                         ? 'border-gray-700 bg-gray-800/50 hover:border-gray-600'
@@ -539,7 +445,7 @@ export default function ReportIssues() {
                 >
                   <div className="flex items-start gap-4">
                     <div className={`p-3 rounded-xl transition-all duration-300 ${
-                      reportType === type.id 
+                      feedbackType === type.id 
                         ? 'bg-white/20' 
                         : `bg-gradient-to-r ${type.color} text-white`
                     }`}>
@@ -551,26 +457,15 @@ export default function ReportIssues() {
                       <div className="flex flex-wrap gap-1">
                         {type.examples.slice(0, 2).map((example, index) => (
                           <span key={index} className={`text-xs px-2 py-1 rounded-full ${
-                            reportType === type.id 
+                            feedbackType === type.id 
                               ? 'bg-white/20' 
-                              : darkMode 
-                                ? 'bg-gray-700 text-gray-300' 
+                              : darkMode
+                                ? 'bg-gray-700 text-gray-300'
                                 : 'bg-gray-100 text-gray-600'
                           }`}>
                             {example}
                           </span>
                         ))}
-                        {type.examples.length > 2 && (
-                          <span className={`text-xs px-2 py-1 rounded-full ${
-                            reportType === type.id 
-                              ? 'bg-white/20' 
-                              : darkMode 
-                                ? 'bg-gray-700 text-gray-300' 
-                                : 'bg-gray-100 text-gray-600'
-                          }`}>
-                            +{type.examples.length - 2} more
-                          </span>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -581,11 +476,11 @@ export default function ReportIssues() {
             <div className="flex justify-center">
               <button
                 type="button"
-                onClick={() => reportType && setActiveStep(2)}
-                disabled={!reportType}
+                onClick={() => setActiveStep(feedbackType === 'feature' || feedbackType === 'other' ? 3 : 2)}
+                disabled={!feedbackType}
                 className={`px-8 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
                   darkMode 
-                    ? 'bg-yellow-400 text-gray-900 hover:bg-yellow-300' 
+                    ? 'bg-blue-600 text-white hover:bg-blue-500' 
                     : 'bg-blue-600 text-white hover:bg-blue-700'
                 }`}
               >
@@ -594,42 +489,41 @@ export default function ReportIssues() {
             </div>
           </div>
 
-          {/* Step 2: Urgency Level */}
-          <div className={`transition-all duration-300 ${activeStep === 2 ? 'block' : 'hidden'}`}>
+          {/* Step 2: Rating (skip for feature requests and other) */}
+          <div className={`transition-all duration-300 ${activeStep === 2 && feedbackType !== 'feature' && feedbackType !== 'other' ? 'block' : 'hidden'}`}>
             <h3 className={`text-2xl font-bold mb-6 text-center ${
               darkMode ? 'text-white' : 'text-gray-900'
             }`}>
-              How urgent is this issue?
+              How would you rate your experience?
             </h3>
             
-            <div className="space-y-4 mb-8">
-              {urgencyLevels.map((level) => (
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 mb-8">
+              {ratingOptions.map((option) => (
                 <button
-                  key={level.id}
+                  key={option.value}
                   type="button"
-                  onClick={() => setUrgency(level.id)}
-                  className={`w-full p-6 rounded-2xl border-2 text-left transition-all duration-300 transform hover:scale-105 ${
-                    urgency === level.id
-                      ? `border-transparent bg-gradient-to-r ${level.color} text-white`
+                  onClick={() => setRating(option.value)}
+                  className={`p-6 rounded-2xl border-2 text-center transition-all duration-300 transform hover:scale-105 ${
+                    rating === option.value
+                      ? `border-transparent ${option.color} bg-gradient-to-r from-gray-100 to-white text-gray-900`
                       : darkMode
                         ? 'border-gray-700 bg-gray-800/50 hover:border-gray-600'
                         : 'border-gray-200 bg-white hover:border-gray-300'
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-xl font-bold mb-2">{level.name}</h4>
-                      <p className="opacity-90 mb-2">{level.description}</p>
-                      <p className="text-sm opacity-75">Response time: {level.responseTime}</p>
-                    </div>
-                    <div className={`w-6 h-6 rounded-full border-2 transition-all duration-300 ${
-                      urgency === level.id 
-                        ? 'bg-white border-white' 
-                        : 'border-gray-400'
-                    }`}>
-                      {urgency === level.id && <CheckCircle className="w-4 h-4 text-current" />}
-                    </div>
-                  </div>
+                  <option.icon className={`w-12 h-12 mx-auto mb-3 ${
+                    rating === option.value ? option.color : darkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`} />
+                  <h4 className={`text-lg font-bold mb-1 ${
+                    darkMode && rating !== option.value ? 'text-white' : 'text-gray-900'
+                  }`}>
+                    {option.label}
+                  </h4>
+                  <p className={`text-sm ${
+                    darkMode && rating !== option.value ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
+                    {option.description}
+                  </p>
                 </button>
               ))}
             </div>
@@ -651,7 +545,7 @@ export default function ReportIssues() {
                 onClick={() => setActiveStep(3)}
                 className={`px-8 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 ${
                   darkMode 
-                    ? 'bg-yellow-400 text-gray-900 hover:bg-yellow-300' 
+                    ? 'bg-blue-600 text-white hover:bg-blue-500' 
                     : 'bg-blue-600 text-white hover:bg-blue-700'
                 }`}
               >
@@ -665,20 +559,105 @@ export default function ReportIssues() {
             <h3 className={`text-2xl font-bold mb-6 text-center ${
               darkMode ? 'text-white' : 'text-gray-900'
             }`}>
-              Describe the issue in detail
+              {feedbackType === 'feature' ? 'Share your feature request' : 
+               feedbackType === 'other' ? 'Share your feedback' : 
+               'Share your detailed feedback'}
             </h3>
             
             <div className="space-y-6 mb-8">
+              {/* Feature Name Field (only for feature requests) */}
+              {feedbackType === 'feature' && (
+                <div>
+                  <label className={`block text-lg font-semibold mb-3 ${
+                    darkMode ? 'text-white' : 'text-gray-900'
+                  }`}>
+                    Name of Feature <span className="text-blue-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={feedbackName}
+                    onChange={(e) => setFeedbackName(e.target.value)}
+                    placeholder="e.g., Share Ride, Lost & Found, Marketplace, etc."
+                    required
+                    className={`w-full p-4 rounded-xl border-2 transition-all duration-300 ${
+                      darkMode 
+                        ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-yellow-400' 
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500'
+                    } focus:outline-none focus:ring-4 focus:ring-opacity-20`}
+                  />
+                </div>
+              )}
+
+              {/* Name of Feedback Field (for non-feature requests except 'other') */}
+              {feedbackType !== 'feature' && feedbackType !== 'other' && (
+                <div>
+                  <label className={`block text-lg font-semibold mb-3 ${
+                    darkMode ? 'text-white' : 'text-gray-900'
+                  }`}>
+                    Name of Feedback <span className="text-blue-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={feedbackName}
+                    onChange={(e) => setFeedbackName(e.target.value)}
+                    placeholder={
+                      feedbackType === 'ui' ? 'e.g., Homepage Design, Navigation Menu, Color Scheme' :
+                      feedbackType === 'general' ? 'e.g., User Experience, App Performance, Overall Impression' :
+                      'e.g., Subject of your feedback'
+                    }
+                    required
+                    className={`w-full p-4 rounded-xl border-2 transition-all duration-300 ${
+                      darkMode 
+                        ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-yellow-400' 
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500'
+                    } focus:outline-none focus:ring-4 focus:ring-opacity-20`}
+                  />
+                </div>
+              )}
+
+              {/* Name of Feedback Field (for 'other' feedback type) */}
+              {feedbackType === 'other' && (
+                <div>
+                  <label className={`block text-lg font-semibold mb-3 ${
+                    darkMode ? 'text-white' : 'text-gray-900'
+                  }`}>
+                    Name of Feedback <span className="text-blue-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={feedbackName}
+                    onChange={(e) => setFeedbackName(e.target.value)}
+                    placeholder="e.g., General Suggestion, Question, Comment, etc."
+                    required
+                    className={`w-full p-4 rounded-xl border-2 transition-all duration-300 ${
+                      darkMode 
+                        ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:border-yellow-400' 
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500'
+                    } focus:outline-none focus:ring-4 focus:ring-opacity-20`}
+                  />
+                </div>
+              )}
+
               <div>
                 <label className={`block text-lg font-semibold mb-3 ${
                   darkMode ? 'text-white' : 'text-gray-900'
                 }`}>
-                  What happened? <span className="text-red-500">*</span>
+                  Description <span className="text-blue-500">*</span>
                 </label>
                 <textarea
-                  value={reportDetails}
-                  onChange={(e) => setReportDetails(e.target.value)}
-                  placeholder="Please provide as much detail as possible. Include dates, times, usernames, and any other relevant information that will help us understand and address the issue."
+                  value={feedbackDetails}
+                  onChange={(e) => setFeedbackDetails(e.target.value)}
+                  placeholder={
+                    feedbackType === 'feature' ? 
+                      "Describe the feature you'd like to see. How would it work? What problem would it solve? The more details you provide, the better we can understand your request." :
+                    feedbackType === 'ui' ?
+                      "Share your thoughts about the design and user experience. What works well? What could be improved? Any specific suggestions?" :
+                    feedbackType === 'general' ?
+                      "Share your overall thoughts about UniShare. What's your experience been like? Any suggestions or comments?" :
+                    feedbackType === 'other' ?
+                      "Please share your thoughts, suggestions, questions, or any other feedback. The more details you provide, the better we can understand and address your input." :
+                      "Please share your thoughts, suggestions, or any other feedback. The more details you provide, the better we can understand and address your input."
+                  }
                   rows={6}
                   required
                   className={`w-full p-4 rounded-xl border-2 transition-all duration-300 resize-none ${
@@ -690,7 +669,7 @@ export default function ReportIssues() {
                 <p className={`text-sm mt-2 ${
                   darkMode ? 'text-gray-400' : 'text-gray-500'
                 }`}>
-                  {reportDetails.length}/1000 characters
+                  {feedbackDetails.length}/2000 characters
                 </p>
               </div>
 
@@ -701,7 +680,7 @@ export default function ReportIssues() {
                 <h4 className={`text-sm font-medium mb-2 ${
                   darkMode ? 'text-gray-300' : 'text-gray-600'
                 }`}>
-                  Report will be submitted as:
+                  Feedback will be submitted as:
                 </h4>
                 <div className="space-y-1">
                   <p className={`text-sm ${
@@ -712,17 +691,16 @@ export default function ReportIssues() {
                   <p className={`text-sm ${
                     darkMode ? 'text-white' : 'text-gray-900'
                   }`}>
-                    <span className="font-medium">Email:</span> {user?.email || 'anonymous@unishare.com'}
+                    <span className="font-medium">Email:</span> {user?.email || user?.emailAddress || 'anonymous@unishare.com'}
                   </p>
                 </div>
-                
               </div>
             </div>
 
             <div className="flex justify-center gap-4">
               <button
                 type="button"
-                onClick={() => setActiveStep(2)}
+                onClick={() => setActiveStep(feedbackType === 'feature' || feedbackType === 'other' ? 1 : 2)}
                 className={`px-8 py-3 border-2 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 ${
                   darkMode 
                     ? 'border-gray-600 text-gray-300 hover:bg-gray-800' 
@@ -733,7 +711,7 @@ export default function ReportIssues() {
               </button>
               <button
                 type="submit"
-                disabled={!reportDetails.trim() || submissionStatus === 'pending'}
+                disabled={!feedbackDetails.trim() || !feedbackName.trim() || submissionStatus === 'pending'}
                 className={`flex items-center gap-3 px-8 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
                   submissionStatus === 'pending'
                     ? 'bg-gray-500 text-white cursor-not-allowed'
@@ -742,14 +720,14 @@ export default function ReportIssues() {
                     : submissionStatus === 'error'
                     ? 'bg-red-600 text-white'
                     : darkMode 
-                      ? 'bg-red-600 text-white hover:bg-red-500' 
-                      : 'bg-red-600 text-white hover:bg-red-700'
+                      ? 'bg-blue-600 text-white hover:bg-blue-500' 
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
                 }`}
               >
                 {submissionStatus === 'pending' ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Submitting Report...
+                    Submitting Feedback...
                   </>
                 ) : submissionStatus === 'success' ? (
                   <>
@@ -759,7 +737,7 @@ export default function ReportIssues() {
                 ) : (
                   <>
                     <Send className="w-5 h-5" />
-                    Submit Report
+                    Submit Feedback
                   </>
                 )}
               </button>
@@ -774,21 +752,20 @@ export default function ReportIssues() {
             : 'bg-blue-50 border-blue-200'
         }`}>
           <div className="flex items-start gap-4">
-            <Lock className={`w-6 h-6 mt-1 flex-shrink-0 ${
+            <Heart className={`w-6 h-6 mt-1 flex-shrink-0 ${
               darkMode ? 'text-blue-400' : 'text-blue-600'
             }`} />
             <div>
               <h4 className={`font-bold mb-2 ${
                 darkMode ? 'text-white' : 'text-gray-900'
               }`}>
-                Your Privacy is Protected
+                Your Feedback Matters
               </h4>
               <p className={`text-sm leading-relaxed ${
                 darkMode ? 'text-gray-300' : 'text-gray-600'
               }`}>
-                All reports are treated confidentially and securely. We only use the information you provide 
-                to investigate and resolve the reported issue. Your identity will only be shared if necessary 
-                for the investigation and with your consent.
+                All feedback is treated confidentially and used solely to improve UniShare. 
+                Your insights help us create a better experience for all students in the community.
               </p>
             </div>
           </div>

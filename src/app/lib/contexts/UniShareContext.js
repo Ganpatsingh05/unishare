@@ -161,7 +161,7 @@ const uniShareReducer = (state, action) => {
       return { ...state, mobileMenuOpen: action.payload };
       
     case ActionTypes.SET_NOTIFICATIONS:
-      return { ...state, notifications: action.payload };
+      return { ...state, notifications: Array.isArray(action.payload) ? action.payload : [] };
       
     case ActionTypes.ADD_NOTIFICATION:
       return {
@@ -430,6 +430,25 @@ export const UniShareProvider = ({ children }) => {
     
     initializeAuth();
   }, []);
+
+  // Load notifications when user is authenticated
+  useEffect(() => {
+    const loadUserNotifications = async () => {
+      if (state.isAuthenticated && state.user && !state.authLoading) {
+        try {
+          const { getUserNotifications } = await import('../api/notifications');
+          const response = await getUserNotifications();
+          const notifications = response.notifications || response.data || [];
+          dispatch({ type: ActionTypes.SET_NOTIFICATIONS, payload: notifications });
+        } catch (error) {
+          console.error('Failed to load notifications:', error);
+          dispatch({ type: ActionTypes.SET_NOTIFICATIONS, payload: [] });
+        }
+      }
+    };
+
+    loadUserNotifications();
+  }, [state.isAuthenticated, state.user, state.authLoading]);
   
   // =============================================================================
   // ACTION CREATORS
@@ -596,6 +615,21 @@ export const UniShareProvider = ({ children }) => {
         ),
       });
     },
+
+    // Notification loading action
+    loadNotifications: async () => {
+      if (state.isAuthenticated && state.user) {
+        try {
+          const { getUserNotifications } = await import('../api/notifications');
+          const response = await getUserNotifications();
+          const notifications = response.notifications || response.data || [];
+          dispatch({ type: ActionTypes.SET_NOTIFICATIONS, payload: notifications });
+        } catch (error) {
+          console.error('Failed to load notifications:', error);
+          dispatch({ type: ActionTypes.SET_NOTIFICATIONS, payload: [] });
+        }
+      }
+    },
   };
   
   // =============================================================================
@@ -603,8 +637,8 @@ export const UniShareProvider = ({ children }) => {
   // =============================================================================
   
   const computedValues = {
-    unreadNotificationCount: state.notifications.filter(n => !n.read).length,
-    hasUnreadNotifications: state.notifications.some(n => !n.read),
+    unreadNotificationCount: (Array.isArray(state.notifications) ? state.notifications : []).filter(n => !n.read).length,
+    hasUnreadNotifications: (Array.isArray(state.notifications) ? state.notifications : []).some(n => !n.read),
     userInitials: state.user?.name 
       ? state.user.name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2)
       : 'U',
@@ -721,6 +755,7 @@ export const useNotifications = () => {
     markAllNotificationsRead: context.markAllNotificationsRead,
     removeNotification: context.removeNotification,
     setNotifications: context.setNotifications,
+    loadNotifications: context.loadNotifications,
   };
 };
 

@@ -39,34 +39,47 @@ export default function ResourcesPage() {
     loadCategories();
   }, []);
 
-  const loadResources = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await getResources(category !== 'all' ? category : null);
-      if (result.success) {
-        setResources(result.resources);
-      } else {
-        throw new Error(result.message || 'Failed to load resources');
-      }
-    } catch (error) {
-      console.error('Failed to load resources:', error);
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+      const loadResources = async () => {
+        try {
+          setLoading(true);
+          setError(null);
+          const result = await getResources(category !== 'all' ? category : null);
+          if (result.success) {
+            // Debug: Check the data structure
+            console.log('Resources data:', result.data || result.resources);
+            const resourcesData = result.data || result.resources || [];
+            // Ensure each resource has an id
+            const resourcesWithIds = resourcesData.map((r, index) => ({
+              ...r,
+              id: r.id || `resource-${index}`
+            }));
+            setResources(resourcesWithIds);
+          } else {
+            throw new Error(result.message || 'Failed to load resources');
+          }
+        } catch (error) {
+          console.error('Failed to load resources:', error);
+          setError(error.message);
+        } finally {
+          setLoading(false);
+        }
+      };
 
   const loadCategories = async () => {
     try {
       const result = await getResourceCategories();
-      if (result.success && result.categories.length > 0) {
+      if (result.success && result.categories?.length > 0) {
+        // Debug: Check categories data
+        console.log('Categories data:', result.data || result.categories);
+        const categoriesData = result.data || result.categories || [];
+        
         // Add 'All' option to the beginning
         const categoriesWithAll = [
           { key: 'all', label: 'All' },
-          ...result.categories.map(cat => ({
-            ...cat,
-            icon: getCategoryIcon(cat.key)
+          ...categoriesData.map((cat, index) => ({
+            key: typeof cat === 'string' ? cat : (cat.key || cat),
+            label: typeof cat === 'string' ? cat : (cat.label || cat),
+            icon: getCategoryIcon(typeof cat === 'string' ? cat : (cat.key || cat))
           }))
         ];
         setCategories(categoriesWithAll);
@@ -194,8 +207,8 @@ export default function ResourcesPage() {
                           <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full ${darkMode ? 'bg-gray-900 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
                             <Tag className="w-3 h-3" /> {r.category}
                           </span>
-                          {r.tags?.slice(0,2).map((t) => (
-                            <span key={t} className={`px-2 py-0.5 rounded-full ${darkMode ? 'bg-gray-900 text-gray-400' : 'bg-gray-100 text-gray-600'}`}>#{t}</span>
+                          {r.tags?.slice(0,2).map((t, index) => (
+                            <span key={`${r.id || 'unknown'}-tag-${index}-${t}`} className={`px-2 py-0.5 rounded-full ${darkMode ? 'bg-gray-900 text-gray-400' : 'bg-gray-100 text-gray-600'}`}>#{t}</span>
                           ))}
                         </div>
                         <div className="mt-3 flex items-center gap-2">

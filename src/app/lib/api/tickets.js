@@ -8,7 +8,7 @@ export const fetchTickets = async (filters = {}) => {
     const queryString = new URLSearchParams(
       Object.entries(filters).filter(([_, value]) => value !== '' && value != null)
     ).toString();
-    const endpoint = queryString ? `/api/tickets?${queryString}` : '/api/tickets';
+    const endpoint = queryString ? `/api/ticketsell?${queryString}` : '/api/ticketsell';
     const data = await apiCall(endpoint, { method: 'GET' });
     return data;
   } catch (error) {
@@ -24,7 +24,7 @@ export const fetchMyTickets = async (options = {}) => {
     if (options.offset) queryParams.set('offset', options.offset);
     if (options.sort) queryParams.set('sort', options.sort);
     const queryString = queryParams.toString();
-    const endpoint = queryString ? `/api/tickets/my?${queryString}` : '/api/tickets/my';
+    const endpoint = queryString ? `/api/ticketsell/my?${queryString}` : '/api/ticketsell/my';
     const data = await apiCall(endpoint, { method: 'GET' });
     return data;
   } catch (error) {
@@ -54,7 +54,7 @@ export const createTicket = async (ticketData, imageFile = null) => {
       formData.append('image', imageFile);
     }
 
-    const data = await apiCallFormData('/api/tickets/create', formData, 'POST');
+    const data = await apiCallFormData('/api/ticketsell/create', formData, 'POST');
     return data;
   } catch (error) {
     console.error('Error creating ticket:', error);
@@ -81,7 +81,7 @@ export const updateTicket = async (ticketId, ticketData, imageFile = null) => {
       formData.append('image', imageFile);
     }
 
-    const data = await apiCallFormData(`/api/tickets/${ticketId}`, formData, 'PUT');
+    const data = await apiCallFormData(`/api/ticketsell/${ticketId}`, formData, 'PUT');
     return data;
   } catch (error) {
     console.error('Error updating ticket:', error);
@@ -97,7 +97,7 @@ export const updateTicket = async (ticketId, ticketData, imageFile = null) => {
 
 export const deleteTicket = async (ticketId) => {
   try {
-    const data = await apiCall(`/api/tickets/${ticketId}`, { method: 'DELETE' });
+    const data = await apiCall(`/api/ticketsell/${ticketId}`, { method: 'DELETE' });
     return data;
   } catch (error) {
     console.error('Error deleting ticket:', error);
@@ -113,12 +113,73 @@ export const deleteTicket = async (ticketId) => {
 
 export const fetchTicket = async (ticketId) => {
   try {
-    const data = await apiCall(`/api/tickets/${ticketId}`, { method: 'GET' });
+    const data = await apiCall(`/api/ticketsell/${ticketId}`, { method: 'GET' });
     return data;
   } catch (error) {
     console.error('Error fetching ticket:', error);
     if (error.message.includes('404')) {
       throw new Error('Ticket not found');
+    }
+    throw error;
+  }
+};
+
+// ============== AUTHENTICATED USER FUNCTIONS ==============
+
+export const getTicketStats = async () => {
+  try {
+    const data = await apiCall('/api/ticketsell/stats', { method: 'GET' });
+    return data;
+  } catch (error) {
+    console.error('Error fetching ticket stats:', error);
+    throw error;
+  }
+};
+
+export const inquireAboutTicket = async (ticketId, message) => {
+  try {
+    const data = await apiCall(`/api/ticketsell/${ticketId}/inquire`, {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+    });
+    return data;
+  } catch (error) {
+    console.error('Error sending ticket inquiry:', error);
+    if (error.message.includes('401')) {
+      throw new Error('Please log in to inquire about tickets');
+    }
+    throw error;
+  }
+};
+
+// ============== ADMIN FUNCTIONS ==============
+
+export const fetchAllTickets = async (filters = {}) => {
+  try {
+    const queryString = new URLSearchParams(
+      Object.entries(filters).filter(([_, value]) => value !== '' && value != null)
+    ).toString();
+    
+    const endpoint = queryString ? `/admin/ticketsell?${queryString}` : '/admin/ticketsell';
+    const data = await apiCall(endpoint, { method: 'GET' });
+    return data;
+  } catch (error) {
+    console.error('Error fetching all tickets (admin):', error);
+    return { data: [], error: error.message };
+  }
+};
+
+export const deleteTicketAdmin = async (ticketId) => {
+  try {
+    const data = await apiCall(`/admin/ticketsell/${ticketId}`, { method: 'DELETE' });
+    return data;
+  } catch (error) {
+    console.error('Error deleting ticket (admin):', error);
+    if (error.message.includes('401')) {
+      throw new Error('Admin authentication required');
+    }
+    if (error.message.includes('403')) {
+      throw new Error('Admin access required');
     }
     throw error;
   }

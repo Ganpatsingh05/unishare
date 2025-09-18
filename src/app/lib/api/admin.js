@@ -302,24 +302,7 @@ export const exportData = async (options = {}) => {
 
 // Admin Notifications
 // Admin Notifications - flexible signature
-// Usage:
-// sendAdminNotification(['ALL'], 'Message text', 'info')
-// sendAdminNotification({ users:['a@example.com'], message:'Hello', type:'success', title:'Greeting'})
-export const sendAdminNotification = async (users, message, type = 'info', title) => {
-  let payload;
-  if (Array.isArray(users)) {
-    payload = { users, message, type };
-    if (title) payload.title = title;
-  } else if (typeof users === 'object' && users !== null) {
-    payload = users; // already shaped
-  } else {
-    throw new Error('sendAdminNotification first argument must be users array or config object');
-  }
-  return apiCall('/admin/notifications/send', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
-};
+// sendAdminNotification function has been moved to api/notifications.js
 
 // Helper function to format time ago
 const formatTimeAgo = (dateString) => {

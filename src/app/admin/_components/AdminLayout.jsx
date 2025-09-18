@@ -58,6 +58,12 @@ const adminNavItems = [
     description: "Broadcast notifications"
   },
   {
+    title: "Notice",
+    href: "/admin/notice",
+    icon: NotebookPen,
+    description: "Manage system notices"
+  },
+  {
     title: "Contacts",
     href: "/admin/contacts",
     icon: Phone,

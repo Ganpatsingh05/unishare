@@ -18,8 +18,10 @@ import { useUI } from "../../lib/contexts/UniShareContext";
 */
 
 export default function AdminAnnouncementsPage() {
-  const { darkMode } = useUI();
-  const [announcements, setAnnouncements] = useState([]);
+  const { darkMode, user } = useUI();
+  // Tab state
+  const [activeTab, setActiveTab] = useState('announcements'); // 'announcements' | 'requested'
+  const [allAnnouncements, setAllAnnouncements] = useState([]);
   const [error, setError] = useState(null);
   const [creating, setCreating] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -33,7 +35,6 @@ export default function AdminAnnouncementsPage() {
     expiresAt: ''
   });
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null); // id to delete
@@ -44,58 +45,39 @@ export default function AdminAnnouncementsPage() {
     low: 'bg-gray-500/15 text-gray-600 dark:bg-gray-500/20 dark:text-gray-300'
   };
 
-  const loadAnnouncements = async () => {
+  const loadAllAnnouncements = async () => {
     setError(null);
     try {
-      const { getSystemAnnouncements } = await import('../../lib/api');
-      const res = await getSystemAnnouncements();
-      if (res.success && Array.isArray(res.announcements || res.data)) {
-        setAnnouncements(res.announcements || res.data);
-      } else if (Array.isArray(res)) {
-        // In case endpoint just returns array
-        setAnnouncements(res);
+      const { getAllSystemAnnouncements } = await import('../../lib/api/announcements');
+      const res = await getAllSystemAnnouncements();
+      if (res.success) {
+        setAllAnnouncements(res.announcements || res.data || []);
       } else {
-        throw new Error(res.message || 'Unexpected response');
+        throw new Error(res.message || 'Failed to load announcements');
       }
     } catch (e) {
-      console.error('Announcements fetch failed, using mock:', e);
-      // Fallback mock data
-      setAnnouncements([
-        {
-          id: 'mock-1',
-            title: 'Platform Update',
-            body: 'We have introduced the new rideshare improvements.',
-            priority: 'normal',
-            active: true,
-            createdAt: new Date(Date.now() - 3600_000).toISOString(),
-            updatedAt: new Date(Date.now() - 3600_000).toISOString(),
-            tags: ['update','rideshare']
-        },
-        {
-          id: 'mock-2',
-            title: 'Maintenance Window',
-            body: 'Scheduled maintenance on Saturday 2:00-3:00 AM.',
-            priority: 'high',
-            active: false,
-            createdAt: new Date(Date.now() - 86400_000).toISOString(),
-            updatedAt: new Date(Date.now() - 4000_000).toISOString(),
-            tags: ['maintenance']
-        }
-      ]);
+      console.error('Announcements fetch failed:', e);
+      setError(e.message);
     } finally {
       setRefreshing(false);
     }
   };
 
-  useEffect(() => { loadAnnouncements(); }, []);
+  useEffect(() => { loadAllAnnouncements(); }, []);
 
-  const filtered = useMemo(() => announcements.filter(a => {
-    const q = search.trim().toLowerCase();
-    const matchesSearch = !q || a.title?.toLowerCase().includes(q) || a.body?.toLowerCase().includes(q) || a.tags?.some(t => t.toLowerCase().includes(q));
-    const matchesStatus = statusFilter === 'all' || (statusFilter === 'active' ? a.active : !a.active);
-    const matchesPriority = priorityFilter === 'all' || a.priority === priorityFilter;
-    return matchesSearch && matchesStatus && matchesPriority;
-  }), [announcements, search, statusFilter, priorityFilter]);
+  // Filtering - separate active and inactive announcements based on current tab
+  const activeAnnouncements = useMemo(() => allAnnouncements.filter(a => a.active === true), [allAnnouncements]);
+  const inactiveAnnouncements = useMemo(() => allAnnouncements.filter(a => a.active === false), [allAnnouncements]);
+
+  const filtered = useMemo(() => {
+    const sourceAnnouncements = activeTab === 'announcements' ? activeAnnouncements : inactiveAnnouncements;
+    return sourceAnnouncements.filter(a => {
+      const q = search.trim().toLowerCase();
+      const matchesSearch = !q || a.title?.toLowerCase().includes(q) || a.body?.toLowerCase().includes(q) || a.tags?.some(t => t.toLowerCase().includes(q));
+      const matchesPriority = priorityFilter === 'all' || a.priority === priorityFilter;
+      return matchesSearch && matchesPriority;
+    });
+  }, [activeAnnouncements, inactiveAnnouncements, activeTab, search, priorityFilter]);
 
   const resetForm = () => {
     setForm({ title: '', body: '', priority: 'normal', tags: '', active: true, expiresAt: '' });
@@ -113,7 +95,7 @@ export default function AdminAnnouncementsPage() {
       priority: ann.priority || 'normal',
       tags: (ann.tags || []).join(', '),
       active: !!ann.active,
-      expiresAt: ann.expiresAt ? ann.expiresAt.split('T')[0] : ''
+      expiresAt: ann.expires_at ? ann.expires_at.split('T')[0] : ''
     });
     setCreating(true); // reuse drawer/modal
   };
@@ -123,9 +105,10 @@ export default function AdminAnnouncementsPage() {
     if (!form.title.trim() || !form.body.trim()) return;
     setSubmitting(true);
     try {
-      const { createSystemAnnouncement, updateSystemAnnouncement } = await import('../../lib/api');
+      const { createSystemAnnouncement, updateSystemAnnouncement } = await import('../../lib/api/announcements');
 
       const payload = {
+        user_id: user?.id, // Admin's user ID for new announcements
         title: form.title.trim(),
         body: form.body.trim(),
         priority: form.priority,
@@ -135,13 +118,14 @@ export default function AdminAnnouncementsPage() {
       };
 
       if (editingId) {
-        await updateSystemAnnouncement(editingId, payload);
-        setAnnouncements(prev => prev.map(a => a.id === editingId ? { ...a, ...payload, updatedAt: new Date().toISOString() } : a));
+        // For updates, don't include user_id as it shouldn't change
+        const updatePayload = { ...payload };
+        delete updatePayload.user_id;
+        await updateSystemAnnouncement(editingId, updatePayload);
       } else {
-        const res = await createSystemAnnouncement(payload);
-        const created = res.announcement || res.data || { id: Math.random().toString(36).slice(2), ...payload };
-        setAnnouncements(prev => [{ ...created, createdAt: created.createdAt || new Date().toISOString(), updatedAt: created.updatedAt || new Date().toISOString() }, ...prev]);
+        await createSystemAnnouncement(payload);
       }
+      await loadAllAnnouncements(); // Reload all announcements
       closeCreate();
     } catch (e) {
       console.error('Save failed:', e);
@@ -153,10 +137,18 @@ export default function AdminAnnouncementsPage() {
 
   const toggleActive = async (ann) => {
     try {
-      const { updateSystemAnnouncement } = await import('../../lib/api');
+      const { updateSystemAnnouncement } = await import('../../lib/api/announcements');
       const newActive = !ann.active;
-      await updateSystemAnnouncement(ann.id, { active: newActive });
-      setAnnouncements(prev => prev.map(a => a.id === ann.id ? { ...a, active: newActive, updatedAt: new Date().toISOString() } : a));
+      // Update only the active status, keep other fields unchanged
+      await updateSystemAnnouncement(ann.id, {
+        title: ann.title,
+        body: ann.body,
+        priority: ann.priority,
+        tags: ann.tags || [],
+        active: newActive,
+        expiresAt: ann.expires_at
+      });
+      await loadAllAnnouncements(); // Reload all announcements
     } catch (e) {
       console.error('Toggle failed:', e);
       alert('Failed to update status');
@@ -165,9 +157,9 @@ export default function AdminAnnouncementsPage() {
 
   const performDelete = async (id) => {
     try {
-      const { deleteSystemAnnouncement } = await import('../../lib/api');
+      const { deleteSystemAnnouncement } = await import('../../lib/api/announcements');
       await deleteSystemAnnouncement(id);
-      setAnnouncements(prev => prev.filter(a => a.id !== id));
+      await loadAllAnnouncements(); // Reload all announcements
       setConfirmDelete(null);
     } catch (e) {
       console.error('Delete failed:', e);
@@ -184,31 +176,58 @@ export default function AdminAnnouncementsPage() {
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Announcements</h1>
-              <p className={darkMode ? 'text-gray-400 text-sm' : 'text-gray-600 text-sm'}>Create and manage system-wide announcements displayed to users.</p>
+              <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Announcements Management</h1>
+              <p className={darkMode ? 'text-gray-400 text-sm' : 'text-gray-600 text-sm'}>Manage system announcements. Active announcements appear in Announcements tab, inactive/requested announcements in Requested tab.</p>
             </div>
             <div className="flex items-center gap-3">
-              <button onClick={() => { setRefreshing(true); loadAnnouncements(); }} className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border ${darkMode ? 'border-gray-700 text-gray-300 hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}>
+              <button onClick={() => { setRefreshing(true); loadAllAnnouncements(); }} className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border ${darkMode ? 'border-gray-700 text-gray-300 hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}>
                 {refreshing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCcw className="w-4 h-4" />} Refresh
               </button>
-              <button onClick={startCreate} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700">
-                <Plus className="w-4 h-4" /> New
-              </button>
+              {activeTab === 'announcements' && (
+                <button onClick={startCreate} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700">
+                  <Plus className="w-4 h-4" /> New
+                </button>
+              )}
             </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex items-center gap-2 border-b border-gray-800 text-sm">
+            <button 
+              onClick={() => setActiveTab('announcements')} 
+              className={`px-4 py-2 rounded-t-lg border flex items-center gap-2 ${
+                activeTab === 'announcements' 
+                  ? 'bg-gray-950 border-gray-700 text-white' 
+                  : 'border-transparent text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              Announcements 
+              <span className="px-2 py-0.5 rounded-full bg-green-600 text-white text-xs">
+                {activeAnnouncements.length}
+              </span>
+            </button>
+            <button 
+              onClick={() => setActiveTab('requested')} 
+              className={`px-4 py-2 rounded-t-lg border flex items-center gap-2 ${
+                activeTab === 'requested' 
+                  ? 'bg-gray-950 border-gray-700 text-white' 
+                  : 'border-transparent text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              Requested 
+              <span className="px-2 py-0.5 rounded-full bg-yellow-600 text-white text-xs">
+                {inactiveAnnouncements.length}
+              </span>
+            </button>
           </div>
 
           {/* Filters */}
           <div className={`p-4 rounded-xl border ${panelBg}`}>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="relative md:col-span-2">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search title, body, tags" className={`w-full pl-9 pr-3 py-2 rounded-lg border ${inputBase}`} />
+                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={`Search ${activeTab}`} className={`w-full pl-9 pr-3 py-2 rounded-lg border ${inputBase}`} />
               </div>
-              <select value={statusFilter} onChange={(e)=>setStatusFilter(e.target.value)} className={`w-full px-3 py-2 rounded-lg border ${inputBase}`}>
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
               <select value={priorityFilter} onChange={(e)=>setPriorityFilter(e.target.value)} className={`w-full px-3 py-2 rounded-lg border ${inputBase}`}>
                 <option value="all">All Priority</option>
                 <option value="high">High</option>
@@ -227,8 +246,8 @@ export default function AdminAnnouncementsPage() {
                     <th className="px-4 py-3 text-left font-semibold">Title</th>
                     <th className="px-4 py-3 text-left font-semibold hidden md:table-cell">Priority</th>
                     <th className="px-4 py-3 text-left font-semibold hidden lg:table-cell">Tags</th>
-                    <th className="px-4 py-3 text-left font-semibold hidden md:table-cell">Created</th>
-                    <th className="px-4 py-3 text-left font-semibold hidden md:table-cell">Updated</th>
+                    <th className="px-4 py-3 text-left font-semibold hidden md:table-cell">Created By</th>
+                    <th className="px-4 py-3 text-left font-semibold hidden md:table-cell">Date</th>
                     <th className="px-4 py-3 text-left font-semibold">Status</th>
                     <th className="px-4 py-3 text-right font-semibold">Actions</th>
                   </tr>
@@ -256,15 +275,34 @@ export default function AdminAnnouncementsPage() {
                           {(a.tags || []).map(t => <span key={t} className={`px-2 py-0.5 rounded-full text-[10px] ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-200 text-gray-700'}`}>#{t}</span>)}
                         </div>
                       </td>
-                      <td className="px-4 py-3 hidden md:table-cell text-xs">{a.createdAt ? new Date(a.createdAt).toLocaleDateString() : '-'}</td>
-                      <td className="px-4 py-3 hidden md:table-cell text-xs">{a.updatedAt ? new Date(a.updatedAt).toLocaleDateString() : '-'}</td>
+                      <td className="px-4 py-3 hidden md:table-cell text-xs">
+                        {a.users ? (
+                          <div>
+                            <div className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>{a.users.name}</div>
+                            <div className="text-gray-500">{a.users.email}</div>
+                          </div>
+                        ) : '-'}
+                      </td>
+                      <td className="px-4 py-3 hidden md:table-cell text-xs">{a.created_at ? new Date(a.created_at).toLocaleDateString() : '-'}</td>
                       <td className="px-4 py-3">
-                        <button onClick={() => toggleActive(a)} className={`px-2 py-1 rounded-md text-xs font-medium ${a.active ? (darkMode ? 'bg-green-600/20 text-green-400' : 'bg-green-100 text-green-700') : (darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700')}`}>{a.active ? 'Active' : 'Inactive'}</button>
+                        <span className={`px-2 py-1 rounded-md text-xs font-medium ${a.active ? (darkMode ? 'bg-green-600/20 text-green-400' : 'bg-green-100 text-green-700') : (darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700')}`}>{a.active ? 'Active' : 'Inactive'}</span>
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button onClick={() => startEdit(a)} className={`p-1.5 rounded-md ${darkMode ? 'hover:bg-gray-800 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`} title="Edit"><Edit className="w-4 h-4" /></button>
-                          <button onClick={() => setConfirmDelete(a.id)} className={`p-1.5 rounded-md ${darkMode ? 'hover:bg-gray-800 text-red-300' : 'hover:bg-gray-100 text-red-600'}`} title="Delete"><Trash2 className="w-4 h-4" /></button>
+                          {activeTab === 'announcements' ? (
+                            // Actions for active announcements
+                            <>
+                              <button onClick={() => startEdit(a)} className={`p-1.5 rounded-md ${darkMode ? 'hover:bg-gray-800 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`} title="Edit"><Edit className="w-4 h-4" /></button>
+                              <button onClick={() => toggleActive(a)} className={`p-1.5 rounded-md ${darkMode ? 'hover:bg-gray-800 text-red-300' : 'hover:bg-gray-100 text-red-600'}`} title="Deactivate"><X className="w-4 h-4" /></button>
+                              <button onClick={() => setConfirmDelete(a.id)} className={`p-1.5 rounded-md ${darkMode ? 'hover:bg-gray-800 text-red-300' : 'hover:bg-gray-100 text-red-600'}`} title="Delete"><Trash2 className="w-4 h-4" /></button>
+                            </>
+                          ) : (
+                            // Actions for inactive/requested announcements  
+                            <>
+                              <button onClick={() => toggleActive(a)} className={`p-1.5 rounded-md ${darkMode ? 'hover:bg-gray-800 text-green-300' : 'hover:bg-gray-100 text-green-600'}`} title="Activate"><Check className="w-4 h-4" /></button>
+                              <button onClick={() => setConfirmDelete(a.id)} className={`p-1.5 rounded-md ${darkMode ? 'hover:bg-gray-800 text-red-300' : 'hover:bg-gray-100 text-red-600'}`} title="Delete"><Trash2 className="w-4 h-4" /></button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
