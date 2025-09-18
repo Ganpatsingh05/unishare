@@ -9,12 +9,25 @@ export const fetchMarketplaceItems = async (filters = {}) => {
       Object.entries(filters).filter(([_, value]) => value !== '' && value != null)
     ).toString();
     
-    const endpoint = queryString ? `/itemsell?${queryString}` : '/itemsell';
+    const endpoint = queryString ? `/api/itemsell?${queryString}` : '/api/itemsell';
     const data = await apiCall(endpoint, { method: 'GET' });
     return data;
   } catch (error) {
     console.error('Error fetching marketplace items:', error);
     return { data: [], error: error.message };
+  }
+};
+
+export const fetchItem = async (itemId) => {
+  try {
+    const data = await apiCall(`/api/itemsell/${itemId}`, { method: 'GET' });
+    return data;
+  } catch (error) {
+    console.error('Error fetching item:', error);
+    if (error.message.includes('404')) {
+      throw new Error('Item not found');
+    }
+    throw error;
   }
 };
 
@@ -26,7 +39,7 @@ export const fetchMyItems = async (options = {}) => {
     if (options.sort) queryParams.set('sort', options.sort);
     
     const queryString = queryParams.toString();
-    const endpoint = queryString ? `/itemsell/mine?${queryString}` : '/itemsell/mine';
+    const endpoint = queryString ? `/api/itemsell/mine?${queryString}` : '/api/itemsell/mine';
     
     const data = await apiCall(endpoint, { method: 'GET' });
     return data;
@@ -64,7 +77,7 @@ export const createItem = async (itemData, imageFile = null) => {
       formData.append('image', imageFile);
     }
 
-    const data = await apiCallFormData('/itemsell', formData, 'POST');
+    const data = await apiCallFormData('/api/itemsell', formData, 'POST');
     return data;
   } catch (error) {
     console.error('Error creating item:', error);
@@ -101,7 +114,7 @@ export const updateItem = async (itemId, itemData, imageFile = null) => {
       formData.append('image', imageFile);
     }
 
-    const data = await apiCallFormData(`/itemsell/${itemId}`, formData, 'PUT');
+    const data = await apiCallFormData(`/api/itemsell/${itemId}`, formData, 'PUT');
     return data;
   } catch (error) {
     console.error('Error updating item:', error);
@@ -117,7 +130,7 @@ export const updateItem = async (itemId, itemData, imageFile = null) => {
 
 export const deleteItem = async (itemId) => {
   try {
-    const data = await apiCall(`/itemsell/${itemId}`, { method: 'DELETE' });
+    const data = await apiCall(`/api/itemsell/${itemId}`, { method: 'DELETE' });
     return data;
   } catch (error) {
     console.error('Error deleting item:', error);
@@ -131,18 +144,18 @@ export const deleteItem = async (itemId) => {
   }
 };
 
-export const fetchItem = async (itemId) => {
-  try {
-    const data = await apiCall(`/itemsell/${itemId}`, { method: 'GET' });
-    return data;
-  } catch (error) {
-    console.error('Error fetching item:', error);
-    if (error.message.includes('404')) {
-      throw new Error('Item not found');
-    }
-    throw error;
-  }
-};
+// export const fetchItem = async (itemId) => {
+//   try {
+//     const data = await apiCall(`/itemsell/${itemId}`, { method: 'GET' });
+//     return data;
+//   } catch (error) {
+//     console.error('Error fetching item:', error);
+//     if (error.message.includes('404')) {
+//       throw new Error('Item not found');
+//     }
+//     throw error;
+//   }
+// };
 
 // Image upload functions for marketplace items
 export const uploadItemImage = async (imageFile) => {
@@ -167,6 +180,39 @@ export const deleteItemImage = async (imagePath) => {
     return data;
   } catch (error) {
     console.error('Error deleting item image:', error);
+    throw error;
+  }
+};
+
+// ============== ADMIN FUNCTIONS ==============
+
+export const fetchAllItems = async (filters = {}) => {
+  try {
+    const queryString = new URLSearchParams(
+      Object.entries(filters).filter(([_, value]) => value !== '' && value != null)
+    ).toString();
+    
+    const endpoint = queryString ? `/admin/itemsell?${queryString}` : '/admin/itemsell';
+    const data = await apiCall(endpoint, { method: 'GET' });
+    return data;
+  } catch (error) {
+    console.error('Error fetching all items (admin):', error);
+    return { data: [], error: error.message };
+  }
+};
+
+export const deleteItemAdmin = async (itemId) => {
+  try {
+    const data = await apiCall(`/admin/itemsell/${itemId}`, { method: 'DELETE' });
+    return data;
+  } catch (error) {
+    console.error('Error deleting item (admin):', error);
+    if (error.message.includes('401')) {
+      throw new Error('Admin authentication required');
+    }
+    if (error.message.includes('403')) {
+      throw new Error('Admin access required');
+    }
     throw error;
   }
 };

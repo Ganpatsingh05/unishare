@@ -104,6 +104,23 @@ export {
   getNoticesForNoticeBar
 } from './api/notice.js';
 
+// Re-export all notification functions
+export {
+  getUserNotifications,
+  getUnreadNotificationCount,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  deleteUserNotification,
+  markNotificationAsReadPublic,
+  toggleNotificationReadStatusPublic,
+  sendAdminNotification,
+  getAllAdminNotifications,
+  getAdminNotification,
+  deleteAdminNotification,
+  getNotificationStats,
+  getNotificationsForUser
+} from './api/notifications.js';
+
 // Re-export all utility functions
 export {
   fetchUserDashboardData,
@@ -139,6 +156,5 @@ export {
   createDataBackup,
   getBackupHistory,
   downloadBackup,
-  exportData,
-  sendAdminNotification
+  exportData
 } from './api/admin.js';

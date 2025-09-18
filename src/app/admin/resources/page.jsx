@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Plus, Search, Tag, ExternalLink, Copy, Check, Pencil, Trash2, X, Save, Filter, AlertCircle } from 'lucide-react';
 import AdminGuard from "../_components/AdminGuard";
 import AdminLayout from "../_components/AdminLayout";
-import { getResources, getResourceCategories, createResource, updateResource, deleteResource, toggleResourceActive, getRequestedResources } from "../../lib/api/resources";
+import { getAllResources, getResourceCategories, createResource, updateResource, deleteResource, toggleResourceActive } from "../../lib/api/resources";
 
 
 
@@ -35,8 +35,7 @@ export default function AdminResourcesPage(){
   // Tab state
   const [activeTab, setActiveTab] = useState('resources'); // 'resources' | 'requested'
   
-  const [resources,setResources] = useState([]);
-  const [requestedResources,setRequestedResources] = useState([]);
+  const [allResources,setAllResources] = useState([]);
 
   // Shared UI state
   const [query,setQuery] = useState('');
@@ -58,20 +57,18 @@ export default function AdminResourcesPage(){
     title:'', desc:'', category:'academics', type:'link', url:'', tags:'', active: true
   });
 
-  // Load resources from API on mount
+  // Load all resources from API on mount
   useEffect(() => {
-    loadResources();
-    loadRequestedResources();
+    loadAllResources();
   }, []);
 
-  const loadResources = async () => {
+  const loadAllResources = async () => {
     try {
       setLoading(true);
       setError(null);
-      // Show only active in the Resources tab list
-      const result = await getResources(null, false);
+      const result = await getAllResources();
       if (result.success) {
-        setResources(result.resources);
+        setAllResources(result.resources || []);
       } else {
         throw new Error(result.message || 'Failed to load resources');
       }
@@ -83,38 +80,22 @@ export default function AdminResourcesPage(){
     }
   };
 
-  const loadRequestedResources = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await getRequestedResources();
-      if (result.success) {
-        setRequestedResources(result.requestedResources);
-      } else {
-        throw new Error(result.message || 'Failed to load requested resources');
-      }
-    } catch (error) {
-      console.error('Failed to load requested resources:', error);
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Filtering - separate active and inactive resources based on current tab
+  const activeResources = useMemo(() => allResources.filter(r => r.active === true), [allResources]);
+  const inactiveResources = useMemo(() => allResources.filter(r => r.active === false), [allResources]);
 
-  // Filtering
-  const filteredResources = useMemo(()=> resources.filter(r=>{
-    const q=query.trim().toLowerCase();
-    const matchesQ = !q || r.title.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q) || r.tags?.some(t=> t.toLowerCase().includes(q));
-    const matchesCat = category==='all' || r.category===category;
-    return matchesQ && matchesCat;
-  }),[resources,query,category]);
+  const filteredResources = useMemo(()=> {
+    const sourceResources = activeTab === 'resources' ? activeResources : inactiveResources;
+    return sourceResources.filter(r=>{
+      const q=query.trim().toLowerCase();
+      const matchesQ = !q || r.title.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q) || r.tags?.some(t=> t.toLowerCase().includes(q));
+      const matchesCat = category==='all' || r.category===category;
+      return matchesQ && matchesCat;
+    });
+  },[activeResources, inactiveResources, activeTab, query, category]);
 
-  const filteredRequestedResources = useMemo(()=> requestedResources.filter(r=>{
-    const q=query.trim().toLowerCase();
-    const matchesQ = !q || r.title?.toLowerCase().includes(q) || r.desc?.toLowerCase().includes(q);
-    const matchesCat = category==='all' || r.category===category;
-    return matchesQ && matchesCat;
-  }),[requestedResources,query,category]);
+  // For backwards compatibility, keep the old variable names
+  const filteredRequestedResources = filteredResources;
 
   const openModal = (item=null) => {
     if(item) {
@@ -169,8 +150,7 @@ export default function AdminResourcesPage(){
       }
 
       if (result.success) {
-        await loadResources(); // Reload resources from server
-        await loadRequestedResources(); // Keep inactive list in sync
+        await loadAllResources(); // Reload all resources from server
         setModalOpen(false);
         resetForm();
       }
@@ -190,7 +170,7 @@ export default function AdminResourcesPage(){
         
         const result = await deleteResource(confirmDelete);
         if (result.success) {
-          await loadResources(); // Reload resources from server
+          await loadAllResources(); // Reload all resources from server
         }
         setConfirmDelete(null);
       } catch (error) {
@@ -207,8 +187,7 @@ export default function AdminResourcesPage(){
       setError(null);
       const result = await toggleResourceActive(resourceId);
       if (result.success) {
-        await loadResources(); // Reload resources to show updated status
-        await loadRequestedResources(); // Keep inactive list in sync
+        await loadAllResources(); // Reload all resources to show updated status
       } else {
         setError(result.message);
       }
@@ -223,8 +202,7 @@ export default function AdminResourcesPage(){
       setError(null);
       const result = await toggleResourceActive(resourceId);
       if (result.success) {
-        await loadRequestedResources(); // reload inactive list
-        await loadResources(); // reload main list
+        await loadAllResources(); // reload all resources
       } else {
         setError(result.message);
       }
@@ -239,8 +217,7 @@ export default function AdminResourcesPage(){
       setError(null);
       const result = await deleteResource(resourceId);
       if (result.success) {
-        await loadRequestedResources();
-        await loadResources();
+        await loadAllResources();
       } else {
         setError(result.message);
       }
@@ -257,7 +234,7 @@ export default function AdminResourcesPage(){
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
         <div>
           <h1 className="text-xl font-semibold text-white">Resources Management</h1>
-          <p className="text-xs text-gray-400 mt-0.5">Manage shared resources and handle user requests.</p>
+          <p className="text-xs text-gray-400 mt-0.5">Manage shared resources. Active resources appear in Resources tab, inactive/requested resources in Requested tab.</p>
           {!process.env.NEXT_PUBLIC_BACKEND_URL && (
             <div className="mt-2 text-xs text-amber-400 bg-amber-500/10 px-2 py-1 rounded">
               Demo mode - Backend not configured
@@ -274,8 +251,14 @@ export default function AdminResourcesPage(){
 
       {/* Tabs */}
       <div className="mt-6 flex items-center gap-2 border-b border-gray-800 text-xs">
-        <button onClick={()=> setActiveTab('resources')} className={`px-4 py-2 rounded-t-lg border ${activeTab==='resources'? 'bg-gray-950 border-gray-700 text-white':'border-transparent text-gray-400 hover:text-gray-200'}`}>Resources</button>
-        <button onClick={()=> setActiveTab('requested')} className={`px-4 py-2 rounded-t-lg border ${activeTab==='requested'? 'bg-gray-950 border-gray-700 text-white':'border-transparent text-gray-400 hover:text-gray-200'}`}>Requested</button>
+        <button onClick={()=> setActiveTab('resources')} className={`px-4 py-2 rounded-t-lg border flex items-center gap-2 ${activeTab==='resources'? 'bg-gray-950 border-gray-700 text-white':'border-transparent text-gray-400 hover:text-gray-200'}`}>
+          Resources 
+          <span className="px-2 py-0.5 rounded-full bg-green-600 text-white text-xs">{activeResources.length}</span>
+        </button>
+        <button onClick={()=> setActiveTab('requested')} className={`px-4 py-2 rounded-t-lg border flex items-center gap-2 ${activeTab==='requested'? 'bg-gray-950 border-gray-700 text-white':'border-transparent text-gray-400 hover:text-gray-200'}`}>
+          Requested 
+          <span className="px-2 py-0.5 rounded-full bg-yellow-600 text-white text-xs">{inactiveResources.length}</span>
+        </button>
       </div>
 
       {/* Error Display */}

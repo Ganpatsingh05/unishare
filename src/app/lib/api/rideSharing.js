@@ -332,3 +332,155 @@ export const validateRideData = (rideData) => {
   
   return errors;
 };
+
+// ===========================
+// ADMIN FUNCTIONS
+// ===========================
+
+// Get all rides for admin view
+export const getAllRidesAdmin = async (filters = {}) => {
+  try {
+    const queryParams = new URLSearchParams();
+    
+    if (filters.status) queryParams.append('status', filters.status);
+    if (filters.userId) queryParams.append('userId', filters.userId);
+    if (filters.sort) queryParams.append('sort', filters.sort);
+    if (filters.order) queryParams.append('order', filters.order);
+    if (filters.limit) queryParams.append('limit', filters.limit);
+    if (filters.offset) queryParams.append('offset', filters.offset);
+
+    const endpoint = `/admin/shareride${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    const response = await apiCall(endpoint, { method: 'GET' });
+
+    return {
+      success: true,
+      data: response.data || [],
+      total: response.total || 0,
+      pagination: response.pagination || {}
+    };
+  } catch (error) {
+    console.error('Error fetching rides (admin):', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// Get ride details by ID for admin
+export const getRideByIdAdmin = async (rideId) => {
+  try {
+    if (!rideId) {
+      throw new Error('Ride ID is required');
+    }
+
+    const response = await apiCall(`/admin/shareride/${rideId}`, { method: 'GET' });
+
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    console.error('Error fetching ride details (admin):', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// Update ride status (admin)
+export const updateRideStatusAdmin = async (rideId, status, reason = '') => {
+  try {
+    if (!rideId || !status) {
+      throw new Error('Ride ID and status are required');
+    }
+
+    const response = await apiCall(`/admin/shareride/${rideId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, reason })
+    });
+
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    console.error('Error updating ride status (admin):', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// Delete ride (admin)
+export const deleteRideAdmin = async (rideId, reason = '') => {
+  try {
+    if (!rideId) {
+      throw new Error('Ride ID is required');
+    }
+
+    const response = await apiCall(`/admin/shareride/${rideId}`, {
+      method: 'DELETE',
+      body: JSON.stringify({ reason })
+    });
+
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    console.error('Error deleting ride (admin):', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// Get ride sharing statistics (admin)
+export const getRideSharingStatsAdmin = async () => {
+  try {
+    const response = await apiCall('/admin/shareride/stats', { method: 'GET' });
+
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    console.error('Error fetching ride sharing stats (admin):', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+// Get flagged rides (admin)
+export const getFlaggedRidesAdmin = async (filters = {}) => {
+  try {
+    const queryParams = new URLSearchParams();
+    
+    if (filters.sort) queryParams.append('sort', filters.sort);
+    if (filters.order) queryParams.append('order', filters.order);
+    if (filters.limit) queryParams.append('limit', filters.limit);
+    if (filters.offset) queryParams.append('offset', filters.offset);
+
+    const endpoint = `/admin/shareride/flagged${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    const response = await apiCall(endpoint, { method: 'GET' });
+
+    return {
+      success: true,
+      data: response.data || [],
+      total: response.total || 0,
+      pagination: response.pagination || {}
+    };
+  } catch (error) {
+    console.error('Error fetching flagged rides (admin):', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};

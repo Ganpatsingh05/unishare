@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Megaphone, Tag, Calendar, Link2, Send } from "lucide-react";
 import Header from "../../_components/Header";
 import Footer from "../../_components/Footer";
-import { createSystemAnnouncement } from "../../lib/api/announcements";
+import { submitAnnouncement } from "../../lib/api/announcements";
 import { useUI } from "../../lib/contexts/UniShareContext";
 
 export default function SubmitAnnouncementPage() {
@@ -38,7 +38,7 @@ export default function SubmitAnnouncementPage() {
         active: false, // Default to inactive - admin will activate
       };
 
-      const result = await createSystemAnnouncement(announcementData);
+      const result = await submitAnnouncement(announcementData);
       
       if (result.success) {
         setSuccess(true);

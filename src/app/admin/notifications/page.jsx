@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { Send, Bell, Users, Loader2, CheckCircle2, XCircle, RefreshCcw, Search, Filter, X, Plus, Tag } from 'lucide-react';
+import { Send, Bell, Users, Loader2, CheckCircle2, XCircle, RefreshCcw, Search, Filter, X, Plus, Tag, History } from 'lucide-react';
 import { useUI } from "../../lib/contexts/UniShareContext";
-import { sendAdminNotification } from "../../lib/api";
+import { sendAdminNotification, getAllAdminNotifications, deleteAdminNotification, getNotificationStats } from "../../lib/api";
 import AdminGuard from "../_components/AdminGuard";
 import AdminLayout from "../_components/AdminLayout";
 
@@ -33,16 +33,43 @@ export default function AdminNotificationsPage() {
   });
   const [sending, setSending] = useState(false);
   const [history, setHistory] = useState([]);
+  const [serverNotifications, setServerNotifications] = useState([]);
+  const [stats, setStats] = useState(null);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState('send'); // 'send' | 'history'
   const emailInputRef = useRef(null);
 
-  // Load history from localStorage (with simple seed if empty)
+  // Load notifications from backend
+  const loadServerNotifications = async () => {
+    try {
+      setRefreshing(true);
+      const [notificationsRes, statsRes] = await Promise.all([
+        getAllAdminNotifications({ limit: 100 }),
+        getNotificationStats()
+      ]);
+      
+      if (notificationsRes.success) {
+        setServerNotifications(notificationsRes.notifications || []);
+      }
+      
+      if (statsRes.success) {
+        setStats(statsRes.stats || null);
+      }
+    } catch (error) {
+      console.warn('Failed to load server notifications:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  // Load history from localStorage (with simple seed if empty) and server data
   useEffect(() => {
+    // Load local history
     try {
       const raw = localStorage.getItem(HISTORY_STORAGE_KEY);
       if (raw) {
@@ -57,6 +84,9 @@ export default function AdminNotificationsPage() {
     } catch (e) {
       console.warn('History load failed', e);
     }
+    
+    // Load server data
+    loadServerNotifications();
   }, []);
 
   // Persist history
@@ -127,34 +157,72 @@ export default function AdminNotificationsPage() {
     setHistory(h => [optimistic, ...h]);
     setSending(true);
     try {
-      await sendAdminNotification({ users: usersArray, message: form.message.trim(), type: form.type, title: form.title.trim() || undefined });
-      setHistory(h => h.map(n => n.id === tempId ? { ...n, status: 'sent' } : n));
-      setSuccess('Notification sent');
-      resetForm();
+      const result = await sendAdminNotification({ 
+        users: usersArray, 
+        message: form.message.trim(), 
+        type: form.type, 
+        title: form.title.trim() || undefined 
+      });
+      
+      if (result.success) {
+        setHistory(h => h.map(n => n.id === tempId ? { ...n, status: 'sent' } : n));
+        setSuccess(`Notification sent successfully to ${result.data?.length || 0} recipients`);
+        resetForm();
+        // Refresh server notifications to show the new notification
+        loadServerNotifications();
+      } else {
+        throw new Error(result.error || 'Failed to send notification');
+      }
     } catch (err) {
       console.error(err);
       setHistory(h => h.map(n => n.id === tempId ? { ...n, status: 'failed', error: err.message } : n));
-      setError(err.message || 'Failed to send');
+      setError(err.message || 'Failed to send notification');
     } finally {
       setSending(false);
     }
   };
 
+  const handleDeleteNotification = async (notificationId) => {
+    if (!window.confirm('Are you sure you want to delete this notification?')) return;
+    
+    try {
+      const result = await deleteAdminNotification(notificationId);
+      if (result.success) {
+        setSuccess('Notification deleted successfully');
+        loadServerNotifications(); // Refresh the list
+      } else {
+        setError(result.error || 'Failed to delete notification');
+      }
+    } catch (error) {
+      setError(error.message || 'Failed to delete notification');
+    }
+  };
+
   const filtered = useMemo(() => {
-    return history.filter(h => {
+    // Combine local history and server notifications for history tab
+    const allNotifications = activeTab === 'history' 
+      ? [...history, ...serverNotifications.map(n => ({
+          id: n.id,
+          title: n.title,
+          users: n.recipient_type === 'all' ? ['ALL'] : [n.recipient?.email || 'Unknown'],
+          message: n.message,
+          type: n.type,
+          status: 'sent', // Server notifications are always sent
+          createdAt: n.created_at,
+          sender: n.sender,
+          recipient_type: n.recipient_type,
+          read: n.read
+        }))]
+      : history;
+    
+    return allNotifications.filter(h => {
       const q = search.trim().toLowerCase();
       const matchesSearch = !q || h.message.toLowerCase().includes(q) || (h.title?.toLowerCase().includes(q));
       const matchesType = typeFilter === 'all' || h.type === typeFilter;
       const matchesStatus = statusFilter === 'all' || h.status === statusFilter;
       return matchesSearch && matchesType && matchesStatus;
-    });
-  }, [history, search, typeFilter, statusFilter]);
-
-  const refreshHistory = () => {
-    setRefreshing(true);
-    // Placeholder for future backend re-fetch
-    setTimeout(() => setRefreshing(false), 600);
-  };
+    }).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  }, [history, serverNotifications, activeTab, search, typeFilter, statusFilter]);
 
   const typeBadge = (t) => ({
     info: 'bg-blue-500/15 text-blue-600 dark:bg-blue-500/20 dark:text-blue-300',
@@ -176,18 +244,54 @@ export default function AdminNotificationsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Notifications</h1>
-              <p className={darkMode ? 'text-gray-400 text-sm' : 'text-gray-600 text-sm'}>Broadcast messages to users with priority context.</p>
+              <p className={darkMode ? 'text-gray-400 text-sm' : 'text-gray-600 text-sm'}>Send notifications to users and view notification history.</p>
             </div>
             <div className="flex items-center gap-3">
-              <button onClick={refreshHistory} className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border ${darkMode ? 'border-gray-700 text-gray-300 hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}>
+              {stats && (
+                <div className={`px-3 py-1 rounded-lg text-xs font-medium ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+                  {stats.total} sent | {stats.unread} unread
+                </div>
+              )}
+              <button onClick={loadServerNotifications} className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border ${darkMode ? 'border-gray-700 text-gray-300 hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}>
                 {refreshing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCcw className="w-4 h-4" />} Refresh
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Form Panel */}
-            <div className={`lg:col-span-5 rounded-xl border ${panelBg} p-6 space-y-6`}>
+          {/* Tabs */}
+          <div className="flex items-center gap-2 border-b border-gray-800 text-sm">
+            <button 
+              onClick={() => setActiveTab('send')} 
+              className={`px-4 py-2 rounded-t-lg border flex items-center gap-2 ${
+                activeTab === 'send' 
+                  ? 'bg-gray-950 border-gray-700 text-white' 
+                  : 'border-transparent text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              <Send className="w-4 h-4" />
+              Send Notification
+            </button>
+            <button 
+              onClick={() => setActiveTab('history')} 
+              className={`px-4 py-2 rounded-t-lg border flex items-center gap-2 ${
+                activeTab === 'history' 
+                  ? 'bg-gray-950 border-gray-700 text-white' 
+                  : 'border-transparent text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              <History className="w-4 h-4" />
+              History 
+              <span className="px-2 py-0.5 rounded-full bg-blue-600 text-white text-xs">
+                {serverNotifications.length + history.length}
+              </span>
+            </button>
+          </div>
+
+          {/* Send Notification Tab */}
+          {activeTab === 'send' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              {/* Form Panel */}
+              <div className={`lg:col-span-5 rounded-xl border ${panelBg} p-6 space-y-6`}>
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
                   <label className="block text-xs font-medium mb-1 uppercase tracking-wide">Title (optional)</label>
@@ -253,30 +357,39 @@ export default function AdminNotificationsPage() {
                 </div>
               </form>
             </div>
+          </div>
+          )}
 
-            {/* History Panel */}
-            <div className={`lg:col-span-7 space-y-4`}>
+          {/* History Tab */}
+          {activeTab === 'history' && (
+            <div className="space-y-4">
+              {/* Filters */}
               <div className={`p-4 rounded-xl border ${panelBg}`}>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="relative md:col-span-2">
-                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search title or message" className={`w-full pl-9 pr-3 py-2 rounded-lg border ${inputBase}`} />
+                  <div className="md:col-span-2">
+                    <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search notifications..." className={`w-full px-3 py-2 rounded-lg border ${inputBase}`} />
                   </div>
-                  <select value={typeFilter} onChange={e=>setTypeFilter(e.target.value)} className={`w-full px-3 py-2 rounded-lg border ${inputBase}`}>
-                    <option value="all">All Types</option>
-                    <option value="info">Info</option>
-                    <option value="success">Success</option>
-                    <option value="warning">Warning</option>
-                    <option value="error">Error</option>
-                  </select>
-                  <select value={statusFilter} onChange={e=>setStatusFilter(e.target.value)} className={`w-full px-3 py-2 rounded-lg border ${inputBase}`}>
-                    <option value="all">All Status</option>
-                    <option value="sending">Sending</option>
-                    <option value="sent">Sent</option>
-                    <option value="failed">Failed</option>
-                  </select>
+                  <div>
+                    <select value={typeFilter} onChange={e=>setTypeFilter(e.target.value)} className={`w-full px-3 py-2 rounded-lg border ${inputBase}`}>
+                      <option value="all">All Types</option>
+                      <option value="info">Info</option>
+                      <option value="success">Success</option>
+                      <option value="warning">Warning</option>
+                      <option value="error">Error</option>
+                    </select>
+                  </div>
+                  <div>
+                    <select value={statusFilter} onChange={e=>setStatusFilter(e.target.value)} className={`w-full px-3 py-2 rounded-lg border ${inputBase}`}>
+                      <option value="all">All Status</option>
+                      <option value="sending">Sending</option>
+                      <option value="sent">Sent</option>
+                      <option value="failed">Failed</option>
+                    </select>
+                  </div>
                 </div>
               </div>
+
+              {/* Notifications List */}
               <div className={`rounded-xl border ${panelBg}`}>
                 <div className="overflow-x-auto divide-y divide-gray-200 dark:divide-gray-800">
                   {filtered.length === 0 && (
@@ -290,24 +403,66 @@ export default function AdminNotificationsPage() {
                           {n.title && <span className={`text-xs font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{n.title}</span>}
                           <span className="text-[11px] text-gray-500 dark:text-gray-400">{new Date(n.createdAt).toLocaleString()}</span>
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${statusBadge(n.status)}`}>{n.status}</span>
+                          {n.read !== undefined && (
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${n.read ? 'bg-gray-500/20 text-gray-600' : 'bg-blue-500/20 text-blue-600'}`}>
+                              {n.read ? 'READ' : 'UNREAD'}
+                            </span>
+                          )}
                         </div>
                         <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>{n.message}</p>
                         <div className="flex flex-wrap gap-1">
-                          {n.users.slice(0,8).map(u => (
-                            <span key={u} className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>{u === 'ALL' ? 'All Users' : (u === 'SELF' ? 'Only Me' : u)}</span>
+                          {n.users?.slice(0,8).map(u => (
+                            <span key={u} className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+                              {u === 'ALL' ? 'All Users' : (u === 'SELF' ? 'Only Me' : u)}
+                            </span>
                           ))}
-                          {n.users.length > 8 && (
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>+{n.users.length - 8} more</span>
+                          {n.users?.length > 8 && (
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+                              +{n.users.length - 8} more
+                            </span>
+                          )}
+                          {n.sender && (
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium ${darkMode ? 'bg-blue-800/30 text-blue-300' : 'bg-blue-100 text-blue-600'}`}>
+                              Sent by: {n.sender.name || n.sender.email}
+                            </span>
                           )}
                         </div>
                         {n.error && <p className="text-xs text-red-500">Error: {n.error}</p>}
                       </div>
+                      {/* Action buttons for server notifications */}
+                      {typeof n.id === 'number' && (
+                        <div className="flex items-center gap-2">
+                          <button 
+                            onClick={() => handleDeleteNotification(n.id)}
+                            className="p-2 text-red-500 hover:bg-red-500/10 rounded-md"
+                            title="Delete notification"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Success/Error Messages */}
+          {success && (
+            <div className="p-4 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4" />
+              <span>{success}</span>
+              <button onClick={() => setSuccess(null)} className="ml-auto text-green-500 hover:text-green-700">×</button>
+            </div>
+          )}
+          {error && (
+            <div className="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2">
+              <XCircle className="w-4 h-4" />
+              <span>{error}</span>
+              <button onClick={() => setError(null)} className="ml-auto text-red-500 hover:text-red-700">×</button>
+            </div>
+          )}
         </div>
       </AdminLayout>
     </AdminGuard>

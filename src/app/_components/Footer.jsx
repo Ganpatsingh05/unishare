@@ -67,8 +67,8 @@ const Footer = () => {
     ],
     company: [
       { name: 'About UniShare', href: '/info/about' },
-      { name: 'Our Mission', href: '/info/mission' },
-      { name: 'Careers', href: '/info/careers' }
+      { name: 'Our Mission', href: '/info/mission' }
+      // { name: 'Careers', href: '/info/careers' }
     ],
     legal: [
       { name: 'Privacy Policy', href: '/info/privacy' },

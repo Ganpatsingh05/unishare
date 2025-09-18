@@ -41,7 +41,9 @@ const Header = ({ logoRotation = 0 }) => {
     notifications, 
     hasUnread, 
     markNotificationRead, 
-    markAllNotificationsRead 
+    markAllNotificationsRead,
+    setNotifications,
+    loadNotifications
   } = useNotifications();
 
   const handleProfileMenuToggle = () => {
@@ -212,25 +214,27 @@ const Header = ({ logoRotation = 0 }) => {
             {/* Action Buttons */}
             <div className="flex items-center gap-2">
               
-              {/* Enhanced Notifications */}
-              <button 
-                className={`hidden sm:flex p-3 rounded-xl transition-all duration-300 transform hover:scale-110 active:scale-95 relative cursor-pointer ${
-                  isNotificationActive 
-                    ? `animate-bounce ${darkMode ? 'bg-yellow-300/20' : 'bg-blue-600/20'}`
-                    : `${darkMode 
-                        ? 'text-gray-100 hover:bg-gray-800 bg-gray-850 hover:shadow-lg hover:text-yellow-300' 
-                        : 'text-blue-600 hover:bg-gray-100 bg-gray-50 hover:shadow-lg hover:text-blue-700'
-                      }`
-                }`}
-                onClick={handleNotificationClick}
-                title="Notifications"
-              >
-                <Bell className="w-5 h-5 transition-all duration-300" />
-                {/* Notification badge */}
-                {hasUnread && (
-                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
-                )}
-              </button>
+              {/* Enhanced Notifications - Only show when authenticated */}
+              {isAuthenticated && (
+                <button 
+                  className={`hidden sm:flex p-3 rounded-xl transition-all duration-300 transform hover:scale-110 active:scale-95 relative cursor-pointer ${
+                    isNotificationActive 
+                      ? `animate-bounce ${darkMode ? 'bg-yellow-300/20' : 'bg-blue-600/20'}`
+                      : `${darkMode 
+                          ? 'text-gray-100 hover:bg-gray-800 bg-gray-850 hover:shadow-lg hover:text-yellow-300' 
+                          : 'text-blue-600 hover:bg-gray-100 bg-gray-50 hover:shadow-lg hover:text-blue-700'
+                        }`
+                  }`}
+                  onClick={handleNotificationClick}
+                  title="Notifications"
+                >
+                  <Bell className="w-5 h-5 transition-all duration-300" />
+                  {/* Notification badge */}
+                  {hasUnread && (
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
+                  )}
+                </button>
+              )}
 
               {/* Enhanced Theme Toggle */}
               <button 
@@ -371,7 +375,9 @@ const Header = ({ logoRotation = 0 }) => {
         onClose={() => setNotifOpen(false)}
         darkMode={darkMode}
         notifications={notifications}
-        setNotifications={() => {}} // This should use context action
+        setNotifications={setNotifications}
+        loadNotifications={loadNotifications}
+        isAuthenticated={isAuthenticated}
       />
     </header>
   );
