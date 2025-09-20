@@ -34,7 +34,7 @@ export const updateUserProfile = async (profileData, avatarFile = null) => {
       formData.append('avatar', avatarFile);
     }
 
-    const data = await apiCallFormData('/profile/me', formData, 'PUT');
+    const data = await apiCallFormData('/profile/me', formData, { method: 'PUT' });
     return data;
   } catch (error) {
     if (error.message.includes('401')) {
@@ -49,7 +49,7 @@ export const uploadUserAvatar = async (imageFile) => {
     const formData = new FormData();
     formData.append('avatar', imageFile);
     
-    const data = await apiCallFormData('/profile/me', formData, 'PUT');
+    const data = await apiCallFormData('/profile/me', formData, { method: 'PUT' });
     return data;
   } catch (error) {
     if (error.message.includes('401')) {

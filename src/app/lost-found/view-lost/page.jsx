@@ -57,8 +57,6 @@ export default function ViewLostPage() {
       setError(null);
       
       try {
-        console.log('🔍 Fetching lost items...');
-        
         // Create filters for API call
         const filters = {
           mode: 'lost', // Only show lost items
@@ -73,7 +71,6 @@ export default function ViewLostPage() {
         
         if (result.success) {
           setItems(result.data || []);
-          console.log(`✅ Loaded ${result.data?.length || 0} lost items`);
         } else {
           throw new Error(result.message || 'Failed to fetch items');
         }

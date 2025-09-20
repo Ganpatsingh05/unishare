@@ -33,16 +33,32 @@ export const fetchMyLostFoundItems = async (options = {}) => {
 // Create a new lost/found item with backend image upload
 export const createLostFoundItem = async (itemData, imageFiles = []) => {
   try {
-    console.log('Creating lost/found item with backend upload:', { 
-      itemName: itemData.itemName, 
-      mode: itemData.mode, 
-      images: imageFiles?.length || 0 
-    });
-
     const formData = new FormData();
 
+    // Map frontend field names to backend field names
+    const backendData = {
+      itemName: itemData.item_name || itemData.itemName,
+      description: itemData.description,
+      mode: itemData.mode,
+      whereLastSeen: itemData.where_last_seen,
+      whereFound: itemData.where_found,
+      dateLost: itemData.date_lost,
+      timeLost: itemData.time_lost,
+      dateFound: itemData.date_found,
+      timeFound: itemData.time_found,
+      contact_info: itemData.contact_info,
+      status: itemData.status || 'active'
+    };
+
+    // Remove null/undefined values
+    Object.keys(backendData).forEach(key => {
+      if (backendData[key] === null || backendData[key] === undefined) {
+        delete backendData[key];
+      }
+    });
+
     // Add item data as JSON string (backend expects it this way)
-    formData.append('itemData', JSON.stringify(itemData));
+    formData.append('itemData', JSON.stringify(backendData));
 
     // Add images if provided (backend expects 'images' field for multiple files)
     if (imageFiles && imageFiles.length > 0) {
@@ -51,7 +67,7 @@ export const createLostFoundItem = async (itemData, imageFiles = []) => {
       });
     }
 
-    const data = await apiCallFormData('/api/lostfound/create', formData, 'POST');
+    const data = await apiCallFormData('/api/lostfound/create', formData, { method: 'POST' });
     return data;
   } catch (error) {
     console.error('Error creating lost/found item:', error);
@@ -62,13 +78,70 @@ export const createLostFoundItem = async (itemData, imageFiles = []) => {
   }
 };
 
-export const updateLostFoundItem = async (itemId, updateData) => {
+export const updateLostFoundItem = async (itemId, updateData, imageFiles = []) => {
   try {
-    const data = await apiCall(`/api/lostfound/${itemId}`, {
-      method: 'PUT',
-      body: JSON.stringify(updateData)
+    // Map frontend field names to backend field names
+    const backendData = {
+      itemName: updateData.item_name,
+      description: updateData.description,
+      mode: updateData.mode,
+      whereLastSeen: updateData.where_last_seen,
+      whereFound: updateData.where_found,
+      dateLost: updateData.date_lost,
+      timeLost: updateData.time_lost,
+      dateFound: updateData.date_found,
+      timeFound: updateData.time_found,
+      contact_info: updateData.contact_info,
+      status: updateData.status || 'active'
+    };
+
+    // Remove null/undefined values
+    Object.keys(backendData).forEach(key => {
+      if (backendData[key] === null || backendData[key] === undefined) {
+        delete backendData[key];
+      }
     });
-    return data;
+
+    // Try the full update endpoint first
+    try {
+      const formData = new FormData();
+      formData.append('itemData', JSON.stringify(backendData));
+      
+      // Add images if provided
+      if (imageFiles && imageFiles.length > 0) {
+        imageFiles.forEach(file => {
+          formData.append('images', file);
+        });
+      }
+
+      const data = await apiCallFormData(`/api/lostfound/${itemId}/update`, formData, { method: 'PUT' });
+      return data;
+      
+    } catch (error) {
+      // If we get a 404, the /update route might not be available
+      if (error.message.includes('404') || error.message.includes('Route not found')) {
+        // For now, if images were provided, we'll warn the user
+        if (imageFiles && imageFiles.length > 0) {
+          throw new Error('Image upload not available - the full update route is not accessible');
+        }
+        
+        // Try the simple status update route
+        const simpleUpdateData = {
+          status: backendData.status || 'active',
+          notes: `Updated: ${backendData.itemName || 'Item'}`
+        };
+        
+        const data = await apiCall(`/api/lostfound/${itemId}`, {
+          method: 'PUT',
+          body: JSON.stringify(simpleUpdateData)
+        });
+        
+        return data;
+      }
+      
+      // For other errors, re-throw
+      throw error;
+    }
   } catch (error) {
     console.error('Error updating lost/found item:', error);
     if (error.message.includes('401')) {

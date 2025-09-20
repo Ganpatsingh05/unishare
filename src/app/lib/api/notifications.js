@@ -1,63 +1,209 @@
-// api/notifications.js - User and Admin notification management API functions
-import { apiCall } from './base.js';
-import { fetchCurrentUser } from './auth.js';
+// api/notifications.js - Enhanced notification management API functions
+import { apiCall, buildQueryParams, APIError, clearAPICache } from './base.js';
 
 // ============== USER NOTIFICATION FUNCTIONS ==============
 
-// Get user's notifications (authenticated users only)
+// Get user's notifications with pagination and filtering
 export const getUserNotifications = async (options = {}) => {
   try {
-    const { read, limit = 50 } = options;
+    const {
+      page = 1,
+      limit = 20,
+      read,
+      type,
+      cache = true,
+      cacheTTL = 1 * 60 * 1000 
+    } = options;
     
-    let queryParams = new URLSearchParams();
-    if (read !== undefined) queryParams.append('read', read.toString());
-    if (limit) queryParams.append('limit', limit.toString());
+    const params = {
+      page,
+      limit,
+      ...(read !== undefined && { read: read.toString() }),
+      ...(type && { type })
+    };
     
-    const queryString = queryParams.toString();
-    const endpoint = `/api/notifications${queryString ? `?${queryString}` : ''}`;
+    const queryString = buildQueryParams(params);
+    const endpoint = `/api/notifications${queryString}`;
     
-    const response = await apiCall(endpoint);
+    const response = await apiCall(endpoint, {
+      method: 'GET',
+      cache,
+      cacheTTL
+    });
     
     return {
       success: true,
-      data: response.data || response || [],
-      notifications: response.data || response || [],
-      message: response.message || `Found ${(response.data || response || []).length} notifications`
+      data: response.data || [],
+      pagination: response.pagination || {
+        currentPage: page,
+        totalPages: Math.ceil((response.totalCount || 0) / limit),
+        totalCount: response.totalCount || 0,
+        hasNext: response.hasNext || false,
+        hasPrev: response.hasPrev || false
+      },
+      totalCount: response.totalCount || 0,
+      message: response.message || `Found ${(response.data || []).length} notifications`
     };
   } catch (error) {
     console.warn('Get notifications endpoint not available:', error.message);
     
-    // Return fallback notifications for development
-    const fallbackNotifications = [
-      {
-        id: 1,
-        title: 'Welcome to UniShare',
-        message: 'Welcome to the UniShare platform! Explore features like ride sharing, marketplace, and more.',
-        type: 'info',
-        read: false,
-        created_at: new Date().toISOString()
-      },
-      {
-        id: 2,
-        title: 'System Update',
-        message: 'System will be under maintenance tonight from 2-4 AM EST.',
-        type: 'warning',
-        read: false,
-        created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() // 2 hours ago
-      }
-    ];
-    
-    return { 
-      success: true,
-      data: fallbackNotifications,
-      notifications: fallbackNotifications,
-      message: 'Using fallback notifications',
-      source: 'fallback'
-    };
+    throw new APIError(
+      'Failed to fetch notifications',
+      error.status || 500,
+      error.message,
+      error.errors || []
+    );
   }
 };
 
-// Get count of unread notifications
+// Get count of unread notifications with caching
+export const getUnreadNotificationsCount = async (options = {}) => {
+  try {
+    const { cache = true, cacheTTL = 30 * 1000 } = options; // 30 second cache
+    
+    const response = await apiCall('/api/notifications/unread-count', {
+      method: 'GET',
+      cache,
+      cacheTTL
+    });
+    
+    return {
+      success: true,
+      count: response.count || 0,
+      message: response.message || `You have ${response.count || 0} unread notifications`
+    };
+  } catch (error) {
+    console.warn('Unread count endpoint not available:', error.message);
+    return { success: true, count: 0, message: 'Unable to fetch unread count' };
+  }
+};
+
+// Mark notification as read
+export const markNotificationAsRead = async (notificationId) => {
+  try {
+    if (!notificationId) {
+      throw new APIError('Notification ID is required', 400);
+    }
+
+    const response = await apiCall(`/api/notifications/${notificationId}/read`, {
+      method: 'PATCH',
+      cache: false
+    });
+
+    // Clear notifications cache after marking as read
+    clearAPICache('notifications');
+    
+    return {
+      success: true,
+      message: response.message || 'Notification marked as read'
+    };
+  } catch (error) {
+    throw new APIError(
+      'Failed to mark notification as read',
+      error.status || 500,
+      error.message,
+      error.errors || []
+    );
+  }
+};
+
+// Mark all notifications as read
+export const markAllNotificationsAsRead = async () => {
+  try {
+    const response = await apiCall('/api/notifications/mark-all-read', {
+      method: 'PATCH',
+      cache: false
+    });
+
+    // Clear notifications cache after marking all as read
+    clearAPICache('notifications');
+    
+    return {
+      success: true,
+      count: response.count || 0,
+      message: response.message || `Marked ${response.count || 0} notifications as read`
+    };
+  } catch (error) {
+    throw new APIError(
+      'Failed to mark all notifications as read',
+      error.status || 500,
+      error.message,
+      error.errors || []
+    );
+  }
+};
+
+// Delete notification
+export const deleteNotification = async (notificationId) => {
+  try {
+    if (!notificationId) {
+      throw new APIError('Notification ID is required', 400);
+    }
+
+    const response = await apiCall(`/api/notifications/${notificationId}`, {
+      method: 'DELETE',
+      cache: false
+    });
+
+    // Clear notifications cache after deletion
+    clearAPICache('notifications');
+    
+    return {
+      success: true,
+      message: response.message || 'Notification deleted successfully'
+    };
+  } catch (error) {
+    throw new APIError(
+      'Failed to delete notification',
+      error.status || 500,
+      error.message,
+      error.errors || []
+    );
+  }
+};
+
+// Batch mark notifications as read
+export const batchMarkNotificationsAsRead = async (notificationIds) => {
+  try {
+    const response = await apiCall('/api/notifications/batch-read', {
+      method: 'PATCH',
+      body: JSON.stringify({ ids: notificationIds }),
+      cache: false
+    });
+
+    // Clear notifications cache after batch operation
+    clearAPICache('notifications');
+    
+    return {
+      success: true,
+      count: response.count || notificationIds.length,
+      message: response.message || `Marked ${notificationIds.length} notifications as read`
+    };
+  } catch (error) {
+    // Fallback to individual API calls if batch endpoint doesn't exist
+    try {
+      const results = await Promise.allSettled(
+        notificationIds.map(id => markNotificationAsRead(id))
+      );
+      
+      const successCount = results.filter(r => r.status === 'fulfilled').length;
+      
+      return {
+        success: true,
+        count: successCount,
+        message: `Marked ${successCount}/${notificationIds.length} notifications as read`
+      };
+    } catch (fallbackError) {
+      throw new APIError(
+        'Failed to mark notifications as read',
+        500,
+        'Both batch and individual operations failed'
+      );
+    }
+  }
+};
+
+// Get count of unread notifications (backward compatibility)
 export const getUnreadNotificationCount = async () => {
   try {
     const response = await apiCall('/api/notifications/unread-count');
@@ -86,49 +232,7 @@ export const getUnreadNotificationCount = async () => {
   }
 };
 
-// Mark notification as read
-export const markNotificationAsRead = async (notificationId) => {
-  try {
-    const response = await apiCall(`/api/notifications/${notificationId}/read`, {
-      method: 'PATCH'
-    });
-    
-    return {
-      success: true,
-      data: response.data,
-      notification: response.data,
-      message: response.message || 'Notification marked as read'
-    };
-  } catch (error) {
-    console.warn('Mark as read endpoint not available:', error.message);
-    return { 
-      success: false, 
-      error: error.message || 'Failed to mark notification as read' 
-    };
-  }
-};
 
-// Mark all notifications as read
-export const markAllNotificationsAsRead = async () => {
-  try {
-    const response = await apiCall('/api/notifications/mark-all-read', {
-      method: 'PATCH'
-    });
-    
-    return {
-      success: true,
-      data: response.data,
-      count: response.data?.count || 0,
-      message: response.message || `Marked ${response.data?.count || 0} notifications as read`
-    };
-  } catch (error) {
-    console.warn('Mark all as read endpoint not available:', error.message);
-    return { 
-      success: false, 
-      error: error.message || 'Failed to mark all notifications as read' 
-    };
-  }
-};
 
 // Delete notification (user can only delete their own personal notifications)
 export const deleteUserNotification = async (notificationId) => {

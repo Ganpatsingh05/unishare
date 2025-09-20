@@ -38,24 +38,55 @@ export const fetchMyTickets = async (options = {}) => {
 // Create a new ticket listing with backend image upload
 export const createTicket = async (ticketData, imageFile = null) => {
   try {
+    console.log('🎫 CreateTicket called with data:', ticketData);
+    
+    // Validate ticketData is not empty
+    if (!ticketData || Object.keys(ticketData).length === 0) {
+      throw new Error('Ticket data is empty or invalid');
+    }
+    
+    // Validate required fields
+    if (!ticketData.title) {
+      throw new Error('Title is required');
+    }
+    
+    if (!ticketData.price || ticketData.price <= 0) {
+      throw new Error('Valid price is required');
+    }
+    
+    if (!ticketData.quantity_available || ticketData.quantity_available <= 0) {
+      throw new Error('Valid quantity is required');
+    }
+    
+    if (!ticketData.category) {
+      throw new Error('Category is required');
+    }
+    
     console.log('Creating ticket with backend upload:', { 
       title: ticketData.title, 
       hasImage: !!imageFile 
     });
 
-    // Prepare FormData for backend
-    const formData = new FormData();
-    
-    // Add ticket data as JSON string (backend expects it this way)
-    formData.append('ticketData', JSON.stringify(ticketData));
-    
-    // Add image file if provided
     if (imageFile) {
+      // Use FormData for file uploads
+      const formData = new FormData();
+      formData.append('ticketData', JSON.stringify(ticketData));
       formData.append('image', imageFile);
+      
+      const data = await apiCallFormData('/api/ticketsell/create', formData, { method: 'POST' });
+      return data;
+    } else {
+      // Use regular JSON for data-only submissions
+      console.log('🎫 Sending JSON data (no image):', ticketData);
+      const data = await apiCall('/api/ticketsell/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(ticketData),
+      });
+      return data;
     }
-
-    const data = await apiCallFormData('/api/ticketsell/create', formData, 'POST');
-    return data;
   } catch (error) {
     console.error('Error creating ticket:', error);
     throw error;
@@ -70,19 +101,26 @@ export const updateTicket = async (ticketId, ticketData, imageFile = null) => {
       hasNewImage: !!imageFile 
     });
 
-    // Prepare FormData for backend
-    const formData = new FormData();
-    
-    // Add ticket data as JSON string (backend expects it this way)
-    formData.append('ticketData', JSON.stringify(ticketData));
-    
-    // Add new image file if provided
     if (imageFile) {
+      // Use FormData for file uploads
+      const formData = new FormData();
+      formData.append('ticketData', JSON.stringify(ticketData));
       formData.append('image', imageFile);
+      
+      const data = await apiCallFormData(`/api/ticketsell/${ticketId}`, formData, { method: 'PUT' });
+      return data;
+    } else {
+      // Use regular JSON for data-only updates
+      console.log('🎫 Updating with JSON data (no image):', ticketData);
+      const data = await apiCall(`/api/ticketsell/${ticketId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(ticketData),
+      });
+      return data;
     }
-
-    const data = await apiCallFormData(`/api/ticketsell/${ticketId}`, formData, 'PUT');
-    return data;
   } catch (error) {
     console.error('Error updating ticket:', error);
     if (error.message.includes('401')) {

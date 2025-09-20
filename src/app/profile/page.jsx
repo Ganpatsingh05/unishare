@@ -1,532 +1,1521 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSpring, animated, useTrail, config } from '@react-spring/web';
-import Lottie from 'lottie-react';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Calendar, 
-  BookOpen,
-  Camera,
-  Edit3,
-  Save,
-  X,
-  ArrowLeft,
-  Settings,
-  ChevronRight,
-  Laptop,
-  Smartphone,
-  Home,
-  ShoppingBag,
-  Plus,
-  Trash2,
-  IndianRupee,
-  Bed,
-  ImageIcon,
-  Loader,
-  AlertCircle,
-  CheckCircle,
-  Star,
-  Eye,
-  MessageSquare,
-  Heart,
-  Shield,
-  LogOut,
-  CreditCard,
-  Bell,
-  Award,
-  TrendingUp,
-  Users,
-  Activity,
-  Zap,
-  Clock,
-  Target,
-  Upload,
-  Share2,
-  Download,
-  Filter,
-  Search,
-  Grid,
-  List,
-  MoreHorizontal,
-  ExternalLink,
-  Copy,
-  Check,
-  Globe,
-  Link as LinkIcon,
-  Bookmark,
-  Tag,
-  Calendar as CalendarIcon,
-  Timer,
-  Briefcase,
-  GraduationCap,
-  Coffee,
-  Sparkles,
-  Flame,
-  Rocket,
-  Crown
-} from 'lucide-react';
-import { 
-  FiSun, 
-  FiMoon, 
-  FiMonitor, 
-  FiPalette,
-  FiUser,
-  FiHome,
-  FiShoppingCart,
-  FiGithub,
-  FiLinkedin,
-  FiTwitter,
-  FiInstagram,
-  FiFacebook,
-  FiSettings,
-  FiHeart,
-  FiCamera,
-  FiEdit,
-  FiUpload,
-  FiShare2,
-  FiGrid,
-  FiList,
-  FiFilter,
-  FiSearch,
-  FiTrendingUp,
-  FiZap,
-  FiAward,
-  FiBell,
-  FiMessageSquare,
-  FiMapPin,
-  FiMail,
-  FiPhone,
-  FiCalendar
-} from 'react-icons/fi';
-import { 
-  HiOutlineSparkles, 
-  HiOutlineLightBulb, 
-  HiOutlineColorSwatch,
-  HiOutlineFire,
-  HiOutlinePhotograph,
-  HiOutlineClipboardList,
-  HiOutlineChat,
-  HiOutlineGlobe
-} from 'react-icons/hi';
-import { 
-  BsStars, 
-  BsMagic, 
-  BsPalette2,
-  BsLightning,
-  BsRocket,
-  BsGem,
-  BsFire
-} from 'react-icons/bs';
 import Link from 'next/link';
-import Footer from '../_components/Footer';
 import { 
-  fetchMyRooms, 
-  fetchMyItems, 
-  updateUserProfile, 
+  ArrowLeft, Home, ShoppingBag, Car, Ticket, Search as SearchIcon,
+  Edit3, Trash2, Camera, MapPin, Settings, Share2,
+  AlertCircle, CheckCircle, X, Plus, Users, Clock, Calendar, Phone, Mail,
+  Star, Badge, Package, Info, Tag, DollarSign, Sofa, Building, Navigation,
+  Instagram, Link2
+} from 'lucide-react';
+
+// Import API functions
+import { 
+  fetchMyRooms,   
+  createRoom, 
+  updateRoom, 
   deleteRoom, 
+  validateRoomData, 
+  prepareRoomFormData 
+} from '../lib/api/housing';
+import { 
+  fetchMyItems, 
+  createItem, 
+  updateItem, 
   deleteItem 
-} from '../lib/api';
-import { useAuth, useUI, useUserData, useMessages } from '../lib/contexts/UniShareContext';
+} from '../lib/api/marketplace';
+import { 
+  getMyRides, 
+  createRide, 
+  updateRide, 
+  deleteRide 
+} from '../lib/api/rideSharing';
+import { 
+  fetchMyTickets, 
+  createTicket, 
+  updateTicket, 
+  deleteTicket 
+} from '../lib/api/tickets';
+import { 
+  fetchMyLostFoundItems, 
+  createLostFoundItem, 
+  updateLostFoundItem, 
+  deleteLostFoundItem 
+} from '../lib/api/lostFound';
+import { 
+  getCurrentUserProfile, 
+  updateUserProfile 
+} from '../lib/api/userProfile';
+
+import { 
+  getUserNotifications, 
+  getUnreadNotificationsCount, 
+  markNotificationAsRead, 
+  markAllNotificationsAsRead 
+} from '../lib/api/notifications';
+
+// Import contexts
+import { useAuth, useUI, useUniShare } from '../lib/contexts/UniShareContext';
+
+// Import components
+import Footer from '../_components/Footer';
+import ProfileDisplay from '../_components/ProfileDisplay';
+import ProfileEditModal from '../_components/ProfileEditModal';
+
+// Import utilities
+import { getProfileImageUrl, getUserInitials, getDisplayName } from '../lib/utils/profileUtils';
+
+// Helper function to safely render contact information
+const renderContactInfo = (contactInfo) => {
+  if (!contactInfo) return null;
+  
+  // If it's a string, return it directly
+  if (typeof contactInfo === 'string') {
+    return contactInfo;
+  }
+  
+  // If it's an object, extract and format the information
+  if (typeof contactInfo === 'object') {
+    const parts = [];
+    if (contactInfo.mobile) parts.push(`📱 ${contactInfo.mobile}`);
+    if (contactInfo.email) parts.push(`✉️ ${contactInfo.email}`);
+    if (contactInfo.instagram) parts.push(`📸 ${contactInfo.instagram.startsWith('@') ? contactInfo.instagram : '@' + contactInfo.instagram}`);
+    return parts.length > 0 ? parts.join(' • ') : 'Contact available';
+  }
+  
+  return 'Contact available';
+};
+
+// Helper function to format contact information for API submission
+const formatContactInfo = (editFormData) => {
+  const contactInfo = {};
+  if (editFormData.contact_phone) contactInfo.mobile = editFormData.contact_phone;
+  if (editFormData.contact_email) contactInfo.email = editFormData.contact_email;
+  if (editFormData.contact_instagram) contactInfo.instagram = editFormData.contact_instagram;
+  if (editFormData.contact_link) contactInfo.link = editFormData.contact_link;
+  
+  return Object.keys(contactInfo).length > 0 ? contactInfo : editFormData.contact_info;
+};
+
+// Card Components for different listing types
+const RoomCard = ({ room, theme, onEdit, onDelete }) => {
+  const price = room.rent || room.price || room.monthly_rent || room.monthlyRent || room.roomPrice || room.rental_price;
+
+  return (
+    <motion.div
+      whileHover={{ y: -5, scale: 1.02 }}
+      className={`${theme.card} rounded-xl overflow-hidden border ${theme.border} shadow-lg hover:shadow-xl transition-all duration-300`}
+    >
+    <div className="aspect-video bg-gradient-to-br from-blue-100 to-blue-200 relative">
+      {room.image_url || room.photos?.[0] ? (
+        <img 
+          src={room.image_url || room.photos?.[0]} 
+          alt={room.title} 
+          className="w-full h-full object-cover" 
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center">
+          <Home className="w-12 h-12 text-blue-500" />
+        </div>
+      )}
+      <div className="absolute top-2 right-2">
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+          room.status === 'available' ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'
+        }`}>
+          {room.status || 'available'}
+        </span>
+      </div>
+    </div>
+    <div className="p-4 space-y-3">
+      <div>
+        <h3 className={`font-semibold ${theme.text} mb-1`}>{room.title}</h3>
+        <div className="flex items-center justify-between">
+          <span className={`text-lg font-bold text-blue-600`}>
+            ₹{price || 'N/A'}/month
+          </span>
+          {room.area && (
+            <span className={`text-sm ${theme.textMuted} bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded`}>
+              {room.area} sq ft
+            </span>
+          )}
+        </div>
+      </div>
+
+      {room.description && (
+        <p className={`text-sm ${theme.textMuted} leading-relaxed`}>{room.description}</p>
+      )}
+      
+      <div className="grid grid-cols-1 gap-2 text-sm">
+        {room.location && (
+          <div className={`${theme.textMuted} flex items-center gap-2`}>
+            <MapPin className="w-4 h-4 text-blue-500" />
+            <span>{room.location}</span>
+          </div>
+        )}
+        {(room.type || room.roomType) && (
+          <div className={`${theme.textMuted} flex items-center gap-2`}>
+            <Building className="w-4 h-4 text-blue-500" />
+            <span>{room.type || room.roomType}</span>
+          </div>
+        )}
+        {room.furnished && (
+          <div className={`${theme.textMuted} flex items-center gap-2`}>
+            <Sofa className="w-4 h-4 text-blue-500" />
+            <span>Furnished: {room.furnished}</span>
+          </div>
+        )}
+        {room.gender_preference && (
+          <div className={`${theme.textMuted} flex items-center gap-2`}>
+            <Users className="w-4 h-4 text-blue-500" />
+            <span>Preference: {room.gender_preference}</span>
+          </div>
+        )}
+      </div>
+
+      {(room.amenities && room.amenities.length > 0) && (
+        <div className="space-y-1">
+          <span className={`text-sm font-medium ${theme.text}`}>Amenities:</span>
+          <div className="flex flex-wrap gap-1">
+            {room.amenities.map((amenity, index) => (
+              <span key={index} className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full">
+                {amenity}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {(room.contact_info || room.phone || room.email) && (
+        <div className="space-y-1">
+          <span className={`text-sm font-medium ${theme.text}`}>Contact:</span>
+          <div className="space-y-1">
+            {(room.phone || room.contact_info) && (
+              <div className={`${theme.textMuted} flex items-center gap-2 text-sm`}>
+                <Phone className="w-3 h-3 text-blue-500" />
+                <span>{room.phone || renderContactInfo(room.contact_info)}</span>
+              </div>
+            )}
+            {room.email && (
+              <div className={`${theme.textMuted} flex items-center gap-2 text-sm`}>
+                <Mail className="w-3 h-3 text-blue-500" />
+                <span>{room.email}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      
+      <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
+        <span className={`text-xs ${theme.textMuted}`}>
+          Posted {room.created_at ? new Date(room.created_at).toLocaleDateString() : 'Recently'}
+        </span>
+        <div className="flex space-x-1">
+          <motion.button 
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => onEdit(room, 'rooms')}
+            className={`p-1 hover:bg-blue-100 dark:hover:bg-blue-900/20 rounded transition-colors`}
+            title="Edit Room"
+          >
+            <Edit3 className="w-3 h-3 text-blue-600" />
+          </motion.button>
+          <motion.button 
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => onDelete(room, 'rooms')}
+            className={`p-1 hover:bg-red-100 dark:hover:bg-red-900/20 rounded transition-colors`}
+            title="Delete Room"
+          >
+            <Trash2 className="w-3 h-3 text-red-500" />
+          </motion.button>
+        </div>
+      </div>
+    </div>
+  </motion.div>
+  );
+};
+
+const ItemCard = ({ item, theme, onEdit, onDelete }) => (
+  <motion.div
+    whileHover={{ y: -5, scale: 1.02 }}
+    className={`${theme.card} rounded-xl overflow-hidden border ${theme.border} shadow-lg hover:shadow-xl transition-all duration-300`}
+  >
+    <div className="aspect-video bg-gradient-to-br from-green-100 to-green-200 relative">
+      {item.image_url || item.image ? (
+        <img 
+          src={item.image_url || item.image} 
+          alt={item.title} 
+          className="w-full h-full object-cover" 
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center">
+          <ShoppingBag className="w-12 h-12 text-green-500" />
+        </div>
+      )}
+      <div className="absolute top-2 right-2">
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+          item.status === 'available' ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'
+        }`}>
+          {item.status || 'available'}
+        </span>
+      </div>
+      {item.condition && (
+        <div className="absolute top-2 left-2">
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+            item.condition === 'new' ? 'bg-blue-500 text-white' : 
+            item.condition === 'excellent' ? 'bg-purple-500 text-white' :
+            item.condition === 'good' ? 'bg-yellow-500 text-white' :
+            'bg-orange-500 text-white'
+          }`}>
+            {item.condition}
+          </span>
+        </div>
+      )}
+    </div>
+    <div className="p-4 space-y-3">
+      <div>
+        <h3 className={`font-semibold ${theme.text} mb-1`}>{item.title}</h3>
+        <div className="flex items-center justify-between">
+          <span className={`text-lg font-bold text-green-600`}>₹{item.price}</span>
+          {item.category && (
+            <span className={`text-sm ${theme.textMuted} bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded`}>
+              {item.category}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {item.description && (
+        <p className={`text-sm ${theme.textMuted} leading-relaxed`}>{item.description}</p>
+      )}
+
+      <div className="grid grid-cols-1 gap-2 text-sm">
+        {item.brand && (
+          <div className={`${theme.textMuted} flex items-center gap-2`}>
+            <Tag className="w-4 h-4 text-green-500" />
+            <span>Brand: {item.brand}</span>
+          </div>
+        )}
+        {item.model && (
+          <div className={`${theme.textMuted} flex items-center gap-2`}>
+            <Package className="w-4 h-4 text-green-500" />
+            <span>Model: {item.model}</span>
+          </div>
+        )}
+        {item.location && (
+          <div className={`${theme.textMuted} flex items-center gap-2`}>
+            <MapPin className="w-4 h-4 text-green-500" />
+            <span>{item.location}</span>
+          </div>
+        )}
+      </div>
+
+      {item.specifications && (
+        <div className="space-y-1">
+          <span className={`text-sm font-medium ${theme.text}`}>Specifications:</span>
+          <p className={`text-xs ${theme.textMuted} leading-relaxed`}>{item.specifications}</p>
+        </div>
+      )}
+
+      {(item.contact_info || item.phone || item.email) && (
+        <div className="space-y-1">
+          <span className={`text-sm font-medium ${theme.text}`}>Contact:</span>
+          <div className="space-y-1">
+            {(item.phone || item.contact_info) && (
+              <div className={`${theme.textMuted} flex items-center gap-2 text-sm`}>
+                <Phone className="w-3 h-3 text-green-500" />
+                <span>{item.phone || renderContactInfo(item.contact_info)}</span>
+              </div>
+            )}
+            {item.email && (
+              <div className={`${theme.textMuted} flex items-center gap-2 text-sm`}>
+                <Mail className="w-3 h-3 text-green-500" />
+                <span>{item.email}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {item.negotiable && (
+        <div className={`text-sm text-green-600 font-medium flex items-center gap-1`}>
+          <DollarSign className="w-4 h-4" />
+          <span>Price Negotiable</span>
+        </div>
+      )}
+      
+      <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
+        <span className={`text-xs ${theme.textMuted}`}>
+          Posted {item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Recently'}
+        </span>
+        <div className="flex space-x-1">
+          <motion.button 
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => onEdit(item, 'items')}
+            className={`p-1 hover:bg-green-100 dark:hover:bg-green-900/20 rounded transition-colors`}
+            title="Edit Item"
+          >
+            <Edit3 className="w-3 h-3 text-green-600" />
+          </motion.button>
+          <motion.button 
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => onDelete(item, 'items')}
+            className={`p-1 hover:bg-red-100 dark:hover:bg-red-900/20 rounded transition-colors`}
+            title="Delete Item"
+          >
+            <Trash2 className="w-3 h-3 text-red-500" />
+          </motion.button>
+        </div>
+      </div>
+    </div>
+  </motion.div>
+);
+
+const RideCard = ({ ride, theme, onEdit, onDelete }) => (
+  <motion.div
+    whileHover={{ y: -5, scale: 1.02 }}
+    className={`${theme.card} rounded-xl border ${theme.border} shadow-lg hover:shadow-xl transition-all duration-300 p-4 space-y-3`}
+  >
+    <div className="flex items-center justify-between">
+      <Car className="w-8 h-8 text-purple-500" />
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+        ride.status === 'active' ? 'bg-purple-500 text-white' : 'bg-gray-500 text-white'
+      }`}>
+        {ride.status || 'active'}
+      </span>
+    </div>
+
+    <div>
+      <h3 className={`font-semibold ${theme.text} mb-2 flex items-center gap-2`}>
+        <Navigation className="w-4 h-4 text-purple-500" />
+        {ride.from_location || ride.from} → {ride.to_location || ride.to}
+      </h3>
+      
+      <div className="grid grid-cols-2 gap-2 text-sm">
+        <div className={`${theme.textMuted} flex items-center gap-2`}>
+          <Calendar className="w-4 h-4 text-purple-500" />
+          <span>{ride.date}</span>
+        </div>
+        <div className={`${theme.textMuted} flex items-center gap-2`}>
+          <Clock className="w-4 h-4 text-purple-500" />
+          <span>{ride.time}</span>
+        </div>
+      </div>
+    </div>
+
+    <div className="space-y-1">
+      <span className={`text-sm font-medium ${theme.text}`}>Vehicle:</span>
+      <div className={`${theme.textMuted} flex items-center gap-2 text-sm`}>
+        <Car className="w-4 h-4 text-purple-500" />
+        <span>{ride.vehicle_info || ride.vehicle || ride.car_details || 'Vehicle info not available'}</span>
+      </div>
+    </div>
+
+    <div className="grid grid-cols-2 gap-2">
+      <div className={`${theme.textMuted} flex items-center gap-2 text-sm`}>
+        <DollarSign className="w-4 h-4 text-purple-500" />
+        <span className="font-medium">₹{ride.price_per_seat || ride.price}/seat</span>
+      </div>
+      {(ride.available_seats || ride.seats) && (
+        <div className={`${theme.textMuted} flex items-center gap-2 text-sm`}>
+          <Users className="w-4 h-4 text-purple-500" />
+          <span>{ride.available_seats || ride.seats} seats</span>
+        </div>
+      )}
+    </div>
+
+    {(ride.notes || ride.description || ride.additional_info) && (
+      <div className="space-y-1">
+        <span className={`text-sm font-medium ${theme.text}`}>Additional Info:</span>
+        <p className={`text-sm ${theme.textMuted} leading-relaxed`}>
+          {ride.notes || ride.description || ride.additional_info}
+        </p>
+      </div>
+    )}
+
+    {(ride.contact_info || ride.phone || ride.email) && (
+      <div className="space-y-1">
+        <span className={`text-sm font-medium ${theme.text}`}>Contact:</span>
+        <div className="space-y-1">
+          {(ride.phone || ride.contact_info) && (
+            <div className={`${theme.textMuted} flex items-center gap-2 text-sm`}>
+              <Phone className="w-3 h-3 text-purple-500" />
+              <span>{ride.phone || renderContactInfo(ride.contact_info)}</span>
+            </div>
+          )}
+          {ride.email && (
+            <div className={`${theme.textMuted} flex items-center gap-2 text-sm`}>
+              <Mail className="w-3 h-3 text-purple-500" />
+              <span>{ride.email}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    )}
+    
+    <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
+      <span className={`text-xs ${theme.textMuted}`}>
+        Posted {ride.created_at ? new Date(ride.created_at).toLocaleDateString() : 'Recently'}
+      </span>
+      <div className="flex space-x-1">
+        <motion.button 
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => onEdit(ride, 'rides')}
+          className={`p-1 hover:bg-purple-100 dark:hover:bg-purple-900/20 rounded transition-colors`}
+          title="Edit Ride"
+        >
+          <Edit3 className="w-3 h-3 text-purple-600" />
+        </motion.button>
+        <motion.button 
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => onDelete(ride, 'rides')}
+          className={`p-1 hover:bg-red-100 dark:hover:bg-red-900/20 rounded transition-colors`}
+          title="Delete Ride"
+        >
+          <Trash2 className="w-3 h-3 text-red-500" />
+        </motion.button>
+      </div>
+    </div>
+  </motion.div>
+);
+
+const TicketCard = ({ ticket, theme, onEdit, onDelete }) => (
+  <motion.div
+    whileHover={{ y: -5, scale: 1.02 }}
+    className={`${theme.card} rounded-xl border ${theme.border} shadow-lg hover:shadow-xl transition-all duration-300 p-4 space-y-3`}
+  >
+    <div className="flex items-center justify-between">
+      <Ticket className="w-8 h-8 text-orange-500" />
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+        ticket.status === 'available' ? 'bg-orange-500 text-white' : 'bg-gray-500 text-white'
+      }`}>
+        {ticket.status || 'available'}
+      </span>
+    </div>
+
+    <div>
+      <h3 className={`font-semibold ${theme.text} mb-2`}>
+        {ticket.event_name || ticket.title}
+      </h3>
+      
+      <div className="flex items-center justify-between mb-2">
+        <span className={`text-lg font-bold text-orange-600`}>₹{ticket.price}</span>
+        {ticket.quantity && (
+          <span className={`text-sm ${theme.textMuted} bg-orange-50 dark:bg-orange-900/20 px-2 py-1 rounded`}>
+            Qty: {ticket.quantity}
+          </span>
+        )}
+      </div>
+    </div>
+
+    <div className="grid grid-cols-1 gap-2 text-sm">
+      {ticket.venue && (
+        <div className={`${theme.textMuted} flex items-center gap-2`}>
+          <MapPin className="w-4 h-4 text-orange-500" />
+          <span>{ticket.venue}</span>
+        </div>
+      )}
+      {ticket.event_date && (
+        <div className={`${theme.textMuted} flex items-center gap-2`}>
+          <Calendar className="w-4 h-4 text-orange-500" />
+          <span>{new Date(ticket.event_date).toLocaleDateString()}</span>
+        </div>
+      )}
+      {ticket.event_time && (
+        <div className={`${theme.textMuted} flex items-center gap-2`}>
+          <Clock className="w-4 h-4 text-orange-500" />
+          <span>{ticket.event_time}</span>
+        </div>
+      )}
+      {ticket.seat_details && (
+        <div className={`${theme.textMuted} flex items-center gap-2`}>
+          <Badge className="w-4 h-4 text-orange-500" />
+          <span>Seat: {ticket.seat_details}</span>
+        </div>
+      )}
+    </div>
+
+    {ticket.description && (
+      <div className="space-y-1">
+        <span className={`text-sm font-medium ${theme.text}`}>Description:</span>
+        <p className={`text-sm ${theme.textMuted} leading-relaxed`}>{ticket.description}</p>
+      </div>
+    )}
+
+    {ticket.category && (
+      <div className={`text-sm ${theme.textMuted} bg-orange-50 dark:bg-orange-900/20 px-2 py-1 rounded inline-block`}>
+        Category: {ticket.category}
+      </div>
+    )}
+
+    {(ticket.contact_info || ticket.phone || ticket.email) && (
+      <div className="space-y-1">
+        <span className={`text-sm font-medium ${theme.text}`}>Contact:</span>
+        <div className="space-y-1">
+          {(ticket.phone || ticket.contact_info?.mobile) && (
+            <div className={`${theme.textMuted} flex items-center gap-2 text-sm`}>
+              <Phone className="w-3 h-3 text-orange-500" />
+              <span>{ticket.phone || ticket.contact_info?.mobile}</span>
+            </div>
+          )}
+          {(ticket.email || ticket.contact_info?.email) && (
+            <div className={`${theme.textMuted} flex items-center gap-2 text-sm`}>
+              <Mail className="w-3 h-3 text-orange-500" />
+              <span>{ticket.email || ticket.contact_info?.email}</span>
+            </div>
+          )}
+          {ticket.contact_info?.instagram && (
+            <div className={`${theme.textMuted} flex items-center gap-2 text-sm`}>
+              <Instagram className="w-3 h-3 text-orange-500" />
+              <span>{ticket.contact_info.instagram.startsWith('@') ? ticket.contact_info.instagram : '@' + ticket.contact_info.instagram}</span>
+            </div>
+          )}
+          {ticket.contact_info?.link && (
+            <div className={`${theme.textMuted} flex items-center gap-2 text-sm`}>
+              <Link2 className="w-3 h-3 text-orange-500" />
+              <span className="truncate">{ticket.contact_info.link}</span>
+            </div>
+          )}
+          {/* Fallback to old renderContactInfo function if no specific fields found */}
+          {!ticket.phone && !ticket.email && !ticket.contact_info?.mobile && !ticket.contact_info?.email && ticket.contact_info && (
+            <div className={`${theme.textMuted} flex items-center gap-2 text-sm`}>
+              <Phone className="w-3 h-3 text-orange-500" />
+              <span>{renderContactInfo(ticket.contact_info)}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    )}
+
+    {ticket.transferable && (
+      <div className={`text-sm text-orange-600 font-medium flex items-center gap-1`}>
+        <Star className="w-4 h-4" />
+        <span>Transferable</span>
+      </div>
+    )}
+    
+    <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
+      <span className={`text-xs ${theme.textMuted}`}>
+        Posted {ticket.created_at ? new Date(ticket.created_at).toLocaleDateString() : 'Recently'}
+      </span>
+      <div className="flex space-x-1">
+        <motion.button 
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => onEdit(ticket, 'tickets')}
+          className={`p-1 hover:bg-orange-100 dark:hover:bg-orange-900/20 rounded transition-colors`}
+          title="Edit Ticket"
+        >
+          <Edit3 className="w-3 h-3 text-orange-600" />
+        </motion.button>
+        <motion.button 
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => onDelete(ticket, 'tickets')}
+          className={`p-1 hover:bg-red-100 dark:hover:bg-red-900/20 rounded transition-colors`}
+          title="Delete Ticket"
+        >
+          <Trash2 className="w-3 h-3 text-red-500" />
+        </motion.button>
+      </div>
+    </div>
+  </motion.div>
+);
+
+const LostFoundCard = ({ item, theme, onEdit, onDelete }) => (
+  <motion.div
+    whileHover={{ y: -5, scale: 1.02 }}
+    className={`${theme.card} rounded-xl overflow-hidden border ${theme.border} shadow-lg hover:shadow-xl transition-all duration-300`}
+  >
+    <div className="aspect-video bg-gradient-to-br from-red-100 to-red-200 relative">
+      {(item.image_urls && item.image_urls.length > 0) ? (
+        <img 
+          src={item.image_urls[0]} 
+          alt={item.item_name || item.title || item.name} 
+          className="w-full h-full object-cover" 
+          onError={(e) => {
+            e.target.style.display = 'none';
+            e.target.parentElement.querySelector('.fallback-icon').style.display = 'flex';
+          }}
+        />
+      ) : null}
+      <div className="w-full h-full flex items-center justify-center fallback-icon" style={{ display: (item.image_urls && item.image_urls.length > 0) ? 'none' : 'flex' }}>
+        <SearchIcon className="w-12 h-12 text-red-500" />
+      </div>
+      <div className="absolute top-2 right-2">
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+          (item.mode || item.type) === 'lost' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
+        }`}>
+          {item.mode || item.type || 'lost'}
+        </span>
+      </div>
+      {item.reward && (
+        <div className="absolute bottom-2 left-2">
+          <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-500 text-white">
+            ₹{item.reward} Reward
+          </span>
+        </div>
+      )}
+    </div>
+    <div className="p-4 space-y-3">
+      <div>
+        <h3 className={`font-semibold ${theme.text} mb-1`}>
+          {item.item_name || item.title || item.name}
+        </h3>
+        {item.category && (
+          <span className={`text-sm ${theme.textMuted} bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded`}>
+            {item.category}
+          </span>
+        )}
+      </div>
+
+      {item.description && (
+        <p className={`text-sm ${theme.textMuted} leading-relaxed`}>{item.description}</p>
+      )}
+
+      <div className="grid grid-cols-1 gap-2 text-sm">
+        {/* Location - different field names for lost vs found */}
+        {(item.where_last_seen || item.where_found || item.location) && (
+          <div className={`${theme.textMuted} flex items-center gap-2`}>
+            <MapPin className="w-4 h-4 text-red-500" />
+            <span>
+              {item.mode === 'lost' ? 'Last seen: ' : 'Found at: '}
+              {item.where_last_seen || item.where_found || item.location}
+            </span>
+          </div>
+        )}
+        
+        {/* Date */}
+        <div className={`${theme.textMuted} flex items-center gap-2`}>
+          <Calendar className="w-4 h-4 text-red-500" />
+          <span>
+            {(item.mode || item.type) === 'lost' ? 'Lost on: ' : 'Found on: '}
+            {item.date_lost || item.date_found || item.date || 'Not specified'}
+          </span>
+        </div>
+        
+        {/* Time */}
+        {(item.time_lost || item.time_found || item.time) && (
+          <div className={`${theme.textMuted} flex items-center gap-2`}>
+            <Clock className="w-4 h-4 text-red-500" />
+            <span>
+              {item.mode === 'lost' ? 'Time lost: ' : 'Time found: '}
+              {item.time_lost || item.time_found || item.time}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Contact Information */}
+      {item.contact_info && Object.keys(item.contact_info).length > 0 && (
+        <div className="space-y-2">
+          <span className={`text-sm font-medium ${theme.text}`}>Contact:</span>
+          <div className="space-y-1">
+            {item.contact_info.instagram && (
+              <div className={`${theme.textMuted} flex items-center gap-2 text-sm`}>
+                <Instagram className="w-4 h-4 text-pink-500" />
+                <span>@{item.contact_info.instagram}</span>
+              </div>
+            )}
+            {item.contact_info.email && (
+              <div className={`${theme.textMuted} flex items-center gap-2 text-sm`}>
+                <Mail className="w-4 h-4 text-blue-500" />
+                <span>{item.contact_info.email}</span>
+              </div>
+            )}
+            {item.contact_info.mobile && (
+              <div className={`${theme.textMuted} flex items-center gap-2 text-sm`}>
+                <Phone className="w-4 h-4 text-green-500" />
+                <span>{item.contact_info.mobile}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {item.status && item.status !== 'active' && (
+        <div className={`text-sm font-medium flex items-center gap-1 ${
+          item.status === 'resolved' ? 'text-green-600' : 'text-yellow-600'
+        }`}>
+          <Info className="w-4 h-4" />
+          <span>Status: {item.status}</span>
+        </div>
+      )}
+      
+      <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
+        <span className={`text-xs ${theme.textMuted}`}>
+          Posted {item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Recently'}
+        </span>
+        <div className="flex space-x-1">
+          <motion.button 
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => onEdit(item, 'lostfound')}
+            className={`p-1 hover:bg-red-100 dark:hover:bg-red-900/20 rounded transition-colors`}
+            title="Edit Item"
+          >
+            <Edit3 className="w-3 h-3 text-red-600" />
+          </motion.button>
+          <motion.button 
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => onDelete(item, 'lostfound')}
+            className={`p-1 hover:bg-red-100 dark:hover:bg-red-900/20 rounded transition-colors`}
+            title="Delete Item"
+          >
+            <Trash2 className="w-3 h-3 text-red-500" />
+          </motion.button>
+        </div>
+      </div>
+    </div>
+  </motion.div>
+);
+
+const EmptyState = ({ selectedListingTab, theme }) => {
+  const getEmptyConfig = () => {
+    const configs = {
+      rooms: { icon: Home, title: 'No rooms listed', subtitle: 'Post your first room', color: 'blue' },
+      items: { icon: ShoppingBag, title: 'No items for sale', subtitle: 'List your first item', color: 'green' },
+      rides: { icon: Car, title: 'No rides shared', subtitle: 'Share your first ride', color: 'purple' },
+      tickets: { icon: Ticket, title: 'No tickets posted', subtitle: 'Sell your first ticket', color: 'orange' },
+      lost: { icon: SearchIcon, title: 'No lost items reported', subtitle: 'Report your first lost item', color: 'red' },
+      found: { icon: CheckCircle, title: 'No found items reported', subtitle: 'Report your first found item', color: 'emerald' }
+    };
+    return configs[selectedListingTab] || configs.rooms;
+  };
+  
+  const config = getEmptyConfig();
+  const Icon = config.icon;
+  
+  return (
+    <div className="col-span-full flex flex-col items-center justify-center py-12">
+      <Icon className={`w-16 h-16 text-${config.color}-400 mb-4`} />
+      <h3 className={`text-xl font-semibold ${theme.text} mb-2`}>{config.title}</h3>
+      <p className={`${theme.textMuted} mb-6`}>{config.subtitle}</p>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className={`px-6 py-3 bg-${config.color}-500 hover:bg-${config.color}-600 text-white rounded-lg font-medium transition-colors`}
+      >
+        Get Started
+      </motion.button>
+    </div>
+  );
+};
 
 const ProfilePage = () => {
   // Get data from UniShare context
-  const { isAuthenticated, user, updateUser, userInitials, userAvatar, authLoading } = useAuth();
-  const { darkMode, setDarkMode, toggleDarkMode } = useUI();
-  const { 
-    userRooms, 
-    userItems, 
-    setUserRooms, 
-    setUserItems, 
-    removeUserRoom, 
-    removeUserItem 
-  } = useUserData();
-  const { error, success, setError, setSuccess, showTemporaryMessage, clearError, clearSuccess, loading, setLoading } = useMessages();
-
-  // Local component state
-  const [selectedListingTab, setSelectedListingTab] = useState('rooms');
-  const [activeTab, setActiveTab] = useState('overview');
-  const [viewMode, setViewMode] = useState('grid');
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
-  const [showStatsModal, setShowStatsModal] = useState(false);
-  const [showAchievements, setShowAchievements] = useState(false);
-  const [showSparkles, setShowSparkles] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
-  const [deleteModal, setDeleteModal] = useState({ isOpen: false, type: '', id: '', title: '' });
-  const [deleteLoading, setDeleteLoading] = useState(null);
+  const { isAuthenticated, user, userInitials, userAvatar, authLoading } = useAuth();
+  const { darkMode } = useUI();
+  const uniShareContext = useUniShare();
   
-  // Local user profile state for editing
-  const [editedProfile, setEditedProfile] = useState(null);
-
-  // Initialize edited profile when user data is available
-  useEffect(() => {
-    if (user && !editedProfile) {
-      setEditedProfile({ ...user });
+  // Debug the context to see what's available
+  
+  // Safely extract showMessage with a fallback
+  const showMessage = uniShareContext?.showMessage || ((message, type) => {
+    // Fallback to alert if no context showMessage
+    if (type === 'error') {
+      alert(`Error: ${message}`);
+    } else {
+      alert(message);
     }
-  }, [user, editedProfile]);
+  });
 
-  // Load user data on component mount
+  // State variables
+  const [selectedListingTab, setSelectedListingTab] = useState('rooms');
+  const [isLoadingUserData, setIsLoadingUserData] = useState(true);
+  
+  // Data states
+  const [userRooms, setUserRooms] = useState([]);
+  const [userItems, setUserItems] = useState([]);
+  const [userRides, setUserRides] = useState([]);
+  const [userTickets, setUserTickets] = useState([]);
+  const [userLostFoundItems, setUserLostFoundItems] = useState([]);
+
+  // Profile data states
+  const [userProfile, setUserProfile] = useState(null);
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
+  const [isProfileEditModalOpen, setIsProfileEditModalOpen] = useState(false);
+
+  // Messages
+  const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
+
+  // CRUD Modal states
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [editFormData, setEditFormData] = useState({});
+
+  // Image upload states
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [imagePreview, setImagePreview] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
+
+  // Loading states for operations
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+
+  // Theme configuration
+  const theme = {
+    bg: darkMode ? 'bg-gray-900' : 'bg-gray-50',
+    card: darkMode ? 'bg-gray-800' : 'bg-white',
+    border: darkMode ? 'border-gray-700' : 'border-gray-200',
+    text: darkMode ? 'text-white' : 'text-gray-900',
+    textMuted: darkMode ? 'text-gray-400' : 'text-gray-600',
+  };
+
+  // Profile user data
+  const profileUser = {
+    name: user?.name || 'User',
+    bio: user?.bio || 'Welcome to UniShare!',
+    location: user?.location || 'Campus',
+    interests: user?.interests || [],
+    socialLinks: user?.socialLinks || {}
+  };
+
+  // Optimized user data loading with caching and error handling
+  const loadUserData = async () => {
+    if (!user?.id) return;
+    
+    setIsLoadingUserData(true);
+    try {
+      // Use Promise.allSettled for better error handling and faster parallel requests
+      const [roomsResult, itemsResult, ridesResult, ticketsResult, lostFoundResult, profileResult] = await Promise.allSettled([
+        fetchMyRooms({ 
+          limit: 50, 
+          cache: true, 
+          cacheTTL: 2 * 60 * 1000 // 2 minute cache
+        }),
+        fetchMyItems({ 
+          limit: 50, 
+          cache: true, 
+          cacheTTL: 2 * 60 * 1000 
+        }),
+        getMyRides({ 
+          limit: 50, 
+          cache: true, 
+          cacheTTL: 2 * 60 * 1000 
+        }),
+        fetchMyTickets({ 
+          limit: 50, 
+          cache: true, 
+          cacheTTL: 2 * 60 * 1000 
+        }),
+        fetchMyLostFoundItems({ 
+          limit: 50, 
+          cache: true, 
+          cacheTTL: 2 * 60 * 1000 
+        }),
+        getCurrentUserProfile()
+      ]);
+
+      // Handle rooms data with enhanced error reporting
+      if (roomsResult.status === 'fulfilled' && roomsResult.value?.success) {
+        setUserRooms(roomsResult.value.data || []);
+      } else if (roomsResult.status === 'rejected') {
+        setUserRooms([]); // Set empty array on failure
+      }
+
+      // Handle items data with enhanced error reporting
+      if (itemsResult.status === 'fulfilled' && itemsResult.value?.success) {
+        setUserItems(itemsResult.value.data || []);
+      } else if (itemsResult.status === 'rejected') {
+        setUserItems([]);
+      }
+
+      // Handle rides data with enhanced error reporting
+      if (ridesResult.status === 'fulfilled' && ridesResult.value?.success) {
+        setUserRides(ridesResult.value.data || []);
+      } else if (ridesResult.status === 'rejected') {
+        setUserRides([]);
+      }
+
+      // Handle tickets data with enhanced error reporting
+      if (ticketsResult.status === 'fulfilled' && ticketsResult.value?.success) {
+        setUserTickets(ticketsResult.value.data || []);
+      } else if (ticketsResult.status === 'rejected') {
+        setUserTickets([]);
+      }
+
+      // Handle lost & found data with enhanced error reporting
+      if (lostFoundResult.status === 'fulfilled' && lostFoundResult.value?.success) {
+        setUserLostFoundItems(lostFoundResult.value.data || []);
+      } else if (lostFoundResult.status === 'rejected') {
+        setUserLostFoundItems([]);
+      }
+
+      // Handle profile data
+      if (profileResult.status === 'fulfilled' && profileResult.value?.success) {
+        setUserProfile(profileResult.value.data || null);
+      } else if (profileResult.status === 'rejected') {
+        setUserProfile(null);
+      }
+      setIsProfileLoading(false);
+
+    } catch (error) {
+      // Safe showMessage call
+      try {
+        showMessage('Failed to load profile data', 'error');
+      } catch (msgError) {
+        alert('Error: Failed to load profile data');
+      }
+    } finally {
+      setIsLoadingUserData(false);
+    }
+  };
+
+  // ============== IMAGE HANDLERS ==============
+
+  // Handle image selection for upload
+  const handleImageSelect = (event) => {
+    const files = Array.from(event.target.files);
+    setSelectedImages(files);
+
+    // Create preview URLs
+    const previews = files.map(file => URL.createObjectURL(file));
+    setImagePreview(previews);
+  };
+
+  // Remove selected image
+  const removeSelectedImage = (index) => {
+    const newImages = selectedImages.filter((_, i) => i !== index);
+    const newPreviews = imagePreview.filter((_, i) => i !== index);
+    
+    // Revoke the URL to prevent memory leaks
+    URL.revokeObjectURL(imagePreview[index]);
+    
+    setSelectedImages(newImages);
+    setImagePreview(newPreviews);
+  };
+
+  // Remove existing image
+  const removeExistingImage = (index) => {
+    const newExisting = existingImages.filter((_, i) => i !== index);
+    setExistingImages(newExisting);
+    
+    // Update form data to mark image for deletion
+    setEditFormData(prev => ({
+      ...prev,
+      imagesToDelete: [...(prev.imagesToDelete || []), existingImages[index]]
+    }));
+  };
+
+  // Reset image states when modal closes
+  const resetImageStates = () => {
+    // Revoke all preview URLs to prevent memory leaks
+    imagePreview.forEach(url => URL.revokeObjectURL(url));
+    
+    setSelectedImages([]);
+    setImagePreview([]);
+    setExistingImages([]);
+  };
+
+  // ============== CRUD HANDLERS ==============
+
+  // Generic edit handler
+  const handleEdit = (item, type) => {
+    setSelectedItem({ ...item, type });
+    
+    // Enhanced form data handling for all listing types with contact info
+    const formData = {
+      ...item,
+      // Handle contact info properly for all types
+      contact_phone: item.contact_info?.mobile || '',
+      contact_email: item.contact_info?.email || '',
+      contact_instagram: item.contact_info?.instagram || '',
+      contact_link: item.contact_info?.link || '',
+      // Ensure contact_info object exists
+      contact_info: item.contact_info || {}
+    };
+
+    // Special handling for rides
+    if (type === 'rides') {
+      Object.assign(formData, {
+        // Ensure location fields are properly mapped
+        from_location: item.from_location || item.from || '',
+        to_location: item.to_location || item.to || '',
+        from: item.from || item.from_location || '',
+        to: item.to || item.to_location || ''
+      });
+    }
+
+    // Special handling for lost/found items
+    if (type === 'lost' || type === 'found' || type === 'lostfound') {
+      Object.assign(formData, {
+        // Ensure proper field mapping for lost/found
+        mode: item.mode || item.type || 'lost',
+        type: item.mode || item.type || 'lost',
+        title: item.item_name || item.title || item.name || '',
+        name: item.item_name || item.title || item.name || '',
+        item_name: item.item_name || item.title || item.name || '',
+        category: item.category || '',
+        reward: item.reward || '',
+        // Location fields
+        where_last_seen: item.where_last_seen || item.location || '',
+        where_found: item.where_found || item.location || '',
+        location: item.where_last_seen || item.where_found || item.location || '',
+        // Date fields
+        date_lost: item.date_lost || item.date || '',
+        date_found: item.date_found || item.date || '',
+        date: item.date_lost || item.date_found || item.date || '',
+        // Time fields
+        time_lost: item.time_lost || item.time || '',
+        time_found: item.time_found || item.time || '',
+        time: item.time_lost || item.time_found || item.time || '',
+        // Contact info mapping
+        contact_info: item.contact_info || {},
+        contact_instagram: item.contact_info?.instagram || '',
+        contact_email: item.contact_info?.email || '',
+        contact_phone: item.contact_info?.mobile || ''
+      });
+    }
+
+    setEditFormData(formData);
+    
+    // Handle existing images for rooms, items, and lost/found
+    if (type === 'rooms' && item.photos) {
+      const images = Array.isArray(item.photos) ? item.photos : [item.photos];
+      setExistingImages(images.filter(Boolean));
+    } else if (type === 'rooms' && item.image) {
+      setExistingImages([item.image]);
+    } else if (type === 'items' && item.image) {
+      setExistingImages([item.image]);
+    } else if ((type === 'lost' || type === 'found' || type === 'lostfound') && item.image_urls && item.image_urls.length > 0) {
+      setExistingImages(item.image_urls);
+    } else if ((type === 'lost' || type === 'found' || type === 'lostfound') && (item.image_url || item.image)) {
+      setExistingImages([item.image_url || item.image]);
+    } else {
+      setExistingImages([]);
+    }
+    
+    setIsEditModalOpen(true);
+  };
+
+  // Generic delete confirmation handler
+  const handleDeleteConfirm = (item, type) => {
+    setItemToDelete({ ...item, type });
+    setIsDeleteModalOpen(true);
+  };
+
+  // Create new item handler
+  const handleCreate = (type) => {
+    setSelectedItem({ type });
+    setEditFormData({});
+    setIsCreateModalOpen(true);
+  };
+
+  // Submit edit/create
+  const handleSubmit = async () => {
+    if (!selectedItem) {
+      console.error('No selectedItem found');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      const { type, id } = selectedItem;
+      let result;
+
+      if (id) {
+        // Edit existing item
+        switch (type) {
+          case 'rooms':
+            // Prepare room data with new images and contact info
+            const roomUpdateData = {
+              ...editFormData,
+              existingImages: existingImages,
+              imagesToDelete: editFormData.imagesToDelete || [],
+              contact_info: formatContactInfo(editFormData)
+            };
+            const roomFormData = prepareRoomFormData(roomUpdateData, selectedImages);
+            result = await updateRoom(id, roomFormData);
+            
+            // Update the room in state with the response data
+            if (result.success && result.data) {
+              setUserRooms(prev => prev.map(room => room.id === id ? result.data : room));
+            }
+            break;
+          
+          case 'items':
+            const itemUpdateData = {
+              ...editFormData,
+              contact_info: formatContactInfo(editFormData)
+            };
+            const itemImageFile = selectedImages.length > 0 ? selectedImages[0] : null;
+            result = await updateItem(id, itemUpdateData, itemImageFile);
+            if (result.success && result.data) {
+              setUserItems(prev => prev.map(item => item.id === id ? result.data : item));
+            }
+            break;
+          
+          case 'rides':
+            // Validate required fields
+            if (!editFormData.from_location && !editFormData.from) {
+              throw new Error("Starting location is required");
+            }
+            if (!editFormData.to_location && !editFormData.to) {
+              throw new Error("Destination is required");
+            }
+            
+            // Validate ride date/time is in the future
+            if (editFormData.date && editFormData.time) {
+              const selectedDateTime = new Date(editFormData.date + " " + editFormData.time);
+              if (selectedDateTime <= new Date()) {
+                throw new Error("Ride date and time must be in the future");
+              }
+            }
+            
+            // Ensure vehicle field is included with proper field mapping
+            const vehicleInfo = editFormData.vehicle_info || editFormData.vehicle || '';
+            
+            // Format contact information properly
+            const contactInfo = {};
+            if (editFormData.contact_phone) contactInfo.mobile = editFormData.contact_phone;
+            if (editFormData.contact_email) contactInfo.email = editFormData.contact_email;
+            if (editFormData.contact_instagram) contactInfo.instagram = editFormData.contact_instagram;
+            
+            const rideUpdateData = {
+              ...editFormData,
+              // API expects 'from' and 'to' fields for validation
+              from: editFormData.from_location || editFormData.from,
+              to: editFormData.to_location || editFormData.to,
+              // Also keep original field names for compatibility
+              from_location: editFormData.from_location || editFormData.from,
+              to_location: editFormData.to_location || editFormData.to,
+              vehicle: vehicleInfo,
+              vehicle_info: vehicleInfo,
+              description: editFormData.notes || editFormData.description || editFormData.additional_info || '',
+              contact_info: Object.keys(contactInfo).length > 0 ? contactInfo : editFormData.contact_info
+            };
+            
+            result = await updateRide(id, rideUpdateData);
+            if (result.success && result.data) {
+              setUserRides(prev => prev.map(ride => ride.id === id ? result.data : ride));
+            }
+            break;
+          
+          case 'tickets':
+            const ticketUpdateData = {
+              ...editFormData,
+              contact_info: formatContactInfo(editFormData)
+            };
+            result = await updateTicket(id, ticketUpdateData);
+            setUserTickets(prev => prev.map(ticket => ticket.id === id ? { ...ticket, ...ticketUpdateData } : ticket));
+            break;
+          
+          case 'lostfound':
+          case 'lost':
+          case 'found':
+            // Clean and prepare lost/found data for API
+            const lostFoundUpdateData = {
+              item_name: editFormData.item_name || editFormData.title || editFormData.name || '',
+              description: editFormData.description || '',
+              mode: editFormData.mode || editFormData.type || 'lost',
+              where_last_seen: editFormData.mode === 'lost' ? (editFormData.where_last_seen || editFormData.location) : null,
+              where_found: editFormData.mode === 'found' ? (editFormData.where_found || editFormData.location) : null,
+              date_lost: editFormData.mode === 'lost' ? (editFormData.date_lost || editFormData.date) : null,
+              time_lost: editFormData.mode === 'lost' ? (editFormData.time_lost || editFormData.time) : null,
+              date_found: editFormData.mode === 'found' ? (editFormData.date_found || editFormData.date) : null,
+              time_found: editFormData.mode === 'found' ? (editFormData.time_found || editFormData.time) : null,
+              contact_info: {
+                instagram: editFormData.contact_instagram || editFormData.contact_info?.instagram || '',
+                email: editFormData.contact_email || editFormData.contact_info?.email || '',
+                mobile: editFormData.contact_phone || editFormData.contact_info?.mobile || ''
+              },
+              reward: editFormData.reward || null,
+              status: 'active' // Always set to active, don't send random status values
+            };
+            
+            // Remove null/empty values to avoid API issues
+            Object.keys(lostFoundUpdateData).forEach(key => {
+              if (lostFoundUpdateData[key] === null || lostFoundUpdateData[key] === '') {
+                delete lostFoundUpdateData[key];
+              }
+            });
+            
+            // Handle contact_info - remove if empty
+            if (lostFoundUpdateData.contact_info && Object.values(lostFoundUpdateData.contact_info).every(val => !val)) {
+              delete lostFoundUpdateData.contact_info;
+            }
+            
+            // Handle image uploads for lost/found items
+            if (selectedImages.length > 0) {
+              // Use FormData approach for image uploads
+              result = await updateLostFoundItem(id, lostFoundUpdateData, selectedImages);
+            } else {
+              // Use regular JSON update
+              result = await updateLostFoundItem(id, lostFoundUpdateData);
+            }
+            setUserLostFoundItems(prev => prev.map(item => item.id === id ? { ...item, ...lostFoundUpdateData } : item));
+            break;
+        }
+        
+        // Safe showMessage call
+        try {
+          showMessage(`${type.slice(0, -1)} updated successfully!`, 'success');
+        } catch (msgError) {
+          console.error('Error showing success message:', msgError);
+        }
+        
+      } else {
+        // Create new item
+        switch (type) {
+          case 'rooms':
+            const roomCreateData = {
+              ...editFormData,
+              contact_info: formatContactInfo(editFormData)
+            };
+            const roomCreateFormData = prepareRoomFormData(roomCreateData, selectedImages);
+            result = await createRoom(roomCreateFormData);
+            if (result.success && result.data) {
+              setUserRooms(prev => [result.data, ...prev]);
+            }
+            break;
+          
+          case 'items':
+            const itemCreateData = {
+              ...editFormData,
+              contact_info: formatContactInfo(editFormData)
+            };
+            const itemCreateImageFile = selectedImages.length > 0 ? selectedImages[0] : null;
+            result = await createItem(itemCreateData, itemCreateImageFile);
+            if (result.success && result.data) {
+              setUserItems(prev => [result.data, ...prev]);
+            }
+            break;
+          
+          case 'rides':
+            // Validate ride date/time is in the future
+            if (editFormData.date && editFormData.time) {
+              const selectedDateTime = new Date(editFormData.date + " " + editFormData.time);
+              if (selectedDateTime <= new Date()) {
+                throw new Error("Ride date and time must be in the future");
+              }
+            }
+            
+            // Ensure required fields for ride creation with contact info
+            const rideCreateData = {
+              ...editFormData,
+              from: editFormData.from_location || editFormData.from,
+              to: editFormData.to_location || editFormData.to,
+              seats: editFormData.available_seats || editFormData.seats || 1,
+              price: editFormData.price_per_seat || editFormData.price,
+              vehicle: editFormData.vehicle || '',
+              description: editFormData.notes || editFormData.description || '',
+              contact_info: formatContactInfo(editFormData)
+            };
+            
+            result = await createRide(rideCreateData);
+            if (result.success && result.data) {
+              setUserRides(prev => [result.data, ...prev]);
+            }
+            break;
+          
+          case 'tickets':
+            const ticketCreateData = {
+              ...editFormData,
+              contact_info: formatContactInfo(editFormData)
+            };
+            result = await createTicket(ticketCreateData);
+            if (result.success && result.data) {
+              setUserTickets(prev => [result.data, ...prev]);
+            }
+            break;
+          
+          case 'lostfound':
+          case 'lost':
+          case 'found':
+            // Clean and prepare lost/found data for API
+            const lostFoundCreateData = {
+              item_name: editFormData.item_name || editFormData.title || editFormData.name || '',
+              description: editFormData.description || '',
+              mode: editFormData.mode || editFormData.type || 'lost',
+              where_last_seen: editFormData.mode === 'lost' ? (editFormData.where_last_seen || editFormData.location) : null,
+              where_found: editFormData.mode === 'found' ? (editFormData.where_found || editFormData.location) : null,
+              date_lost: editFormData.mode === 'lost' ? (editFormData.date_lost || editFormData.date) : null,
+              time_lost: editFormData.mode === 'lost' ? (editFormData.time_lost || editFormData.time) : null,
+              date_found: editFormData.mode === 'found' ? (editFormData.date_found || editFormData.date) : null,
+              time_found: editFormData.mode === 'found' ? (editFormData.time_found || editFormData.time) : null,
+              contact_info: {
+                instagram: editFormData.contact_instagram || editFormData.contact_info?.instagram || '',
+                email: editFormData.contact_email || editFormData.contact_info?.email || '',
+                mobile: editFormData.contact_phone || editFormData.contact_info?.mobile || ''
+              },
+              reward: editFormData.reward || null,
+              status: 'active' // Always set to active for new items
+            };
+            
+            // Remove null/empty values to avoid API issues
+            Object.keys(lostFoundCreateData).forEach(key => {
+              if (lostFoundCreateData[key] === null || lostFoundCreateData[key] === '') {
+                delete lostFoundCreateData[key];
+              }
+            });
+            
+            // Handle contact_info - remove if empty
+            if (lostFoundCreateData.contact_info && Object.values(lostFoundCreateData.contact_info).every(val => !val)) {
+              delete lostFoundCreateData.contact_info;
+            }
+            
+            // Handle image uploads for lost/found items
+            const lostFoundImages = selectedImages.length > 0 ? selectedImages : [];
+            result = await createLostFoundItem(lostFoundCreateData, lostFoundImages);
+            if (result.success && result.data) {
+              setUserLostFoundItems(prev => [result.data, ...prev]);
+            }
+            break;
+        }
+        
+        // Safe showMessage call
+        try {
+          showMessage(`${type.slice(0, -1)} created successfully!`, 'success');
+        } catch (msgError) {
+          console.error('Error showing success message:', msgError);
+        }
+      }
+
+      setIsEditModalOpen(false);
+      setIsCreateModalOpen(false);
+      setSelectedItem(null);
+      setEditFormData({});
+      resetImageStates();
+
+    } catch (error) {
+      console.error('Submit error:', error);
+      
+      // Safe showMessage call
+      try {
+        showMessage(error.message || 'Failed to save changes', 'error');
+      } catch (msgError) {
+        console.error('Error showing error message:', msgError);
+        alert(`Error: ${error.message || 'Failed to save changes'}`);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Delete item handler
+  const handleDelete = async () => {
+    if (!itemToDelete) return;
+
+    setIsDeleting(true);
+    setError('');
+
+    try {
+      const { type, id } = itemToDelete;
+      
+      switch (type) {
+        case 'rooms':
+          await deleteRoom(id);
+          setUserRooms(prev => prev.filter(room => room.id !== id));
+          break;
+        
+        case 'items':
+          await deleteItem(id);
+          setUserItems(prev => prev.filter(item => item.id !== id));
+          break;
+        
+        case 'rides':
+          await deleteRide(id);
+          setUserRides(prev => prev.filter(ride => ride.id !== id));
+          break;
+        
+        case 'tickets':
+          await deleteTicket(id);
+          setUserTickets(prev => prev.filter(ticket => ticket.id !== id));
+          break;
+        
+        case 'lostfound':
+        case 'lost':
+        case 'found':
+          await deleteLostFoundItem(id);
+          setUserLostFoundItems(prev => prev.filter(item => item.id !== id));
+          break;
+      }
+
+      // Safe showMessage call
+      try {
+        showMessage(`${type.slice(0, -1)} deleted successfully!`, 'success');
+      } catch (msgError) {
+        console.error('Error showing success message:', msgError);
+      }
+      
+      setIsDeleteModalOpen(false);
+      setItemToDelete(null);
+
+    } catch (error) {
+      console.error('Delete error:', error);
+      
+      // Safe showMessage call
+      try {
+        showMessage(error.message || 'Failed to delete item', 'error');
+      } catch (msgError) {
+        console.error('Error showing error message:', msgError);
+        alert(`Error: ${error.message || 'Failed to delete item'}`);
+      }
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // ============== PROFILE MANAGEMENT ==============
+
+  // Handle profile edit
+  const handleEditProfile = () => {
+    setIsProfileEditModalOpen(true);
+  };
+
+  // Handle profile save
+  const handleProfileSave = async (profileData, profileImage) => {
+    setIsUpdatingProfile(true);
+    try {
+      const result = await updateUserProfile(profileData, profileImage);
+      if (result.success) {
+        setUserProfile(result.data);
+        showMessage('Profile updated successfully!', 'success');
+        setIsProfileEditModalOpen(false);
+      } else {
+        throw new Error(result.message || 'Failed to update profile');
+      }
+    } catch (error) {
+      console.error('Profile update error:', error);
+      throw error; // Re-throw so the modal can handle it
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  };
+
+  // ============== END PROFILE MANAGEMENT ==============
+
   useEffect(() => {
     if (isAuthenticated && user) {
       loadUserData();
     }
   }, [isAuthenticated, user]);
 
-  const loadUserData = async () => {
-    try {
-      setLoading(true);
-      clearError();
+  const clearSuccess = () => setSuccess('');
+  const clearError = () => setError('');
 
-      // Fetch user's rooms and items in parallel
-      const [roomsResult, itemsResult] = await Promise.allSettled([
-        fetchMyRooms(),
-        fetchMyItems()
-      ]);
-
-      // Handle rooms data
-      if (roomsResult.status === 'fulfilled' && roomsResult.value?.success) {
-        setUserRooms(roomsResult.value.data || []);
-      } else {
-        console.error('Failed to fetch rooms:', roomsResult.reason);
-        setUserRooms([]);
-      }
-
-      // Handle items data
-      if (itemsResult.status === 'fulfilled' && itemsResult.value?.success) {
-        setUserItems(itemsResult.value.data || []);
-      } else {
-        console.error('Failed to fetch items:', itemsResult.reason);
-        setUserItems([]);
-      }
-
-    } catch (err) {
-      console.error('Error loading user data:', err);
-      setError('Failed to load profile data. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Enhanced state management - only UI states, data comes from context
-  const [currentTheme, setCurrentTheme] = useState(darkMode ? 'dark' : 'light');
-
-  // Create a merged user object with defaults
-  const profileUser = {
-    name: user?.name || 'User',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    bio: user?.bio || 'Welcome to UniShare! Update your profile to let others know more about you.',
-    location: user?.location || '',
-    college: user?.college || '',
-    year: user?.year || '',
-    branch: user?.branch || '',
-    picture: user?.picture || userAvatar || null,
-    created_at: user?.created_at || new Date().toISOString().split('T')[0],
-    followers: user?.followers || 0,
-    following: user?.following || 0,
-    rating: user?.rating || 0.0,
-    profileViews: user?.profileViews || 0,
-    badges: user?.badges || [],
-    interests: user?.interests || [],
-    socialLinks: {
-      github: user?.socialLinks?.github || '',
-      linkedin: user?.socialLinks?.linkedin || '',
-      twitter: user?.socialLinks?.twitter || '',
-      ...user?.socialLinks
-    }
-  };
-
-  // Advanced theme configurations with warm human touch
-  const themes = {
-    light: {
-      bg: 'bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50',
-      card: 'bg-white/95 backdrop-blur-sm border border-orange-100/50 shadow-lg shadow-orange-100/20',
-      cardHover: 'hover:bg-white hover:shadow-xl hover:shadow-orange-200/30 hover:border-orange-200/60',
-      text: 'text-gray-900',
-      textSecondary: 'text-gray-700',
-      textMuted: 'text-gray-600',
-      accent: 'bg-gradient-to-r from-orange-500 to-amber-500',
-      accentHover: 'hover:from-orange-600 hover:to-amber-600',
-      border: 'border-orange-200/60',
-      overlay: 'bg-white/95 backdrop-blur-md border-b border-orange-200/50',
-      glassy: 'bg-white/80 backdrop-blur-xl border border-orange-200/60 shadow-sm',
-      primary: 'text-orange-600',
-      secondary: 'text-amber-600',
-      cardAccent: 'from-orange-100 to-amber-100',
-      statColors: {
-        blue: 'from-orange-100 to-orange-200 text-orange-800',
-        purple: 'from-amber-100 to-amber-200 text-amber-800',
-        green: 'from-yellow-100 to-yellow-200 text-yellow-800',
-        orange: 'from-red-100 to-red-200 text-red-800'
-      }
-    },
-    dark: {
-      bg: 'bg-gradient-to-br from-gray-900 via-slate-900 to-zinc-900',
-      card: 'bg-gray-800/95 backdrop-blur-sm border border-gray-700/50 shadow-lg shadow-black/20',
-      cardHover: 'hover:bg-gray-800 hover:shadow-xl hover:shadow-blue-500/20',
-      text: 'text-white',
-      textSecondary: 'text-gray-300',
-      textMuted: 'text-gray-400',
-      accent: 'bg-gradient-to-r from-blue-500 to-indigo-500',
-      accentHover: 'hover:from-blue-600 hover:to-indigo-600',
-      border: 'border-gray-700/60',
-      overlay: 'bg-gray-900/95 backdrop-blur-md',
-      glassy: 'bg-gray-800/20 backdrop-blur-xl border border-gray-700/30',
-      primary: 'text-blue-400',
-      secondary: 'text-indigo-400',
-      cardAccent: 'from-gray-800 to-gray-700',
-      statColors: {
-        blue: 'from-blue-900/30 to-blue-800/30 text-blue-400',
-        purple: 'from-purple-900/30 to-purple-800/30 text-purple-400',
-        green: 'from-green-900/30 to-green-800/30 text-green-400',
-        orange: 'from-orange-900/30 to-orange-800/30 text-orange-400'
-      }
-    },
-    cosmic: {
-      bg: 'bg-gradient-to-br from-purple-900 via-indigo-900 to-pink-900',
-      card: 'bg-purple-800/95 backdrop-blur-sm border border-purple-600/50 shadow-lg shadow-purple-500/20',
-      cardHover: 'hover:bg-purple-800 hover:shadow-xl hover:shadow-purple-500/30',
-      text: 'text-white',
-      textSecondary: 'text-purple-200',
-      textMuted: 'text-purple-300',
-      accent: 'bg-gradient-to-r from-purple-500 to-pink-500',
-      accentHover: 'hover:from-purple-600 hover:to-pink-600',
-      border: 'border-purple-700/60',
-      overlay: 'bg-purple-900/95 backdrop-blur-md',
-      glassy: 'bg-purple-800/20 backdrop-blur-xl border border-purple-700/30',
-      primary: 'text-purple-300',
-      secondary: 'text-pink-300',
-      cardAccent: 'from-purple-800 to-indigo-800',
-      statColors: {
-        blue: 'from-purple-800/30 to-purple-700/30 text-purple-300',
-        purple: 'from-pink-800/30 to-pink-700/30 text-pink-300',
-        green: 'from-indigo-800/30 to-indigo-700/30 text-indigo-300',
-        orange: 'from-violet-800/30 to-violet-700/30 text-violet-300'
-      }
-    }
-  };
-
-  const theme = themes[currentTheme];
-
-  // Generate real recent activity from user data
-  const generateRecentActivity = () => {
-    const activities = [];
-    
-    // Add recent room activities
-    userRooms?.slice(0, 2).forEach((room, index) => {
-      activities.push({
-        id: `room_${room.id}`,
-        type: 'room',
-        title: `Room "${room.title}" posted`,
-        time: `${index + 1} day${index > 0 ? 's' : ''} ago`,
-        icon: <Home className="w-4 h-4" />
-      });
-    });
-    
-    // Add recent item activities
-    userItems?.slice(0, 2).forEach((item, index) => {
-      activities.push({
-        id: `item_${item.id}`,
-        type: 'item',
-        title: `Item "${item.title}" ${item.status === 'sold' ? 'sold' : 'posted'}`,
-        time: `${index + 2} day${index > 0 ? 's' : ''} ago`,
-        icon: <ShoppingBag className="w-4 h-4" />
-      });
-    });
-    
-    // If no activities, show account created
-    if (activities.length === 0) {
-      activities.push({
-        id: 'account_created',
-        type: 'account',
-        title: 'Account created',
-        time: 'Welcome to UniShare!',
-        icon: <User className="w-4 h-4" />
-      });
-    }
-    
-    return activities.slice(0, 4); // Show max 4 activities
-  };
-
-  const recentActivity = generateRecentActivity();
-
-  // Calculate real stats from user data
-  const availableRooms = userRooms?.filter(room => room.status === 'available')?.length || 0;
-  const availableItems = userItems?.filter(item => item.status === 'available')?.length || 0;
-  const totalUserRooms = userRooms?.length || 0;
-  const totalUserItems = userItems?.length || 0;
-  
-  const quickStats = [
-    { label: 'Total Listings', value: totalUserRooms + totalUserItems, change: '+0%', icon: <TrendingUp className="w-5 h-5" />, gradient: 'green' },
-    { label: 'Items Listed', value: totalUserItems, change: '+0%', icon: <ShoppingBag className="w-5 h-5" />, gradient: 'blue' },
-    { label: 'Rooms Listed', value: totalUserRooms, change: '+0%', icon: <Home className="w-5 h-5" />, gradient: 'purple' }
-  ];
-
-  const achievements = [
-    { title: 'First Sale', description: 'Completed your first transaction', earned: true, icon: <Star className="w-6 h-6" /> },
-    { title: 'Top Seller', description: 'Ranked in top 10% of sellers', earned: true, icon: <Crown className="w-6 h-6" /> },
-    { title: 'Quick Responder', description: 'Average response time under 1 hour', earned: true, icon: <Zap className="w-6 h-6" /> },
-    { title: 'Trust Builder', description: '50+ positive reviews', earned: false, icon: <Shield className="w-6 h-6" /> }
-  ];
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        duration: 0.6
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-        damping: 20
-      }
-    }
-  };
-
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const toggleTheme = () => {
-    toggleDarkMode(); // Use context's toggle function
-  };
-
-  // Sync currentTheme with context darkMode
-  useEffect(() => {
-    setCurrentTheme(darkMode ? 'dark' : 'light');
-  }, [darkMode]);
-
-  // Handle profile update
-  const handleProfileUpdate = async (formData) => {
-    setIsUpdatingProfile(true);
-    try {
-      clearError();
-      
-      const profileData = {
-        name: formData.get ? formData.get('name') : formData.name || editedProfile?.name,
-        email: formData.get ? formData.get('email') : formData.email || editedProfile?.email,
-        phone: formData.get ? formData.get('phone') : formData.phone || editedProfile?.phone,
-        bio: formData.get ? formData.get('bio') : formData.bio || editedProfile?.bio,
-        location: formData.get ? formData.get('location') : formData.location || editedProfile?.location,
-        college: formData.get ? formData.get('college') : formData.college || editedProfile?.college,
-        year: formData.get ? formData.get('year') : formData.year || editedProfile?.year,
-        branch: formData.get ? formData.get('branch') : formData.branch || editedProfile?.branch,
-        googleAvatar: editedProfile?.googleAvatar || editedProfile?.avatar || user?.picture || null,
-      };
-
-      const result = await updateUserProfile(profileData);
-      
-      if (result.success) {
-        // Update context with new user data
-        updateUser(result.data);
-        setEditedProfile(result.data);
-        setShowEditProfileModal(false);
-        showTemporaryMessage('Profile updated successfully!', true);
-        setShowSparkles(true);
-        setTimeout(() => setShowSparkles(false), 2000);
-      } else {
-        throw new Error(result.message || 'Failed to update profile');
-      }
-    } catch (error) {
-      console.error('Profile update error:', error);
-      showTemporaryMessage('Failed to update profile. Please try again.', false);
-    } finally {
-      setIsUpdatingProfile(false);
-    }
-  };
-
-  // Handle editing items/rooms
-  const handleEditItem = (type, item) => {
-    console.log(`Editing ${type}:`, item);
-    // TODO: Open edit modal or navigate to edit page
-    showTemporaryMessage(`Edit ${type} functionality coming soon!`, true);
-  };
-
-  // Handle deleting items/rooms
-  const handleDeleteItem = (type, id, title) => {
-    setDeleteModal({
-      isOpen: true,
-      type,
-      id,
-      title
-    });
-  };
-
-  // Confirm deletion
-  const confirmDelete = async () => {
-    const { type, id, title } = deleteModal;
-    setDeleteLoading(id);
-    
-    try {
-      let result;
-      
-      if (type === 'room') {
-        result = await deleteRoom(id);
-        if (result.success) {
-          removeUserRoom(id);
-          showTemporaryMessage(`Room "${title}" deleted successfully!`, true);
-        } else {
-          throw new Error(result.message || 'Failed to delete room');
-        }
-      } else if (type === 'item') {
-        result = await deleteItem(id);
-        if (result.success) {
-          removeUserItem(id);
-          showTemporaryMessage(`Item "${title}" deleted successfully!`, true);
-        } else {
-          throw new Error(result.message || 'Failed to delete item');
-        }
-      }
-      
-      setDeleteModal({ isOpen: false, type: '', id: '', title: '' });
-    } catch (error) {
-      console.error(`Delete ${type} error:`, error);
-      showTemporaryMessage(`Failed to delete ${type}. Please try again.`, false);
-    } finally {
-      setDeleteLoading(null);
-    }
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
-  };
-
-  // Show loading state during authentication
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
-        <div className="relative">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <User className="w-8 h-8 text-blue-500" />
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="mt-4 text-lg text-gray-700">Loading your profile...</p>
         </div>
-        <p className="mt-4 text-lg text-gray-700">Loading your profile...</p>
       </div>
     );
   }
@@ -557,43 +1546,67 @@ const ProfilePage = () => {
 
   return (
     <div className={`min-h-screen ${theme.bg} relative overflow-hidden`}>
-      {/* Background Effects */}
-      <div className="absolute inset-0 pointer-events-none">
-        {/* Floating particles */}
-        {[...Array(15)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-2 h-2 bg-blue-400/20 rounded-full"
-            animate={{
-              x: [0, 100, 0],
-              y: [0, -100, 0],
-              scale: [1, 1.5, 1],
-              opacity: [0.3, 0.8, 0.3]
-            }}
-            transition={{
-              duration: 8 + i * 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: i * 0.5,
-            }}
-            style={{
-              left: `${5 + i * 6}%`,
-              top: `${10 + i * 5}%`,
-            }}
-          />
-        ))}
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-purple-400/10 to-indigo-400/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-indigo-400/5 to-blue-400/5 rounded-full blur-3xl animate-pulse delay-2000"></div>
       </div>
 
-      {/* Main Content - Mobile Optimized */}
-      <motion.main 
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8"
-      >
+      {/* Main Content */}
+      <main className="max-w-5xl mx-auto px-4 py-6">
+        {/* Profile Display Component */}
+        <ProfileDisplay 
+          userProfile={userProfile}
+          user={user}
+          onEditProfile={handleEditProfile}
+          isLoading={isProfileLoading}
+        />
+
+        {/* Modern Tab Navigation */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className={`${theme.card} rounded-2xl border ${theme.border} p-1 mb-6`}
+        >
+          <div className="flex overflow-x-auto scrollbar-hide">
+            {[
+              { id: 'rooms', label: 'Rooms', icon: Home, count: userRooms?.length || 0, color: 'blue' },
+              { id: 'items', label: 'Items', icon: ShoppingBag, count: userItems?.length || 0, color: 'green' },
+              { id: 'rides', label: 'Rides', icon: Car, count: userRides.length, color: 'purple' },
+              { id: 'tickets', label: 'Tickets', icon: Ticket, count: userTickets.length, color: 'orange' },
+              { id: 'lost', label: 'Lost Items', icon: SearchIcon, count: userLostFoundItems.filter(item => item.mode === 'lost').length, color: 'red' },
+              { id: 'found', label: 'Found Items', icon: CheckCircle, count: userLostFoundItems.filter(item => item.mode === 'found').length, color: 'emerald' }
+            ].map((tab) => (
+              <motion.button
+                key={tab.id}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setSelectedListingTab(tab.id)}
+                className={`flex-shrink-0 flex items-center space-x-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                  selectedListingTab === tab.id
+                    ? `bg-${tab.color}-500 text-white shadow-lg`
+                    : `${theme.textMuted} hover:${theme.surface}`
+                }`}
+              >
+                <tab.icon className="w-5 h-5" />
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                  selectedListingTab === tab.id 
+                    ? 'bg-white/20 text-white' 
+                    : 'bg-gray-100 text-gray-600'
+                }`}>
+                  {tab.count}
+                </span>
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+
         {/* Success/Error Messages */}
         {(error || success) && (
-          <div className="mb-4 sm:mb-6">
+          <div className="mb-6">
             {error && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
@@ -623,1361 +1636,1245 @@ const ProfilePage = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-          {/* Left Sidebar - Profile Card - Mobile First */}
-          <motion.div variants={itemVariants} className="lg:col-span-1 order-1 lg:order-1">
-            <div className={`${theme.card} rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 ${theme.border} border shadow-xl human-hover`}>
-              {/* Profile Picture Section with Human Touch - Mobile Optimized */}
-              <div className="text-center mb-4 sm:mb-6">
-                <motion.div 
-                  className="relative inline-block"
-                  whileHover={{ scale: 1.05 }}
-                >
-                  <div className={`w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 rounded-full ${theme.accent} p-1 animate-warmGlow`}>
-                    <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
-                      {userAvatar ? (
-                        <img src={userAvatar} alt="Profile" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className={`text-xl sm:text-2xl lg:text-3xl font-bold ${theme.primary}`}>{userInitials}</span>
-                      )}
-                    </div>
-                  </div>
-                  <motion.button
-                    whileHover={{ scale: 1.1, rotate: 15 }}
-                    whileTap={{ scale: 0.9 }}
-                    className={`absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 w-8 h-8 sm:w-10 sm:h-10 ${theme.accent} text-white rounded-full flex items-center justify-center shadow-lg ${theme.accentHover} transition-all duration-300`}
-                  >
-                    <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </motion.button>
-                  
-                  {/* Warm ambient glow */}
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-orange-200/20 to-amber-200/20 animate-pulse pointer-events-none" />
-                </motion.div>
-
-                <h2 className={`text-xl sm:text-2xl font-bold mt-3 sm:mt-4 ${theme.text}`}>{profileUser.name}</h2>
-                <p className={`${theme.textMuted} flex items-center justify-center gap-1 text-sm sm:text-base`}>
-                  <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
-                  {user.location}
-                </p>
-              </div>
-
-              {/* Quick Stats Grid - Mobile Optimized */}
-              <div className="grid grid-cols-1 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6">
-                <div className="text-center p-2 sm:p-3 lg:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-orange-50 to-orange-100">
-                  <div className="text-lg sm:text-xl lg:text-2xl font-bold text-orange-600">{totalUserRooms + totalUserItems}</div>
-                  <div className="text-xs sm:text-sm text-orange-500">Listings</div>
-                </div>
-              </div>
-
-              {/* Bio */}
-              <div className="mb-6">
-                <h3 className={`font-semibold mb-2 ${theme.text}`}>About</h3>
-                <p className={`text-sm leading-relaxed ${theme.textSecondary}`}>{user?.bio || 'No bio available'}</p>
-              </div>
-
-              {/* Interests - Mobile Optimized */}
-              <div className="mb-4 sm:mb-6">
-                <h3 className={`font-semibold mb-2 sm:mb-3 ${theme.text} text-sm sm:text-base`}>Interests</h3>
-                <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                  {profileUser.interests.map((interest, index) => (
-                    <motion.span
-                      key={index}
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="px-2 sm:px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs sm:text-sm font-medium"
-                    >
-                      {interest}
-                    </motion.span>
-                  ))}
-                  {profileUser.interests.length === 0 && (
-                    <span className="text-sm text-gray-500">No interests added yet</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Social Links */}
-              <div className="mb-4 sm:mb-6">
-                <h3 className={`font-semibold mb-2 sm:mb-3 ${theme.text} text-sm sm:text-base`}>Connect</h3>
-                <div className="flex gap-2 sm:gap-3">
-                  {profileUser.socialLinks.github && (
-                    <motion.a
-                      href={profileUser.socialLinks.github}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      whileHover={{ scale: 1.1, y: -2 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="p-2 sm:p-3 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-800 hover:text-white transition-all duration-300 group border border-gray-200 shadow-sm"
-                    >
-                      <FiGithub className="w-4 h-4 sm:w-5 sm:h-5" />
-                    </motion.a>
-                  )}
-                  {profileUser.socialLinks.linkedin && (
-                    <motion.a
-                      href={profileUser.socialLinks.linkedin}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      whileHover={{ scale: 1.1, y: -2 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="p-2 sm:p-3 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300 group border border-blue-200 shadow-sm"
-                    >
-                      <FiLinkedin className="w-4 h-4 sm:w-5 sm:h-5" />
-                    </motion.a>
-                  )}
-                  {profileUser.socialLinks.twitter && (
-                    <motion.a
-                      href={profileUser.socialLinks.twitter}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      whileHover={{ scale: 1.1, y: -2 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="p-2 sm:p-3 rounded-xl bg-sky-50 text-sky-500 hover:bg-sky-400 hover:text-white transition-all duration-300 group border border-sky-200 shadow-sm"
-                    >
-                      <FiTwitter className="w-4 h-4 sm:w-5 sm:h-5" />
-                    </motion.a>
-                  )}
-                  {Object.keys(profileUser.socialLinks).filter(key => profileUser.socialLinks[key]).length === 0 && (
-                    <span className="text-sm text-gray-500">No social links added yet</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Contact Info */}
-              <div className="space-y-3 mb-6">
-                <div className="flex items-center gap-3">
-                  <Mail className={`w-4 h-4 ${theme.textMuted}`} />
-                  <span className={`text-sm ${theme.textSecondary}`}>{user.email}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Phone className={`w-4 h-4 ${theme.textMuted}`} />
-                  <span className={`text-sm ${theme.textSecondary}`}>{user.phone}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <GraduationCap className={`w-4 h-4 ${theme.textMuted}`} />
-                  <span className={`text-sm ${theme.textSecondary}`}>{user.college}</span>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="space-y-3">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setShowEditProfileModal(true)}
-                  className={`w-full py-3 ${theme.accent} text-white rounded-xl font-medium ${theme.accentHover} transition-all duration-300 flex items-center justify-center gap-2`}
-                >
-                  <Edit3 className="w-4 h-4" />
-                  Edit Profile
-                </motion.button>
-                
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setShowAchievements(true)}
-                  className={`w-full py-3 border-2 border-blue-500 text-blue-500 rounded-xl font-medium hover:bg-blue-50 transition-all duration-300 flex items-center justify-center gap-2`}
-                >
-                  <Award className="w-4 h-4" />
-                  View Achievements
-                </motion.button>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Right Content Area - Mobile Optimized */}
-          <motion.div variants={itemVariants} className="lg:col-span-2 order-2 lg:order-2">
-            {/* Tab Navigation - Mobile Optimized */}
-            <div className={`${theme.card} rounded-xl sm:rounded-2xl p-1 sm:p-2 mb-4 sm:mb-6 ${theme.border} border shadow-lg`}>
-              <div className="flex gap-0.5 sm:gap-1">
-                {[
-                  { id: 'overview', label: 'Overview', icon: <Home className="w-3 h-3 sm:w-4 sm:h-4" />, shortLabel: 'Home' },
-                  { id: 'rooms', label: 'Rooms', icon: <Home className="w-3 h-3 sm:w-4 sm:h-4" />, shortLabel: 'Rooms' },
-                  { id: 'items', label: 'Items', icon: <ShoppingBag className="w-3 h-3 sm:w-4 sm:h-4" />, shortLabel: 'Items' },
-                  { id: 'listings', label: 'Listings', icon: <Activity className="w-3 h-3 sm:w-4 sm:h-4" />, shortLabel: 'All' }
-                ].map((tab) => (
-                  <motion.button
-                    key={tab.id}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex-1 py-2 sm:py-3 px-1 sm:px-4 rounded-lg sm:rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm ${
-                      activeTab === tab.id
-                        ? 'bg-blue-500 text-white shadow-lg'
-                        : `${theme.textSecondary} hover:bg-blue-50 hover:text-blue-600`
-                    }`}
-                  >
-                    {tab.icon}
-                    <span className="hidden sm:inline">{tab.label}</span>
-                    <span className="sm:hidden">{tab.shortLabel}</span>
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-
-            {/* Tab Content */}
-            <AnimatePresence mode="wait">
-              {activeTab === 'overview' && (
-                <motion.div
-                  key="overview"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="space-y-6"
-                >
-                  {/* Quick Stats - Mobile Optimized */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
-                    {quickStats.map((stat, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: index * 0.1 }}
-                        className={`${theme.card} rounded-xl sm:rounded-2xl p-4 sm:p-5 lg:p-6 ${theme.border} border shadow-lg ${theme.cardHover} cursor-pointer group relative overflow-hidden`}
-                      >
-                        <div className="flex items-center justify-between mb-3 sm:mb-4">
-                          <div className={`p-2 sm:p-3 rounded-lg sm:rounded-xl bg-gradient-to-br ${theme.statColors[stat.gradient]} group-hover:scale-110 transition-all duration-300`}>
-                            <div className="text-current">{stat.icon}</div>
-                          </div>
-                          <span className="text-xs sm:text-sm text-green-500 font-medium bg-green-50 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">{stat.change}</span>
-                        </div>
-                        <h3 className={`text-xl sm:text-2xl font-bold mb-1 ${theme.text}`}>{stat.value}</h3>
-                        <p className={`text-xs sm:text-sm ${theme.textMuted}`}>{stat.label}</p>
-                        
-                        {/* Human touch: Add subtle pulse animation */}
-                        <div className="absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-r from-transparent via-orange-100/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-                      </motion.div>
-                    ))}
-                  </div>
-
-                  {/* Recent Activity */}
-                  <div className={`${theme.card} rounded-2xl p-6 ${theme.border} border shadow-lg`}>
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className={`text-lg font-semibold ${theme.text}`}>Recent Activity</h3>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="text-blue-500 hover:text-blue-600 text-sm font-medium"
-                      >
-                        View All
-                      </motion.button>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      {recentActivity.map((activity, index) => (
-                        <motion.div
-                          key={activity.id}
-                          initial={{ x: -20, opacity: 0 }}
-                          animate={{ x: 0, opacity: 1 }}
-                          transition={{ delay: index * 0.1 }}
-                          className="flex items-center gap-4 p-4 rounded-xl hover:bg-blue-50 transition-colors cursor-pointer group"
-                        >
-                          <div className="p-2 rounded-lg bg-blue-100 text-blue-600 group-hover:bg-blue-200 transition-colors">
-                            {activity.icon}
-                          </div>
-                          <div className="flex-1">
-                            <h4 className={`font-medium ${theme.text}`}>{activity.title}</h4>
-                            <p className={`text-sm ${theme.textMuted}`}>{activity.time}</p>
-                          </div>
-                          <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Rooms Tab */}
-              {activeTab === 'rooms' && (
-                <motion.div
-                  key="rooms"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="space-y-4"
-                >
-                  <div className={`${theme.card} rounded-2xl p-6 ${theme.border} border shadow-lg`}>
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className={`text-lg font-semibold ${theme.text}`}>My Rooms</h3>
-                      <Link href="/housing/post">
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="px-4 py-2 bg-blue-500 text-white rounded-xl text-sm font-medium hover:bg-blue-600 transition-colors"
-                        >
-                          <Plus className="w-4 h-4 mr-2 inline" />
-                          Post Room
-                        </motion.button>
-                      </Link>
-                    </div>
-                    
-                    {userRooms && userRooms.length > 0 ? (
-                      <div className="max-h-[32rem] md:max-h-[36rem] lg:max-h-[40rem] xl:max-h-[44rem] overflow-y-auto pr-2 space-y-4">
-                        {userRooms.map((room, index) => (
-                          <motion.div
-                            key={room.id || index}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            className={`${theme.surface} rounded-xl ${theme.border} border hover:shadow-lg transition-all duration-300 overflow-hidden`}
-                          >
-                            {/* Room Image */}
-                            <div className="w-full h-48 bg-gray-100">
-                              {room.images && room.images.length > 0 ? (
-                                <img 
-                                  src={room.images[0]} 
-                                  alt={room.title}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : room.photos && room.photos.length > 0 ? (
-                                <img 
-                                  src={room.photos[0]} 
-                                  alt={room.title}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
-                                  <Home className="w-16 h-16 text-blue-400" />
-                                  <span className={`ml-2 ${theme.textMuted}`}>No image available</span>
-                                </div>
-                              )}
-                            </div>
-                            
-                            {/* Room Details */}
-                            <div className="p-4">
-                              <div className="flex items-start justify-between mb-3">
-                                <div className="flex-1">
-                                  <h4 className={`font-bold ${theme.text} text-xl mb-2`}>{room.title}</h4>
-                                  <div className="flex items-center gap-4 text-sm mb-2">
-                                    <span className={`flex items-center gap-1 ${theme.textMuted}`}>
-                                      <MapPin className="w-4 h-4" />
-                                      {room.location}
-                                    </span>
-                                    <span className={`flex items-center gap-1 ${theme.textMuted}`}>
-                                      <Bed className="w-4 h-4" />
-                                      {room.roomType}
-                                    </span>
-                                    <span className={`flex items-center gap-1 ${theme.textMuted}`}>
-                                      <Users className="w-4 h-4" />
-                                      {room.occupancy} person(s)
-                                    </span>
-                                  </div>
-                                  <p className={`text-2xl font-bold ${theme.primary} mb-2`}>₹{room.rent}/month</p>
-                                  {room.description && (
-                                    <p className={`${theme.textMuted} text-sm mb-3 line-clamp-2`}>{room.description}</p>
-                                  )}
-                                </div>
-                                <div className="flex flex-col gap-2 ml-4">
-                                  <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => handleEditItem('room', room)}
-                                    className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
-                                    title="Edit Room"
-                                  >
-                                    <Edit3 className="w-5 h-5" />
-                                  </motion.button>
-                                  <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => handleDeleteItem('room', room.id, room.title)}
-                                    disabled={deleteLoading === room.id}
-                                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                                    title="Delete Room"
-                                  >
-                                    {deleteLoading === room.id ? (
-                                      <Loader className="w-5 h-5 animate-spin" />
-                                    ) : (
-                                      <Trash2 className="w-5 h-5" />
-                                    )}
-                                  </motion.button>
-                                </div>
-                              </div>
-                              
-                              {/* Status and Date */}
-                              <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                  room.status === 'available' ? 'bg-green-100 text-green-600' :
-                                  room.status === 'occupied' ? 'bg-red-100 text-red-600' :
-                                  'bg-yellow-100 text-yellow-600'
-                                }`}>
-                                  {room.status === 'available' ? 'Available' : 
-                                   room.status === 'occupied' ? 'Occupied' : 'Pending'}
-                                </span>
-                                <span className={`text-sm ${theme.textMuted}`}>
-                                  Posted {room.created_at ? formatDate(room.created_at) : 'Recently'}
-                                </span>
-                              </div>
-                            </div>
-                          </motion.div>
-                        ))}
-                      </div>
-                    ) : (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="text-center py-12"
-                      >
-                        <Home className={`w-16 h-16 mx-auto mb-4 ${theme.textMuted}`} />
-                        <h4 className={`text-lg font-medium ${theme.text} mb-2`}>No rooms posted yet</h4>
-                        <p className={`${theme.textMuted} mb-4`}>Start by posting your first room</p>
-                        <Link href="/housing/post">
-                          <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="px-6 py-3 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 transition-colors"
-                          >
-                            <Plus className="w-4 h-4 mr-2 inline" />
-                            Post Room
-                          </motion.button>
-                        </Link>
-                      </motion.div>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Items Tab */}
-              {activeTab === 'items' && (
-                <motion.div
-                  key="items"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="space-y-4"
-                >
-                  <div className={`${theme.card} rounded-2xl p-6 ${theme.border} border shadow-lg`}>
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className={`text-lg font-semibold ${theme.text}`}>My Items</h3>
-                      <Link href="/marketplace/sell">
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="px-4 py-2 bg-green-500 text-white rounded-xl text-sm font-medium hover:bg-green-600 transition-colors"
-                        >
-                          <Plus className="w-4 h-4 mr-2 inline" />
-                          Post Item
-                        </motion.button>
-                      </Link>
-                    </div>
-                    
-                    {userItems && userItems.length > 0 ? (
-                      <div className="max-h-[32rem] md:max-h-[36rem] lg:max-h-[40rem] xl:max-h-[44rem] overflow-y-auto pr-2 space-y-4">
-                        {userItems.map((item, index) => (
-                          <motion.div
-                            key={item.id || index}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            className={`${theme.surface} rounded-xl ${theme.border} border hover:shadow-lg transition-all duration-300 overflow-hidden`}
-                          >
-                            {/* Item Image */}
-                            <div className="w-full h-48 bg-gray-100">
-                              {item.image_url ? (
-                                <img 
-                                  src={item.image_url} 
-                                  alt={item.title}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : item.images && item.images.length > 0 ? (
-                                <img 
-                                  src={item.images[0]} 
-                                  alt={item.title}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : item.photos && item.photos.length > 0 ? (
-                                <img 
-                                  src={item.photos[0]} 
-                                  alt={item.title}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
-                                  <ShoppingBag className="w-16 h-16 text-green-400" />
-                                  <span className={`ml-2 ${theme.textMuted}`}>No image available</span>
-                                </div>
-                              )}
-                            </div>
-                            
-                            {/* Item Details */}
-                            <div className="p-4">
-                              <div className="flex items-start justify-between mb-3">
-                                <div className="flex-1">
-                                  <h4 className={`font-bold ${theme.text} text-xl mb-2`}>{item.title}</h4>
-                                  <div className="flex items-center gap-4 text-sm mb-2">
-                                    <span className={`flex items-center gap-1 ${theme.textMuted}`}>
-                                      <Tag className="w-4 h-4" />
-                                      {item.category}
-                                    </span>
-                                    <span className={`flex items-center gap-1 ${theme.textMuted}`}>
-                                      <Star className="w-4 h-4" />
-                                      {item.condition || 'Good'}
-                                    </span>
-                                    {item.location && (
-                                      <span className={`flex items-center gap-1 ${theme.textMuted}`}>
-                                        <MapPin className="w-4 h-4" />
-                                        {item.location}
-                                      </span>
-                                    )}
-                                  </div>
-                                  <p className={`text-2xl font-bold ${theme.primary} mb-2`}>₹{item.price}</p>
-                                  {item.description && (
-                                    <p className={`${theme.textMuted} text-sm mb-3 line-clamp-2`}>{item.description}</p>
-                                  )}
-                                </div>
-                                <div className="flex flex-col gap-2 ml-4">
-                                  <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => handleEditItem('item', item)}
-                                    className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
-                                    title="Edit Item"
-                                  >
-                                    <Edit3 className="w-5 h-5" />
-                                  </motion.button>
-                                  <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => handleDeleteItem('item', item.id, item.title)}
-                                    disabled={deleteLoading === item.id}
-                                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                                    title="Delete Item"
-                                  >
-                                    {deleteLoading === item.id ? (
-                                      <Loader className="w-5 h-5 animate-spin" />
-                                    ) : (
-                                      <Trash2 className="w-5 h-5" />
-                                    )}
-                                  </motion.button>
-                                </div>
-                              </div>
-                              
-                              {/* Status and Date */}
-                              <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                  item.status === 'available' ? 'bg-green-100 text-green-600' :
-                                  item.status === 'sold' ? 'bg-gray-100 text-gray-600' :
-                                  'bg-yellow-100 text-yellow-600'
-                                }`}>
-                                  {item.status === 'available' ? 'Available' : 
-                                   item.status === 'sold' ? 'Sold' : 'Pending'}
-                                </span>
-                                <span className={`text-sm ${theme.textMuted}`}>
-                                  Posted {item.created_at ? formatDate(item.created_at) : 'Recently'}
-                                </span>
-                              </div>
-                            </div>
-                          </motion.div>
-                        ))}
-                      </div>
-                    ) : (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="text-center py-12"
-                      >
-                        <ShoppingBag className={`w-16 h-16 mx-auto mb-4 ${theme.textMuted}`} />
-                        <h4 className={`text-lg font-medium ${theme.text} mb-2`}>No items posted yet</h4>
-                        <p className={`${theme.textMuted} mb-4`}>Start by posting your first item</p>
-                        <Link href="/marketplace/sell">
-                          <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="px-6 py-3 bg-green-500 text-white rounded-xl font-medium hover:bg-green-600 transition-colors"
-                          >
-                            <Plus className="w-4 h-4 mr-2 inline" />
-                            Post Item
-                          </motion.button>
-                        </Link>
-                      </motion.div>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Listings Tab */}
-              {activeTab === 'listings' && (
-                <motion.div
-                  key="listings"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="space-y-6"
-                >
-                  {/* Listings Header */}
-                  <div className={`${theme.card} rounded-2xl p-6 ${theme.border} border shadow-lg`}>
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className={`text-xl font-bold ${theme.text}`}>My Listings</h3>
-                      <div className="flex gap-2">
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => setSelectedListingTab('rooms')}
-                          className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-                            selectedListingTab === 'rooms' 
-                              ? 'bg-blue-500 text-white' 
-                              : `${theme.surface} ${theme.textMuted} hover:bg-blue-50`
-                          }`}
-                        >
-                          <Home className="w-4 h-4 mr-2 inline" />
-                          Rooms ({totalUserRooms})
-                        </motion.button>
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => setSelectedListingTab('items')}
-                          className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-                            selectedListingTab === 'items' 
-                              ? 'bg-green-500 text-white' 
-                              : `${theme.surface} ${theme.textMuted} hover:bg-green-50`
-                          }`}
-                        >
-                          <ShoppingBag className="w-4 h-4 mr-2 inline" />
-                          Items ({totalUserItems})
-                        </motion.button>
-                      </div>
-                    </div>
-
-                    {/* Rooms Tab */}
-                    {selectedListingTab === 'rooms' && (
-                      <div className="space-y-4">
-                        {userRooms && userRooms.length > 0 ? (
-                          <div className="max-h-[32rem] md:max-h-[36rem] lg:max-h-[40rem] xl:max-h-[44rem] overflow-y-auto pr-2 space-y-4">
-                            {userRooms.map((room, index) => (
-                              <motion.div
-                                key={room.id || index}
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: index * 0.1 }}
-                                className={`${theme.surface} rounded-xl p-4 ${theme.border} border hover:shadow-lg transition-all duration-300`}
-                              >
-                                <div className="mb-4">
-                                  {(room.images && room.images.length > 0) ? (
-                                    <img 
-                                      src={room.images[0]} 
-                                      alt={room.title}
-                                      className="w-full h-48 rounded-lg object-cover"
-                                    />
-                                  ) : room.image_url ? (
-                                    <img 
-                                      src={room.image_url} 
-                                      alt={room.title}
-                                      className="w-full h-48 rounded-lg object-cover"
-                                    />
-                                  ) : (
-                                    <div className="w-full h-48 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
-                                      <Home className="w-16 h-16 text-blue-500" />
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="flex items-start justify-between mb-3">
-                                  <div className="flex-1">
-                                    <h4 className={`font-semibold ${theme.text} text-xl mb-1`}>{room.title}</h4>
-                                    <p className={`${theme.textMuted} text-base mb-2`}>{room.location}</p>
-                                    <p className={`text-2xl font-bold ${theme.primary}`}>₹{room.rent}/month</p>
-                                  </div>
-                                  <div className="flex gap-2">
-                                    <motion.button
-                                      whileHover={{ scale: 1.1 }}
-                                      whileTap={{ scale: 0.9 }}
-                                      onClick={() => handleEditItem('room', room)}
-                                      className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
-                                      title="Edit Room"
-                                    >
-                                      <Edit3 className="w-5 h-5" />
-                                    </motion.button>
-                                    <motion.button
-                                      whileHover={{ scale: 1.1 }}
-                                      whileTap={{ scale: 0.9 }}
-                                      onClick={() => handleDeleteItem('room', room.id, room.title)}
-                                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                      title="Delete Room"
-                                    >
-                                      <Trash2 className="w-5 h-5" />
-                                    </motion.button>
-                                  </div>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-4 text-sm">
-                                    <span className={`flex items-center gap-1 ${theme.textMuted}`}>
-                                      <Bed className="w-4 h-4" />
-                                      {room.roomType}
-                                    </span>
-                                    <span className={`flex items-center gap-1 ${theme.textMuted}`}>
-                                      <Users className="w-4 h-4" />
-                                      {room.occupancy} person(s)
-                                    </span>
-                                  </div>
-                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                    room.status === 'available' ? 'bg-green-100 text-green-600' :
-                                    room.status === 'occupied' ? 'bg-red-100 text-red-600' :
-                                    'bg-yellow-100 text-yellow-600'
-                                  }`}>
-                                    {room.status === 'available' ? 'Available' : 
-                                     room.status === 'occupied' ? 'Occupied' : 'Pending'}
-                                  </span>
-                                </div>
-                              </motion.div>
-                            ))}
-                          </div>
-                        ) : (
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="text-center py-12"
-                          >
-                            <Home className={`w-16 h-16 mx-auto mb-4 ${theme.textMuted}`} />
-                            <h4 className={`text-lg font-medium ${theme.text} mb-2`}>No rooms listed yet</h4>
-                            <p className={`${theme.textMuted} mb-4`}>Start by posting your first room listing</p>
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              className="px-6 py-3 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 transition-colors"
-                            >
-                              <Plus className="w-4 h-4 mr-2 inline" />
-                              Post Room
-                            </motion.button>
-                          </motion.div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Items Tab */}
-                    {selectedListingTab === 'items' && (
-                      <div className="space-y-4">
-                        {userItems && userItems.length > 0 ? (
-                          <div className="max-h-[32rem] md:max-h-[36rem] lg:max-h-[40rem] xl:max-h-[44rem] overflow-y-auto pr-2 space-y-4">
-                            {userItems.map((item, index) => (
-                              <motion.div
-                                key={item.id || index}
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: index * 0.1 }}
-                                className={`${theme.surface} rounded-xl p-4 ${theme.border} border hover:shadow-lg transition-all duration-300`}
-                              >
-                                <div className="mb-4">
-                                  {item.image_url ? (
-                                    <img 
-                                      src={item.image_url} 
-                                      alt={item.title || 'Item image'}
-                                      className="w-full h-48 rounded-lg object-cover"
-                                      onLoad={() => console.log('Item image loaded:', item.image_url)}
-                                      onError={() => console.log('Item image failed:', item.image_url)}
-                                    />
-                                  ) : (
-                                    <div className="w-full h-48 bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center">
-                                      <ShoppingBag className="w-16 h-16 text-green-500" />
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="flex items-start justify-between mb-3">
-                                  <div className="flex-1">
-                                    <h4 className={`font-semibold ${theme.text} text-xl mb-1`}>{item.title}</h4>
-                                    <p className={`${theme.textMuted} text-base mb-2`}>{item.category}</p>
-                                    <p className={`text-2xl font-bold ${theme.primary}`}>₹{item.price}</p>
-                                  </div>
-                                  <div className="flex gap-2">
-                                    <motion.button
-                                      whileHover={{ scale: 1.1 }}
-                                      whileTap={{ scale: 0.9 }}
-                                      onClick={() => handleEditItem('item', item)}
-                                      className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
-                                      title="Edit Item"
-                                    >
-                                      <Edit3 className="w-5 h-5" />
-                                    </motion.button>
-                                    <motion.button
-                                      whileHover={{ scale: 1.1 }}
-                                      whileTap={{ scale: 0.9 }}
-                                      onClick={() => handleDeleteItem('item', item.id, item.title)}
-                                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                      title="Delete Item"
-                                    >
-                                      <Trash2 className="w-5 h-5" />
-                                    </motion.button>
-                                  </div>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-4 text-sm">
-                                    <span className={`flex items-center gap-1 ${theme.textMuted}`}>
-                                      <Tag className="w-4 h-4" />
-                                      {item.condition || 'Good'}
-                                    </span>
-                                  </div>
-                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                    item.status === 'available' ? 'bg-green-100 text-green-600' :
-                                    item.status === 'sold' ? 'bg-gray-100 text-gray-600' :
-                                    'bg-yellow-100 text-yellow-600'
-                                  }`}>
-                                    {item.status === 'available' ? 'Available' : 
-                                     item.status === 'sold' ? 'Sold' : 'Pending'}
-                                  </span>
-                                </div>
-                              </motion.div>
-                            ))}
-                          </div>
-                        ) : (
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="text-center py-12"
-                          >
-                            <ShoppingBag className={`w-16 h-16 mx-auto mb-4 ${theme.textMuted}`} />
-                            <h4 className={`text-lg font-medium ${theme.text} mb-2`}>No items listed yet</h4>
-                            <p className={`${theme.textMuted} mb-4`}>Start by posting your first item for sale</p>
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              className="px-6 py-3 bg-green-500 text-white rounded-xl font-medium hover:bg-green-600 transition-colors"
-                            >
-                              <Plus className="w-4 h-4 mr-2 inline" />
-                              Post Item
-                            </motion.button>
-                          </motion.div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        </div>
-      </motion.main>
-
-      {/* Floating Action Button - Mobile Optimized */}
-      <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-50"
-      >
-        <motion.button
-          whileHover={{ scale: 1.1, rotate: 15 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => {
-            setShowSparkles(true);
-            setTimeout(() => setShowSparkles(false), 2000);
-          }}
-          className={`w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 ${theme.accent} text-white rounded-full shadow-2xl transition-all duration-300 flex items-center justify-center group relative overflow-hidden ${theme.accentHover}`}
+        {/* Content Grid - Instagram Style */}
+        <motion.div
+          key={selectedListingTab}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="mt-8"
         >
-          <Plus className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 group-hover:rotate-90 transition-transform duration-300 relative z-10" />
-          
-          <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-orange-400/20 to-amber-400/20 rounded-full"
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.5, 0, 0.5]
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          />
-          
-          <motion.div
-            className="absolute inset-1 sm:inset-2 bg-white/10 rounded-full"
-            animate={{
-              scale: [1, 1.1, 1]
-            }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          />
-        </motion.button>
-      </motion.div>
-
-      {/* Sparkle Effects */}
-      <AnimatePresence>
-        {showSparkles && (
-          <div className="fixed inset-0 pointer-events-none z-40">
-            {[...Array(20)].map((_, i) => (
+          {isLoadingUserData ? (
+            <div className="flex justify-center py-16">
               <motion.div
-                key={i}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{
-                  scale: [0, 1, 0],
-                  opacity: [0, 1, 0],
-                  rotate: [0, 180, 360],
-                }}
-                exit={{ opacity: 0 }}
-                transition={{
-                  duration: 2,
-                  delay: i * 0.1,
-                  ease: "easeOut",
-                }}
-                className="absolute w-4 h-4 bg-yellow-400 rounded-full"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                }}
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full"
               />
-            ))}
-          </div>
-        )}
-      </AnimatePresence>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 auto-rows-max">
+              {selectedListingTab === 'rooms' && (
+                userRooms.length > 0 ? (
+                  userRooms.map((room) => (
+                    <RoomCard key={room.id} room={room} theme={theme} onEdit={handleEdit} onDelete={handleDeleteConfirm} />
+                  ))
+                ) : (
+                  <EmptyState selectedListingTab={selectedListingTab} theme={theme} />
+                )
+              )}
 
-      {/* Share Modal */}
-      <AnimatePresence>
-        {showShareModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={() => setShowShareModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className={`${theme.card} rounded-2xl p-6 max-w-md w-full ${theme.border} border shadow-2xl`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className={`text-xl font-bold ${theme.text}`}>Share Profile</h3>
-                <button
-                  onClick={() => setShowShareModal(false)}
-                  className={`p-2 rounded-lg ${theme.glassy} hover:bg-red-100 transition-colors`}
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+              {selectedListingTab === 'items' && (
+                userItems.length > 0 ? (
+                  userItems.map((item) => (
+                    <ItemCard key={item.id} item={item} theme={theme} onEdit={handleEdit} onDelete={handleDeleteConfirm} />
+                  ))
+                ) : (
+                  <EmptyState selectedListingTab={selectedListingTab} theme={theme} />
+                )
+              )}
 
-              <div className="space-y-4">
-                {/* Copy Link */}
-                <div className="flex items-center gap-3 p-3 rounded-xl border border-gray-200">
-                  <LinkIcon className={`w-5 h-5 ${theme.textMuted}`} />
-                  <input
-                    type="text"
-                    value={`${window.location.origin}/profile/${user.id}`}
-                    readOnly
-                    className={`flex-1 bg-transparent text-sm focus:outline-none ${theme.text}`}
-                  />
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(`${window.location.origin}/profile/${user.id}`);
-                      setCopied(true);
-                      setTimeout(() => setCopied(false), 2000);
-                    }}
-                    className="px-3 py-1 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
-                  >
-                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                  </button>
-                </div>
+              {selectedListingTab === 'rides' && (
+                userRides.length > 0 ? (
+                  userRides.map((ride) => (
+                    <RideCard key={ride.id} ride={ride} theme={theme} onEdit={handleEdit} onDelete={handleDeleteConfirm} />
+                  ))
+                ) : (
+                  <EmptyState selectedListingTab={selectedListingTab} theme={theme} />
+                )
+              )}
 
-                {/* Social Share Buttons */}
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => {
-                      const url = `https://twitter.com/intent/tweet?text=Check out ${profileUser.name}'s profile&url=${window.location.origin}/profile/${user?.id || ''}`;
-                      window.open(url, '_blank');
-                    }}
-                    className="flex items-center gap-2 p-3 rounded-xl border border-gray-200 hover:bg-blue-50 transition-colors"
-                  >
-                    <FiTwitter className="w-5 h-5 text-blue-400" />
-                    <span className="text-sm font-medium">Twitter</span>
-                  </button>
-                  
-                  <button
-                    onClick={() => {
-                      const url = `https://www.linkedin.com/sharing/share-offsite/?url=${window.location.origin}/profile/${user.id}`;
-                      window.open(url, '_blank');
-                    }}
-                    className="flex items-center gap-2 p-3 rounded-xl border border-gray-200 hover:bg-blue-50 transition-colors"
-                  >
-                    <FiLinkedin className="w-5 h-5 text-blue-600" />
-                    <span className="text-sm font-medium">LinkedIn</span>
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              {selectedListingTab === 'tickets' && (
+                userTickets.length > 0 ? (
+                  userTickets.map((ticket) => (
+                    <TicketCard key={ticket.id} ticket={ticket} theme={theme} onEdit={handleEdit} onDelete={handleDeleteConfirm} />
+                  ))
+                ) : (
+                  <EmptyState selectedListingTab={selectedListingTab} theme={theme} />
+                )
+              )}
 
-      {/* Settings Modal */}
-      <AnimatePresence>
-        {showEditModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={() => setShowEditModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className={`${theme.card} rounded-2xl p-6 max-w-md w-full ${theme.border} border shadow-2xl max-h-[80vh] overflow-y-auto`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className={`text-xl font-bold ${theme.text}`}>Settings</h3>
-                <button
-                  onClick={() => setShowEditModal(false)}
-                  className={`p-2 rounded-lg ${theme.glassy} hover:bg-red-100 transition-colors`}
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+              {selectedListingTab === 'lost' && (
+                userLostFoundItems.filter(item => item.mode === 'lost').length > 0 ? (
+                  userLostFoundItems.filter(item => item.mode === 'lost').map((item) => (
+                    <LostFoundCard key={item.id} item={item} theme={theme} onEdit={handleEdit} onDelete={handleDeleteConfirm} />
+                  ))
+                ) : (
+                  <EmptyState selectedListingTab={selectedListingTab} theme={theme} />
+                )
+              )}
 
-              <div className="space-y-4">
-                {/* Theme Settings */}
-                <div>
-                  <h4 className={`font-semibold mb-3 ${theme.text}`}>Theme</h4>
-                  <div className="grid grid-cols-3 gap-2">
-                    {['light', 'dark', 'cosmic'].map((themeOption) => (
-                      <button
-                        key={themeOption}
-                        onClick={() => setCurrentTheme(themeOption)}
-                        className={`p-3 rounded-xl border text-sm font-medium transition-colors capitalize ${
-                          currentTheme === themeOption
-                            ? 'border-blue-500 bg-blue-50 text-blue-600'
-                            : 'border-gray-200 hover:bg-gray-50'
-                        }`}
-                      >
-                        {themeOption}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Notification Settings */}
-                <div>
-                  <h4 className={`font-semibold mb-3 ${theme.text}`}>Notifications</h4>
-                  <div className="space-y-2">
-                    {[
-                      'Email notifications',
-                      'Push notifications',
-                      'SMS updates',
-                      'Marketing emails'
-                    ].map((setting) => (
-                      <label key={setting} className="flex items-center gap-3">
-                        <input type="checkbox" className="rounded" defaultChecked />
-                        <span className="text-sm">{setting}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Privacy Settings */}
-                <div>
-                  <h4 className={`font-semibold mb-3 ${theme.text}`}>Privacy</h4>
-                  <div className="space-y-2">
-                    {[
-                      'Public profile',
-                      'Show online status',
-                      'Allow messages from strangers'
-                    ].map((setting) => (
-                      <label key={setting} className="flex items-center gap-3">
-                        <input type="checkbox" className="rounded" defaultChecked />
-                        <span className="text-sm">{setting}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-3 pt-4">
-                  <button
-                    onClick={() => setShowEditModal(false)}
-                    className="flex-1 py-2 px-4 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => {
-                      // Save settings logic here
-                      setShowEditModal(false);
-                    }}
-                    className="flex-1 py-2 px-4 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 transition-colors"
-                  >
-                    Save Changes
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Edit Profile Modal */}
-      <AnimatePresence>
-        {showEditProfileModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={() => setShowEditProfileModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className={`${theme.card} rounded-2xl p-6 max-w-lg w-full ${theme.border} border shadow-2xl max-h-[80vh] overflow-y-auto`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className={`text-xl font-bold ${theme.text}`}>Edit Profile</h3>
-                <button
-                  onClick={() => setShowEditProfileModal(false)}
-                  className={`p-2 rounded-lg ${theme.glassy} hover:bg-red-100 transition-colors`}
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <form className="modal-content space-y-6">
-                {/* Profile Picture */}
-                <div className="text-center">
-                  <div className="relative inline-block mb-4">
-                    <div className={`w-24 h-24 rounded-full ${theme.accent} p-1`}>
-                      <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
-                        {userAvatar ? (
-                          <img src={userAvatar} alt="Profile" className="w-full h-full object-cover" />
-                        ) : (
-                          <span className={`text-2xl font-bold ${theme.primary}`}>{userInitials}</span>
-                        )}
-                      </div>
-                    </div>
-                    <button className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-blue-600 transition-colors">
-                      <Camera className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <p className={`text-sm ${theme.textMuted}`}>Click to change profile picture</p>
-                </div>
-
-                {/* Basic Information */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className={`block text-sm font-medium mb-2 ${theme.text}`}>Name</label>
-                    <input
-                      type="text"
-                      name="name"
-                      defaultValue={profileUser.name}
-                      className={`w-full p-3 rounded-xl border ${theme.border} focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${theme.text}`}
-                      placeholder="Your name"
-                    />
-                  </div>
-                  <div>
-                    <label className={`block text-sm font-medium mb-2 ${theme.text}`}>Email</label>
-                    <input
-                      type="email"
-                      name="email"
-                      defaultValue={profileUser.email}
-                      className={`w-full p-3 rounded-xl border ${theme.border} focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${theme.text}`}
-                      placeholder="your.email@example.com"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className={`block text-sm font-medium mb-2 ${theme.text}`}>Phone</label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      defaultValue={profileUser.phone}
-                      className={`w-full p-3 rounded-xl border ${theme.border} focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${theme.text}`}
-                      placeholder="+1 (555) 123-4567"
-                    />
-                  </div>
-                  <div>
-                    <label className={`block text-sm font-medium mb-2 ${theme.text}`}>Location</label>
-                    <input
-                      type="text"
-                      name="location"
-                      defaultValue={profileUser.location}
-                      className={`w-full p-3 rounded-xl border ${theme.border} focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${theme.text}`}
-                      placeholder="City, Country"
-                    />
-                  </div>
-                </div>
-
-                {/* Bio */}
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${theme.text}`}>Bio</label>
-                  <textarea
-                    rows={4}
-                    name="bio"
-                    defaultValue={profileUser.bio}
-                    className={`w-full p-3 rounded-xl border ${theme.border} focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none ${theme.text}`}
-                    placeholder="Tell us about yourself..."
-                  />
-                </div>
-
-                {/* Social Links */}
-                <div>
-                  <label className={`block text-sm font-medium mb-3 ${theme.text}`}>Social Links</label>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <FiGithub className={`w-5 h-5 ${theme.textMuted}`} />
-                      <input
-                        type="url"
-                        name="github"
-                        defaultValue={profileUser.socialLinks.github}
-                        className={`flex-1 p-3 rounded-xl border ${theme.border} focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${theme.text}`}
-                        placeholder="https://github.com/username"
-                      />
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <FiLinkedin className="w-5 h-5 text-blue-600" />
-                      <input
-                        type="url"
-                        name="linkedin"
-                        defaultValue={profileUser.socialLinks.linkedin}
-                        className={`flex-1 p-3 rounded-xl border ${theme.border} focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${theme.text}`}
-                        placeholder="https://linkedin.com/in/username"
-                      />
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <FiTwitter className="w-5 h-5 text-blue-400" />
-                      <input
-                        type="url"
-                        name="twitter"
-                        defaultValue={profileUser.socialLinks.twitter}
-                        className={`flex-1 p-3 rounded-xl border ${theme.border} focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${theme.text}`}
-                        placeholder="https://twitter.com/username"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Interests */}
-                <div>
-                  <label className={`block text-sm font-medium mb-3 ${theme.text}`}>Interests</label>
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {profileUser.interests.map((interest, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium flex items-center gap-2"
-                      >
-                        {interest}
-                        <button className="hover:text-red-500">
-                          <X className="w-3 h-3" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                  <input
-                    type="text"
-                    className={`w-full p-3 rounded-xl border ${theme.border} focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${theme.text}`}
-                    placeholder="Add new interest (press Enter)"
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' && e.target.value.trim()) {
-                        // Add new interest logic here
-                        e.target.value = '';
-                      }
-                    }}
-                  />
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-3 pt-4">
-                  <button
-                    onClick={() => setShowEditProfileModal(false)}
-                    className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    disabled={isUpdatingProfile}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      const form = e.target.closest('form') || e.target.closest('.modal-content').querySelector('form');
-                      if (form) {
-                        const formData = new FormData(form);
-                        const updatedData = {
-                          name: formData.get('name') || profileUser.name,
-                          email: formData.get('email') || profileUser.email,
-                          phone: formData.get('phone') || profileUser.phone,
-                          location: formData.get('location') || profileUser.location,
-                          bio: formData.get('bio') || profileUser.bio,
-                          socialLinks: {
-                            github: formData.get('github') || profileUser.socialLinks.github,
-                            linkedin: formData.get('linkedin') || profileUser.socialLinks.linkedin,
-                            twitter: formData.get('twitter') || profileUser.socialLinks.twitter
-                          }
-                        };
-                        handleProfileUpdate(updatedData);
-                      } else {
-                        // Fallback - just close modal with success message
-                        setShowEditProfileModal(false);
-                        showTemporaryMessage('Profile updated successfully!', true);
-                        setShowSparkles(true);
-                        setTimeout(() => setShowSparkles(false), 2000);
-                      }
-                    }}
-                    className={`flex-1 py-3 px-4 ${theme.accent} text-white rounded-xl font-medium ${theme.accentHover} transition-colors flex items-center justify-center gap-2 ${isUpdatingProfile ? 'opacity-70 cursor-not-allowed' : ''}`}
-                  >
-                    {isUpdatingProfile && <Loader className="w-4 h-4 animate-spin" />}
-                    {isUpdatingProfile ? 'Saving...' : 'Save Changes'}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Modals would go here */}
-      {/* ... */}
-
-      {/* Delete Confirmation Modal */}
-      <AnimatePresence>
-        {deleteModal.isOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            onClick={() => setDeleteModal({ isOpen: false, type: '', id: '', title: '' })}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className={`${theme.card} rounded-2xl p-6 max-w-md w-full mx-auto shadow-2xl`}
-            >
-              <div className="text-center">
-                <div className="w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
-                  <Trash2 className="w-6 h-6 text-red-500" />
-                </div>
-                <h3 className={`text-lg font-semibold ${theme.text} mb-2`}>
-                  Delete {deleteModal.type === 'room' ? 'Room' : 'Item'}
-                </h3>
-                <p className={`${theme.textMuted} mb-6`}>
-                  Are you sure you want to delete "{deleteModal.title}"? This action cannot be undone.
-                </p>
-                <div className="flex gap-3">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setDeleteModal({ isOpen: false, type: '', id: '', title: '' })}
-                    className={`flex-1 py-3 px-4 ${theme.surface} ${theme.text} rounded-xl font-medium border ${theme.border} hover:bg-gray-50 transition-colors`}
-                  >
-                    Cancel
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={confirmDelete}
-                    className="flex-1 py-3 px-4 bg-red-500 text-white rounded-xl font-medium hover:bg-red-600 transition-colors"
-                  >
-                    Delete
-                  </motion.button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              {selectedListingTab === 'found' && (
+                userLostFoundItems.filter(item => item.mode === 'found').length > 0 ? (
+                  userLostFoundItems.filter(item => item.mode === 'found').map((item) => (
+                    <LostFoundCard key={item.id} item={item} theme={theme} onEdit={handleEdit} onDelete={handleDeleteConfirm} />
+                  ))
+                ) : (
+                  <EmptyState selectedListingTab={selectedListingTab} theme={theme} />
+                )
+              )}
+            </div>
+          )}
+        </motion.div>
+      </main>
 
       <Footer />
+
+      {/* Edit/Create Modal */}
+      {(isEditModalOpen || isCreateModalOpen) && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className={`${theme.card} rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto`}>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className={`text-xl font-semibold ${theme.text}`}>
+                {selectedItem?.id ? 'Edit' : 'Create'} {selectedItem?.type?.slice(0, -1) || 'Item'}
+              </h2>
+              <button
+                onClick={() => {
+                  setIsEditModalOpen(false);
+                  setIsCreateModalOpen(false);
+                  setSelectedItem(null);
+                  setEditFormData({});
+                  resetImageStates();
+                }}
+                className={`text-gray-500 hover:text-gray-700 text-2xl font-bold`}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Dynamic Form Based on Type */}
+            <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+              
+              {/* Room Form Fields */}
+              {selectedItem?.type === 'rooms' && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Title *</label>
+                      <input
+                        type="text"
+                        value={editFormData.title || ''}
+                        onChange={(e) => setEditFormData(prev => ({...prev, title: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        placeholder="Room title"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Monthly Rent *</label>
+                      <input
+                        type="number"
+                        value={editFormData.rent || editFormData.price || ''}
+                        onChange={(e) => setEditFormData(prev => ({...prev, rent: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        placeholder="Monthly rent amount"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className={`block text-sm font-medium ${theme.text} mb-1`}>Description *</label>
+                    <textarea
+                      value={editFormData.description || ''}
+                      onChange={(e) => setEditFormData(prev => ({...prev, description: e.target.value}))}
+                      className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card} resize-none`}
+                      placeholder="Describe your room, amenities, preferences..."
+                      rows={3}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Location *</label>
+                      <input
+                        type="text"
+                        value={editFormData.location || ''}
+                        onChange={(e) => setEditFormData(prev => ({...prev, location: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        placeholder="Room location"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Availability</label>
+                      <select
+                        value={editFormData.availability || 'available'}
+                        onChange={(e) => setEditFormData(prev => ({...prev, availability: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                      >
+                        <option value="available">Available</option>
+                        <option value="rented">Rented</option>
+                        <option value="pending">Pending</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Bedrooms</label>
+                      <input
+                        type="number"
+                        value={editFormData.bedrooms || ''}
+                        onChange={(e) => setEditFormData(prev => ({...prev, bedrooms: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        placeholder="1"
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Bathrooms</label>
+                      <input
+                        type="number"
+                        value={editFormData.bathrooms || ''}
+                        onChange={(e) => setEditFormData(prev => ({...prev, bathrooms: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        placeholder="1"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Image Upload Section */}
+                  <div className="space-y-3">
+                    <label className={`block text-sm font-medium ${theme.text} mb-2`}>Room Images</label>
+                    
+                    {/* Existing Images */}
+                    {existingImages.length > 0 && (
+                      <div className="space-y-2">
+                        <p className={`text-sm ${theme.textMuted}`}>Current Images:</p>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                          {existingImages.map((image, index) => (
+                            <div key={index} className="relative group">
+                              <img
+                                src={image}
+                                alt={`Room image ${index + 1}`}
+                                className="w-full h-24 object-cover rounded-lg border"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeExistingImage(index)}
+                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* New Image Upload */}
+                    <div className="space-y-2">
+                      <input
+                        type="file"
+                        id="room-images"
+                        multiple
+                        accept="image/*"
+                        onChange={handleImageSelect}
+                        className="hidden"
+                      />
+                      <label
+                        htmlFor="room-images"
+                        className={`block w-full p-4 border-2 border-dashed rounded-lg cursor-pointer hover:border-blue-400 transition-colors ${theme.border} ${theme.card}`}
+                      >
+                        <div className="text-center">
+                          <div className="text-2xl mb-2">📷</div>
+                          <p className={`text-sm ${theme.text}`}>
+                            Click to upload new images
+                          </p>
+                          <p className={`text-xs ${theme.textMuted} mt-1`}>
+                            PNG, JPG up to 10MB each
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+
+                    {/* New Image Previews */}
+                    {imagePreview.length > 0 && (
+                      <div className="space-y-2">
+                        <p className={`text-sm ${theme.textMuted}`}>New Images to Upload:</p>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                          {imagePreview.map((preview, index) => (
+                            <div key={index} className="relative group">
+                              <img
+                                src={preview}
+                                alt={`Preview ${index + 1}`}
+                                className="w-full h-24 object-cover rounded-lg border"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeSelectedImage(index)}
+                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                ×
+                              </button>
+                              <div className="absolute bottom-1 left-1 bg-green-500 text-white text-xs px-1 rounded">
+                                New
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Contact Information Section for Rooms */}
+                  <div className="space-y-3">
+                    <h4 className={`text-sm font-semibold ${theme.text} border-b ${theme.border} pb-2`}>Contact Information</h4>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={`block text-sm font-medium ${theme.text} mb-1`}>Phone Number</label>
+                        <input
+                          type="tel"
+                          value={editFormData.contact_phone || editFormData.contact_info?.mobile || ''}
+                          onChange={(e) => setEditFormData(prev => ({
+                            ...prev, 
+                            contact_phone: e.target.value,
+                            contact_info: {
+                              ...prev.contact_info,
+                              mobile: e.target.value
+                            }
+                          }))}
+                          className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                          placeholder="e.g., +91 9876543210"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className={`block text-sm font-medium ${theme.text} mb-1`}>Email</label>
+                        <input
+                          type="email"
+                          value={editFormData.contact_email || editFormData.contact_info?.email || ''}
+                          onChange={(e) => setEditFormData(prev => ({
+                            ...prev, 
+                            contact_email: e.target.value,
+                            contact_info: {
+                              ...prev.contact_info,
+                              email: e.target.value
+                            }
+                          }))}
+                          className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                          placeholder="e.g., your@email.com"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Instagram Handle</label>
+                      <input
+                        type="text"
+                        value={editFormData.contact_instagram || editFormData.contact_info?.instagram || ''}
+                        onChange={(e) => setEditFormData(prev => ({
+                          ...prev, 
+                          contact_instagram: e.target.value,
+                          contact_info: {
+                            ...prev.contact_info,
+                            instagram: e.target.value
+                          }
+                        }))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        placeholder="e.g., @your_instagram"
+                      />
+                    </div>
+
+                    <div className={`text-xs ${theme.textMuted} bg-blue-50 dark:bg-blue-900/20 p-2 rounded`}>
+                      <Info className="w-4 h-4 inline mr-1" />
+                      Provide contact information so interested tenants can reach you easily.
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Item Form Fields */}
+              {selectedItem?.type === 'items' && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Item Name *</label>
+                      <input
+                        type="text"
+                        value={editFormData.name || editFormData.title || ''}
+                        onChange={(e) => setEditFormData(prev => ({...prev, name: e.target.value, title: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        placeholder="Item name"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Price *</label>
+                      <input
+                        type="number"
+                        value={editFormData.price || ''}
+                        onChange={(e) => setEditFormData(prev => ({...prev, price: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        placeholder="Item price"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className={`block text-sm font-medium ${theme.text} mb-1`}>Description *</label>
+                    <textarea
+                      value={editFormData.description || ''}
+                      onChange={(e) => setEditFormData(prev => ({...prev, description: e.target.value}))}
+                      className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card} h-24`}
+                      placeholder="Item description"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Category</label>
+                      <select
+                        value={editFormData.category || ''}
+                        onChange={(e) => setEditFormData(prev => ({...prev, category: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                      >
+                        <option value="">Select category</option>
+                        <option value="electronics">Electronics</option>
+                        <option value="books">Books</option>
+                        <option value="furniture">Furniture</option>
+                        <option value="clothing">Clothing</option>
+                        <option value="sports">Sports</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Condition</label>
+                      <select
+                        value={editFormData.condition || 'good'}
+                        onChange={(e) => setEditFormData(prev => ({...prev, condition: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                      >
+                        <option value="new">New</option>
+                        <option value="like-new">Like New</option>
+                        <option value="good">Good</option>
+                        <option value="fair">Fair</option>
+                        <option value="poor">Poor</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  {/* Item Image Upload Section */}
+                  <div>
+                    <label className={`block text-sm font-medium ${theme.text} mb-2`}>Item Images</label>
+                    
+                    {/* Existing Image Display */}
+                    {selectedItem?.image && !selectedImages.length && (
+                      <div className="mb-4">
+                        <p className={`text-sm ${theme.textMuted} mb-2`}>Current Image:</p>
+                        <div className="relative inline-block">
+                          <img 
+                            src={selectedItem.image} 
+                            alt="Current item" 
+                            className="w-32 h-32 object-cover rounded-lg border"
+                            onError={(e) => {
+                              e.target.src = '/placeholder-image.jpg';
+                              e.target.onerror = null;
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setExistingImages([]);
+                              // You can also call an API to delete the image if needed
+                            }}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* New Image Upload */}
+                    <div className={`border-2 border-dashed rounded-lg p-4 ${theme.border} hover:border-blue-400 transition-colors`}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageSelect}
+                        className="hidden"
+                        id="item-image-upload"
+                      />
+                      <label 
+                        htmlFor="item-image-upload"
+                        className="cursor-pointer flex flex-col items-center justify-center space-y-2"
+                      >
+                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <span className={`text-sm ${theme.textMuted}`}>
+                          {selectedImages.length > 0 ? 'Replace Image' : 'Upload New Image'}
+                        </span>
+                        <span className={`text-xs ${theme.textMuted}`}>PNG, JPG up to 5MB</span>
+                      </label>
+                    </div>
+                    
+                    {/* Selected Image Preview */}
+                    {selectedImages.length > 0 && (
+                      <div className="mt-4">
+                        <p className={`text-sm ${theme.textMuted} mb-2`}>New Image Preview:</p>
+                        <div className="relative inline-block">
+                          <img 
+                            src={imagePreview[0]} 
+                            alt="New item preview" 
+                            className="w-32 h-32 object-cover rounded-lg border"
+                          />
+                          <button
+                            type="button"
+                            onClick={removeSelectedImage}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Contact Information Section for Items */}
+                  <div className="space-y-3">
+                    <h4 className={`text-sm font-semibold ${theme.text} border-b ${theme.border} pb-2`}>Contact Information</h4>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={`block text-sm font-medium ${theme.text} mb-1`}>Phone Number</label>
+                        <input
+                          type="tel"
+                          value={editFormData.contact_phone || editFormData.contact_info?.mobile || ''}
+                          onChange={(e) => setEditFormData(prev => ({
+                            ...prev, 
+                            contact_phone: e.target.value,
+                            contact_info: {
+                              ...prev.contact_info,
+                              mobile: e.target.value
+                            }
+                          }))}
+                          className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                          placeholder="e.g., +91 9876543210"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className={`block text-sm font-medium ${theme.text} mb-1`}>Email</label>
+                        <input
+                          type="email"
+                          value={editFormData.contact_email || editFormData.contact_info?.email || ''}
+                          onChange={(e) => setEditFormData(prev => ({
+                            ...prev, 
+                            contact_email: e.target.value,
+                            contact_info: {
+                              ...prev.contact_info,
+                              email: e.target.value
+                            }
+                          }))}
+                          className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                          placeholder="e.g., your@email.com"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Instagram Handle</label>
+                      <input
+                        type="text"
+                        value={editFormData.contact_instagram || editFormData.contact_info?.instagram || ''}
+                        onChange={(e) => setEditFormData(prev => ({
+                          ...prev, 
+                          contact_instagram: e.target.value,
+                          contact_info: {
+                            ...prev.contact_info,
+                            instagram: e.target.value
+                          }
+                        }))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        placeholder="e.g., @your_instagram"
+                      />
+                    </div>
+
+                    <div className={`text-xs ${theme.textMuted} bg-green-50 dark:bg-green-900/20 p-2 rounded`}>
+                      <Info className="w-4 h-4 inline mr-1" />
+                      Provide contact information so buyers can reach you to purchase the item.
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Ride Form Fields */}
+              {selectedItem?.type === 'rides' && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>From Location *</label>
+                      <input
+                        type="text"
+                        value={editFormData.from_location || editFormData.from || ''}
+                        onChange={(e) => setEditFormData(prev => ({...prev, from_location: e.target.value, from: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        placeholder="Starting location"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>To Location *</label>
+                      <input
+                        type="text"
+                        value={editFormData.to_location || editFormData.to || ''}
+                        onChange={(e) => setEditFormData(prev => ({...prev, to_location: e.target.value, to: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        placeholder="Destination"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Date *</label>
+                      <input
+                        type="date"
+                        value={editFormData.date || ''}
+                        onChange={(e) => setEditFormData(prev => ({...prev, date: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        min={new Date().toISOString().split('T')[0]}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Time *</label>
+                      <input
+                        type="time"
+                        value={editFormData.time || ''}
+                        onChange={(e) => setEditFormData(prev => ({...prev, time: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Price per Seat *</label>
+                      <input
+                        type="number"
+                        value={editFormData.price_per_seat || editFormData.price || ''}
+                        onChange={(e) => setEditFormData(prev => ({...prev, price_per_seat: e.target.value, price: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        placeholder="Price per seat"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Available Seats</label>
+                      <input
+                        type="number"
+                        value={editFormData.available_seats || editFormData.seats || ''}
+                        onChange={(e) => setEditFormData(prev => ({...prev, available_seats: e.target.value, seats: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        placeholder="Number of seats"
+                        min="1"
+                        max="8"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className={`block text-sm font-medium ${theme.text} mb-1`}>Vehicle Information *</label>
+                    <input
+                      type="text"
+                      value={editFormData.vehicle_info || editFormData.vehicle || ''}
+                      onChange={(e) => setEditFormData(prev => ({
+                        ...prev, 
+                        vehicle_info: e.target.value,
+                        vehicle: e.target.value  // Keep both for API compatibility
+                      }))}
+                      className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                      placeholder="e.g., Honda City, White, MH12AB1234"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className={`block text-sm font-medium ${theme.text} mb-1`}>Additional Information</label>
+                    <textarea
+                      value={editFormData.notes || editFormData.description || editFormData.additional_info || ''}
+                      onChange={(e) => setEditFormData(prev => ({
+                        ...prev, 
+                        notes: e.target.value, 
+                        description: e.target.value,
+                        additional_info: e.target.value
+                      }))}
+                      className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card} h-20`}
+                      placeholder="Any additional information about the ride (pickup points, contact preferences, etc.)"
+                    />
+                  </div>
+
+                  {/* Contact Information Section */}
+                  <div className="space-y-3">
+                    <h4 className={`text-sm font-semibold ${theme.text} border-b ${theme.border} pb-2`}>Contact Information</h4>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={`block text-sm font-medium ${theme.text} mb-1`}>Phone Number</label>
+                        <input
+                          type="tel"
+                          value={editFormData.contact_phone || editFormData.contact_info?.mobile || ''}
+                          onChange={(e) => setEditFormData(prev => ({
+                            ...prev, 
+                            contact_phone: e.target.value,
+                            contact_info: {
+                              ...prev.contact_info,
+                              mobile: e.target.value
+                            }
+                          }))}
+                          className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                          placeholder="e.g., +91 9876543210"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className={`block text-sm font-medium ${theme.text} mb-1`}>Email</label>
+                        <input
+                          type="email"
+                          value={editFormData.contact_email || editFormData.contact_info?.email || ''}
+                          onChange={(e) => setEditFormData(prev => ({
+                            ...prev, 
+                            contact_email: e.target.value,
+                            contact_info: {
+                              ...prev.contact_info,
+                              email: e.target.value
+                            }
+                          }))}
+                          className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                          placeholder="e.g., your@email.com"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Instagram Handle</label>
+                      <input
+                        type="text"
+                        value={editFormData.contact_instagram || editFormData.contact_info?.instagram || ''}
+                        onChange={(e) => setEditFormData(prev => ({
+                          ...prev, 
+                          contact_instagram: e.target.value,
+                          contact_info: {
+                            ...prev.contact_info,
+                            instagram: e.target.value
+                          }
+                        }))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        placeholder="e.g., @your_instagram"
+                      />
+                    </div>
+
+                    <div className={`text-xs ${theme.textMuted} bg-blue-50 dark:bg-blue-900/20 p-2 rounded`}>
+                      <Info className="w-4 h-4 inline mr-1" />
+                      Provide at least one contact method so passengers can reach you for ride coordination.
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Ticket Form Fields */}
+              {selectedItem?.type === 'tickets' && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Event Name *</label>
+                      <input
+                        type="text"
+                        value={editFormData.event_name || editFormData.title || ''}
+                        onChange={(e) => setEditFormData(prev => ({...prev, event_name: e.target.value, title: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        placeholder="Event name"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Price *</label>
+                      <input
+                        type="number"
+                        value={editFormData.price || ''}
+                        onChange={(e) => setEditFormData(prev => ({...prev, price: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        placeholder="Ticket price"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className={`block text-sm font-medium ${theme.text} mb-1`}>Venue *</label>
+                    <input
+                      type="text"
+                      value={editFormData.venue || ''}
+                      onChange={(e) => setEditFormData(prev => ({...prev, venue: e.target.value}))}
+                      className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                      placeholder="Event venue"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Event Date *</label>
+                      <input
+                        type="date"
+                        value={editFormData.event_date || editFormData.date || ''}
+                        onChange={(e) => setEditFormData(prev => ({...prev, event_date: e.target.value, date: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Event Time</label>
+                      <input
+                        type="time"
+                        value={editFormData.event_time || editFormData.time || ''}
+                        onChange={(e) => setEditFormData(prev => ({...prev, event_time: e.target.value, time: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className={`block text-sm font-medium ${theme.text} mb-1`}>Description</label>
+                    <textarea
+                      value={editFormData.description || ''}
+                      onChange={(e) => setEditFormData(prev => ({...prev, description: e.target.value}))}
+                      className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card} h-20`}
+                      placeholder="Event description"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Quantity</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={editFormData.quantity || editFormData.quantity_available || ''}
+                        onChange={(e) => setEditFormData(prev => ({...prev, quantity: e.target.value, quantity_available: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        placeholder="Number of tickets"
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Category</label>
+                      <select
+                        value={editFormData.category || 'event'}
+                        onChange={(e) => setEditFormData(prev => ({...prev, category: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                      >
+                        <option value="event">Event</option>
+                        <option value="travel">Travel</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Phone Number</label>
+                      <input
+                        type="tel"
+                        value={editFormData.contact_phone || editFormData.contact_info?.mobile || ''}
+                        onChange={(e) => setEditFormData(prev => ({
+                          ...prev, 
+                          contact_phone: e.target.value,
+                          contact_info: {
+                            ...prev.contact_info,
+                            mobile: e.target.value
+                          }
+                        }))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        placeholder="e.g., +91 9876543210"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Email</label>
+                      <input
+                        type="email"
+                        value={editFormData.contact_email || editFormData.contact_info?.email || ''}
+                        onChange={(e) => setEditFormData(prev => ({
+                          ...prev, 
+                          contact_email: e.target.value,
+                          contact_info: {
+                            ...prev.contact_info,
+                            email: e.target.value
+                          }
+                        }))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        placeholder="e.g., your@email.com"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className={`block text-sm font-medium ${theme.text} mb-1`}>Instagram Handle</label>
+                    <input
+                      type="text"
+                      value={editFormData.contact_instagram || editFormData.contact_info?.instagram || ''}
+                      onChange={(e) => setEditFormData(prev => ({
+                        ...prev, 
+                        contact_instagram: e.target.value,
+                        contact_info: {
+                          ...prev.contact_info,
+                          instagram: e.target.value
+                        }
+                      }))}
+                      className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                      placeholder="e.g., @your_instagram"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Lost & Found Form Fields */}
+              {(selectedItem?.type === 'lostfound' || selectedItem?.type === 'lost' || selectedItem?.type === 'found') && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Item Name *</label>
+                      <input
+                        type="text"
+                        value={editFormData.title || editFormData.name || editFormData.item_name || ''}
+                        onChange={(e) => setEditFormData(prev => ({...prev, title: e.target.value, name: e.target.value, item_name: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        placeholder="Item name"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Type *</label>
+                      <select
+                        value={editFormData.mode || editFormData.type || 'lost'}
+                        onChange={(e) => setEditFormData(prev => ({...prev, mode: e.target.value, type: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        required
+                      >
+                        <option value="lost">Lost</option>
+                        <option value="found">Found</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className={`block text-sm font-medium ${theme.text} mb-1`}>Description *</label>
+                    <textarea
+                      value={editFormData.description || ''}
+                      onChange={(e) => setEditFormData(prev => ({...prev, description: e.target.value}))}
+                      className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card} h-24`}
+                      placeholder="Item description"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>
+                        {editFormData.mode === 'lost' ? 'Where Last Seen *' : 'Where Found *'}
+                      </label>
+                      <input
+                        type="text"
+                        value={
+                          editFormData.mode === 'lost' 
+                            ? (editFormData.where_last_seen || editFormData.location || '') 
+                            : (editFormData.where_found || editFormData.location || '')
+                        }
+                        onChange={(e) => setEditFormData(prev => ({
+                          ...prev, 
+                          [prev.mode === 'lost' ? 'where_last_seen' : 'where_found']: e.target.value,
+                          location: e.target.value
+                        }))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        placeholder={editFormData.mode === 'lost' ? "Where did you last see it?" : "Where did you find it?"}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Date</label>
+                      <input
+                        type="date"
+                        value={
+                          editFormData.mode === 'lost' 
+                            ? (editFormData.date_lost || editFormData.date || '') 
+                            : (editFormData.date_found || editFormData.date || '')
+                        }
+                        onChange={(e) => setEditFormData(prev => ({
+                          ...prev, 
+                          [prev.mode === 'lost' ? 'date_lost' : 'date_found']: e.target.value,
+                          date: e.target.value
+                        }))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Time</label>
+                      <input
+                        type="time"
+                        value={
+                          editFormData.mode === 'lost' 
+                            ? (editFormData.time_lost || editFormData.time || '') 
+                            : (editFormData.time_found || editFormData.time || '')
+                        }
+                        onChange={(e) => setEditFormData(prev => ({
+                          ...prev, 
+                          [prev.mode === 'lost' ? 'time_lost' : 'time_found']: e.target.value,
+                          time: e.target.value
+                        }))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium ${theme.text} mb-1`}>Reward (Optional)</label>
+                      <input
+                        type="number"
+                        value={editFormData.reward || ''}
+                        onChange={(e) => setEditFormData(prev => ({...prev, reward: e.target.value}))}
+                        className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                        placeholder="Amount in ₹"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Contact Information */}
+                  <div className="space-y-4">
+                    <h4 className={`text-sm font-medium ${theme.text}`}>Contact Information</h4>
+                    <div className="grid grid-cols-1 gap-4">
+                      <div>
+                        <label className={`block text-sm font-medium ${theme.text} mb-1`}>Instagram Handle</label>
+                        <input
+                          type="text"
+                          value={editFormData.contact_instagram || ''}
+                          onChange={(e) => setEditFormData(prev => ({
+                            ...prev, 
+                            contact_instagram: e.target.value,
+                            contact_info: {
+                              ...prev.contact_info,
+                              instagram: e.target.value
+                            }
+                          }))}
+                          className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                          placeholder="@your_instagram"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className={`block text-sm font-medium ${theme.text} mb-1`}>Email</label>
+                          <input
+                            type="email"
+                            value={editFormData.contact_email || ''}
+                            onChange={(e) => setEditFormData(prev => ({
+                              ...prev, 
+                              contact_email: e.target.value,
+                              contact_info: {
+                                ...prev.contact_info,
+                                email: e.target.value
+                              }
+                            }))}
+                            className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                            placeholder="your@email.com"
+                          />
+                        </div>
+                        <div>
+                          <label className={`block text-sm font-medium ${theme.text} mb-1`}>Mobile</label>
+                          <input
+                            type="tel"
+                            value={editFormData.contact_phone || ''}
+                            onChange={(e) => setEditFormData(prev => ({
+                              ...prev, 
+                              contact_phone: e.target.value,
+                              contact_info: {
+                                ...prev.contact_info,
+                                mobile: e.target.value
+                              }
+                            }))}
+                            className={`w-full p-2 border rounded-lg ${theme.border} ${theme.card}`}
+                            placeholder="+91 98765 43210"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Lost/Found Image Upload Section */}
+                  <div className="space-y-3">
+                    <label className={`block text-sm font-medium ${theme.text} mb-1`}>Item Image</label>
+                    
+                    {/* Show existing images if available */}
+                    {existingImages.length > 0 && !selectedImages.length && (
+                      <div className="mb-3">
+                        <p className={`text-sm ${theme.textMuted} mb-2`}>Current images:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {existingImages.map((imageUrl, index) => (
+                            <div key={index} className="relative inline-block">
+                              <img 
+                                src={imageUrl} 
+                                alt={`Current item ${index + 1}`} 
+                                className="w-24 h-24 object-cover rounded-lg border" 
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  // Remove this specific image from existing images
+                                  const newImages = existingImages.filter((_, i) => i !== index);
+                                  setExistingImages(newImages);
+                                }}
+                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* New Image Upload */}
+                    <div className="space-y-2">
+                      <input
+                        type="file"
+                        id="lostfound-image-upload"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const files = Array.from(e.target.files);
+                          if (files.length > 0) {
+                            setSelectedImages(files.slice(0, 1)); // Only one image for lost/found
+                          }
+                        }}
+                        className="hidden"
+                      />
+                      <label 
+                        htmlFor="lostfound-image-upload" 
+                        className={`w-full p-3 border-2 border-dashed rounded-lg ${theme.border} hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors flex items-center justify-center gap-2`}
+                      >
+                        <Camera className="w-5 h-5" />
+                        <span className={theme.text}>
+                          {selectedImages.length > 0 ? 'Replace Image' : 'Upload Image'}
+                        </span>
+                      </label>
+                    </div>
+
+                    {selectedImages.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="relative inline-block">
+                          <img 
+                            src={URL.createObjectURL(selectedImages[0])} 
+                            alt="New upload" 
+                            className="w-24 h-24 object-cover rounded-lg border" 
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setSelectedImages([])}
+                            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {error && (
+                <div className="p-3 bg-red-100 border border-red-300 rounded-lg">
+                  <p className="text-red-700 text-sm">{error}</p>
+                </div>
+              )}
+
+              <div className="flex justify-end space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditModalOpen(false);
+                    setIsCreateModalOpen(false);
+                    setSelectedItem(null);
+                    setEditFormData({});
+                    resetImageStates();
+                  }}
+                  className={`px-4 py-2 border rounded-lg hover:bg-gray-50 ${theme.text} ${theme.border}`}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? 'Saving...' : (selectedItem?.id ? 'Update' : 'Create')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className={`${theme.card} rounded-lg p-6 m-4 max-w-md w-full`}>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className={`text-lg font-semibold ${theme.text}`}>
+                Delete {itemToDelete?.type?.slice(0, -1) || 'Item'}
+              </h2>
+              <button
+                onClick={() => {
+                  setIsDeleteModalOpen(false);
+                  setItemToDelete(null);
+                }}
+                className={`text-gray-500 hover:text-gray-700 text-xl`}
+              >
+                ×
+              </button>
+            </div>
+            <div className="space-y-4">
+              <p className={theme.textMuted}>
+                Are you sure you want to delete this {itemToDelete?.type?.slice(0, -1)}? This action cannot be undone.
+              </p>
+              <div className="flex space-x-2">
+                <button
+                  onClick={handleDelete}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Deleting...' : 'Delete'}
+                </button>
+                <button
+                  onClick={() => {
+                    setIsDeleteModalOpen(false);
+                    setItemToDelete(null);
+                  }}
+                  className={`px-4 py-2 border rounded hover:bg-gray-50 ${theme.text}`}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Profile Edit Modal */}
+      {isProfileEditModalOpen && (
+        <ProfileEditModal
+          isOpen={isProfileEditModalOpen}
+          onClose={() => setIsProfileEditModalOpen(false)}
+          userProfile={userProfile}
+          onSave={handleProfileSave}
+          isLoading={isUpdatingProfile}
+        />
+      )}
     </div>
   );
 };
