@@ -56,8 +56,6 @@ export default function ViewFoundPage() {
       setError(null);
       
       try {
-        console.log('🔍 Fetching found items...');
-        
         // Create filters for API call
         const filters = {
           mode: 'found', // Only show found items
@@ -72,7 +70,6 @@ export default function ViewFoundPage() {
         
         if (result.success) {
           setItems(result.data || []);
-          console.log(`✅ Loaded ${result.data?.length || 0} found items`);
         } else {
           throw new Error(result.message || 'Failed to fetch items');
         }

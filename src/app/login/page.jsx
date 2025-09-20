@@ -22,7 +22,6 @@ const LoginPage = () => {
     // Check if user is already authenticated
     if (isAuthenticated && user) {
       const redirectUrl = searchParams.get('redirect') || '/';
-      console.log('User already authenticated, redirecting to:', redirectUrl);
       router.push(redirectUrl);
       return;
     }
@@ -76,7 +75,6 @@ const LoginPage = () => {
     ];
     
     const randomMessage = owlMessages[Math.floor(Math.random() * owlMessages.length)];
-    console.log(`🦉 "${randomMessage}"`);
     
     setCurrentOwlMessage(randomMessage);
     setShowOwlMessage(true);

@@ -1,111 +1,384 @@
-// api/housing.js - Housing and room related API functions
-import { apiCall, apiCallFormData } from './base.js';
+// api/housing.js - Optimized housing and room related API functions
+import { apiCall, apiCallFormData, buildQueryParams, batchAPICall, clearAPICache, APIError } from './base.js';
 
 // ============== ROOM LISTINGS ==============
 
-export const fetchhousedata = async (searchParams = {}) => {
+// Optimized room search with caching and proper pagination
+export const fetchRooms = async (searchParams = {}, options = {}) => {
   try {
-    const queryString = new URLSearchParams(searchParams).toString();
-    const endpoint = queryString ? `/api/rooms?${queryString}` : '/api/rooms';
+    const {
+      cache = true,
+      cacheTTL = 5 * 60 * 1000, // 5 minutes cache
+      page = 1,
+      limit = 20,
+      ...filters
+    } = searchParams;
+
+    // Build optimized query parameters
+    const params = {
+      ...filters,
+      page,
+      limit,
+    };
+
+    const queryString = buildQueryParams(params);
+    const endpoint = `/api/rooms${queryString}`;
     
-    const data = await apiCall(endpoint, { method: 'GET' });
-    return data;
+    const data = await apiCall(endpoint, { 
+      method: 'GET',
+      cache,
+      cacheTTL,
+      ...options
+    });
+
+    return {
+      success: true,
+      data: data.data || [],
+      pagination: data.pagination || {
+        currentPage: page,
+        totalPages: Math.ceil((data.total || 0) / limit),
+        totalCount: data.total || 0,
+        hasNext: false,
+        hasPrev: false
+      },
+      total: data.total || 0,
+      message: data.message || `Found ${(data.data || []).length} room listings`
+    };
   } catch (error) {
-    console.error('Error fetching house data:', error);
-    return { data: [], error: error.message };
+    console.error('Error fetching rooms:', error);
+    throw new APIError(
+      'Failed to fetch room listings',
+      error.status || 500,
+      error.message,
+      error.errors || []
+    );
   }
 };
 
+// Backward compatibility
+export const fetchhousedata = fetchRooms;
+
+// Optimized fetch user's rooms with caching
 export const fetchMyRooms = async (options = {}) => {
   try {
-    const queryParams = new URLSearchParams();
-    if (options.limit) queryParams.set('limit', options.limit);
-    if (options.offset) queryParams.set('offset', options.offset);
-    if (options.sort) queryParams.set('sort', options.sort);
+    const {
+      page = 1,
+      limit = 20,
+      sort = 'created_at',
+      order = 'desc',
+      cache = true,
+      cacheTTL = 2 * 60 * 1000, // 2 minutes cache for user data
+    } = options;
+
+    const params = { page, limit, sort, order };
+    const queryString = buildQueryParams(params);
+    const endpoint = `/api/rooms/mine${queryString}`;
     
-    const queryString = queryParams.toString();
-    const endpoint = queryString ? `/api/rooms/my-rooms?${queryString}` : '/api/rooms/my-rooms';
-    
-    const data = await apiCall(endpoint, { method: 'GET' });
-    return data;
+    const data = await apiCall(endpoint, { 
+      method: 'GET',
+      cache,
+      cacheTTL
+    });
+
+    return {
+      success: true,
+      data: data.data || [],
+      pagination: data.pagination || {
+        currentPage: page,
+        totalPages: Math.ceil((data.total || 0) / limit),
+        totalCount: data.total || 0
+      },
+      total: data.total || 0,
+      message: data.message || `Found ${(data.data || []).length} of your room listings`
+    };
   } catch (error) {
-    if (error.message.includes('401')) {
-      throw new Error('Please log in to view your rooms');
+    if (error.status === 401) {
+      throw new APIError('Please log in to view your rooms', 401);
     }
     throw error;
   }
 };
 
-export const postRoom = async (formData) => {
+// Optimized room creation with proper error handling
+export const createRoom = async (roomData, options = {}) => {
   try {
-    return await apiCallFormData('/api/rooms', formData, 'POST');
+    const { onUploadProgress } = options;
+    
+    const result = await apiCallFormData('/api/rooms', roomData, {
+      method: 'POST',
+      onUploadProgress
+    });
+
+    // Clear relevant caches after successful creation
+    clearAPICache('rooms');
+    
+    return {
+      success: true,
+      data: result.data || result,
+      message: result.message || 'Room listing created successfully'
+    };
   } catch (error) {
-    console.error('Error posting room:', error);
-    throw error;
+    throw new APIError(
+      'Failed to create room listing',
+      error.status || 500,
+      error.message,
+      error.errors || []
+    );
   }
 };
 
-export const updateRoom = async (roomId, formData) => {
+// Backward compatibility
+export const postRoom = createRoom;
+
+// Optimized room update
+export const updateRoom = async (roomId, roomData, options = {}) => {
   try {
-    return await apiCallFormData(`/api/rooms/${roomId}`, formData, 'PUT');
+    if (!roomId) {
+      throw new APIError('Room ID is required', 400);
+    }
+
+    const { onUploadProgress } = options;
+    
+    const result = await apiCallFormData(`/api/rooms/${roomId}`, roomData, {
+      method: 'PUT',
+      onUploadProgress
+    });
+
+    // Clear relevant caches after successful update
+    clearAPICache('rooms');
+    
+    return {
+      success: true,
+      data: result.data || result,
+      message: result.message || 'Room listing updated successfully'
+    };
   } catch (error) {
-    console.error('Error updating room:', error);
-    throw error;
+    if (error.status === 403) {
+      throw new APIError('You can only edit your own room listings', 403);
+    }
+    if (error.status === 404) {
+      throw new APIError('Room listing not found', 404);
+    }
+    throw new APIError(
+      'Failed to update room listing',
+      error.status || 500,
+      error.message,
+      error.errors || []
+    );
   }
 };
 
+// Optimized room deletion
 export const deleteRoom = async (roomId) => {
   try {
-    const data = await apiCall(`/api/rooms/${roomId}`, { method: 'DELETE' });
-    return data;
+    if (!roomId) {
+      throw new APIError('Room ID is required', 400);
+    }
+
+    const result = await apiCall(`/api/rooms/${roomId}`, { 
+      method: 'DELETE',
+      cache: false // Never cache DELETE requests
+    });
+
+    // Clear relevant caches after successful deletion
+    clearAPICache('rooms');
+    
+    return {
+      success: true,
+      message: result.message || 'Room listing deleted successfully'
+    };
   } catch (error) {
-    if (error.message.includes('401')) {
-      throw new Error('Please log in to delete this room');
+    if (error.status === 401) {
+      throw new APIError('Please log in to delete room listings', 401);
     }
-    if (error.message.includes('403')) {
-      throw new Error('You can only delete your own rooms');
+    if (error.status === 403) {
+      throw new APIError('You can only delete your own room listings', 403);
     }
-    throw error;
+    if (error.status === 404) {
+      throw new APIError('Room listing not found', 404);
+    }
+    throw new APIError(
+      'Failed to delete room listing',
+      error.status || 500,
+      error.message,
+      error.errors || []
+    );
   }
 };
 
-export const fetchRoom = async (roomId) => {
+// Optimized single room fetch with caching
+export const fetchRoom = async (roomId, options = {}) => {
   try {
-    const data = await apiCall(`/api/rooms/${roomId}`, { method: 'GET' });
-    return data;
-  } catch (error) {
-    if (error.message.includes('404')) {
-      throw new Error('Room not found');
+    if (!roomId) {
+      throw new APIError('Room ID is required', 400);
     }
-    throw error;
+
+    const { cache = true, cacheTTL = 10 * 60 * 1000 } = options; // 10 minute cache
+
+    const result = await apiCall(`/api/rooms/${roomId}`, { 
+      method: 'GET',
+      cache,
+      cacheTTL
+    });
+    
+    return {
+      success: true,
+      data: result.data || result,
+      message: result.message || 'Room details fetched successfully'
+    };
+  } catch (error) {
+    if (error.status === 404) {
+      throw new APIError('Room listing not found', 404);
+    }
+    throw new APIError(
+      'Failed to fetch room details',
+      error.status || 500,
+      error.message,
+      error.errors || []
+    );
   }
 };
 
-// Room-specific image upload functions
-export const uploadRoomImages = async (imageFiles) => {
+// Batch operations for multiple rooms
+export const batchFetchRooms = async (roomIds) => {
   try {
-    const formData = new FormData();
+    const requests = roomIds.map(id => ({
+      endpoint: `/api/rooms/${id}`,
+      options: { method: 'GET', cache: true }
+    }));
+
+    const results = await batchAPICall(requests);
     
-    // Handle multiple images
-    for (let i = 0; i < imageFiles.length; i++) {
-      formData.append('images', imageFiles[i]);
-    }
-    
-    const data = await apiCallFormData('/api/rooms/upload-images', formData);
-    return data;
+    return {
+      success: true,
+      data: results,
+      message: `Fetched details for ${results.length} rooms`
+    };
   } catch (error) {
-    console.error('Error uploading room images:', error);
-    throw error;
+    throw new APIError('Failed to fetch room details', 500, error.message);
+  }
+};
+
+// Get room statistics for dashboard
+export const getRoomStats = async () => {
+  try {
+    const result = await apiCall('/api/rooms/stats', {
+      method: 'GET',
+      cache: true,
+      cacheTTL: 5 * 60 * 1000 // 5 minute cache
+    });
+    
+    return {
+      success: true,
+      data: result.data || result,
+      message: 'Room statistics fetched successfully'
+    };
+  } catch (error) {
+    throw new APIError(
+      'Failed to fetch room statistics',
+      error.status || 500,
+      error.message,
+      error.errors || []
+    );
+  }
+};
+
+// Search rooms with advanced filters
+export const searchRoomsAdvanced = async (searchQuery, filters = {}) => {
+  try {
+    const params = {
+      q: searchQuery,
+      type: filters.type,
+      min_price: filters.minPrice,
+      max_price: filters.maxPrice,
+      location: filters.location,
+      available_from: filters.availableFrom,
+      limit: filters.limit || 20,
+      page: filters.page || 1
+    };
+
+    const queryString = buildQueryParams(params);
+    const endpoint = `/api/rooms/search${queryString}`;
+    
+    const result = await apiCall(endpoint, {
+      method: 'GET',
+      cache: true,
+      cacheTTL: 3 * 60 * 1000 // 3 minute cache for searches
+    });
+
+    return {
+      success: true,
+      data: result.data || [],
+      pagination: result.pagination || {},
+      total: result.total || 0,
+      message: result.message || `Found ${(result.data || []).length} matching rooms`
+    };
+  } catch (error) {
+    throw new APIError(
+      'Failed to search rooms',
+      error.status || 500,
+      error.message,
+      error.errors || []
+    );
   }
 };
 
 // Validation helper for room data
 export const validateRoomData = (roomData) => {
-  const errors = {};
+  const errors = [];
   
   if (!roomData.title || roomData.title.trim().length < 3) {
-    errors.title = 'Title must be at least 3 characters';
+    errors.push('Title must be at least 3 characters');
   }
   
-  return Object.keys(errors).length === 0 ? null : errors;
+  if (!roomData.description || roomData.description.trim().length < 10) {
+    errors.push('Description must be at least 10 characters');
+  }
+  
+  if (!roomData.price || roomData.price <= 0) {
+    errors.push('Price must be a positive number');
+  }
+  
+  if (!roomData.location || roomData.location.trim().length === 0) {
+    errors.push('Location is required');
+  }
+  
+  if (!roomData.type || !['single', 'shared', 'studio'].includes(roomData.type)) {
+    errors.push('Valid room type is required (single, shared, studio)');
+  }
+
+  return errors.length === 0 ? null : errors;
+};
+
+// Utility to prepare room form data
+export const prepareRoomFormData = (roomData, imageFiles = []) => {
+  const formData = new FormData();
+  
+  // Create a copy of room data for processing
+  const processedData = { ...roomData };
+  
+  // Ensure rent field is set (backend compatibility)
+  if (processedData.rent && !processedData.price) {
+    processedData.price = processedData.rent;
+  } else if (processedData.price && !processedData.rent) {
+    processedData.rent = processedData.price;
+  }
+  
+  // Add room data fields
+  Object.keys(processedData).forEach(key => {
+    if (processedData[key] !== null && processedData[key] !== undefined) {
+      if (typeof processedData[key] === 'object') {
+        formData.append(key, JSON.stringify(processedData[key]));
+      } else {
+        formData.append(key, processedData[key]);
+      }
+    }
+  });
+  
+  // Add image files
+  imageFiles.forEach((file, index) => {
+    formData.append('photos', file);
+  });
+  
+  return formData;
 };

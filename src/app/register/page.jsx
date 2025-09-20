@@ -60,13 +60,11 @@ const RegisterPage = () => {
     }
     
     // Registration logic would go here
-    console.log('Registration data:', formData);
     alert('Account created successfully! Please check your email for verification.');
   };
 
   const handleGoogleSignUp = () => {
     // Google OAuth registration logic would go here
-    console.log('Google sign up clicked');
   };
 
   const handleOwlClick = () => {
@@ -84,7 +82,6 @@ const RegisterPage = () => {
     ];
     
     const randomMessage = owlMessages[Math.floor(Math.random() * owlMessages.length)];
-    console.log(`🦉 "${randomMessage}"`);
     
     setCurrentOwlMessage(randomMessage);
     setShowOwlMessage(true);

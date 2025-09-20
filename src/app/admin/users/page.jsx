@@ -21,6 +21,8 @@ import {
 import AdminGuard from "../_components/AdminGuard";
 import AdminLayout from "../_components/AdminLayout";
 import AdminLoader, { AdminTableSkeleton } from "../_components/AdminLoader";
+import { getProfileImageUrl, getUserInitials } from "../../lib/utils/profileUtils";
+import { getPublicUserProfile } from "../../lib/api/userProfile";
 
 
 // Mock user data - replace with real API
@@ -115,19 +117,36 @@ export default function AdminUsers() {
         if (response.success) {
           
           // Transform backend user data to match frontend expectations
-          const transformedUsers = (response.users || []).map(user => ({
-            ...user,
-            // Map backend fields to frontend expected fields
-            id: user.id || user.user_id || Math.random().toString(),
-            name: user.name || user.display_name || user.username || 'Unknown User',
-            email: user.email || 'No email',
-            role: user.role || 'user',
-            status: user.status || user.is_active ? 'active' : 'inactive',
-            joinDate: user.created_at || user.join_date || new Date().toISOString(),
-            lastActive: user.updated_at || user.last_login || user.last_active || new Date().toISOString(),
-            postsCount: user.posts_count || user.postsCount || 0,
-            ridesCount: user.rides_count || user.ridesCount || 0,
-            picture: user.picture || user.avatar || null
+          const transformedUsers = await Promise.all((response.users || []).map(async (user) => {
+            const baseUser = {
+              ...user,
+              // Map backend fields to frontend expected fields
+              id: user.id || user.user_id || Math.random().toString(),
+              name: user.name || user.display_name || user.username || 'Unknown User',
+              email: user.email || 'No email',
+              role: user.role || 'user',
+              status: user.status || user.is_active ? 'active' : 'inactive',
+              joinDate: user.created_at || user.join_date || new Date().toISOString(),
+              lastActive: user.updated_at || user.last_login || user.last_active || new Date().toISOString(),
+              postsCount: user.posts_count || user.postsCount || 0,
+              ridesCount: user.rides_count || user.ridesCount || 0,
+              picture: user.picture || user.avatar || null,
+              custom_user_id: user.custom_user_id || null
+            };
+
+            // Try to fetch profile data if custom_user_id exists
+            if (user.custom_user_id) {
+              try {
+                const profile = await getPublicUserProfile(user.custom_user_id);
+                const profileData = profile?.data || profile;
+                baseUser.profileData = profileData;
+              } catch (error) {
+                console.error(`Error fetching profile for user ${user.custom_user_id}:`, error);
+                baseUser.profileData = null;
+              }
+            }
+
+            return baseUser;
           }));
 
           setUsers(transformedUsers);
@@ -217,9 +236,56 @@ export default function AdminUsers() {
       
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+          {(() => {
+            // Create a user object compatible with profileUtils
+            const userForProfile = {
+              picture: user.picture || user.avatar,
+              name: user.name,
+              email: user.email
+            };
+            
+            // Use the fetched profile data if available, with Google image fallback
+              const profileImage = getProfileImageUrl(user.profileData, userForProfile);
+              
+              // Debug: Log profile image resolution
+              if (user.profileData?.profile_image_url) {
+                console.log(`Admin: User ${user.name} has custom profile image:`, user.profileData.profile_image_url);
+              } else if (userForProfile.picture) {
+                console.log(`Admin: User ${user.name} using Google avatar:`, userForProfile.picture);
+              }
+            
+            if (profileImage) {
+              return (
+                <img
+                  src={profileImage}
+                  alt="Profile"
+                  className="w-10 h-10 rounded-full object-cover"
+                  onError={(e) => {
+                    // Fallback to initials if image fails to load
+                    e.target.style.display = 'none';
+                    const fallback = e.target.nextElementSibling;
+                    if (fallback) fallback.style.display = 'flex';
+                  }}
+                />
+              );
+            } else {
+              const initials = getUserInitials(user.name || user.email || 'User');
+              return (
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <span className="text-white font-medium text-sm">
+                    {initials}
+                  </span>
+                </div>
+              );
+            }
+          })()}
+          {/* Hidden fallback for failed image loads */}
+          <div 
+            className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center absolute"
+            style={{ display: 'none' }}
+          >
             <span className="text-white font-medium text-sm">
-              {user.name ? user.name.split(' ').map(n => n[0] || '').join('') : (user.email ? user.email[0].toUpperCase() : 'U')}
+              {getUserInitials(user.name || user.email || 'User')}
             </span>
           </div>
           <div>

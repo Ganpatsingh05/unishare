@@ -7,10 +7,13 @@ import { useRouter } from 'next/navigation';
 import logoImage from '../assets/images/logounishare1.png';
 import { Search, Globe, Bell, Sun, Moon, User, LogOut, Menu, X, Settings, Camera, Edit3, Shield, HelpCircle, Info, ChevronRight } from 'lucide-react';
 import { useAuth, useNotifications, useUI } from '../lib/contexts/UniShareContext';
+import { getProfileImageUrl, getUserInitials } from '../lib/utils/profileUtils';
+import { getCurrentUserProfile } from '../lib/api/userProfile';
 
 export default function HeaderMobile() {
   const router = useRouter();
   const logoRef = useRef(null);
+  const [userProfile, setUserProfile] = useState(null); // Add user profile state
 
   // Context hooks
   const { 
@@ -91,6 +94,28 @@ export default function HeaderMobile() {
       document.body.style.overflow = '';
     };
   }, [mobileMenuOpen]);
+
+  // Fetch user profile data when user is authenticated
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (isAuthenticated && user && !authLoading) {
+        try {
+          const response = await getCurrentUserProfile();
+          // Extract the actual profile data from the response
+          const profileData = response?.data || response;
+          setUserProfile(profileData);
+        } catch (error) {
+          console.error('Error fetching user profile in HeaderMobile:', error);
+          // Set to null so we fallback to auth data
+          setUserProfile(null);
+        }
+      } else {
+        setUserProfile(null);
+      }
+    };
+
+    fetchUserProfile();
+  }, [isAuthenticated, user, authLoading]);
 
   // Logo rotation effect
   useEffect(() => {
@@ -209,19 +234,42 @@ export default function HeaderMobile() {
             ) : isAuthenticated && user ? (
               <div className="flex items-center space-x-4">
                 <div className="relative">
-                  {userAvatar ? (
-                    <img
-                      src={userAvatar}
-                      alt="Profile"
-                      className="w-16 h-16 rounded-full object-cover ring-2 ring-offset-2 ring-offset-transparent ring-blue-500"
-                    />
-                  ) : (
-                    <div className={`w-16 h-16 rounded-full flex items-center justify-center text-xl font-semibold ring-2 ring-offset-2 ring-offset-transparent ${
+                  {(() => {
+                    const profileImage = getProfileImageUrl(userProfile, user);
+                    if (profileImage) {
+                      return (
+                        <img
+                          src={profileImage}
+                          alt="Profile"
+                          className="w-16 h-16 rounded-full object-cover ring-2 ring-offset-2 ring-offset-transparent ring-blue-500"
+                          onError={(e) => {
+                            // Fallback to initials if image fails to load
+                            e.target.style.display = 'none';
+                            const fallback = e.target.nextElementSibling;
+                            if (fallback) fallback.style.display = 'flex';
+                          }}
+                        />
+                      );
+                    } else {
+                      const initials = getUserInitials(user?.name || user?.displayName || user?.email || 'User');
+                      return (
+                        <div className={`w-16 h-16 rounded-full flex items-center justify-center text-xl font-semibold ring-2 ring-offset-2 ring-offset-transparent ${
+                          darkMode ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 text-gray-900 ring-yellow-400' : 'bg-gradient-to-br from-blue-500 to-blue-700 text-white ring-blue-500'
+                        }`}>
+                          {initials}
+                        </div>
+                      );
+                    }
+                  })()}
+                  {/* Hidden fallback for failed image loads */}
+                  <div 
+                    className={`w-16 h-16 rounded-full flex items-center justify-center text-xl font-semibold ring-2 ring-offset-2 ring-offset-transparent absolute top-0 left-0 ${
                       darkMode ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 text-gray-900 ring-yellow-400' : 'bg-gradient-to-br from-blue-500 to-blue-700 text-white ring-blue-500'
-                    }`}>
-                      {userInitials}
-                    </div>
-                  )}
+                    }`}
+                    style={{ display: 'none' }}
+                  >
+                    {getUserInitials(user?.name || user?.displayName || user?.email || 'User')}
+                  </div>
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className={`text-lg font-semibold truncate ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>

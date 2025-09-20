@@ -26,14 +26,19 @@ export {
 
 // Re-export all housing functions
 export {
+  fetchRooms,
   fetchhousedata,
   fetchMyRooms,
+  createRoom,
   postRoom,
   updateRoom,
   deleteRoom,
   fetchRoom,
-  uploadRoomImages,
-  validateRoomData
+  batchFetchRooms,
+  getRoomStats,
+  searchRoomsAdvanced,
+  validateRoomData,
+  prepareRoomFormData
 } from './api/housing.js';
 
 // Re-export all marketplace functions

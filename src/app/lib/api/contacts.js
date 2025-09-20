@@ -7,7 +7,6 @@ import { apiCall } from './base.js';
 export const getPublicContacts = async () => {
   try {
     const response = await apiCall('/api/contacts');
-    console.log('Contacts API response:', response); // Debug log
     
     // Handle different response structures
     const contacts = response.data || response.contacts || [];
@@ -46,8 +45,6 @@ export const getAllContacts = async () => {
     const response = await apiCall('/admin/contacts', {
       method: 'GET'
     });
-    
-    console.log('Admin contacts API response:', response); // Debug log
     
     // Handle different response structures
     const contacts = response.data || response.contacts || [];

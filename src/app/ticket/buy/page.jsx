@@ -99,14 +99,11 @@ export default function TicketBuyPage() {
         }
       }
 
-      console.log('🎫 Fetching tickets with filters:', filters);
-      
       // Call the real API
       const result = await fetchTickets(filters);
       
       if (result.success) {
         setTickets(result.data || []);
-        console.log(`✅ Loaded ${result.data?.length || 0} tickets`);
       } else {
         throw new Error(result.message || 'Failed to fetch tickets');
       }

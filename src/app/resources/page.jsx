@@ -45,8 +45,6 @@ export default function ResourcesPage() {
           setError(null);
           const result = await getResources(category !== 'all' ? category : null);
           if (result.success) {
-            // Debug: Check the data structure
-            console.log('Resources data:', result.data || result.resources);
             const resourcesData = result.data || result.resources || [];
             // Ensure each resource has an id
             const resourcesWithIds = resourcesData.map((r, index) => ({
@@ -69,8 +67,6 @@ export default function ResourcesPage() {
     try {
       const result = await getResourceCategories();
       if (result.success && result.categories?.length > 0) {
-        // Debug: Check categories data
-        console.log('Categories data:', result.data || result.categories);
         const categoriesData = result.data || result.categories || [];
         
         // Add 'All' option to the beginning

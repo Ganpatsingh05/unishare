@@ -207,8 +207,6 @@ export default function PostRidePage() {
         driver: user?.name || "Anonymous"
       };
 
-      console.log("Posting ride:", rideData);
-      
       const result = await createRide(rideData);
       
       if (result.success) {

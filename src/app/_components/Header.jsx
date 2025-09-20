@@ -9,10 +9,13 @@ import { Search, Bell, Sun, Moon, User, LogOut, Settings, Menu, X } from 'lucide
 import NotificationPanel from './NotificationPanel';
 import HeaderMobile from './HeaderMobile';
 import { useUniShare, useAuth, useUI, useNotifications } from '../lib/contexts/UniShareContext';
+import { getProfileImageUrl, getUserInitials } from '../lib/utils/profileUtils';
+import { getCurrentUserProfile } from '../lib/api/userProfile';
 
 const Header = ({ logoRotation = 0 }) => {
   const router = useRouter();
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState(null); // Add user profile state
   const [notifOpen, setNotifOpen] = useState(false);
   const [isNotificationActive, setIsNotificationActive] = useState(false);
   const [notifInlineOpen, setNotifInlineOpen] = useState(false);
@@ -33,7 +36,8 @@ const Header = ({ logoRotation = 0 }) => {
   const { 
     isAuthenticated, 
     user, 
-    userAvatar, 
+    userAvatar,
+    authLoading,
     logout 
   } = useAuth();
   
@@ -45,6 +49,28 @@ const Header = ({ logoRotation = 0 }) => {
     setNotifications,
     loadNotifications
   } = useNotifications();
+
+  // Fetch user profile data when user is authenticated
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (isAuthenticated && user && !authLoading) {
+        try {
+          const response = await getCurrentUserProfile();
+          // Extract the actual profile data from the response
+          const profileData = response?.data || response;
+          setUserProfile(profileData);
+        } catch (error) {
+          console.error('Error fetching user profile in Header:', error);
+          // Set to null so we fallback to auth data
+          setUserProfile(null);
+        }
+      } else {
+        setUserProfile(null);
+      }
+    };
+
+    fetchUserProfile();
+  }, [isAuthenticated, user, authLoading]);
 
   const handleProfileMenuToggle = () => {
     if (isAuthenticated) {
@@ -263,22 +289,47 @@ const Header = ({ logoRotation = 0 }) => {
                   }`}
                 >
                   <span className="sr-only">{isAuthenticated ? 'Profile' : 'Login'}</span>
-                  <div className={`size-12 flex items-center justify-center font-bold text-xl transition-all duration-300 ${
+                  <div className={`size-12 rounded-full flex items-center justify-center font-bold text-xl transition-all duration-300 overflow-hidden ${
                     darkMode 
                       ? isAuthenticated ? 'bg-gradient-to-br from-yellow-400 to-yellow-300 text-gray-900' : 'bg-gray-700 text-gray-300' 
                       : isAuthenticated ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white' : 'bg-gray-200 text-gray-600'
                   }`}>
-                    {isAuthenticated && userAvatar ? (
-                      <Image
-                        src={userAvatar}
-                        alt="User Avatar"
-                        width={48}
-                        height={48}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <User className="w-5 h-5" />
-                    )}
+                    {(() => {
+                      const profileImage = getProfileImageUrl(userProfile, user);
+                      if (isAuthenticated && profileImage) {
+                        return (
+                          <Image
+                            src={profileImage}
+                            alt="User Avatar"
+                            width={48}
+                            height={48}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              // Fallback to initials if image fails to load
+                              e.target.style.display = 'none';
+                              const fallback = e.target.parentElement.querySelector('.avatar-fallback');
+                              if (fallback) fallback.style.display = 'flex';
+                            }}
+                          />
+                        );
+                      } else if (isAuthenticated) {
+                        const initials = getUserInitials(user?.name || user?.displayName || user?.email || 'User');
+                        return (
+                          <span className="font-semibold text-sm">
+                            {initials}
+                          </span>
+                        );
+                      } else {
+                        return <User className="w-5 h-5" />;
+                      }
+                    })()}
+                    {/* Hidden fallback for failed image loads */}
+                    <span 
+                      className="avatar-fallback font-semibold text-sm absolute inset-0 flex items-center justify-center"
+                      style={{ display: 'none' }}
+                    >
+                      {isAuthenticated ? getUserInitials(user?.name || user?.displayName || user?.email || 'User') : ''}
+                    </span>
                   </div>
                 </button>
 

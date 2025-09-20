@@ -151,7 +151,6 @@ const FloatingActionButton = ({ darkMode }) => {
       }
       
       // Here you would typically send the feedback to your backend
-      console.log('Feedback submitted:', formData);
       alert('Thank you for your feedback! We\'ll get back to you soon.');
       setShowFeedback(false);
       setFormData({ type: 'feedback', subject: '', message: '', email: '' });

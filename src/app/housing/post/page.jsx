@@ -11,6 +11,7 @@ export default function AuthProtectedRoomForm() {
 
   const [form, setForm] = useState({
     title: '',
+    description: '',
     rent: '',
     location: '',
     beds: '',
@@ -67,6 +68,7 @@ export default function AuthProtectedRoomForm() {
 
     const formData = new FormData();
     formData.append('title', form.title);
+    formData.append('description', form.description);
     formData.append('rent', form.rent);
     formData.append('location', form.location);
     formData.append('beds', form.beds);
@@ -92,6 +94,7 @@ export default function AuthProtectedRoomForm() {
         // Reset form on success
         setForm({
           title: '',
+          description: '',
           rent: '',
           location: '',
           beds: '',
@@ -248,6 +251,18 @@ export default function AuthProtectedRoomForm() {
                   required
                 />
                 <Home className="absolute left-4 top-4 w-5 h-5 text-gray-400" />
+              </div>
+
+              <div>
+                <textarea
+                  name="description"
+                  placeholder="Describe your room, amenities, preferences, neighborhood..."
+                  value={form.description}
+                  onChange={handleChange}
+                  rows={4}
+                  className={`w-full p-4 border rounded-xl transition-all focus:ring-2 focus:outline-none resize-none ${inputClasses}`}
+                  required
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

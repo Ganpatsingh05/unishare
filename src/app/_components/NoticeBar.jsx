@@ -21,7 +21,6 @@ export default function AnnouncementBar() {
         const { getNoticesForNoticeBar } = await import('../lib/api');
         const res = await getNoticesForNoticeBar();
         const list = res.announcements || res.data || (Array.isArray(res) ? res : []);
-        console.log("Data in list: ",list);
         // Pick most recent active (optionally check expiresAt)
         const active = list
           .filter(a => a.active !== false && (!a.expiresAt || new Date(a.expiresAt) > new Date()))

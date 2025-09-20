@@ -77,7 +77,7 @@ export const createItem = async (itemData, imageFile = null) => {
       formData.append('image', imageFile);
     }
 
-    const data = await apiCallFormData('/api/itemsell', formData, 'POST');
+    const data = await apiCallFormData('/api/itemsell', formData, { method: 'POST' });
     return data;
   } catch (error) {
     console.error('Error creating item:', error);
@@ -114,7 +114,7 @@ export const updateItem = async (itemId, itemData, imageFile = null) => {
       formData.append('image', imageFile);
     }
 
-    const data = await apiCallFormData(`/api/itemsell/${itemId}`, formData, 'PUT');
+    const data = await apiCallFormData(`/api/itemsell/${itemId}`, formData, { method: 'PUT' });
     return data;
   } catch (error) {
     console.error('Error updating item:', error);

@@ -111,9 +111,19 @@ export const createRide = async (rideData) => {
 };
 
 // Get rides posted by the current user
-export const getMyRides = async () => {
+export const getMyRides = async (options = {}) => {
   try {
-    const response = await apiCall('/api/shareride/my', { method: 'GET' });
+    const queryParams = new URLSearchParams();
+    
+    if (options.limit) queryParams.append('limit', options.limit);
+    if (options.offset) queryParams.append('offset', options.offset);
+    if (options.sort) queryParams.append('sort', options.sort);
+    if (options.order) queryParams.append('order', options.order);
+
+    const endpoint = `/api/shareride/my${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    const response = await apiCall(endpoint, { method: 'GET' });
+
+    console.log('getMyRides response:', response.data); // Debug: see the actual ride data structure
 
     return {
       success: true,

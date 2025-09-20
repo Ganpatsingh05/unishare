@@ -140,9 +140,7 @@ export default function MarketplaceBuyPage() {
     >
       <div 
         className={`max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-2xl border shadow-2xl ${cardBg} p-6`} 
-        // onClick={e => e.stopPropagation()}
         onClick={() => {
-          console.log("Selected item:", item);
           setSelectedItem(item);
         }}
 

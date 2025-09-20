@@ -196,16 +196,6 @@ export default function ReportIssues() {
     const userName = user?.name || user?.displayName || user?.firstName || user?.username || 'Anonymous User';
     const userEmail = user?.email || user?.emailAddress || 'anonymous@unishare.com';
 
-    // Debug logging in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('User object:', user);
-      console.log('Extracted name:', userName);
-      console.log('Extracted email:', userEmail);
-      console.log('Report Type:', reportType);
-      console.log('Urgency:', urgency);
-      console.log('Report Details:', reportDetails);
-    }
-
     // Prepare form data for Google Forms (using working entry IDs)
     const formData = {
       'entry.2005620554': userName,        // Name field
@@ -233,7 +223,7 @@ export default function ReportIssues() {
         setSubmitted(true);
         return;
       } catch (error) {
-        console.log('Direct fetch failed, trying iframe method...');
+        // Direct fetch failed, trying iframe method
       }
 
       // Method 2: Try iframe submission

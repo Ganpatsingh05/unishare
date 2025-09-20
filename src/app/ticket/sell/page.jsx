@@ -22,7 +22,6 @@ import {
   ShoppingCart,
   CheckCircle,
   X,
-  Upload,
   Phone,
   Instagram,
   Mail,
@@ -39,15 +38,8 @@ import {
 
 export default function TicketSellPage() {
   const { isAuthenticated, user } = useAuth();
-  // Dev bypass via query param ?dev=1 so you can view the page locally without logging in
-  const searchParams = useSearchParams();
-  const devBypass = searchParams?.get('dev') === '1';
-  const effectiveAuthenticated = isAuthenticated || devBypass;
   const { error, success, loading, setError, clearError, setLoading, showTemporaryMessage } = useMessages();
   const { darkMode } = useUI();
-
-  // Debug authentication state
-  console.log('🔐 Auth Debug:', { isAuthenticated, user: user?.id, devBypass, effectiveAuthenticated });
 
   // Local state
   const [myTickets, setMyTickets] = useState([]);
@@ -137,10 +129,10 @@ export default function TicketSellPage() {
   ];
 
   useEffect(() => {
-    if (effectiveAuthenticated) {
+    if (isAuthenticated) {
       fetchMyTicketData();
     }
-  }, [effectiveAuthenticated]);
+  }, [isAuthenticated]);
 
   const fetchMyTicketData = async () => {
     try {
@@ -215,7 +207,7 @@ export default function TicketSellPage() {
     );
   };
 
-  if (!effectiveAuthenticated) {
+  if (!isAuthenticated) {
     return (
       <div className="min-h-screen pt-20 pb-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
@@ -251,11 +243,6 @@ export default function TicketSellPage() {
                 <div>
                   <h2 className={`text-xl sm:text-2xl font-semibold ${titleClr}`}>Sell Event Tickets</h2>
                   <p className={`text-sm ${subClr}`}>Create listings and manage your ticket sales</p>
-                  {devBypass && (
-                    <span className="mt-1 inline-block px-2 py-1 text-xs rounded-md bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                      Dev Mode (auth bypass)
-                    </span>
-                  )}
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -429,7 +416,7 @@ export default function TicketSellPage() {
           onClose={() => { setShowCreateForm(false); setEditingTicket(null); }}
           onTicketCreated={() => { fetchMyTicketData(); setShowCreateForm(false); setEditingTicket(null); }}
           editingTicket={editingTicket}
-          isAuthenticated={effectiveAuthenticated}
+          isAuthenticated={isAuthenticated}
           showTemporaryMessage={showTemporaryMessage}
           setError={setError}
           clearError={clearError}
@@ -472,15 +459,10 @@ function TicketCreateModal({ onClose, onTicketCreated, editingTicket, darkMode, 
   const [transportMode, setTransportMode] = useState('bus');
   // Other
   const [itemType, setItemType] = useState('General');
-  // Image
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
-
   useEffect(() => {
     if (!eventDate) { const t = new Date(); t.setDate(t.getDate()+1); setEventDate(t.toISOString().split('T')[0]); }
     if (!travelDate) { const t = new Date(); t.setDate(t.getDate()+1); setTravelDate(t.toISOString().split('T')[0]); }
   }, [eventDate, travelDate]);
-  useEffect(()=> ()=> { if (imagePreview) URL.revokeObjectURL(imagePreview); }, [imagePreview]);
   
   // Populate form when editing
   useEffect(() => {
@@ -521,18 +503,12 @@ function TicketCreateModal({ onClose, onTicketCreated, editingTicket, darkMode, 
         setContacts(contactsArray.length > 0 ? contactsArray : [{id: 1, type: 'mobile', value: ''}]);
       }
       
-      // Handle existing image
-      if (editingTicket.image_url) {
-        setImagePreview(editingTicket.image_url);
-        setImageFile(null); // Don't set file as it's already uploaded
-      }
+
     }
   }, [editingTicket]);
 
   const iconForType = (type) => ({mobile:Phone, instagram:Instagram, email:Mail, link:Link2}[type] || Link2);
   const placeholderForType = (type) => ({mobile:'+91 98765 43210', instagram:'@username', email:'name@university.edu', link:'https://...'}[type] || '');
-  const handleImageSelect = (e) => { const file = e.target.files?.[0]; if(!file) return; const allowed=['image/jpeg','image/png','image/webp','image/jpg']; if(!allowed.includes(file.type)) { setError('Please upload a valid image file (JPEG, PNG, or WebP)'); return;} if(file.size>5*1024*1024){ setError('Image must be less than 5MB'); return;} if(imagePreview) URL.revokeObjectURL(imagePreview); setImageFile(file); setImagePreview(URL.createObjectURL(file)); clearError(); };
-  const handleRemoveImage = () => { if(imagePreview) URL.revokeObjectURL(imagePreview); setImageFile(null); setImagePreview(null); const el=document.getElementById('ticketImageInput'); if(el) el.value=''; };
   const addContact = () => setContacts(p=>[...p,{id:Date.now(), type:'mobile', value:''}]);
   const updateContact = (idx, field, value) => setContacts(p=>p.map((c,i)=> i===idx?{...c,[field]:value}:c));
   const removeContact = (id) => setContacts(p=>p.filter(c=>c.id!==id));
@@ -555,13 +531,19 @@ function TicketCreateModal({ onClose, onTicketCreated, editingTicket, darkMode, 
       if(Object.keys(contactInfo).length===0) throw new Error('At least one contact method is required');
       const base = { title:title.trim(), price:parseFloat(price), category, quantity_available:parseInt(quantityAvailable), description:description.trim(), contact_info:contactInfo };
       let payload = {...base};
-      if(category==='event'){ payload = {...payload, event_type:eventType, event_date:eventDateTime, venue:venue.trim(), location:location.trim(), ticket_type:ticketType}; }
-      else if(category==='travel'){ payload = {...payload, origin:origin.trim(), destination:destination.trim(), travel_date:travelDateTime, transport_mode:transportMode, event_date:travelDateTime, venue:`${origin.trim()} → ${destination.trim()}`, location:destination.trim(), event_type:'travel'}; }
-      else { payload = {...payload, item_type:itemType, location:location.trim(), event_type:'other', event_date:eventDateTime || new Date().toISOString()}; }
+      if(category==='event'){ 
+        payload = {...payload, event_type:eventType, event_date:eventDateTime, venue:venue.trim(), location:location.trim(), ticket_type:ticketType}; 
+      }
+      else if(category==='travel'){ 
+        payload = {...payload, origin:origin.trim(), destination:destination.trim(), travel_date:travelDateTime, transport_mode:transportMode, event_date:travelDateTime, venue:`${origin.trim()} → ${destination.trim()}`, location:destination.trim(), event_type:'travel'}; 
+      }
+      else { 
+        payload = {...payload, item_type:itemType, location:location.trim(), event_type:'other', event_date:eventDateTime || new Date().toISOString()}; 
+      }
       let result;
       if (editingTicket) {
         // Update existing ticket
-        result = await updateTicket(editingTicket.id, payload, imageFile);
+        result = await updateTicket(editingTicket.id, payload);
         if(result.success){ 
           showTemporaryMessage(`Listing "${result.data.title}" updated!`, true, 3500); 
           handleReset(); 
@@ -571,7 +553,7 @@ function TicketCreateModal({ onClose, onTicketCreated, editingTicket, darkMode, 
         else { throw new Error(result.message || 'Failed to update listing'); }
       } else {
         // Create new ticket
-        result = await createTicket(payload, imageFile);
+        result = await createTicket(payload);
         if(result.success){ 
           showTemporaryMessage(`Listing "${result.data.title}" created!`, true, 3500); 
           handleReset(); 
@@ -584,7 +566,7 @@ function TicketCreateModal({ onClose, onTicketCreated, editingTicket, darkMode, 
   };
 
   const handleReset = () => {
-    setCategory('event'); setTitle(''); setPrice(''); setEventType('concert'); setEventDate(''); setEventTime(''); setVenue(''); setLocation(''); setQuantityAvailable('1'); setTicketType('Standard'); setDescription(''); setContacts([{id:1,type:'mobile',value:''}]); setOrigin(''); setDestination(''); setTravelDate(''); setTravelTime(''); setTransportMode('bus'); setItemType('General'); handleRemoveImage(); clearError();
+    setCategory('event'); setTitle(''); setPrice(''); setEventType('concert'); setEventDate(''); setEventTime(''); setVenue(''); setLocation(''); setQuantityAvailable('1'); setTicketType('Standard'); setDescription(''); setContacts([{id:1,type:'mobile',value:''}]); setOrigin(''); setDestination(''); setTravelDate(''); setTravelTime(''); setTransportMode('bus'); setItemType('General'); clearError();
   };
 
   return (
@@ -748,18 +730,6 @@ function TicketCreateModal({ onClose, onTicketCreated, editingTicket, darkMode, 
           <div className="sm:col-span-2">
             <label className={`block text-sm font-medium mb-2 ${labelClr}`}>Additional Details</label>
             <textarea value={description} onChange={e=>setDescription(e.target.value)} rows={4} placeholder={category==='travel' ? 'Any luggage rules, meeting point, flexibility...' : 'Describe seats, reason for selling...'} className={`w-full px-4 py-3 rounded-lg border ${inputStyles} resize-none`} />
-          </div>
-          <div className="sm:col-span-2">
-            <label className={`block text-sm font-medium mb-3 ${labelClr}`}>Photo (Optional)</label>
-            {!imagePreview ? (
-              <label className={`flex flex-col items-center justify-center gap-4 p-8 border-2 border-dashed rounded-xl cursor-pointer transition-all ${darkMode ? 'hover:bg-gray-900/50 border-gray-700 hover:border-gray-600' : 'hover:bg-gray-50 border-gray-300 hover:border-gray-400'} ${dropBorder}`}>
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center"><Upload className="w-8 h-8 text-white" /></div>
-                <div className="text-center"><p className={`text-base font-medium ${titleClr} mb-1`}>Upload Photo</p><p className="text-sm text-muted">JPEG, PNG, or WebP up to 5MB</p></div>
-                <input id="ticketImageInput" type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
-              </label>
-            ) : (
-              <div className="relative"><img src={imagePreview} alt="Preview" className="w-full h-64 object-cover rounded-xl border shadow-lg" /><button type="button" onClick={handleRemoveImage} className="absolute top-3 right-3 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all shadow-lg" title="Remove image"><X className="w-5 h-5" /></button></div>
-            )}
           </div>
           <div className="sm:col-span-2">
             <div className="flex items-center justify-between mb-3"><label className={`text-sm font-medium ${labelClr}`}>Contact Information *</label><button type="button" onClick={addContact} className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"><Plus className="w-4 h-4" /> Add Contact</button></div>

@@ -149,8 +149,6 @@ export default function ReportLostFoundPage() {
         landmark: landmark.trim() || null
       };
 
-      console.log('📝 Submitting lost/found item:', itemData);
-
       const result = await createLostFoundItem(itemData, images);
       
       if (result.success) {
