@@ -26,7 +26,6 @@ import {
 import Footer from '../../_components/Footer';
 import { useRouter } from 'next/navigation';
 import { useUI, useAuth } from '../../lib/contexts/UniShareContext';
-import FormfacadeEmbed from "@formfacade/embed-react";
 
 export default function ReportIssues() {
   const {darkMode} = useUI();
