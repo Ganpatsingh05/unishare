@@ -324,4 +324,4 @@ export const invalidateCache = (endpoint, options = {}) => {
 };
 
 // Export utilities and configuration
-export { BACKEND_URL, apiCache, API_CONFIG };
+export { BACKEND_URL, apiCache };
