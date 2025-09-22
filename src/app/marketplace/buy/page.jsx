@@ -22,6 +22,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 import Footer from "../../_components/Footer";
+import SmallFooter from "../../_components/SmallFooter";
 import { fetchMarketplaceItems } from "../../lib/api";
 import { 
   useUniShare, 
@@ -503,7 +504,7 @@ export default function MarketplaceBuyPage() {
           onClose={() => setSelectedItem(null)} 
         />
       )}
-      <Footer darkMode={darkMode} />
+      <SmallFooter />
 
     </div>
   );

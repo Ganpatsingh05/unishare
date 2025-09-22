@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Footer from "../_components/Footer";
+import SmallFooter from "../_components/SmallFooter";
 import { Search, Package, FileText, ArrowRight, Calendar, MapPin, Eye, Plus } from "lucide-react";
 import { fetchLostFoundItems } from "../lib/api";
 import { useMessages } from "../lib/contexts/UniShareContext";
@@ -181,7 +182,7 @@ export default function LostFoundHubPage() {
           </div>
         </div>
       </main>
-      <Footer darkMode={darkMode} />
+      <SmallFooter />
     </div>
   );
 }

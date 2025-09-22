@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Header from "../_components/Header";
 import Footer from "../_components/Footer";
+import SmallFooter from "../_components/SmallFooter";
 import { Phone, Mail, MapPin, Clock, Search, Copy, Check, ShieldAlert, Building2, GraduationCap, Home, Users } from "lucide-react";
 import { getPublicContacts } from "../lib/api/contacts";
 
@@ -317,7 +318,7 @@ export default function ContactsPage() {
         </div>
       </main>
 
-      <Footer darkMode={darkMode} />
+      <SmallFooter />
     </div>
   );
 }

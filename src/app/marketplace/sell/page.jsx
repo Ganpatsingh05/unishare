@@ -31,6 +31,7 @@ import {
   useUserData 
 } from "../../lib/contexts/UniShareContext";
 import Footer from "../../_components/Footer";
+import SmallFooter from "../../_components/SmallFooter";
 
 export default function MarketplaceSellPage() {
   const router = useRouter();
@@ -575,7 +576,7 @@ export default function MarketplaceSellPage() {
           </form>
         </div>
       </main>
-      <Footer darkMode={darkMode} />
+      <SmallFooter />
     </div>
   );
 }

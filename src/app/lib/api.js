@@ -66,7 +66,8 @@ export {
   respondToRideRequest,
   getRideById,
   getRideStats,
-  validateRideData
+  validateRideData,
+  getUserSentRequests
 } from './api/rideSharing.js';
 
 // Re-export all ticket functions
