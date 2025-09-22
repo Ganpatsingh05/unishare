@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Search, UploadCloud, Users, ArrowRight } from "lucide-react";
 import Footer from "../_components/Footer";
+import SmallFooter from "../_components/SmallFooter";
 
 export default function HousingHubPage() {
   const [darkMode, setDarkMode] = useState(true);
@@ -114,7 +115,7 @@ export default function HousingHubPage() {
         </div>
       </main>
 
-      <Footer darkMode={darkMode} />
+      <SmallFooter />
     </div>
   );
 }

@@ -213,7 +213,7 @@ export const requestRideJoin = async (rideId, requestData) => {
       message: 'Join request sent successfully!'
     };
   } catch (error) {
-    console.error('Error requesting to join ride:', error);
+    // console.error('Error requesting to join ride:', error);
     return {
       success: false,
       error: error.message
@@ -231,10 +231,28 @@ export const getRideRequests = async () => {
       data: response.data || []
     };
   } catch (error) {
-    console.error('Error fetching ride requests:', error);
+    // console.error('Error fetching ride requests:', error);
     return {
       success: false,
       error: error.message
+    };
+  }
+};
+
+// Get user's sent ride join requests
+export const getUserSentRequests = async () => {
+  try {
+    const response = await apiCall('/api/shareride/my/requested', { method: 'GET' });
+
+    return {
+      success: true,
+      data: response.data || []
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.message,
+      data: []
     };
   }
 };

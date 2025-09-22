@@ -6,6 +6,7 @@ import { Megaphone, PlusCircle, Eye } from 'lucide-react';
 import { useUI } from '../lib/contexts/UniShareContext';
 import Header from '../_components/Header';
 import Footer from '../_components/Footer';
+import SmallFooter from '../_components/SmallFooter';
 
 export default function AnnouncementsPage() {
   const { darkMode } = useUI();
@@ -101,7 +102,7 @@ export default function AnnouncementsPage() {
         </div>
       </main>
 
-      <Footer darkMode={darkMode} />
+      <SmallFooter />
     </div>
   );
 }

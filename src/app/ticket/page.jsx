@@ -5,6 +5,7 @@ import { useUI } from "../lib/contexts/UniShareContext";
 import Link from "next/link";
 import { ShoppingCart, Tag, ArrowRight, Users } from "lucide-react";
 import Footer from "../_components/Footer";
+import SmallFooter from "../_components/SmallFooter";
 
 export default function TicketHubPage() {
   // Directly read darkMode from context each render for live reactivity
@@ -104,7 +105,7 @@ export default function TicketHubPage() {
         </div>
       </main>
 
-      <Footer darkMode={darkMode} />
+      <SmallFooter />
     </div>
   );
 }

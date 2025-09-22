@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useUI } from "../lib/contexts/UniShareContext";
 import Footer from "../_components/Footer";
+import SmallFooter from "../_components/SmallFooter";
 import { Search, Link2, ExternalLink, Copy, Check, BookOpen, GraduationCap, Globe, Wrench, FileText, Video, Tag, Plus, X } from "lucide-react";
 import { getResources, getResourceCategories, submitResourceSuggestion } from "../lib/api/resources";
 
@@ -228,7 +229,7 @@ export default function ResourcesPage() {
         </div>
       </main>
 
-      <Footer darkMode={darkMode} />
+      <SmallFooter />
 
       {drawerOpen && (
         <div className="fixed inset-0 z-[120] flex">

@@ -80,7 +80,7 @@ export default function ShareRideHubPage() {
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">Loading...</h2>
           <p className="text-blue-100 mb-8 text-sm">
-            Connecting riders and drivers...
+            Connecting riders and Provider...
           </p>
         </div>
       </div>
@@ -123,7 +123,7 @@ export default function ShareRideHubPage() {
         </section>
 
         {/* Action Cards */}
-        <section className="grid md:grid-cols-2 gap-6 mb-12">
+        <section className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {/* Find Ride Card */}
           <Link href="/share-ride/findride">
             <div className={`p-8 rounded-2xl border-2 hover:border-blue-400 transition-all duration-300 cursor-pointer group hover:shadow-2xl ${cardBg}`}>
@@ -185,6 +185,37 @@ export default function ShareRideHubPage() {
               </div>
             </div>
           </Link>
+
+          {/* Manage Requests Card */}
+          <Link href="/share-ride/requests">
+            <div className={`p-8 rounded-2xl border-2 hover:border-purple-400 transition-all duration-300 cursor-pointer group hover:shadow-2xl ${cardBg}`}>
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl group-hover:scale-110 transition-transform">
+                  <Users className="w-8 h-8 text-white" />
+                </div>
+                <ArrowRight className="w-6 h-6 text-purple-500 group-hover:translate-x-2 transition-transform" />
+              </div>
+              
+              <h3 className={`text-2xl font-bold mb-3 ${textPrimary}`}>
+                Manage Requests
+              </h3>
+              <p className={`text-base mb-4 ${textSecondary}`}>
+                Review and respond to ride requests from other students. Approve or decline requests for your rides.
+              </p>
+              
+              <div className="flex flex-wrap gap-2">
+                <span className={`px-3 py-1 rounded-full text-sm ${darkMode ? 'bg-purple-900/30 text-purple-300' : 'bg-purple-100 text-purple-700'}`}>
+                  Request management
+                </span>
+                <span className={`px-3 py-1 rounded-full text-sm ${darkMode ? 'bg-purple-900/30 text-purple-300' : 'bg-purple-100 text-purple-700'}`}>
+                  Instant notifications
+                </span>
+                <span className={`px-3 py-1 rounded-full text-sm ${darkMode ? 'bg-purple-900/30 text-purple-300' : 'bg-purple-100 text-purple-700'}`}>
+                  User profiles
+                </span>
+              </div>
+            </div>
+          </Link>
         </section>
 
         {/* Recent Rides Section */}
@@ -209,7 +240,7 @@ export default function ShareRideHubPage() {
                   </div>
                   <div>
                     <p className={`font-semibold ${textPrimary}`}>{ride.driver}</p>
-                    <p className={`text-sm ${textSecondary}`}>Driver</p>
+                    <p className={`text-sm ${textSecondary}`}>Provider</p>
                   </div>
                 </div>
                 
@@ -270,7 +301,7 @@ export default function ShareRideHubPage() {
                 <Users className="w-6 h-6 text-emerald-500" />
               </div>
               <h3 className={`font-semibold mb-2 ${textPrimary}`}>Safe Community</h3>
-              <p className={`text-sm ${textSecondary}`}>Verified student drivers</p>
+              <p className={`text-sm ${textSecondary}`}>Verified student providers</p>
             </div>
             
             <div className={`p-6 rounded-xl ${cardBg}`}>

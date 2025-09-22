@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Footer from "../../_components/Footer";
+import SmallFooter from "../../_components/SmallFooter";
 import {
   Car,
   MapPin,
@@ -19,6 +20,9 @@ import {
   Upload,
   Check,
   X,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useUI, useAuth, useMessages } from "../../lib/contexts/UniShareContext";
 import Link from "next/link";
@@ -105,12 +109,517 @@ function LoadingScreen({ onComplete }) {
   );
 }
 
+// Success Popup Component
+function SuccessPopup({ isVisible, onClose }) {
+  const [progress, setProgress] = useState(100);
+  const [timeLeft, setTimeLeft] = useState(10);
+
+  // Stabilize onClose with useCallback to prevent dependency changes
+  const stableOnClose = useCallback(() => {
+    if (onClose) {
+      onClose();
+    }
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!isVisible) {
+      return;
+    }
+
+    // Initialize states when popup becomes visible
+    setProgress(100);
+    setTimeLeft(10);
+
+    // Smooth progress bar animation (decreases from 100 to 0 over 10 seconds)
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev <= 0) {
+          return 0;
+        }
+        return prev - 1; // Decrease by 1 every 100ms for smooth animation
+      });
+    }, 100); // Update every 100ms for smooth animation
+
+    // Timer countdown and auto-close
+    const timerInterval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          // Use setTimeout to avoid calling onClose during render
+          setTimeout(stableOnClose, 0);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    // Cleanup function
+    return () => {
+      clearInterval(progressInterval);
+      clearInterval(timerInterval);
+    };
+  }, [isVisible, stableOnClose]); // Now using stable reference
+
+  if (!isVisible) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4 transform animate-in fade-in slide-in-from-bottom-4 duration-300">
+        {/* Header with gradient background */}
+        <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-t-2xl p-6 text-white relative overflow-hidden">
+          <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+          <div className="relative z-10">
+            {/* Success Icon */}
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center animate-bounce">
+                <Check className="w-8 h-8 text-white" strokeWidth={3} />
+              </div>
+            </div>
+            
+            {/* Success Message */}
+            <h2 className="text-2xl font-bold text-center mb-2">
+              🎉 Ride Posted Successfully!
+            </h2>
+            <p className="text-green-100 text-center text-sm">
+              Your ride is now live and ready for bookings
+            </p>
+          </div>
+          
+          {/* Decorative elements */}
+          <div className="absolute -top-8 -right-8 w-16 h-16 bg-white/10 rounded-full"></div>
+          <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-white/10 rounded-full"></div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6">
+          {/* Action Buttons */}
+          <div className="flex gap-3 mb-6">
+            <button
+              onClick={stableOnClose}
+              className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200 font-medium"
+            >
+              Close
+            </button>
+            <Link
+              href="/share-ride"
+              className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-medium text-center"
+            >
+              View Rides
+            </Link>
+          </div>
+
+          {/* Progress Bar - Moved to bottom */}
+          <div className="mb-4">
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-100 ease-linear"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Additional Info */}
+          <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+            <p className="text-xs text-green-700 dark:text-green-400 text-center">
+              💡 Your ride will be visible to other users immediately
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Custom Dropdown Component
+function CustomDropdown({ value, onChange, options, placeholder, className, darkMode, icon: Icon }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleSelect = (optionValue) => {
+    onChange(optionValue);
+    setIsOpen(false);
+  };
+
+  const selectedOption = options.find(opt => opt.value === value);
+
+  return (
+    <div className="relative">
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full ${Icon ? 'pl-12' : 'pl-4'} pr-4 py-4 border-2 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-emerald-100 dark:focus:ring-emerald-900/30 focus:border-emerald-500 hover:border-emerald-300 cursor-pointer ${className} border-gray-200 dark:border-gray-600 text-base font-medium flex items-center justify-between`}
+      >
+        {Icon && (
+          <Icon className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+        )}
+        <span className={selectedOption ? (darkMode ? 'text-gray-100' : 'text-gray-900') : 'text-gray-500'}>
+          {selectedOption ? selectedOption.label : placeholder}
+        </span>
+        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </div>
+
+      {isOpen && (
+        <div className={`absolute top-full left-0 right-0 mt-2 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl shadow-xl z-50 overflow-hidden max-h-64 overflow-y-auto`}>
+          {options.map((option) => (
+            <div
+              key={option.value}
+              onClick={() => handleSelect(option.value)}
+              className={`px-4 py-3 cursor-pointer transition-colors flex items-center gap-3 ${
+                value === option.value 
+                  ? 'bg-emerald-500 text-white' 
+                  : darkMode 
+                    ? 'text-gray-300 hover:bg-gray-700' 
+                    : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              {option.icon && (
+                <span className="text-lg">{option.icon}</span>
+              )}
+              <span className="font-medium">{option.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Click outside to close */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-40" 
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+// Custom DatePicker Component
+function CustomDatePicker({ value, onChange, className, darkMode, errors, minDate }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
+
+  useEffect(() => {
+    if (value) {
+      setSelectedDate(new Date(value));
+      setCurrentMonth(new Date(value));
+    } else {
+      setCurrentMonth(new Date());
+    }
+  }, [value]);
+
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  const formatDisplayDate = (date) => {
+    if (!date) return 'Select date';
+    return date.toLocaleDateString('en-GB', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric' 
+    });
+  };
+
+  const formatValueDate = (date) => {
+    if (!date) return '';
+    return date.toISOString().split('T')[0];
+  };
+
+  const getDaysInMonth = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+
+    const days = [];
+
+    // Add empty cells for days before the first day of the month
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      days.push(null);
+    }
+
+    // Add days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      days.push(new Date(year, month, day));
+    }
+
+    return days;
+  };
+
+  const isDateDisabled = (date) => {
+    if (!date || !minDate) return false;
+    return date < new Date(minDate);
+  };
+
+  const isToday = (date) => {
+    if (!date) return false;
+    const today = new Date();
+    return date.toDateString() === today.toDateString();
+  };
+
+  const isSelected = (date) => {
+    if (!date || !selectedDate) return false;
+    return date.toDateString() === selectedDate.toDateString();
+  };
+
+  const handleDateSelect = (date) => {
+    if (isDateDisabled(date)) return;
+    setSelectedDate(date);
+    onChange(formatValueDate(date));
+    setIsOpen(false);
+  };
+
+  const navigateMonth = (direction) => {
+    setCurrentMonth(prev => {
+      const newMonth = new Date(prev);
+      newMonth.setMonth(prev.getMonth() + direction);
+      return newMonth;
+    });
+  };
+
+  const goToToday = () => {
+    const today = new Date();
+    setCurrentMonth(today);
+    handleDateSelect(today);
+  };
+
+  const days = getDaysInMonth(currentMonth);
+
+  return (
+    <div className="relative">
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full pl-12 pr-4 py-4 border-2 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-emerald-100 dark:focus:ring-emerald-900/30 focus:border-emerald-500 hover:border-emerald-300 cursor-pointer ${className} ${
+          errors ? 'border-red-500 focus:border-red-500 focus:ring-red-100' : 'border-gray-200 dark:border-gray-600'
+        } text-base font-medium flex items-center justify-between`}
+      >
+        <span className={selectedDate ? (darkMode ? 'text-gray-100' : 'text-gray-900') : 'text-gray-500'}>
+          {formatDisplayDate(selectedDate)}
+        </span>
+        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </div>
+
+      {isOpen && (
+        <div className={`absolute top-full left-0 right-0 mt-2 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl shadow-xl z-50 overflow-hidden min-w-[320px]`}>
+          {/* Header with month navigation */}
+          <div className={`px-4 py-3 ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'} border-b flex items-center justify-between`}>
+            <button
+              onClick={() => navigateMonth(-1)}
+              className={`p-1 rounded-lg ${darkMode ? 'hover:bg-gray-600 text-gray-300' : 'hover:bg-gray-200 text-gray-700'} transition-colors`}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            
+            <div className="text-center">
+              <h3 className={`font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                {months[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+              </h3>
+            </div>
+
+            <button
+              onClick={() => navigateMonth(1)}
+              className={`p-1 rounded-lg ${darkMode ? 'hover:bg-gray-600 text-gray-300' : 'hover:bg-gray-200 text-gray-700'} transition-colors`}
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Weekday headers */}
+          <div className={`grid grid-cols-7 ${darkMode ? 'bg-gray-700' : 'bg-gray-50'} border-b border-gray-200 dark:border-gray-600`}>
+            {weekDays.map((day) => (
+              <div key={day} className={`p-2 text-center text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                {day}
+              </div>
+            ))}
+          </div>
+
+          {/* Calendar grid */}
+          <div className="grid grid-cols-7 p-2">
+            {days.map((date, index) => (
+              <div key={index} className="aspect-square p-1">
+                {date ? (
+                  <button
+                    onClick={() => handleDateSelect(date)}
+                    disabled={isDateDisabled(date)}
+                    className={`w-full h-full rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center relative ${
+                      isSelected(date)
+                        ? 'bg-emerald-500 text-white shadow-lg'
+                        : isToday(date)
+                        ? darkMode
+                          ? 'bg-emerald-900/30 text-emerald-400 border border-emerald-500'
+                          : 'bg-emerald-100 text-emerald-600 border border-emerald-300'
+                        : isDateDisabled(date)
+                        ? darkMode
+                          ? 'text-gray-600 cursor-not-allowed'
+                          : 'text-gray-400 cursor-not-allowed'
+                        : darkMode
+                          ? 'text-gray-300 hover:bg-gray-700'
+                          : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    {date.getDate()}
+                    {isToday(date) && !isSelected(date) && (
+                      <div className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${
+                        darkMode ? 'bg-emerald-400' : 'bg-emerald-600'
+                      }`} />
+                    )}
+                  </button>
+                ) : (
+                  <div />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Footer with Today button */}
+          <div className={`px-4 py-3 ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'} border-t flex justify-between items-center`}>
+            <button
+              onClick={goToToday}
+              className="text-sm text-emerald-500 hover:text-emerald-600 transition-colors font-medium"
+            >
+              Today
+            </button>
+            <button
+              onClick={() => setIsOpen(false)}
+              className={`text-sm ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-700'} transition-colors`}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Click outside to close */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-40" 
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+// Custom TimePicker Component
+function CustomTimePicker({ value, onChange, className, darkMode, errors }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedHour, setSelectedHour] = useState('');
+  const [selectedMinute, setSelectedMinute] = useState('');
+
+  useEffect(() => {
+    if (value) {
+      const [hour, minute] = value.split(':');
+      setSelectedHour(hour);
+      setSelectedMinute(minute);
+    }
+  }, [value]);
+
+  const hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
+  const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
+
+  const handleMinuteSelect = (minute) => {
+    const hour = selectedHour || '00';
+    const timeValue = `${hour}:${minute}`;
+    setSelectedMinute(minute);
+    onChange(timeValue);
+    setIsOpen(false); // Auto-close when minute is selected
+  };
+
+  const handleHourSelect = (hour) => {
+    setSelectedHour(hour);
+    // Don't close yet, wait for minute selection
+  };
+
+  const displayTime = value || 'Select time';
+
+  return (
+    <div className="relative">
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full pl-12 pr-4 py-4 border-2 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-emerald-100 dark:focus:ring-emerald-900/30 focus:border-emerald-500 hover:border-emerald-300 cursor-pointer ${className} ${
+          errors ? 'border-red-500 focus:border-red-500 focus:ring-red-100' : 'border-gray-200 dark:border-gray-600'
+        } text-base font-medium flex items-center justify-between`}
+      >
+        <span className={value ? (darkMode ? 'text-gray-100' : 'text-gray-900') : 'text-gray-500'}>
+          {displayTime}
+        </span>
+        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </div>
+
+      {isOpen && (
+        <div className={`absolute top-full left-0 right-0 mt-2 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl shadow-xl z-50 overflow-hidden`}>
+          <div className="flex max-h-64">
+            {/* Hours Column */}
+            <div className="flex-1 border-r border-gray-200 dark:border-gray-700">
+              <div className={`px-4 py-3 text-sm font-medium ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-50 text-gray-700'} border-b border-gray-200 dark:border-gray-700`}>
+                Hours
+              </div>
+              <div className="max-h-48 overflow-y-auto">
+                {hours.map((hour) => (
+                  <div
+                    key={hour}
+                    onClick={() => handleHourSelect(hour)}
+                    className={`px-4 py-3 cursor-pointer transition-colors text-center ${
+                      selectedHour === hour 
+                        ? 'bg-emerald-500 text-white' 
+                        : darkMode 
+                          ? 'text-gray-300 hover:bg-gray-700' 
+                          : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    {hour}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Minutes Column */}
+            <div className="flex-1">
+              <div className={`px-4 py-3 text-sm font-medium ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-50 text-gray-700'} border-b border-gray-200 dark:border-gray-700`}>
+                Minutes
+              </div>
+              <div className="max-h-48 overflow-y-auto">
+                {minutes.filter((_, i) => i % 5 === 0).map((minute) => ( // Show every 5 minutes
+                  <div
+                    key={minute}
+                    onClick={() => handleMinuteSelect(minute)}
+                    className={`px-4 py-3 cursor-pointer transition-colors text-center ${
+                      selectedMinute === minute 
+                        ? 'bg-emerald-500 text-white' 
+                        : darkMode 
+                          ? 'text-gray-300 hover:bg-gray-700' 
+                          : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    {minute}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Click outside to close */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-40" 
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+    </div>
+  );
+}
+
 export default function PostRidePage() {
   const { darkMode } = useUI();
   const { user, isAuthenticated } = useAuth();
   const { showTemporaryMessage } = useMessages();
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   // Form state
   const [fromLoc, setFromLoc] = useState("");
@@ -210,7 +719,8 @@ export default function PostRidePage() {
       const result = await createRide(rideData);
       
       if (result.success) {
-        showTemporaryMessage(result.message || "Ride posted successfully!", "success");
+        // Show beautiful success popup instead of temporary message
+        setShowSuccessPopup(true);
         
         // Reset form
         setFromLoc("");
@@ -268,14 +778,6 @@ export default function PostRidePage() {
       <main className="max-w-2xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10">
         {/* Header */}
         <div className="mb-8">
-          <Link 
-            href="/share-ride" 
-            className="inline-flex items-center gap-2 text-emerald-500 hover:text-emerald-600 mb-4 group"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            Back to Share Ride Hub
-          </Link>
-          
           <div className="text-center">
             <h1 className={`text-2xl sm:text-3xl font-bold ${titleClr} mb-2`}>
               Offer a Ride
@@ -302,108 +804,119 @@ export default function PostRidePage() {
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className={`p-6 rounded-xl border ${cardBg}`}>
-          {/* Route Information */}
-          <div className="mb-6">
-            <h2 className={`text-lg font-semibold mb-4 ${titleClr}`}>Route Details</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${labelClr}`}>
-                  From Location *
-                </label>
-                <div className="relative">
-                  <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    value={fromLoc}
-                    onChange={(e) => setFromLoc(e.target.value)}
-                    className={`w-full pl-10 pr-3 py-3 border rounded-lg transition-colors ${inputBg} ${
-                      errors.fromLoc ? 'border-red-500' : ''
-                    }`}
-                    placeholder="Starting point..."
-                  />
+        <form onSubmit={handleSubmit} className={`${cardBg} rounded-xl shadow-lg border p-6`}>
+          <div className="space-y-6">
+            {/* Route Information */}
+            <div>
+              <h2 className={`text-lg font-semibold mb-4 ${titleClr}`}>Route Details</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${labelClr}`}>
+                    From Location *
+                  </label>
+                  <div className="relative">
+                    <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      value={fromLoc}
+                      onChange={(e) => setFromLoc(e.target.value)}
+                      className={`w-full pl-10 pr-3 py-3 border rounded-lg transition-colors ${inputBg} ${
+                        errors.fromLoc ? 'border-red-500' : ''
+                      }`}
+                      placeholder="Starting point..."
+                    />
+                  </div>
+                  {errors.fromLoc && (
+                    <p className="text-red-500 text-sm mt-1">{errors.fromLoc}</p>
+                  )}
                 </div>
-                {errors.fromLoc && (
-                  <p className="text-red-500 text-sm mt-1">{errors.fromLoc}</p>
-                )}
-              </div>
 
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${labelClr}`}>
-                  To Location *
-                </label>
-                <div className="relative">
-                  <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    value={toLoc}
-                    onChange={(e) => setToLoc(e.target.value)}
-                    className={`w-full pl-10 pr-3 py-3 border rounded-lg transition-colors ${inputBg} ${
-                      errors.toLoc ? 'border-red-500' : ''
-                    }`}
-                    placeholder="Destination..."
-                  />
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${labelClr}`}>
+                    To Location *
+                  </label>
+                  <div className="relative">
+                    <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      value={toLoc}
+                      onChange={(e) => setToLoc(e.target.value)}
+                      className={`w-full pl-10 pr-3 py-3 border rounded-lg transition-colors ${inputBg} ${
+                        errors.toLoc ? 'border-red-500' : ''
+                      }`}
+                      placeholder="Destination..."
+                    />
+                  </div>
+                  {errors.toLoc && (
+                    <p className="text-red-500 text-sm mt-1">{errors.toLoc}</p>
+                  )}
                 </div>
-                {errors.toLoc && (
-                  <p className="text-red-500 text-sm mt-1">{errors.toLoc}</p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Date & Time */}
-          <div className="mb-6">
-            <h2 className={`text-lg font-semibold mb-4 ${titleClr}`}>Schedule</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${labelClr}`}>
-                  Date *
-                </label>
-                <div className="relative">
-                  <Calendar className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
-                    className={`w-full pl-10 pr-3 py-3 border rounded-lg transition-colors ${inputBg} ${
-                      errors.date ? 'border-red-500' : ''
-                    }`}
-                  />
-                </div>
-                {errors.date && (
-                  <p className="text-red-500 text-sm mt-1">{errors.date}</p>
-                )}
-              </div>
-
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${labelClr}`}>
-                  Time *
-                </label>
-                <div className="relative">
-                  <Clock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="time"
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    className={`w-full pl-10 pr-3 py-3 border rounded-lg transition-colors ${inputBg} ${
-                      errors.time ? 'border-red-500' : ''
-                    }`}
-                  />
-                </div>
-                {errors.time && (
-                  <p className="text-red-500 text-sm mt-1">{errors.time}</p>
-                )}
               </div>
             </div>
-            {errors.datetime && (
-              <p className="text-red-500 text-sm mt-2">{errors.datetime}</p>
-            )}
-          </div>
 
+            {/* Date & Time */}
+            <div>
+              <h2 className={`text-lg font-semibold mb-4 ${titleClr}`}>Schedule</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label className={`block text-sm font-medium mb-3 ${labelClr}`}>
+                    Date *
+                  </label>
+                  <div className="relative group">
+                    <Calendar className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-emerald-500 transition-colors z-10" />
+                    <CustomDatePicker
+                      value={date}
+                      onChange={(dateValue) => setDate(dateValue)}
+                      className={`${inputBg}`}
+                      darkMode={darkMode}
+                      errors={errors.date}
+                      minDate={new Date().toISOString().split('T')[0]}
+                    />
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-emerald-50 to-transparent dark:from-emerald-900/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                  </div>
+                  {errors.date && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <X className="w-4 h-4 text-red-500" />
+                      <p className="text-red-500 text-sm">{errors.date}</p>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label className={`block text-sm font-medium mb-3 ${labelClr}`}>
+                    Time *
+                  </label>
+                  <div className="relative group">
+                    <Clock className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-emerald-500 transition-colors z-10" />
+                    <CustomTimePicker
+                      value={time}
+                      onChange={(timeValue) => setTime(timeValue)}
+                      className={`${inputBg}`}
+                      darkMode={darkMode}
+                      errors={errors.time}
+                    />
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-emerald-50 to-transparent dark:from-emerald-900/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                  </div>
+                  {errors.time && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <X className="w-4 h-4 text-red-500" />
+                      <p className="text-red-500 text-sm">{errors.time}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {errors.datetime && (
+                <div className="flex items-center gap-2 mt-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                  <X className="w-4 h-4 text-red-500" />
+                  <p className="text-red-500 text-sm">{errors.datetime}</p>
+                </div>
+              )}
+            </div>
+          
+          
           {/* Vehicle & Capacity */}
-          <div className="mb-6">
-            <h2 className={`text-lg font-semibold mb-4 ${titleClr}`}>Vehicle Information</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="sm:col-span-2">
+          <div>
+            <h2 className={`text-lg font-semibold mb-4 ${titleClr}`}>Vehicle & Seats</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
                 <label className={`block text-sm font-medium mb-2 ${labelClr}`}>
                   Vehicle Details *
                 </label>
@@ -424,164 +937,189 @@ export default function PostRidePage() {
               </div>
 
               <div>
-                <label className={`block text-sm font-medium mb-2 ${labelClr}`}>
+                <label className={`block text-sm font-medium mb-3 ${labelClr}`}>
                   Available Seats *
                 </label>
-                <div className="relative">
-                  <Users className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <select
+                <div className="relative group">
+                  <CustomDropdown
                     value={seats}
-                    onChange={(e) => setSeats(Number(e.target.value))}
-                    className={`w-full pl-10 pr-3 py-3 border rounded-lg transition-colors ${inputBg}`}
-                  >
-                    {[1, 2, 3, 4, 5, 6].map(n => (
-                      <option key={n} value={n}>{n} seat{n > 1 ? 's' : ''}</option>
-                    ))}
-                  </select>
+                    onChange={(value) => setSeats(Number(value))}
+                    options={[
+                      { value: 1, label: '1 seat', icon: '👤' },
+                      { value: 2, label: '2 seats', icon: '👥' },
+                      { value: 3, label: '3 seats', icon: '👥' },
+                      { value: 4, label: '4 seats', icon: '👥' },
+                      { value: 5, label: '5 seats', icon: '👥' },
+                      { value: 6, label: '6 seats', icon: '👥' }
+                    ]}
+                    placeholder="Select seats"
+                    className={`${inputBg}`}
+                    darkMode={darkMode}
+                    icon={Users}
+                  />
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-emerald-50 to-transparent dark:from-emerald-900/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                 </div>
+                {errors.seats && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <X className="w-4 h-4 text-red-500" />
+                    <p className="text-red-500 text-sm">{errors.seats}</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Price */}
-          <div className="mb-6">
-            <h2 className={`text-lg font-semibold mb-4 ${titleClr}`}>Pricing</h2>
+            {/* Price */}
             <div>
-              <label className={`block text-sm font-medium mb-2 ${labelClr}`}>
-                Price per Person (₹) *
-              </label>
-              <div className="relative">
-                <IndianRupee className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="number"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  className={`w-full pl-10 pr-3 py-3 border rounded-lg transition-colors ${inputBg} ${
-                    errors.price ? 'border-red-500' : ''
-                  }`}
-                  placeholder="Enter fare per person..."
-                  min="0"
-                  step="10"
-                />
+              <h2 className={`text-lg font-semibold mb-4 ${titleClr}`}>Price</h2>
+              <div className="max-w-sm">
+                <label className={`block text-sm font-medium mb-2 ${labelClr}`}>
+                  Price per Person (₹) *
+                </label>
+                <div className="relative">
+                  <IndianRupee className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="number"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    className={`w-full pl-10 pr-3 py-3 border rounded-lg transition-colors ${inputBg} ${
+                      errors.price ? 'border-red-500' : ''
+                    }`}
+                    placeholder="Enter fare per person..."
+                    min="0"
+                    step="10"
+                  />
+                </div>
+                {errors.price && (
+                  <p className="text-red-500 text-sm mt-1">{errors.price}</p>
+                )}
               </div>
-              {errors.price && (
-                <p className="text-red-500 text-sm mt-1">{errors.price}</p>
+            </div>
+
+            {/* Description */}
+            <div>
+              <h2 className={`text-lg font-semibold mb-4 ${titleClr}`}>Description (Optional)</h2>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+                className={`w-full px-3 py-3 border rounded-lg transition-colors ${inputBg} resize-none`}
+                placeholder="Any additional details about the ride, pickup points, preferences, etc..."
+              />
+            </div>
+
+            {/* Contact Information */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className={`text-lg font-semibold ${titleClr}`}>Contact Information *</h2>
+                <button
+                  type="button"
+                  onClick={addContact}
+                  className="flex items-center gap-2 px-3 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors text-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Contact
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {contacts.map((contact, index) => (
+                  <div key={contact.id} className="flex gap-3 items-center">
+                    <div className="w-40">
+                      <CustomDropdown
+                        value={contact.type}
+                        onChange={(value) => updateContact(contact.id, "type", value)}
+                        options={[
+                          { value: 'mobile', label: 'Mobile', icon: '📱' },
+                          { value: 'email', label: 'Email', icon: '📧' },
+                          { value: 'instagram', label: 'Instagram', icon: '📷' }
+                        ]}
+                        placeholder="Contact type"
+                        className={`${inputBg} py-3 text-sm`}
+                        darkMode={darkMode}
+                      />
+                    </div>
+                    
+                    <div className="relative flex-1">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                        {iconForType(contact.type)}
+                      </div>
+                      <input
+                        value={contact.value}
+                        onChange={(e) => updateContact(contact.id, "value", e.target.value)}
+                        className={`w-full pl-10 pr-3 py-3 border rounded-lg transition-colors ${inputBg}`}
+                        placeholder={
+                          contact.type === "mobile" ? "+91 98765 43210" :
+                          contact.type === "email" ? "your.email@example.com" :
+                          "@your_username"
+                        }
+                      />
+                    </div>
+
+                    {contacts.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeContact(contact.id)}
+                        className="p-3 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {errors.contacts && (
+                <p className="text-red-500 text-sm mt-2">{errors.contacts}</p>
               )}
             </div>
-          </div>
 
-          {/* Description */}
-          <div className="mb-6">
-            <label className={`block text-sm font-medium mb-2 ${labelClr}`}>
-              Additional Information
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              className={`w-full px-3 py-3 border rounded-lg transition-colors ${inputBg}`}
-              placeholder="Any additional details about the ride, pickup points, etc..."
-            />
-          </div>
-
-          {/* Contact Information */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className={`text-lg font-semibold ${titleClr}`}>Contact Information *</h2>
-              <button
-                type="button"
-                onClick={addContact}
-                className="flex items-center gap-2 px-3 py-1 text-sm bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
+            {/* Submit Button */}
+            <div className="flex gap-4">
+              <Link 
+                href="/share-ride"
+                className={`flex-1 py-3 px-6 border rounded-lg text-center transition-colors ${
+                  darkMode 
+                    ? 'border-gray-600 text-gray-300 hover:bg-gray-800' 
+                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                }`}
               >
-                <Plus className="w-4 h-4" />
-                Add Contact
+                Cancel
+              </Link>
+              
+              <button
+                type="submit"
+                disabled={isSubmitting || !isAuthenticated}
+                className={`flex-1 py-3 px-6 rounded-lg text-white font-medium transition-colors flex items-center justify-center gap-2 ${
+                  isSubmitting || !isAuthenticated
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-emerald-500 hover:bg-emerald-600'
+                }`}
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Posting...
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Post Ride
+                  </>
+                )}
               </button>
             </div>
-
-            <div className="space-y-3">
-              {contacts.map((contact) => (
-                <div key={contact.id} className="flex gap-2">
-                  <select
-                    value={contact.type}
-                    onChange={(e) => updateContact(contact.id, "type", e.target.value)}
-                    className={`px-3 py-2 border rounded-lg transition-colors ${inputBg}`}
-                  >
-                    <option value="mobile">Mobile</option>
-                    <option value="email">Email</option>
-                    <option value="instagram">Instagram</option>
-                  </select>
-                  
-                  <div className="flex-1 relative">
-                    {iconForType(contact.type)}
-                    <input
-                      value={contact.value}
-                      onChange={(e) => updateContact(contact.id, "value", e.target.value)}
-                      className={`w-full pl-10 pr-3 py-2 border rounded-lg transition-colors ${inputBg}`}
-                      placeholder={
-                        contact.type === "mobile" ? "Phone number..." :
-                        contact.type === "email" ? "Email address..." :
-                        "Username..."
-                      }
-                    />
-                  </div>
-                  
-                  {contacts.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeContact(contact.id)}
-                      className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-            
-            {errors.contacts && (
-              <p className="text-red-500 text-sm mt-2">{errors.contacts}</p>
-            )}
-          </div>
-
-          {/* Submit Button */}
-          <div className="flex gap-4">
-            <Link 
-              href="/share-ride"
-              className={`flex-1 py-3 px-6 border rounded-lg text-center transition-colors ${
-                darkMode 
-                  ? 'border-gray-600 text-gray-300 hover:bg-gray-800' 
-                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              Cancel
-            </Link>
-            
-            <button
-              type="submit"
-              disabled={isSubmitting || !isAuthenticated}
-              className={`flex-1 py-3 px-6 rounded-lg text-white font-medium transition-colors flex items-center justify-center gap-2 ${
-                isSubmitting || !isAuthenticated
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-emerald-500 hover:bg-emerald-600'
-              }`}
-            >
-              {isSubmitting ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Posting...
-                </>
-              ) : (
-                <>
-                  <Check className="w-4 h-4" />
-                  Post Ride
-                </>
-              )}
-            </button>
           </div>
         </form>
       </main>
 
-      <Footer />
+      <SmallFooter />
+      
+      {/* Success Popup */}
+      <SuccessPopup 
+        isVisible={showSuccessPopup} 
+        onClose={() => setShowSuccessPopup(false)} 
+      />
     </div>
   );
 }

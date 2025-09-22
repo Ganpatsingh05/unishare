@@ -183,8 +183,10 @@ export const apiCall = async (endpoint, options = {}) => {
   }
 
   // If we get here, all retries failed
-  if (process.env.NODE_ENV === 'development') {
-    console.error(`❌ API call failed [${endpoint}] after ${retries + 1} attempts:`, lastError.message);
+  // Removed console.error since we handle API errors with user-friendly popups
+  // Only log network/connection errors, not expected API responses
+  if (process.env.NODE_ENV === 'development' && lastError.status >= 500) {
+    console.error(`❌ Server error [${endpoint}]:`, lastError.message);
   }
   
   throw lastError;
