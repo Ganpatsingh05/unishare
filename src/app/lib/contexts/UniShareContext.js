@@ -440,10 +440,19 @@ export const UniShareProvider = ({ children }) => {
     }
   }, [state.darkMode]);
   
-  // Initialize authentication on app load
+  // Initialize app with loading sequence
   useEffect(() => {
-    const initializeAuth = async () => {
+    const initializeApp = async () => {
       try {
+        // Check if this is first visit
+        const isFirstVisit = !localStorage.getItem('uniShareVisited');
+        
+        if (isFirstVisit) {
+          dispatch({ type: ActionTypes.START_INITIAL_LOADING });
+          // Mark as visited
+          localStorage.setItem('uniShareVisited', 'true');
+        }
+        
         dispatch({ type: ActionTypes.SET_AUTH_LOADING, payload: true });
         
         const { authenticated, user } = await checkAuthStatus();
@@ -461,7 +470,7 @@ export const UniShareProvider = ({ children }) => {
       }
     };
     
-    initializeAuth();
+    initializeApp();
   }, []);
 
   // Load notifications when user is authenticated
@@ -859,6 +868,9 @@ export const useUI = () => {
     logoRotation: context.logoRotation,
     navigationLoading: context.navigationLoading,
     navigationMessage: context.navigationMessage,
+    initialLoading: context.initialLoading,
+    initialMessage: context.initialMessage,
+    appReady: context.appReady,
     setDarkMode: context.setDarkMode,
     toggleDarkMode: context.toggleDarkMode,
     setMobileMenu: context.setMobileMenu,
@@ -874,6 +886,10 @@ export const useUI = () => {
     showApiLoading: context.showApiLoading,
     showUploadLoading: context.showUploadLoading,
     showAuthLoading: context.showAuthLoading,
+    setInitialLoading: context.setInitialLoading,
+    setInitialMessage: context.setInitialMessage,
+    setAppReady: context.setAppReady,
+    startInitialLoading: context.startInitialLoading,
   };
 };
 
