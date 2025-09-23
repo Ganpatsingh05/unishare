@@ -18,6 +18,9 @@ export const getProfileImageUrl = (userProfile, user) => {
   }
 
   // First priority: Custom profile image from user profile
+  if (userProfile?.profile_picture && typeof userProfile.profile_picture === 'string') {
+    return userProfile.profile_picture;
+  }
   if (userProfile?.profile_image_url && typeof userProfile.profile_image_url === 'string') {
     return userProfile.profile_image_url;
   }

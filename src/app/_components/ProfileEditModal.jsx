@@ -415,14 +415,14 @@ const ProfileEditModal = ({
               value={formData.bio}
               onChange={(e) => handleInputChange('bio', e.target.value)}
               placeholder="Tell people about yourself..."
-              maxLength={500}
+              maxLength={100}
               rows={4}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
               disabled={isLoading}
             />
             <div className="flex justify-between items-center">
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                {formData.bio.length}/500 characters
+                {formData.bio.length}/100 characters
               </p>
               {errors.bio && (
                 <p className="text-red-500 text-sm">{errors.bio}</p>

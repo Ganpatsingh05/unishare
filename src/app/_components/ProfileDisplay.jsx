@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { User, Edit3, AtSign, Calendar, MapPin } from 'lucide-react';
 import { formatProfileData } from '../lib/utils/profileUtils';
+import { useAuth, useUI, useUniShare } from '../lib/contexts/UniShareContext';
 
 const ProfileDisplay = ({ 
   userProfile, 
@@ -20,6 +21,7 @@ const ProfileDisplay = ({
   });
 
   useEffect(() => {
+    const {darkmode} = useUI();
     if (user) {
       const formattedData = formatProfileData(userProfile, user);
       setDisplayData(formattedData);
@@ -40,7 +42,9 @@ const ProfileDisplay = ({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
+    <div className={`sticky top-0 z-50 w-full overflow-x-clip overflow-y-visible transition-all duration-300 backdrop-blur-md ${
+      darkMode ? 'bg-transparent shadow-gray-900/10' : 'bg-transparent shadow-orange-200/20'
+    }`}>
       {/* Header with Edit Button */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
