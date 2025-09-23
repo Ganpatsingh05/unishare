@@ -282,7 +282,7 @@ const Header = ({ logoRotation = 0 }) => {
               <div className="relative hidden md:block">
                 <button 
                   onClick={handleProfileMenuToggle}
-                  className={`overflow-hidden rounded-xl border-2 shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95 cursor-pointer inline-block ${
+                  className={`overflow-hidden rounded-4xl border-3 shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95 cursor-pointer inline-block ${
                     darkMode 
                       ? 'border-gray-600 hover:border-yellow-300 hover:shadow-yellow-300/20' 
                       : 'border-gray-300 hover:border-blue-500 hover:shadow-blue-500/20'
