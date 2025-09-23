@@ -6,7 +6,7 @@ import { useAuth, useUI, useMessages } from '../../lib/contexts/UniShareContext'
 
 export default function AuthProtectedRoomForm() {
   const { isAuthenticated, user, authLoading, userAvatar, userInitials } = useAuth();
-  const { darkMode, toggleDarkMode } = useUI();
+  const { darkMode, toggleDarkMode, showFormLoading, stopNavigationLoading } = useUI();
   const { setError, setSuccess, showTemporaryMessage, loading, setLoading } = useMessages();
 
   const [form, setForm] = useState({
@@ -64,7 +64,8 @@ export default function AuthProtectedRoomForm() {
       return;
     }
 
-    setLoading(true);
+    // Show custom navigation loader
+    showFormLoading('Posting your room listing...');
 
     const formData = new FormData();
     formData.append('title', form.title);
@@ -112,7 +113,7 @@ export default function AuthProtectedRoomForm() {
       console.error(err);
       setError(err instanceof Error ? err.message : 'An error occurred while posting the room');
     } finally {
-      setLoading(false);
+      stopNavigationLoading();
     }
   };
 

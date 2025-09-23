@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { checkAuthStatus, logout as apiLogout } from '../api';
 
 // =============================================================================
@@ -47,6 +47,15 @@ const ActionTypes = {
   SET_SEARCH_VALUE: 'SET_SEARCH_VALUE',
   SET_SEARCH_FOCUSED: 'SET_SEARCH_FOCUSED',
   
+  // Navigation Loading
+  SET_NAVIGATION_LOADING: 'SET_NAVIGATION_LOADING',
+  SET_NAVIGATION_MESSAGE: 'SET_NAVIGATION_MESSAGE',
+  
+  // Initial App Loading
+  SET_INITIAL_LOADING: 'SET_INITIAL_LOADING',
+  SET_INITIAL_MESSAGE: 'SET_INITIAL_MESSAGE',
+  SET_APP_READY: 'SET_APP_READY',
+  
   // Profile data
   SET_USER_ROOMS: 'SET_USER_ROOMS',
   SET_USER_ITEMS: 'SET_USER_ITEMS',
@@ -73,6 +82,15 @@ const initialState = {
   mobileMenuOpen: false,
   searchValue: '',
   searchFocused: false,
+  
+  // Navigation Loading
+  navigationLoading: false,
+  navigationMessage: 'Loading...',
+  
+  // Initial App Loading
+  initialLoading: true,
+  initialMessage: 'Initializing UniShare...',
+  appReady: false,
   
   // Notifications
   notifications: [
@@ -206,6 +224,21 @@ const uniShareReducer = (state, action) => {
       
     case ActionTypes.SET_SEARCH_FOCUSED:
       return { ...state, searchFocused: action.payload };
+      
+    case ActionTypes.SET_NAVIGATION_LOADING:
+      return { ...state, navigationLoading: action.payload };
+      
+    case ActionTypes.SET_NAVIGATION_MESSAGE:
+      return { ...state, navigationMessage: action.payload };
+      
+    case ActionTypes.SET_INITIAL_LOADING:
+      return { ...state, initialLoading: action.payload };
+      
+    case ActionTypes.SET_INITIAL_MESSAGE:
+      return { ...state, initialMessage: action.payload };
+      
+    case ActionTypes.SET_APP_READY:
+      return { ...state, appReady: action.payload, initialLoading: false };
       
     case ActionTypes.SET_USER_ROOMS:
       return { ...state, userRooms: action.payload };
@@ -567,6 +600,63 @@ export const UniShareProvider = ({ children }) => {
       dispatch({ type: ActionTypes.SET_LOADING, payload: loading });
     },
     
+    // Navigation Loading actions (memoized to prevent infinite re-renders)
+    setNavigationLoading: useCallback((loading) => {
+      dispatch({ type: ActionTypes.SET_NAVIGATION_LOADING, payload: loading });
+    }, [dispatch]),
+    
+    setNavigationMessage: useCallback((message) => {
+      dispatch({ type: ActionTypes.SET_NAVIGATION_MESSAGE, payload: message });
+    }, [dispatch]),
+    
+    startNavigationLoading: useCallback((message = 'Loading...') => {
+      dispatch({ type: ActionTypes.SET_NAVIGATION_MESSAGE, payload: message });
+      dispatch({ type: ActionTypes.SET_NAVIGATION_LOADING, payload: true });
+    }, [dispatch]),
+    
+    stopNavigationLoading: useCallback(() => {
+      dispatch({ type: ActionTypes.SET_NAVIGATION_LOADING, payload: false });
+    }, [dispatch]),
+    
+    // Enhanced loading helpers for different contexts
+    showFormLoading: useCallback((message = 'Processing...') => {
+      dispatch({ type: ActionTypes.SET_NAVIGATION_MESSAGE, payload: message });
+      dispatch({ type: ActionTypes.SET_NAVIGATION_LOADING, payload: true });
+    }, [dispatch]),
+    
+    showApiLoading: useCallback((message = 'Connecting to server...') => {
+      dispatch({ type: ActionTypes.SET_NAVIGATION_MESSAGE, payload: message });
+      dispatch({ type: ActionTypes.SET_NAVIGATION_LOADING, payload: true });
+    }, [dispatch]),
+    
+    showUploadLoading: useCallback((message = 'Uploading files...') => {
+      dispatch({ type: ActionTypes.SET_NAVIGATION_MESSAGE, payload: message });
+      dispatch({ type: ActionTypes.SET_NAVIGATION_LOADING, payload: true });
+    }, [dispatch]),
+    
+    showAuthLoading: useCallback((message = 'Authenticating...') => {
+      dispatch({ type: ActionTypes.SET_NAVIGATION_MESSAGE, payload: message });
+      dispatch({ type: ActionTypes.SET_NAVIGATION_LOADING, payload: true });
+    }, [dispatch]),
+    
+    // Initial App Loading actions
+    setInitialLoading: useCallback((loading) => {
+      dispatch({ type: ActionTypes.SET_INITIAL_LOADING, payload: loading });
+    }, [dispatch]),
+    
+    setInitialMessage: useCallback((message) => {
+      dispatch({ type: ActionTypes.SET_INITIAL_MESSAGE, payload: message });
+    }, [dispatch]),
+    
+    setAppReady: useCallback(() => {
+      dispatch({ type: ActionTypes.SET_APP_READY, payload: true });
+    }, [dispatch]),
+    
+    startInitialLoading: useCallback(() => {
+      dispatch({ type: ActionTypes.SET_INITIAL_LOADING, payload: true });
+      dispatch({ type: ActionTypes.SET_APP_READY, payload: false });
+    }, [dispatch]),
+    
     // User data actions
     setUserRooms: (rooms) => {
       dispatch({ type: ActionTypes.SET_USER_ROOMS, payload: rooms });
@@ -766,14 +856,24 @@ export const useUI = () => {
     mobileMenuOpen: context.mobileMenuOpen,
     searchValue: context.searchValue,
     searchFocused: context.searchFocused,
-    logoRotation: context.logoRotation, 
+    logoRotation: context.logoRotation,
+    navigationLoading: context.navigationLoading,
+    navigationMessage: context.navigationMessage,
     setDarkMode: context.setDarkMode,
     toggleDarkMode: context.toggleDarkMode,
     setMobileMenu: context.setMobileMenu,
     toggleMobileMenu: context.toggleMobileMenu,
     setSearchValue: context.setSearchValue,
     setSearchFocused: context.setSearchFocused,
-    setLogoRotation: context.setLogoRotation, 
+    setLogoRotation: context.setLogoRotation,
+    setNavigationLoading: context.setNavigationLoading,
+    setNavigationMessage: context.setNavigationMessage,
+    startNavigationLoading: context.startNavigationLoading,
+    stopNavigationLoading: context.stopNavigationLoading,
+    showFormLoading: context.showFormLoading,
+    showApiLoading: context.showApiLoading,
+    showUploadLoading: context.showUploadLoading,
+    showAuthLoading: context.showAuthLoading,
   };
 };
 
