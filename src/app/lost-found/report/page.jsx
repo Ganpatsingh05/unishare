@@ -5,12 +5,13 @@ import Footer from "../../_components/Footer";
 import { Calendar, Clock, MapPin, Image as ImageIcon, Phone, Instagram, Mail, Link2, Plus, Trash2 } from "lucide-react";
 import { createLostFoundItem } from "../../lib/api";
 import { useAuth } from "../../lib/contexts/UniShareContext";
-import { useMessages } from "../../lib/contexts/UniShareContext";
+import { useMessages, useUI } from "../../lib/contexts/UniShareContext";
 import { useRouter } from "next/navigation";
 
 export default function ReportLostFoundPage() {
   const { user, isAuthenticated } = useAuth();
   const { showTemporaryMessage } = useMessages();
+  const { showFormLoading, stopNavigationLoading } = useUI();
   const router = useRouter();
   
   const [darkMode, setDarkMode] = useState(true);
@@ -132,7 +133,8 @@ export default function ReportLostFoundPage() {
       return;
     }
 
-    setLoading(true);
+    // Show custom loading for lost/found item submission
+    showFormLoading(mode === 'lost' ? 'Reporting lost item...' : 'Reporting found item...');
 
     try {
       const itemData = {
@@ -168,7 +170,7 @@ export default function ReportLostFoundPage() {
       console.error('❌ Error submitting report:', error);
       showTemporaryMessage(error.message || 'Failed to submit report. Please try again.', 'error');
     } finally {
-      setLoading(false);
+      stopNavigationLoading();
     }
   };
 

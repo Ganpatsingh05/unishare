@@ -37,7 +37,7 @@ export default function MarketplaceSellPage() {
   const router = useRouter();
   const { isAuthenticated, authLoading, user } = useAuth();
   const { error, success, loading, setError, clearError, setSuccess, clearSuccess, setLoading, showTemporaryMessage } = useMessages();
-  const { darkMode, toggleDarkMode } = useUI();
+  const { darkMode, toggleDarkMode, showFormLoading, stopNavigationLoading } = useUI();
   const { addUserItem } = useUserData();
   
   // Form state
@@ -150,7 +150,8 @@ export default function MarketplaceSellPage() {
       return;
     }
 
-    setLoading(true);
+    // Show custom navigation loader for form submission
+    showFormLoading('Creating your item listing...');
     clearError();
     clearSuccess();
 
@@ -211,7 +212,7 @@ export default function MarketplaceSellPage() {
     } catch (error) {
       setError(error.message);
     } finally {
-      setLoading(false);
+      stopNavigationLoading();
     }
   };
 

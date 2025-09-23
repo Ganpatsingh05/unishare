@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import CookieConsent from "./_components/CookieConsent";
 import RouteChangeOverlay from "./_components/RouteChangeOverlay";
+import NavigationLoader from "./_components/NavigationLoader";
 import { UniShareProvider } from "./lib/contexts/UniShareContext";
 import ThemeWrapper from "./_components/ThemeWrapper";
 import SiteChrome from "./_components/SiteChrome";
@@ -27,6 +28,7 @@ export default function RootLayout({ children }) {
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning={true}>
         <UniShareProvider>
           <ThemeWrapper>
+            <NavigationLoader />
             <SiteChrome>
               {children}
             </SiteChrome>

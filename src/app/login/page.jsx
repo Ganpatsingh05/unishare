@@ -12,7 +12,7 @@ const LoginPage = () => {
   const [showOwlMessage, setShowOwlMessage] = useState(false);
   const [currentOwlMessage, setCurrentOwlMessage] = useState('');
   const [authMessage, setAuthMessage] = useState('');
-  const { darkMode } = useUI();
+  const { darkMode, showAuthLoading, stopNavigationLoading } = useUI();
   const { isAuthenticated, user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -51,13 +51,23 @@ const LoginPage = () => {
   }, [isAuthenticated, user, router, searchParams]);
 
   const handleGoogleLogin = () => {
+    // Show authentication loading
+    showAuthLoading('Connecting to Google...');
+    
     // Add redirect parameter if present
     const redirect = searchParams.get('redirect');
     if (redirect) {
       // Store redirect in sessionStorage for after OAuth
       sessionStorage.setItem('oauth_redirect', redirect);
     }
-    startGoogleLogin();
+    
+    // Start OAuth flow
+    try {
+      startGoogleLogin();
+    } catch (error) {
+      console.error('Login error:', error);
+      stopNavigationLoading();
+    }
   };
 
   const handleOwlClick = () => {
