@@ -326,7 +326,7 @@ const FloatingActionButton = ({ darkMode }) => {
               <span className="text-sm font-medium whitespace-nowrap">Feedback</span>
             </div>
             <button
-              onClick={() => router.push('/info/help')}
+              onClick={() => router.push('/info/feedback')}
               className={`w-12 h-12 rounded-full shadow-lg transition-all duration-200 transform hover:scale-110 flex items-center justify-center ${
                 darkMode 
                   ? 'bg-green-600 hover:bg-green-700 text-white' 
