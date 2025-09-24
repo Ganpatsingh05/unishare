@@ -24,7 +24,7 @@ import HeroSlider from "./_components/HeroSlider";
 import Footer from "./_components/Footer";
 import FloatingActionButton from "./_components/FloatingActionButton";
 import { useUI } from "./lib/contexts/UniShareContext";
-import ParticlesBackground from "./_components/ParticlesBackground";
+// Particles background removed
 
 /**
  * Page component with interactive hero section and enhanced scroll effects
@@ -49,8 +49,7 @@ export default function Page() {
   const mainRef = useRef(null);
   const transitionRef = useRef(null);
 
-  // Client-only particle state
-  const [particles, setParticles] = useState([]);
+  // Removed particles state
 
   // Static main quote
   const mainQuote = "Where Students Connect, Share, and Thrive Together";
@@ -142,16 +141,7 @@ export default function Page() {
 
     window.addEventListener("scroll", onScroll, { passive: true });
 
-    // Generate enhanced particles
-    const p = Array.from({ length: 20 }).map((_, i) => ({
-      id: i,
-      top: `${Math.random() * 100}%`,
-      left: `${Math.random() * 100}%`,
-      size: `${Math.random() * 4 + 2}px`,
-      opacity: `${Math.random() * 0.3 + 0.1}`,
-      delay: `${Math.random() * 5}s`,
-    }));
-    setParticles(p);
+    // Removed particle generation
 
     // Initial scroll position check
     onScroll();
@@ -304,8 +294,7 @@ export default function Page() {
   return (
       <div className="min-h-screen relative">
 
-      {/* Interactive Particles Background */}
-      <ParticlesBackground darkMode={darkMode} />
+  {/* Particles background removed */}
 
       <div className="relative z-10">
       {/* SLIDER SECTION (replacing previous hero) */}

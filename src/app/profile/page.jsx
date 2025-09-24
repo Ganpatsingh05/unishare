@@ -459,8 +459,8 @@ const ProfilePage = () => {
             {/* Profile Image with Edit Button */}
             <div className="flex flex-col items-center md:items-start">
               <div className="relative group">
-                <div className="w-32 h-32 rounded-2xl overflow-hidden bg-gradient-to-br from-purple-500 via-blue-500 to-green-500 p-1 shadow-xl">
-                  <div className={`w-full h-full rounded-xl overflow-hidden ${theme.profileImageBg} flex items-center justify-center`}>
+                <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-purple-500 via-blue-500 to-green-500 p-1 shadow-xl">
+                  <div className={`w-full h-full rounded-full overflow-hidden ${theme.profileImageBg} flex items-center justify-center`}>
                     {getProfileImageUrl(userProfile, user) ? (
                       <img
                         src={getProfileImageUrl(userProfile, user)}
