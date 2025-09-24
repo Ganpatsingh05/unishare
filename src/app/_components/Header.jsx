@@ -290,9 +290,7 @@ const Header = ({ logoRotation = 0 }) => {
                 >
                   <span className="sr-only">{isAuthenticated ? 'Profile' : 'Login'}</span>
                   <div className={`size-12 rounded-full flex items-center justify-center font-bold text-xl transition-all duration-300 overflow-hidden ${
-                    darkMode 
-                      ? isAuthenticated ? 'bg-gradient-to-br from-yellow-400 to-yellow-300 text-gray-900' : 'bg-gray-700 text-gray-300' 
-                      : isAuthenticated ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white' : 'bg-gray-200 text-gray-600'
+                    isAuthenticated ? 'bg-white text-gray-900' : (darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600')
                   }`}>
                     {(() => {
                       const profileImage = getProfileImageUrl(userProfile, user);
