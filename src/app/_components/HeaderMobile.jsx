@@ -3,17 +3,30 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import logoImage from '../assets/images/logounishare1.png';
-import { Search, Globe, Bell, Sun, Moon, User, LogOut, Menu, X, Settings, Camera, Edit3, Shield, HelpCircle, Info, ChevronRight } from 'lucide-react';
+import { Search, Globe, Bell, Sun, Moon, User, LogOut, Menu, X, Settings, Camera, Edit3, Shield, HelpCircle, Info, ChevronRight, ArrowLeft } from 'lucide-react';
 import { useAuth, useNotifications, useUI } from '../lib/contexts/UniShareContext';
 import { getProfileImageUrl, getUserInitials } from '../lib/utils/profileUtils';
 import { getCurrentUserProfile } from '../lib/api/userProfile';
 
 export default function HeaderMobile() {
   const router = useRouter();
+  const pathname = usePathname();
   const logoRef = useRef(null);
   const [userProfile, setUserProfile] = useState(null); // Add user profile state
+
+  // Check if we're on the home page
+  const isHomePage = pathname === '/';
+  
+  // Function to go back to previous page
+  const handleBackNavigation = () => {
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/');
+    }
+  };
 
   // Context hooks
   const { 
@@ -160,36 +173,82 @@ export default function HeaderMobile() {
   return (
     <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
       <div className="relative flex h-16 items-center justify-between">
-        {/* Logo left, name centered */}
-        <Link className="block group cursor-pointer z-10" href="/">
-          <span className="sr-only">UniShare Home</span>
-          <div className="flex items-center">
-            <div
-              ref={logoRef}
-              className="h-12 w-12 transform group-hover:scale-110"
-              style={{
-                transform: `scale(1) rotate(${logoRotation}deg)`,
-                transition: 'transform 120ms ease-out',
-                filter: darkMode ? 'drop-shadow(0 0 14px rgba(251, 191, 36, 0.25))' : 'drop-shadow(0 0 10px rgba(59, 130, 246, 0.2))'
-              }}
-            >
-              <Image
-                src={logoImage}
-                alt="UniShare Logo"
-                width={80}
-                height={80}
-                className="w-full h-full object-contain bg-transparent"
-                priority
-              />
+        {/* Left side - Back button when not on home page */}
+        {!isHomePage && (
+          <button
+            onClick={handleBackNavigation}
+            className={`p-3 rounded-xl border transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer group z-10 ${
+              darkMode 
+                ? 'border-gray-600 text-gray-200 hover:border-yellow-300 hover:bg-gray-800 hover:text-yellow-300' 
+                : 'border-gray-300 text-gray-700 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700'
+            }`}
+            title="Go back"
+          >
+            <ArrowLeft className="w-5 h-5 transition-all duration-300 group-hover:translate-x-[-1px]" />
+          </button>
+        )}
+
+        {/* Logo - positioned differently based on page */}
+        {isHomePage && (
+          <Link className="block group cursor-pointer z-10" href="/">
+            <span className="sr-only">UniShare Home</span>
+            <div className="flex items-center">
+              <div
+                ref={logoRef}
+                className="h-12 w-12 transform group-hover:scale-110"
+                style={{
+                  transform: `scale(1) rotate(${logoRotation}deg)`,
+                  transition: 'transform 120ms ease-out',
+                  filter: darkMode ? 'drop-shadow(0 0 14px rgba(251, 191, 36, 0.25))' : 'drop-shadow(0 0 10px rgba(59, 130, 246, 0.2))'
+                }}
+              >
+                <Image
+                  src={logoImage}
+                  alt="UniShare Logo"
+                  width={80}
+                  height={80}
+                  className="w-full h-full object-contain bg-transparent"
+                  priority
+                />
+              </div>
             </div>
-          </div>
-        </Link>
+          </Link>
+        )}
         
+        {/* Center - Brand name with logo when not on home page */}
         <div className="absolute left-0 right-0 mx-auto flex justify-center items-center h-16 pointer-events-none">
-          <span className="brand-wordmark font-bold text-xl whitespace-nowrap">
-            <span className="brand-uni">Uni</span>
-            <span className="brand-share">Share</span>
-          </span>
+          {!isHomePage ? (
+            <Link className="flex items-center gap-2 group cursor-pointer pointer-events-auto" href="/">
+              <span className="sr-only">UniShare Home</span>
+              <div
+                ref={!isHomePage ? logoRef : null}
+                className="h-8 w-8 transform group-hover:scale-110"
+                style={{
+                  transform: `scale(1) rotate(${logoRotation}deg)`,
+                  transition: 'transform 120ms ease-out',
+                  filter: darkMode ? 'drop-shadow(0 0 10px rgba(251, 191, 36, 0.2))' : 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.15))'
+                }}
+              >
+                <Image
+                  src={logoImage}
+                  alt="UniShare Logo"
+                  width={64}
+                  height={64}
+                  className="w-full h-full object-contain bg-transparent"
+                  priority
+                />
+              </div>
+              <span className="brand-wordmark font-bold text-lg whitespace-nowrap">
+                <span className="brand-uni">Uni</span>
+                <span className="brand-share">Share</span>
+              </span>
+            </Link>
+          ) : (
+            <span className="brand-wordmark font-bold text-xl whitespace-nowrap">
+              <span className="brand-uni">Uni</span>
+              <span className="brand-share">Share</span>
+            </span>
+          )}
         </div>
 
         {/* Hamburger with proper z-index to stay on top */}

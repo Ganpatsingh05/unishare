@@ -238,7 +238,7 @@ const uniShareReducer = (state, action) => {
       return { ...state, initialMessage: action.payload };
       
     case ActionTypes.SET_APP_READY:
-      return { ...state, appReady: action.payload, initialLoading: false };
+      return { ...state, appReady: action.payload };
       
     case ActionTypes.SET_USER_ROOMS:
       return { ...state, userRooms: action.payload };
@@ -444,13 +444,40 @@ export const UniShareProvider = ({ children }) => {
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        // Check if this is first visit
-        const isFirstVisit = !localStorage.getItem('uniShareVisited');
+        // Check if this is first visit in this browser session
+        const hasSeenLoader = sessionStorage.getItem('uniShareLoaderShown');
+        console.log('UniShare: sessionStorage check:', { 
+          hasSeenLoader, 
+          allSessionStorage: Object.keys(sessionStorage) 
+        });
         
-        if (isFirstVisit) {
-          dispatch({ type: ActionTypes.START_INITIAL_LOADING });
-          // Mark as visited
-          localStorage.setItem('uniShareVisited', 'true');
+        if (!hasSeenLoader) {
+          // Show loader for first time in this session
+          console.log('UniShare: First visit in session - showing loader');
+          // Ensure the loader state is set correctly
+          dispatch({ type: ActionTypes.SET_INITIAL_LOADING, payload: true });
+          dispatch({ type: ActionTypes.SET_APP_READY, payload: false });
+          
+          // Don't proceed with auth until loader is ready
+          // The loader component will handle setting sessionStorage and calling setAppReady
+          dispatch({ type: ActionTypes.SET_AUTH_LOADING, payload: true });
+          
+          // Do auth in background but don't finalize until loader is done
+          const { authenticated, user } = await checkAuthStatus();
+          
+          if (authenticated && user) {
+            dispatch({ type: ActionTypes.LOGIN_SUCCESS, payload: user });
+          } else {
+            dispatch({ type: ActionTypes.LOGOUT });
+          }
+          
+          // Don't call INITIALIZE_APP yet - let the loader component handle it
+          return;
+        } else {
+          // Skip loader, go directly to app ready state
+          console.log('UniShare: Already seen loader in session - skipping');
+          dispatch({ type: ActionTypes.SET_INITIAL_LOADING, payload: false });
+          dispatch({ type: ActionTypes.SET_APP_READY, payload: true });
         }
         
         dispatch({ type: ActionTypes.SET_AUTH_LOADING, payload: true });
@@ -466,7 +493,11 @@ export const UniShareProvider = ({ children }) => {
         console.error('Authentication initialization error:', error);
         dispatch({ type: ActionTypes.LOGOUT });
       } finally {
-        dispatch({ type: ActionTypes.INITIALIZE_APP });
+        // Only finalize if we're not showing the loader
+        const hasSeenLoader = sessionStorage.getItem('uniShareLoaderShown');
+        if (hasSeenLoader) {
+          dispatch({ type: ActionTypes.INITIALIZE_APP });
+        }
       }
     };
     
@@ -658,6 +689,7 @@ export const UniShareProvider = ({ children }) => {
     }, [dispatch]),
     
     setAppReady: useCallback(() => {
+      dispatch({ type: ActionTypes.SET_INITIAL_LOADING, payload: false });
       dispatch({ type: ActionTypes.SET_APP_READY, payload: true });
     }, [dispatch]),
     
