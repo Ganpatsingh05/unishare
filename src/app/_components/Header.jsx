@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import logoImage from '../assets/images/logounishare1.png'; 
-import { Search, Bell, Sun, Moon, User, LogOut, Settings, Menu, X } from 'lucide-react';
+import { Search, Bell, Sun, Moon, User, LogOut, Settings, Menu, X, ArrowLeft } from 'lucide-react';
 import NotificationPanel from './NotificationPanel';
 import HeaderMobile from './HeaderMobile';
 import { useUniShare, useAuth, useUI, useNotifications } from '../lib/contexts/UniShareContext';
@@ -14,12 +14,25 @@ import { getCurrentUserProfile } from '../lib/api/userProfile';
 
 const Header = ({ logoRotation = 0 }) => {
   const router = useRouter();
+  const pathname = usePathname();
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [userProfile, setUserProfile] = useState(null); // Add user profile state
   const [notifOpen, setNotifOpen] = useState(false);
   const [isNotificationActive, setIsNotificationActive] = useState(false);
   const [notifInlineOpen, setNotifInlineOpen] = useState(false);
   const [notifInlineFilter, setNotifInlineFilter] = useState('All');
+  
+  // Check if we're on the home page
+  const isHomePage = pathname === '/';
+  
+  // Function to go back to previous page
+  const handleBackNavigation = () => {
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/');
+    }
+  };
   
   // Use context hooks
   const { 
@@ -130,38 +143,58 @@ const Header = ({ logoRotation = 0 }) => {
       </div>
 
       {/* Desktop/Tablet header */}
-      <div className="hidden md:block mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-24 items-center justify-between">
-          
-          {/* Logo and Search Section */}
-          <div className="flex items-center gap-4 flex-1 py-2">
-            <Link className="block group cursor-pointer" href="/">
-              <span className="sr-only">UniShare Home</span>
-              <div className="flex items-center gap-3">
-                <div className="w-20 h-20 flex items-end justify-center overflow-visible pb-2">
-                  <div 
-                    className="h-16 w-16 transition-all duration-300 transform group-hover:scale-125 animate-float"
-                    style={{ 
-                      transform: `scale(1) rotate(${logoRotation}deg)`,
-                      filter: darkMode ? 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.3))' : 'drop-shadow(0 0 15px rgba(59, 130, 246, 0.2))'
-                    }}
-                  >
-                    <Image
-                      src={logoImage}
-                      alt="UniShare Logo"
-                      width={100}
-                      height={100}
-                      className="w-full h-full object-contain bg-transparent transition-all duration-300 group-hover:animate-pulse-glow"
-                      priority
-                    />
+      <div className="hidden md:block relative">
+        {/* Back Navigation Button - Extreme Left Position */}
+        {!isHomePage && (
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 z-50">
+            <button
+              onClick={handleBackNavigation}
+              className={`p-3 rounded-xl border-2 transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer group ${
+                darkMode 
+                  ? 'border-gray-600 text-gray-200 hover:border-yellow-300 hover:bg-gray-800 hover:text-yellow-300 hover:shadow-lg hover:shadow-yellow-300/20' 
+                  : 'border-gray-300 text-gray-700 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 hover:shadow-lg hover:shadow-blue-500/20'
+              }`}
+              title="Go back"
+            >
+              <ArrowLeft className="w-5 h-5 transition-all duration-300 group-hover:translate-x-[-2px]" />
+            </button>
+          </div>
+        )}
+        
+        {/* Main header content with original layout */}
+        <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-24 items-center justify-between">
+            
+            {/* Logo and Search Section */}
+            <div className="flex items-center gap-4 flex-1 py-2">
+              {/* Original Logo - Always show as before */}
+              <Link className="block group cursor-pointer" href="/">
+                <span className="sr-only">UniShare Home</span>
+                <div className="flex items-center gap-3">
+                  <div className="w-20 h-20 flex items-end justify-center overflow-visible pb-2">
+                    <div 
+                      className="h-16 w-16 transition-all duration-300 transform group-hover:scale-125 animate-float"
+                      style={{ 
+                        transform: `scale(1) rotate(${logoRotation}deg)`,
+                        filter: darkMode ? 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.3))' : 'drop-shadow(0 0 15px rgba(59, 130, 246, 0.2))'
+                      }}
+                    >
+                      <Image
+                        src={logoImage}
+                        alt="UniShare Logo"
+                        width={100}
+                        height={100}
+                        className="w-full h-full object-contain bg-transparent transition-all duration-300 group-hover:animate-pulse-glow"
+                        priority
+                      />
+                    </div>
                   </div>
+                  <span className="brand-wordmark font-bold text-2xl transition-all duration-300 group-hover:opacity-90 whitespace-nowrap">
+                    <span className="brand-uni">Uni</span>
+                    <span className="brand-share">Share</span>
+                  </span>
                 </div>
-                <span className="brand-wordmark font-bold text-2xl transition-all duration-300 group-hover:opacity-90 whitespace-nowrap">
-                  <span className="brand-uni">Uni</span>
-                  <span className="brand-share">Share</span>
-                </span>
-              </div>
-            </Link>
+              </Link>
             
             {/* Enhanced Search Bar */}
             <div className="hidden md:flex items-center relative flex-1 max-w-2xl mx-4">
@@ -416,6 +449,7 @@ const Header = ({ logoRotation = 0 }) => {
             {/* Mobile menu items can be added here using similar pattern */}
           </ul>
         </div>
+      </div>
       </div>
       
       {/* Notification Panel Portal */}

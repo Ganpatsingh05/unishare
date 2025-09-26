@@ -26,12 +26,18 @@ import {
 
 const InitialAppLoader = () => {
   const { initialLoading, initialMessage, appReady, darkMode, setInitialMessage, setAppReady } = useUI();
+  
+  // Debug log to track loader state
+  console.log('InitialAppLoader state:', { initialLoading, appReady });
+  console.log('InitialAppLoader will render:', !initialLoading || appReady ? 'NO' : 'YES');
+  
   const [progress, setProgress] = useState(0);
   const [currentStage, setCurrentStage] = useState(0);
   const [loadingComplete, setLoadingComplete] = useState(false);
   const [floatingElements, setFloatingElements] = useState([]);
   const [showConfetti, setShowConfetti] = useState(false);
   const [confettiPieces, setConfettiPieces] = useState([]);
+  const [loaderStarted, setLoaderStarted] = useState(false);
   const containerRef = useRef(null);
   const logoControls = useAnimation();
 
@@ -93,21 +99,38 @@ const InitialAppLoader = () => {
     setFloatingElements(elements);
   }, []);
 
+  // Ensure logo controls are ready before starting animations
+  useEffect(() => {
+    if (containerRef.current && logoControls) {
+      console.log('Logo controls are ready');
+    }
+  }, [logoControls]);
+
   // Campus loading sequence
   useEffect(() => {
-    if (!initialLoading || appReady) return;
+    // Only start if initialLoading is true, appReady is false, and we haven't started yet
+    if (!initialLoading || appReady || loaderStarted) return;
+
+    console.log('Starting loader sequence...');
+    setLoaderStarted(true);
 
     const runCampusLoading = async () => {
-      // Small delay to ensure component is fully mounted
-      await new Promise(resolve => setTimeout(resolve, 100));
+      console.log('Starting campus loading sequence...');
       
-      // Initial logo animation - only start if controls are available
-      if (logoControls) {
-        logoControls.start({
-          scale: [0.5, 1.1, 1],
-          rotate: [0, 5, -5, 0],
-          transition: { duration: 1.2, ease: "easeOut" }
-        });
+      // Longer delay to ensure component is fully mounted and controls are ready
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Initial logo animation - only start if controls are available and component is mounted
+      try {
+        if (logoControls && containerRef.current) {
+          await logoControls.start({
+            scale: [0.5, 1.1, 1],
+            rotate: [0, 5, -5, 0],
+            transition: { duration: 1.2, ease: "easeOut" }
+          });
+        }
+      } catch (error) {
+        console.log('Logo controls not ready yet, continuing without animation');
       }
 
       for (let i = 0; i < loadingStages.length; i++) {
@@ -128,12 +151,16 @@ const InitialAppLoader = () => {
           await new Promise(resolve => setTimeout(resolve, stepDuration));
         }
 
-        // Logo bounce for each stage - only if controls are available
-        if (logoControls) {
-          logoControls.start({
-            scale: [1, 1.1, 1],
-            transition: { duration: 0.3 }
-          });
+        // Logo bounce for each stage - only if controls are available and component is mounted
+        try {
+          if (logoControls && containerRef.current) {
+            await logoControls.start({
+              scale: [1, 1.1, 1],
+              transition: { duration: 0.3 }
+            });
+          }
+        } catch (error) {
+          console.log('Logo bounce animation error:', error);
         }
       }
       
@@ -152,12 +179,17 @@ const InitialAppLoader = () => {
       
       setTimeout(() => {
         setShowConfetti(false);
-        setTimeout(() => setAppReady(), 400);
+        setTimeout(() => {
+          console.log('Loader completing - setting sessionStorage and calling setAppReady');
+          // Mark loader as shown in this session
+          sessionStorage.setItem('uniShareLoaderShown', 'true');
+          setAppReady();
+        }, 400);
       }, 2000);
     };
 
     runCampusLoading();
-  }, [initialLoading, appReady, setInitialMessage, setAppReady, logoControls]);
+  }, [initialLoading, appReady, loaderStarted, setInitialMessage, setAppReady, logoControls]);
 
   if (!initialLoading || appReady) return null;
 
