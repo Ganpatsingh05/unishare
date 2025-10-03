@@ -83,7 +83,7 @@ const Footer = () => {
     { name: 'Facebook', href: 'https://facebook.com/unishare', icon: Facebook, color: 'hover:bg-blue-600' },
     { name: 'Twitter', href: 'https://twitter.com/unishare', icon: Twitter, color: 'hover:bg-blue-400' },
     { name: 'Instagram', href: 'https://instagram.com/unishare', icon: Instagram, color: 'hover:bg-pink-600' },
-    { name: 'LinkedIn', href: 'https://linkedin.com/company/unishare', icon: Linkedin, color: 'hover:bg-blue-700' },
+      { name: 'LinkedIn', href: 'https://www.linkedin.com/company/unishare-community/', icon: Linkedin, color: 'hover:bg-blue-700' },
     { name: 'YouTube', href: 'https://youtube.com/unishare', icon: Youtube, color: 'hover:bg-red-600' }
   ];
 
