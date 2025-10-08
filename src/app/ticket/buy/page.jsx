@@ -28,6 +28,7 @@ import {
   Music
 } from "lucide-react";
 import Link from "next/link";
+import useIsMobile from "../../_components/useIsMobile";
 import { fetchTickets } from "../../lib/api";
 import { 
   useAuth, 
@@ -39,6 +40,7 @@ export default function TicketBuyPage() {
   const { isAuthenticated, user } = useAuth();
   const { error, success, loading, setError, clearError, setLoading } = useMessages();
   const { darkMode, toggleDarkMode, searchValue, setSearchValue } = useUI();
+  const isMobile = useIsMobile();
 
   // Local state
   const [tickets, setTickets] = useState([]);
@@ -335,59 +337,61 @@ export default function TicketBuyPage() {
 
   return (
     <>
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10">
-        <div className={`glass-card rounded-2xl shadow-xl p-4 sm:p-6 backdrop-blur-sm`}>
+      <main className={`${isMobile ? 'px-4 py-5' : 'max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10'}`}>
+        <div className={`rounded-xl border ${isMobile ? 'p-4' : 'p-4 sm:p-6'} backdrop-blur-sm ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white/95 border-slate-200'}`}>
           
           {/* Header */}
-          <div className="flex items-center justify-between gap-3 flex-wrap mb-6">
+          <div className={`flex items-center justify-between gap-4 ${isMobile ? 'mb-5' : 'mb-6'}`}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center">
-                <Ticket className="w-6 h-6 text-white" />
+              <div className={`${isMobile ? 'w-9 h-9' : 'w-10 h-10'} rounded-xl bg-blue-500 flex items-center justify-center`}>
+                <Ticket className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} text-white`} />
               </div>
               <div>
-                <h2 className={`text-xl sm:text-2xl font-semibold ${titleClr}`}>Buy Tickets</h2>
-                <p className={`text-sm ${subClr}`}>Events, travel seats, and other listings</p>
+                <h2 className={`${isMobile ? 'text-lg' : 'text-xl sm:text-2xl'} font-semibold ${titleClr}`}>Buy Tickets</h2>
+                <p className={`text-sm ${subClr}`}>Events, travel & more</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className={`flex items-center gap-2 ${isMobile ? '' : 'gap-3'}`}>
               {isAuthenticated && (
                 <Link 
                   href="/ticket/sell"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg"
+                  className={`inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium transition-colors ${
+                    isMobile ? 'px-3 py-2 text-sm' : 'px-4 py-2.5'
+                  }`}
                 >
-                  <Plus className="w-4 h-4" /> Sell Tickets
+                  <Plus className="w-4 h-4" /> {isMobile ? 'Sell' : 'Sell Tickets'}
                 </Link>
               )}
               <button 
                 onClick={handleReset} 
-                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${darkMode ? 'border-gray-800 text-gray-300 hover:bg-gray-900' : 'border-gray-200 text-gray-700 hover:bg-gray-100'}`}
+                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${darkMode ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'border-slate-300 text-slate-600 hover:bg-slate-50'}`}
               >
-                <SlidersHorizontal className="w-4 h-4" /> Reset
+                <SlidersHorizontal className="w-4 h-4" /> {isMobile ? '' : 'Reset'}
               </button>
             </div>
           </div>
 
           {/* Search */}
-          <div className="mb-6">
-            <div className="relative max-w-md">
-              <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <div className={`${isMobile ? 'mb-4' : 'mb-6'}`}>
+            <div className="relative">
+              <Search className={`w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`} />
               <input 
                 value={searchValue} 
                 onChange={(e) => setSearchValue(e.target.value)} 
                 placeholder="Search events, venues..." 
-                className={`w-full pl-10 pr-4 py-3 rounded-lg border shadow-sm ${inputStyles} focus:outline-none focus:ring-2 transition-colors`} 
+                className={`w-full pl-10 pr-4 ${isMobile ? 'py-3' : 'py-3'} rounded-lg border transition-colors ${darkMode ? 'bg-slate-800 border-slate-700 text-slate-100 placeholder-slate-400 focus:border-blue-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-500 focus:border-blue-500'} focus:outline-none focus:ring-2 focus:ring-blue-500/20`} 
               />
             </div>
           </div>
 
           {/* Filters */}
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
+          <div className={`grid ${isMobile ? 'grid-cols-2 gap-3' : 'grid-cols-2 md:grid-cols-6 gap-3'} ${isMobile ? 'mb-4' : 'mb-6'}`}>
             <div>
-              <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Category</label>
+              <label className={`block text-xs font-medium mb-2 ${labelClr}`}>Category</label>
               <select 
                 value={category} 
                 onChange={(e) => setCategory(e.target.value)} 
-                className={`w-full px-3 py-2.5 rounded-lg border ${inputStyles}`}
+                className={`w-full px-3 ${isMobile ? 'py-2.5' : 'py-2.5'} rounded-lg border transition-colors ${darkMode ? 'bg-slate-800 border-slate-700 text-slate-100' : 'bg-white border-slate-300 text-slate-900'} focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500`}
               >
                 <option value="all">All</option>
                 <option value="event">Event</option>
@@ -396,11 +400,11 @@ export default function TicketBuyPage() {
               </select>
             </div>
             <div>
-              <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Event Type</label>
+              <label className={`block text-xs font-medium mb-2 ${labelClr}`}>Event Type</label>
               <select 
                 value={eventType} 
                 onChange={(e) => setEventType(e.target.value)} 
-                className={`w-full px-3 py-2.5 rounded-lg border ${inputStyles}`}
+                className={`w-full px-3 ${isMobile ? 'py-2.5' : 'py-2.5'} rounded-lg border transition-colors ${darkMode ? 'bg-slate-800 border-slate-700 text-slate-100' : 'bg-white border-slate-300 text-slate-900'} focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500`}
               >
                 <option value="all">All Types</option>
                 <option value="concert">Concerts</option>
@@ -411,62 +415,99 @@ export default function TicketBuyPage() {
                 <option value="other">Other</option>
               </select>
             </div>
-            <div>
-              <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Price Range</label>
-              <select 
-                value={priceRange} 
-                onChange={(e) => setPriceRange(e.target.value)} 
-                className={`w-full px-3 py-2.5 rounded-lg border ${inputStyles}`}
-              >
-                <option value="all">All Prices</option>
-                <option value="0-500">Under ₹500</option>
-                <option value="500-1500">₹500 - ₹1500</option>
-                <option value="1500-5000">₹1500 - ₹5000</option>
-                <option value="5000+">Above ₹5000</option>
-              </select>
-            </div>
-            <div>
-              <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Date Range</label>
-              <select 
-                value={dateRange} 
-                onChange={(e) => setDateRange(e.target.value)} 
-                className={`w-full px-3 py-2.5 rounded-lg border ${inputStyles}`}
-              >
-                <option value="all">Any Time</option>
-                <option value="this-week">This Week</option>
-                <option value="this-month">This Month</option>
-                <option value="next-month">Next Month</option>
-              </select>
-            </div>
-            <div>
-              <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Location</label>
-              <div className="relative">
-                <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input 
-                  value={location} 
-                  onChange={(e) => setLocation(e.target.value)} 
-                  placeholder="City" 
-                  className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputStyles}`} 
-                />
+            {!isMobile && (
+              <>
+                <div>
+                  <label className={`block text-xs font-medium mb-2 ${labelClr}`}>Price Range</label>
+                  <select 
+                    value={priceRange} 
+                    onChange={(e) => setPriceRange(e.target.value)} 
+                    className={`w-full px-3 py-2.5 rounded-lg border transition-colors ${darkMode ? 'bg-slate-800 border-slate-700 text-slate-100' : 'bg-white border-slate-300 text-slate-900'} focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500`}
+                  >
+                    <option value="all">All Prices</option>
+                    <option value="0-500">Under ₹500</option>
+                    <option value="500-1500">₹500 - ₹1500</option>
+                    <option value="1500-5000">₹1500 - ₹5000</option>
+                    <option value="5000+">Above ₹5000</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={`block text-xs font-medium mb-2 ${labelClr}`}>Date Range</label>
+                  <select 
+                    value={dateRange} 
+                    onChange={(e) => setDateRange(e.target.value)} 
+                    className={`w-full px-3 py-2.5 rounded-lg border transition-colors ${darkMode ? 'bg-slate-800 border-slate-700 text-slate-100' : 'bg-white border-slate-300 text-slate-900'} focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500`}
+                  >
+                    <option value="all">Any Time</option>
+                    <option value="this-week">This Week</option>
+                    <option value="this-month">This Month</option>
+                    <option value="next-month">Next Month</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={`block text-xs font-medium mb-2 ${labelClr}`}>Location</label>
+                  <div className="relative">
+                    <MapPin className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+                    <input 
+                      value={location} 
+                      onChange={(e) => setLocation(e.target.value)} 
+                      placeholder="City" 
+                      className={`w-full pl-9 pr-3 py-2.5 rounded-lg border transition-colors ${darkMode ? 'bg-slate-800 border-slate-700 text-slate-100 placeholder-slate-400' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-500'} focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500`} 
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className={`block text-xs font-medium mb-2 ${labelClr}`}>Sort by</label>
+                  <div className="relative">
+                    <ArrowUpDown className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+                    <select 
+                      value={sort} 
+                      onChange={(e) => setSort(e.target.value)} 
+                      className={`w-full pl-9 pr-3 py-2.5 rounded-lg border transition-colors ${darkMode ? 'bg-slate-800 border-slate-700 text-slate-100' : 'bg-white border-slate-300 text-slate-900'} focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500`}
+                    >
+                      <option value="recent">Most Recent</option>
+                      <option value="price-asc">Price: Low to High</option>
+                      <option value="price-desc">Price: High to Low</option>
+                      <option value="date">Event Date</option>
+                    </select>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Mobile-only additional filters */}
+          {isMobile && (
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              <div>
+                <label className={`block text-xs font-medium mb-2 ${labelClr}`}>Price</label>
+                <select 
+                  value={priceRange} 
+                  onChange={(e) => setPriceRange(e.target.value)} 
+                  className={`w-full px-3 py-2.5 rounded-lg border transition-colors ${darkMode ? 'bg-slate-800 border-slate-700 text-slate-100' : 'bg-white border-slate-300 text-slate-900'} focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500`}
+                >
+                  <option value="all">All</option>
+                  <option value="0-500">₹0-500</option>
+                  <option value="500-1500">₹500-1.5K</option>
+                  <option value="1500-5000">₹1.5K-5K</option>
+                  <option value="5000+">₹5K+</option>
+                </select>
               </div>
-            </div>
-            <div>
-              <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Sort by</label>
-              <div className="relative">
-                <ArrowUpDown className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <div>
+                <label className={`block text-xs font-medium mb-2 ${labelClr}`}>Sort</label>
                 <select 
                   value={sort} 
                   onChange={(e) => setSort(e.target.value)} 
-                  className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputStyles}`}
+                  className={`w-full px-3 py-2.5 rounded-lg border transition-colors ${darkMode ? 'bg-slate-800 border-slate-700 text-slate-100' : 'bg-white border-slate-300 text-slate-900'} focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500`}
                 >
-                  <option value="recent">Most Recent</option>
-                  <option value="price-asc">Price: Low to High</option>
-                  <option value="price-desc">Price: High to Low</option>
-                  <option value="date">Event Date</option>
+                  <option value="recent">Latest</option>
+                  <option value="price-asc">Price ↑</option>
+                  <option value="price-desc">Price ↓</option>
+                  <option value="date">Date</option>
                 </select>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Error Message */}
           {error && (
@@ -499,16 +540,24 @@ export default function TicketBuyPage() {
                 </p>
               </div>
 
-              {/* Tickets grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {/* Tickets grid - Mobile vs Desktop */}
+              <div className={`grid gap-4 ${
+                isMobile 
+                  ? 'grid-cols-2' 
+                  : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+              }`}>
                 {tickets.length === 0 && !error && (
-                  <div className={`col-span-full text-center py-12 ${subClr}`}>
-                    <Ticket className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                    <h3 className="text-lg font-medium mb-2">No tickets found</h3>
+                  <div className={`col-span-full text-center py-12 ${
+                    darkMode ? 'text-slate-400' : 'text-slate-500'
+                  }`}>
+                    <Ticket className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <h3 className={`text-lg font-medium mb-2 ${
+                      darkMode ? 'text-slate-300' : 'text-slate-700'
+                    }`}>No tickets found</h3>
                     <p className="mb-4">Try adjusting your filters or search terms</p>
                     <button 
                       onClick={handleReset}
-                      className="text-blue-500 hover:text-blue-600 font-medium"
+                      className="text-blue-500 hover:text-blue-600 font-medium transition-colors"
                     >
                       Clear all filters
                     </button>
@@ -521,12 +570,21 @@ export default function TicketBuyPage() {
                   return (
                     <div 
                       key={ticket.id} 
-                      className={`group rounded-xl border p-4 cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${cardBg}`} 
+                      className={`group rounded-lg border cursor-pointer transition-all hover:shadow-md ${
+                        isMobile 
+                          ? 'p-3 hover:scale-[1.01]' 
+                          : 'p-4 hover:scale-[1.02]'
+                      } ${darkMode 
+                        ? 'bg-slate-800 border-slate-700 hover:shadow-slate-700/20' 
+                        : 'bg-white border-slate-200 hover:shadow-slate-200/60'
+                      }`} 
                       onClick={() => setSelectedTicket(ticket)}
                     >
                       <div className="space-y-3">
                         {/* Event image/icon */}
-                        <div className={`w-full h-40 rounded-lg flex items-center justify-center overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
+                        <div className={`w-full rounded-lg flex items-center justify-center overflow-hidden ${
+                          isMobile ? 'h-24' : 'h-40'
+                        } ${darkMode ? 'bg-slate-900' : 'bg-slate-100'}`}>
                           {ticket.image_url ? (
                             <img 
                               src={ticket.image_url} 
@@ -535,47 +593,73 @@ export default function TicketBuyPage() {
                             />
                           ) : (
                             <div className="text-center">
-                              <EventIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                              <p className={`text-xs ${subClr} capitalize`}>{cat}</p>
+                              <EventIcon className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} ${
+                                darkMode ? 'text-slate-500' : 'text-slate-400'
+                              } mx-auto mb-2`} />
+                              <p className={`text-xs capitalize ${
+                                darkMode ? 'text-slate-400' : 'text-slate-500'
+                              }`}>{cat}</p>
                             </div>
                           )}
                         </div>
 
                         {/* Event details */}
-                        <div>
-                          <h3 className={`font-semibold ${titleClr} line-clamp-2 mb-2`}>{ticket.title}</h3>
+                        <div className={isMobile ? 'space-y-2' : 'space-y-2'}>
+                          <h3 className={`font-semibold line-clamp-2 ${
+                            isMobile ? 'text-sm leading-tight' : 'text-base'
+                          } ${darkMode ? 'text-slate-100' : 'text-slate-900'}`}>
+                            {ticket.title}
+                          </h3>
                           
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-1 text-emerald-500 font-bold text-lg">
-                              <IndianRupee size={18} />
+                          <div className="flex items-center justify-between">
+                            <div className={`flex items-center gap-1 text-green-600 font-bold ${
+                              isMobile ? 'text-sm' : 'text-lg'
+                            }`}>
+                              <IndianRupee size={isMobile ? 14 : 18} />
                               {ticket.price}
                             </div>
-                            <div className="flex items-center gap-1">
-                              <span className={`px-2 py-1 rounded-full text-xs capitalize ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>{cat}</span>
-                              {cat === 'event' && (
-                                <span className={`hidden sm:inline px-2 py-1 rounded-full text-xs capitalize ${darkMode ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-700'}`}>{ticket.event_type}</span>
-                              )}
-                            </div>
+                            {!isMobile && (
+                              <div className="flex items-center gap-1">
+                                <span className={`px-2 py-1 rounded-full text-xs capitalize ${
+                                  darkMode ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700'
+                                }`}>{cat}</span>
+                                {cat === 'event' && (
+                                  <span className={`hidden sm:inline px-2 py-1 rounded-full text-xs capitalize ${
+                                    darkMode ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-700'
+                                  }`}>{ticket.event_type}</span>
+                                )}
+                              </div>
+                            )}
                           </div>
 
-                          <div className={`flex items-center gap-4 text-xs ${subClr} mb-3`}>
+                          <div className={`flex items-center text-xs ${
+                            isMobile ? 'justify-between gap-1' : 'gap-4'
+                          } ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                             <span className="flex items-center gap-1">
-                              <MapPin size={12} />
-                              {ticket.location}
+                              <MapPin size={10} />
+                              {isMobile ? ticket.location.split(' ')[0] : ticket.location}
                             </span>
                             <span className="flex items-center gap-1">
-                              <Ticket size={12} />
+                              <Ticket size={10} />
                               {ticket.quantity_available} left
                             </span>
                           </div>
 
-                          <div className={`text-xs ${subClr} mb-3`}>
-                            <p className="font-medium">{formatEventDate(ticket.event_date)}</p>
-                            <p>{formatDate(ticket.event_date)}</p>
+                          <div className={`text-xs ${isMobile ? 'space-y-1' : 'mb-3'} ${
+                            darkMode ? 'text-slate-400' : 'text-slate-500'
+                          }`}>
+                            <p className={`${isMobile ? 'font-medium text-blue-500' : 'font-medium'}`}>
+                              {formatEventDate(ticket.event_date)}
+                            </p>
+                            {!isMobile && (
+                              <p>{formatDate(ticket.event_date)}</p>
+                            )}
                           </div>
 
-                          <button className="w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg group-hover:scale-[1.02]">
-                            View Details
+                          <button className={`w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg group-hover:scale-[1.02] ${
+                            isMobile ? 'py-1.5 px-2 text-xs' : 'py-2.5 px-4'
+                          }`}>
+                            {isMobile ? 'View' : 'View Details'}
                           </button>
                         </div>
                       </div>

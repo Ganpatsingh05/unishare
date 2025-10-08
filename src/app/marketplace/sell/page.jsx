@@ -32,6 +32,7 @@ import {
 } from "../../lib/contexts/UniShareContext";
 import Footer from "../../_components/Footer";
 import SmallFooter from "../../_components/SmallFooter";
+import useIsMobile from "../../_components/useIsMobile";
 
 export default function MarketplaceSellPage() {
   const router = useRouter();
@@ -39,6 +40,7 @@ export default function MarketplaceSellPage() {
   const { error, success, loading, setError, clearError, setSuccess, clearSuccess, setLoading, showTemporaryMessage } = useMessages();
   const { darkMode, toggleDarkMode, showFormLoading, stopNavigationLoading } = useUI();
   const { addUserItem } = useUserData();
+  const isMobile = useIsMobile();
   
   // Form state
   const [title, setTitle] = useState("");
@@ -254,7 +256,7 @@ export default function MarketplaceSellPage() {
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <Loader className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-500" />
-            <p>Loading...</p>
+            <p className={titleClr}>Loading...</p>
           </div>
         </div>
       </div>
@@ -265,44 +267,29 @@ export default function MarketplaceSellPage() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen">
-        {/* Header */}
-        <div className="sticky top-0 z-40 backdrop-blur-md border-b">
-          <div className={`${darkMode ? 'bg-gray-900/80 border-gray-800' : 'bg-white/80 border-gray-200'}`}>
-            <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Link 
-                  href="/" 
-                  className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </Link>
-                <h1 className={`text-xl font-bold ${titleClr}`}>Sell Item</h1>
-              </div>
-              <button
-                onClick={toggleDarkMode}
-                className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}
-              >
-                {darkMode ? '☀️' : '🌙'}
-              </button>
+        <main className={`${isMobile ? 'px-3 py-4' : 'max-w-3xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10'}`}>
+          <div className={`rounded-2xl border shadow-xl ${isMobile ? 'p-6' : 'p-8'} text-center ${cardBg} backdrop-blur-sm`}>
+            <div className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} mx-auto mb-6 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center`}>
+              <AlertCircle className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'} text-orange-500`} />
             </div>
-          </div>
-        </div>
-
-        <main className="max-w-3xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10">
-          <div className={`rounded-2xl border shadow-xl p-8 text-center ${cardBg} backdrop-blur-sm`}>
-            <div className="w-20 h-20 mx-auto mb-6 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center">
-              <AlertCircle className="w-10 h-10 text-orange-500" />
-            </div>
-            <h2 className={`text-2xl font-bold mb-4 ${titleClr}`}>Login Required</h2>
-            <p className={`mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold mb-4 ${titleClr}`}>Login Required</h2>
+            <p className={`mb-6 ${isMobile ? 'text-sm' : ''} ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               You need to be logged in to create item listings and start selling.
             </p>
-            <Link 
-              href="/login"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 font-medium transition-all shadow-md hover:shadow-lg"
-            >
-              Go to Login
-            </Link>
+            <div className={`flex gap-3 ${isMobile ? 'flex-col' : 'flex-row justify-center'}`}>
+              <Link 
+                href="/login"
+                className={`inline-flex items-center ${isMobile ? 'justify-center' : ''} gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 font-medium transition-all shadow-md hover:shadow-lg ${isMobile ? 'py-3 px-4 text-sm' : 'px-6 py-3'}`}
+              >
+                Go to Login
+              </Link>
+              <Link 
+                href="/marketplace/buy"
+                className={`inline-flex items-center ${isMobile ? 'justify-center' : ''} gap-2 border rounded-lg font-medium transition-all ${isMobile ? 'py-3 px-4 text-sm' : 'px-6 py-3'} ${darkMode ? 'border-gray-700 text-gray-300 hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+              >
+                Browse Items
+              </Link>
+            </div>
           </div>
         </main>
       </div>
@@ -313,10 +300,10 @@ export default function MarketplaceSellPage() {
     <div className="min-h-screen">
       
 
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10">
-        <div className={`rounded-2xl border shadow-xl p-4 sm:p-6 ${cardBg} backdrop-blur-sm`}>
+      <main className={`${isMobile ? 'px-3 py-4' : 'max-w-3xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10'}`}>
+        <div className={`rounded-2xl border shadow-xl ${isMobile ? 'p-3 sm:p-4' : 'p-4 sm:p-6'} ${cardBg} backdrop-blur-sm`}>
           <div className="mb-6">
-            <h2 className={`text-xl sm:text-2xl font-semibold ${titleClr} mb-2`}>Create Item Listing</h2>
+            <h2 className={`${isMobile ? 'text-lg sm:text-xl' : 'text-xl sm:text-2xl'} font-semibold ${titleClr} mb-2`}>Create Item Listing</h2>
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               Fill out the details below to list your item for sale
             </p>

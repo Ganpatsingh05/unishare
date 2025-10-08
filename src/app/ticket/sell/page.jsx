@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import useIsMobile from "../../_components/useIsMobile";
 import { fetchMyTickets, deleteTicket, createTicket, updateTicket, formatContactInfo } from "../../lib/api";
 import { 
   useAuth, 
@@ -40,6 +41,7 @@ export default function TicketSellPage() {
   const { isAuthenticated, user } = useAuth();
   const { error, success, loading, setError, clearError, setLoading, showTemporaryMessage } = useMessages();
   const { darkMode } = useUI();
+  const isMobile = useIsMobile();
 
   // Local state
   const [myTickets, setMyTickets] = useState([]);
@@ -209,54 +211,70 @@ export default function TicketSellPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen pt-20 pb-16">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <div className={`p-8 rounded-2xl ${cardBg} border backdrop-blur-sm`}>
-            <Ticket className={`w-16 h-16 mx-auto mb-4 ${titleClr}`} />
-            <h2 className={`text-2xl font-bold mb-4 ${titleClr}`}>Login Required</h2>
-            <p className={`mb-6 ${subClr}`}>
-              You need to be logged in to sell tickets
+      <div className="min-h-screen">
+        <main className={`${isMobile ? 'px-3 py-4' : 'max-w-4xl mx-auto px-4 py-6 sm:py-10'} text-center`}>
+          <div className={`${isMobile ? 'p-6' : 'p-8'} rounded-2xl ${cardBg} border backdrop-blur-sm shadow-xl`}>
+            <Ticket className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} mx-auto mb-4 ${titleClr}`} />
+            <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold mb-4 ${titleClr}`}>Login Required</h2>
+            <p className={`mb-6 ${isMobile ? 'text-sm' : ''} ${subClr}`}>
+              You need to be logged in to sell tickets and manage your listings
             </p>
-            <Link 
-              href="/login"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all"
-            >
-              Login to Continue
-            </Link>
+            <div className={`flex gap-3 ${isMobile ? 'flex-col' : 'flex-row justify-center'}`}>
+              <Link 
+                href="/login"
+                className={`inline-flex items-center ${isMobile ? 'justify-center' : ''} gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all shadow-md hover:shadow-lg ${isMobile ? 'py-3 px-4 text-sm' : 'px-6 py-3'}`}
+              >
+                Login to Continue
+              </Link>
+              <Link 
+                href="/ticket/buy"
+                className={`inline-flex items-center ${isMobile ? 'justify-center' : ''} gap-2 border rounded-lg font-medium transition-all ${isMobile ? 'py-3 px-4 text-sm' : 'px-6 py-3'} ${darkMode ? 'border-gray-700 text-gray-300 hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+              >
+                Browse Tickets
+              </Link>
+            </div>
           </div>
-        </div>
+        </main>
       </div>
     );
   }
 
   return (
     <>
-      <div className="min-h-screen pt-20 pb-16">
-        <div className="max-w-6xl mx-auto px-4">
+      <div className="min-h-screen">
+        <div className={`${isMobile ? 'px-3 py-4' : 'max-w-6xl mx-auto px-4 py-6 sm:py-10'}`}>
           {/* Header */}
-          <div className={`mb-8 p-6 rounded-2xl ${cardBg} border backdrop-blur-sm`}>
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className={`mb-6 ${isMobile ? 'p-4' : 'p-6'} rounded-lg border backdrop-blur-sm ${
+            darkMode 
+              ? 'bg-slate-900/90 border-slate-800' 
+              : 'bg-white/95 border-slate-200'
+          }`}>
+            <div className={`flex ${isMobile ? 'flex-col' : 'flex-col sm:flex-row'} justify-between items-start sm:items-center gap-4`}>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
-                  <Tag className="w-6 h-6 text-white" />
+                <div className={`${isMobile ? 'w-9 h-9' : 'w-10 h-10'} rounded-lg bg-purple-500 flex items-center justify-center`}>
+                  <Tag className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} text-white`} />
                 </div>
                 <div>
-                  <h2 className={`text-xl sm:text-2xl font-semibold ${titleClr}`}>Sell Event Tickets</h2>
-                  <p className={`text-sm ${subClr}`}>Create listings and manage your ticket sales</p>
+                  <h2 className={`${isMobile ? 'text-lg' : 'text-xl sm:text-2xl'} font-semibold ${
+                    darkMode ? 'text-slate-100' : 'text-slate-900'
+                  }`}>Sell Event Tickets</h2>
+                  <p className={`text-sm ${
+                    darkMode ? 'text-slate-400' : 'text-slate-600'
+                  }`}>Create listings and manage your ticket sales</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className={`flex items-center gap-3 ${isMobile ? 'w-full justify-between' : ''}`}>
                 <button 
                   onClick={() => setShowCreateForm(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg"
+                  className={`inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors ${isMobile ? 'px-3 py-2 text-sm' : 'px-4 py-2.5'}`}
                 >
-                  <Plus className="w-4 h-4" /> Create Listing
+                  <Plus className="w-4 h-4" /> {isMobile ? 'Create' : 'Create Listing'}
                 </button>
                 <Link 
                   href="/ticket/buy"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg"
+                  className={`inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors ${isMobile ? 'px-3 py-2 text-sm' : 'px-4 py-2.5'}`}
                 >
-                  <ShoppingCart className="w-4 h-4" /> Browse Tickets
+                  <ShoppingCart className="w-4 h-4" /> {isMobile ? 'Browse' : 'Browse Tickets'}
                 </Link>
               </div>
             </div>
@@ -287,35 +305,43 @@ export default function TicketSellPage() {
           ) : (
             <>
               {/* Stats Overview */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className={`grid ${isMobile ? 'grid-cols-3' : 'grid-cols-1 md:grid-cols-3'} gap-4 mb-6`}>
                 {[
                   {
                     label: "Active Listings",
                     value: myTickets.filter(t => t.status === 'active').length,
-                    icon: <Ticket className="w-6 h-6" />,
-                    color: "from-blue-500 to-cyan-500"
+                    icon: <Ticket className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />,
+                    color: "text-blue-600"
                   },
                   {
                     label: "Total Views",
                     value: myTickets.reduce((sum, t) => sum + (t.views || 0), 0),
-                    icon: <Eye className="w-6 h-6" />,
-                    color: "from-green-500 to-emerald-500"
+                    icon: <Eye className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />,
+                    color: "text-green-600"
                   },
                   {
                     label: "Total Inquiries",
                     value: myTickets.reduce((sum, t) => sum + (t.inquiries || 0), 0),
-                    icon: <Users className="w-6 h-6" />,
-                    color: "from-purple-500 to-pink-500"
+                    icon: <Users className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />,
+                    color: "text-purple-600"
                   }
                 ].map((stat, index) => (
-                  <div key={index} className={`p-6 rounded-2xl ${cardBg} border backdrop-blur-sm`}>
-                    <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-2xl bg-gradient-to-r ${stat.color} flex items-center justify-center text-white`}>
+                  <div key={index} className={`${isMobile ? 'p-3' : 'p-4'} rounded-lg border ${
+                    darkMode 
+                      ? 'bg-slate-800 border-slate-700' 
+                      : 'bg-white border-slate-200'
+                  }`}>
+                    <div className={`flex items-center ${isMobile ? 'flex-col gap-2' : 'gap-3'}`}>
+                      <div className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'} rounded-lg ${stat.color} bg-opacity-10 flex items-center justify-center ${stat.color}`}>
                         {stat.icon}
                       </div>
-                      <div>
-                        <div className={`text-2xl font-bold ${titleClr}`}>{stat.value}</div>
-                        <div className={`text-sm ${subClr}`}>{stat.label}</div>
+                      <div className={isMobile ? 'text-center' : ''}>
+                        <div className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold ${
+                          darkMode ? 'text-slate-100' : 'text-slate-900'
+                        }`}>{stat.value}</div>
+                        <div className={`text-xs ${isMobile ? '' : 'text-sm'} ${
+                          darkMode ? 'text-slate-400' : 'text-slate-600'
+                        }`}>{isMobile ? stat.label.split(' ')[0] : stat.label}</div>
                       </div>
                     </div>
                   </div>
@@ -325,60 +351,60 @@ export default function TicketSellPage() {
               {/* My Tickets */}
               {myTickets.length === 0 ? (
                 <div className="text-center py-16">
-                  <Ticket className={`w-16 h-16 mx-auto mb-4 ${subClr}`} />
-                  <h3 className={`text-xl font-medium mb-2 ${titleClr}`}>No tickets listed yet</h3>
-                  <p className={`mb-6 ${subClr}`}>Create your first ticket listing to get started</p>
+                  <Ticket className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} mx-auto mb-4 ${subClr}`} />
+                  <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-medium mb-2 ${titleClr}`}>No tickets listed yet</h3>
+                  <p className={`mb-6 ${isMobile ? 'text-sm' : ''} ${subClr}`}>Create your first ticket listing to get started</p>
                   <button 
                     onClick={() => setShowCreateForm(true)}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg"
+                    className={`inline-flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg ${isMobile ? 'px-4 py-2.5 text-sm' : 'px-6 py-3'}`}
                   >
                     <Plus className="w-4 h-4" /> Create Your First Listing
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-1 lg:grid-cols-2 gap-6'}`}>
                   {myTickets.map((ticket) => (
-                    <div key={ticket.id} className={`p-6 rounded-2xl ${cardBg} border backdrop-blur-sm hover:shadow-lg transition-shadow`}>
+                    <div key={ticket.id} className={`${isMobile ? 'p-4' : 'p-6'} rounded-2xl ${cardBg} border backdrop-blur-sm hover:shadow-lg transition-shadow shadow-xl`}>
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <h3 className={`text-lg font-semibold ${titleClr}`}>{ticket.title}</h3>
+                            <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold ${titleClr} line-clamp-2`}>{ticket.title}</h3>
                             {getStatusBadge(ticket.status)}
                           </div>
-                          <div className="flex items-center gap-4 mb-3">
+                          <div className={`flex items-center ${isMobile ? 'gap-2' : 'gap-4'} mb-3`}>
                             <div className="flex items-center gap-1">
                               <IndianRupee className={`w-4 h-4 ${subClr}`} />
-                              <span className={`font-medium ${titleClr}`}>₹{ticket.price.toLocaleString()}</span>
+                              <span className={`font-medium ${titleClr} ${isMobile ? 'text-sm' : ''}`}>₹{ticket.price.toLocaleString()}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Calendar className={`w-4 h-4 ${subClr}`} />
-                              <span className={subClr}>{new Date(ticket.event_date).toLocaleDateString()}</span>
+                              <span className={`${subClr} ${isMobile ? 'text-xs' : ''}`}>{new Date(ticket.event_date).toLocaleDateString()}</span>
                             </div>
                           </div>
                           <div className="flex items-center gap-1 mb-2">
                             <MapPin className={`w-4 h-4 ${subClr}`} />
-                            <span className={subClr}>{ticket.venue}</span>
+                            <span className={`${subClr} ${isMobile ? 'text-xs' : ''} line-clamp-1`}>{ticket.venue}</span>
                           </div>
                         </div>
                       </div>
 
                       {/* Stats */}
-                      <div className="flex items-center gap-4 mb-4 text-sm">
+                      <div className={`flex items-center ${isMobile ? 'gap-3' : 'gap-4'} mb-4 text-sm`}>
                         <div className="flex items-center gap-1">
                           <Eye className={`w-4 h-4 ${subClr}`} />
-                          <span className={subClr}>{ticket.views || 0} views</span>
+                          <span className={`${subClr} ${isMobile ? 'text-xs' : ''}`}>{ticket.views || 0} views</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Users className={`w-4 h-4 ${subClr}`} />
-                          <span className={subClr}>{ticket.inquiries || 0} inquiries</span>
+                          <span className={`${subClr} ${isMobile ? 'text-xs' : ''}`}>{ticket.inquiries || 0} inquiries</span>
                         </div>
                       </div>
 
                       {/* Actions */}
-                      <div className="flex items-center gap-2">
+                      <div className={`flex items-center gap-2 ${isMobile ? 'flex-col' : ''}`}>
                         <button 
                           onClick={() => setEditingTicket(ticket)}
-                          className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                          className={`${isMobile ? 'w-full' : 'flex-1'} px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
                             darkMode 
                               ? 'border-gray-700 text-gray-300 hover:bg-gray-800' 
                               : 'border-gray-200 text-gray-700 hover:bg-gray-50'
@@ -390,7 +416,7 @@ export default function TicketSellPage() {
                         <button 
                           onClick={() => handleDeleteTicket(ticket.id)}
                           disabled={deletingTicket === ticket.id}
-                          className="px-3 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium transition-colors disabled:opacity-50"
+                          className={`${isMobile ? 'w-full' : ''} px-3 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium transition-colors disabled:opacity-50`}
                         >
                           {deletingTicket === ticket.id ? (
                             <Loader className="w-4 h-4 animate-spin inline mr-1" />

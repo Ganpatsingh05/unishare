@@ -281,18 +281,18 @@ export default function HeaderMobile() {
       >
         <div className={`flex flex-col h-full overflow-hidden ${darkMode ? 'bg-transparent' : 'bg-transparent'}`}>
           {/* Profile section */}
-          <div className={`px-6 py-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <div className={`px-4 py-5 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
             {authLoading ? (
-              <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 rounded-full bg-gray-300 animate-pulse"></div>
-                <div className="space-y-2 flex-1">
+              <div className="flex items-start space-x-3">
+                <div className="w-14 h-14 rounded-full bg-gray-300 animate-pulse flex-shrink-0"></div>
+                <div className="space-y-2 flex-1 min-w-0">
                   <div className="h-4 bg-gray-300 rounded w-3/4 animate-pulse"></div>
                   <div className="h-3 bg-gray-300 rounded w-1/2 animate-pulse"></div>
                 </div>
               </div>
             ) : isAuthenticated && user ? (
-              <div className="flex items-center space-x-4">
-                <div className="relative">
+              <div className="flex items-center space-x-3">
+                <div className="relative flex-shrink-0">
                   {(() => {
                     const profileImage = getProfileImageUrl(userProfile, user);
                     if (profileImage) {
@@ -300,7 +300,7 @@ export default function HeaderMobile() {
                         <img
                           src={profileImage}
                           alt="Profile"
-                          className="w-16 h-16 rounded-full object-cover ring-2 ring-offset-2 ring-offset-transparent ring-blue-500"
+                          className="w-14 h-14 rounded-full object-cover ring-2 ring-blue-500"
                           onError={(e) => {
                             // Fallback to initials if image fails to load
                             e.target.style.display = 'none';
@@ -312,8 +312,8 @@ export default function HeaderMobile() {
                     } else {
                       const initials = getUserInitials(user?.name || user?.displayName || user?.email || 'User');
                       return (
-                        <div className={`w-16 h-16 rounded-full flex items-center justify-center text-xl font-semibold ring-2 ring-offset-2 ring-offset-transparent ${
-                          darkMode ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 text-gray-900 ring-yellow-400' : 'bg-gradient-to-br from-blue-500 to-blue-700 text-white ring-blue-500'
+                        <div className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-semibold ring-2 ${
+                          darkMode ? 'bg-blue-600 text-white ring-blue-500' : 'bg-blue-600 text-white ring-blue-500'
                         }`}>
                           {initials}
                         </div>
@@ -322,8 +322,8 @@ export default function HeaderMobile() {
                   })()}
                   {/* Hidden fallback for failed image loads */}
                   <div 
-                    className={`w-16 h-16 rounded-full flex items-center justify-center text-xl font-semibold ring-2 ring-offset-2 ring-offset-transparent absolute top-0 left-0 ${
-                      darkMode ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 text-gray-900 ring-yellow-400' : 'bg-gradient-to-br from-blue-500 to-blue-700 text-white ring-blue-500'
+                    className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-semibold ring-2 absolute top-0 left-0 ${
+                      darkMode ? 'bg-blue-600 text-white ring-blue-500' : 'bg-blue-600 text-white ring-blue-500'
                     }`}
                     style={{ display: 'none' }}
                   >
@@ -331,16 +331,16 @@ export default function HeaderMobile() {
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className={`text-lg font-semibold truncate ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                  <h3 className={`text-base font-semibold truncate mb-1 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                     {user.name}
                   </h3>
-                  <p className={`text-sm truncate ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  <p className={`text-sm truncate mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                     {user.email}
                   </p>
                   <Link 
                     href="/profile"
                     onClick={closeMobileMenu}
-                    className={`mt-2 inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full border transition-colors ${
+                    className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md border transition-colors ${
                       darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'
                     }`}
                   >

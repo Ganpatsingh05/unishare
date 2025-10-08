@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import Footer from "../../_components/Footer";
 import SmallFooter from "../../_components/SmallFooter";
+import useIsMobile from "../../_components/useIsMobile";
 import { fetchMarketplaceItems } from "../../lib/api";
 import { 
   useUniShare, 
@@ -35,6 +36,7 @@ export default function MarketplaceBuyPage() {
   const { isAuthenticated, user } = useAuth();
   const { error, success, loading, setError, clearError, setLoading } = useMessages();
   const { darkMode, toggleDarkMode, searchValue, setSearchValue } = useUI();
+  const isMobile = useIsMobile();
 
   // Local state
   const [items, setItems] = useState([]);
@@ -272,20 +274,20 @@ export default function MarketplaceBuyPage() {
   return (
     <div className="min-h-screen">
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10">
-        <div className={`rounded-2xl border shadow-xl p-4 sm:p-6 ${darkMode ? 'bg-gray-950/60 border-gray-900' : 'bg-white/80 border-gray-200'} backdrop-blur-sm`}>
+      <main className={`${isMobile ? 'px-3 py-4' : 'max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10'}`}>
+        <div className={`rounded-2xl border shadow-xl ${isMobile ? 'p-3' : 'p-4 sm:p-6'} ${darkMode ? 'bg-gray-950/60 border-gray-900' : 'bg-white/80 border-gray-200'} backdrop-blur-sm`}>
           
           {/* Search and filters header */}
-          <div className="flex items-center justify-between gap-3 flex-wrap mb-6">
-            <h2 className={`text-xl sm:text-2xl font-semibold ${titleClr}`}>Browse Items</h2>
-            <div className="flex items-center gap-2">
-              <div className="relative">
+          <div className={`flex items-center justify-between gap-3 ${isMobile ? 'flex-col' : 'flex-wrap'} mb-6`}>
+            <h2 className={`${isMobile ? 'text-lg' : 'text-xl sm:text-2xl'} font-semibold ${titleClr}`}>Browse Items</h2>
+            <div className={`flex items-center gap-2 ${isMobile ? 'w-full' : ''}`}>
+              <div className="relative flex-1">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input 
                   value={searchValue} 
                   onChange={(e) => setSearchValue(e.target.value)} 
                   placeholder="Search items..." 
-                  className={`w-56 sm:w-64 pl-9 pr-3 py-2.5 rounded-lg border shadow-sm ${inputBg}`} 
+                  className={`${isMobile ? 'w-full' : 'w-56 sm:w-64'} pl-9 pr-3 py-2.5 rounded-lg border shadow-sm ${inputBg}`} 
                 />
               </div>
               <button 
@@ -298,13 +300,13 @@ export default function MarketplaceBuyPage() {
           </div>
 
           {/* Filters */}
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
-            <div className="col-span-1">
+          <div className={`grid ${isMobile ? 'grid-cols-2 gap-2' : 'grid-cols-2 md:grid-cols-6 gap-3'} mb-6`}>
+            <div className={`${isMobile ? 'col-span-1' : 'col-span-1'}`}>
               <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Category</label>
               <select 
                 value={category} 
                 onChange={(e) => setCategory(e.target.value)} 
-                className={`w-full px-3 py-2.5 rounded-lg border ${inputBg}`}
+                className={`w-full px-3 ${isMobile ? 'py-2' : 'py-2.5'} rounded-lg border ${inputBg}`}
               >
                 <option value="all">All Categories</option>
                 <option value="electronics">Electronics</option>
@@ -314,12 +316,12 @@ export default function MarketplaceBuyPage() {
                 <option value="other">Other</option>
               </select>
             </div>
-            <div className="col-span-1">
+            <div className={`${isMobile ? 'col-span-1' : 'col-span-1'}`}>
               <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Condition</label>
               <select 
                 value={condition} 
                 onChange={(e) => setCondition(e.target.value)} 
-                className={`w-full px-3 py-2.5 rounded-lg border ${inputBg}`}
+                className={`w-full px-3 ${isMobile ? 'py-2' : 'py-2.5'} rounded-lg border ${inputBg}`}
               >
                 <option value="all">All Conditions</option>
                 <option value="new">New</option>
@@ -329,58 +331,108 @@ export default function MarketplaceBuyPage() {
                 <option value="damaged">Damaged</option>
               </select>
             </div>
-            <div className="col-span-1">
-              <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Min Price</label>
-              <div className="relative">
-                <IndianRupee className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input 
-                  value={minPrice} 
-                  onChange={(e) => setMinPrice(e.target.value.replace(/[^0-9]/g, ''))} 
-                  placeholder="0" 
-                  className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`} 
-                />
+            {!isMobile && (
+              <>
+                <div className="col-span-1">
+                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Min Price</label>
+                  <div className="relative">
+                    <IndianRupee className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input 
+                      value={minPrice} 
+                      onChange={(e) => setMinPrice(e.target.value.replace(/[^0-9]/g, ''))} 
+                      placeholder="0" 
+                      className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`} 
+                    />
+                  </div>
+                </div>
+                <div className="col-span-1">
+                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Max Price</label>
+                  <div className="relative">
+                    <IndianRupee className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input 
+                      value={maxPrice} 
+                      onChange={(e) => setMaxPrice(e.target.value.replace(/[^0-9]/g, ''))} 
+                      placeholder="5000" 
+                      className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`} 
+                    />
+                  </div>
+                </div>
+                <div className="col-span-1">
+                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Location</label>
+                  <div className="relative">
+                    <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input 
+                      value={location} 
+                      onChange={(e) => setLocation(e.target.value)} 
+                      placeholder="Building / area" 
+                      className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`} 
+                    />
+                  </div>
+                </div>
+                <div className="col-span-1">
+                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Sort by</label>
+                  <div className="relative">
+                    <ArrowUpDown className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <select 
+                      value={sort} 
+                      onChange={(e) => setSort(e.target.value)} 
+                      className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`}
+                    >
+                      <option value="recent">Most Recent</option>
+                      <option value="price-asc">Price: Low to High</option>
+                      <option value="price-desc">Price: High to Low</option>
+                    </select>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Mobile-only additional filters row */}
+          {isMobile && (
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              <div>
+                <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Price Range</label>
+                <select 
+                  value={minPrice || maxPrice ? 'custom' : 'all'} 
+                  onChange={(e) => {
+                    if (e.target.value === 'all') {
+                      setMinPrice('');
+                      setMaxPrice('');
+                    } else if (e.target.value === '0-500') {
+                      setMinPrice('0');
+                      setMaxPrice('500');
+                    } else if (e.target.value === '500-2000') {
+                      setMinPrice('500');
+                      setMaxPrice('2000');
+                    } else if (e.target.value === '2000+') {
+                      setMinPrice('2000');
+                      setMaxPrice('');
+                    }
+                  }}
+                  className={`w-full px-3 py-2 rounded-lg border ${inputBg}`}
+                >
+                  <option value="all">All Prices</option>
+                  <option value="0-500">₹0 - ₹500</option>
+                  <option value="500-2000">₹500 - ₹2000</option>
+                  <option value="2000+">₹2000+</option>
+                  <option value="custom">Custom</option>
+                </select>
               </div>
-            </div>
-            <div className="col-span-1">
-              <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Max Price</label>
-              <div className="relative">
-                <IndianRupee className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input 
-                  value={maxPrice} 
-                  onChange={(e) => setMaxPrice(e.target.value.replace(/[^0-9]/g, ''))} 
-                  placeholder="5000" 
-                  className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`} 
-                />
-              </div>
-            </div>
-            <div className="col-span-1">
-              <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Location</label>
-              <div className="relative">
-                <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input 
-                  value={location} 
-                  onChange={(e) => setLocation(e.target.value)} 
-                  placeholder="Building / area" 
-                  className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`} 
-                />
-              </div>
-            </div>
-            <div className="col-span-1">
-              <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Sort by</label>
-              <div className="relative">
-                <ArrowUpDown className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <div>
+                <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Sort</label>
                 <select 
                   value={sort} 
                   onChange={(e) => setSort(e.target.value)} 
-                  className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`}
+                  className={`w-full px-3 py-2 rounded-lg border ${inputBg}`}
                 >
-                  <option value="recent">Most Recent</option>
-                  <option value="price-asc">Price: Low to High</option>
-                  <option value="price-desc">Price: High to Low</option>
+                  <option value="recent">Latest</option>
+                  <option value="price-asc">Price ↑</option>
+                  <option value="price-desc">Price ↓</option>
                 </select>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Error Message */}
           {error && (
@@ -413,8 +465,12 @@ export default function MarketplaceBuyPage() {
                 </p>
               </div>
 
-              {/* Items grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {/* Items grid - Mobile vs Desktop */}
+              <div className={`grid gap-4 ${
+                isMobile 
+                  ? 'grid-cols-2' 
+                  : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+              }`}>
                 {items.length === 0 && !error && (
                   <div className={`col-span-full text-center py-12 ${subClr}`}>
                     <ImageIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
@@ -432,12 +488,18 @@ export default function MarketplaceBuyPage() {
                 {items.map((item) => (
                   <div 
                     key={item.id} 
-                    className={`group rounded-xl border p-4 cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${cardBg}`} 
+                    className={`group rounded-xl border cursor-pointer transition-all hover:shadow-lg ${
+                      isMobile 
+                        ? 'p-2 hover:scale-[1.01]' 
+                        : 'p-4 hover:scale-[1.02]'
+                    } ${cardBg}`} 
                     onClick={() => setSelectedItem(item)}
                   >
                     <div className="space-y-3">
                       {/* Item image */}
-                     <div className={`w-full h-40 rounded-lg flex items-center justify-center overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
+                      <div className={`w-full rounded-lg flex items-center justify-center overflow-hidden ${
+                        isMobile ? 'h-24' : 'h-40'
+                      } ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
                         {item.image_url ? (
                           <img 
                             src={item.image_url} 
@@ -451,41 +513,60 @@ export default function MarketplaceBuyPage() {
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                           />
                         ) : (
-                          <ImageIcon className="w-12 h-12 text-gray-400" />
+                          <ImageIcon className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} text-gray-400`} />
                         )}
                       </div>
 
-
                       {/* Item details */}
-                      <div>
-                        <h3 className={`font-semibold ${titleClr} line-clamp-2 mb-2`}>{item.title}</h3>
+                      <div className={isMobile ? 'space-y-1.5' : 'space-y-2'}>
+                        <h3 className={`font-semibold ${titleClr} line-clamp-2 ${
+                          isMobile ? 'text-sm leading-tight' : 'text-base'
+                        }`}>
+                          {item.title}
+                        </h3>
                         
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-1 text-emerald-500 font-bold text-lg">
-                            <IndianRupee size={18} />
+                        <div className="flex items-center justify-between">
+                          <div className={`flex items-center gap-1 text-emerald-500 font-bold ${
+                            isMobile ? 'text-sm' : 'text-lg'
+                          }`}>
+                            <IndianRupee size={isMobile ? 14 : 18} />
                             {item.price}
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className={`px-2 py-1 rounded-full text-xs ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
-                              {item.category}
-                            </span>
-                          </div>
+                          {!isMobile && (
+                            <div className="flex items-center gap-2">
+                              <span className={`px-2 py-1 rounded-full text-xs ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
+                                {item.category}
+                              </span>
+                            </div>
+                          )}
                         </div>
 
-                        <div className={`flex items-center gap-4 text-xs ${subClr} mb-3`}>
+                        <div className={`flex items-center gap-2 text-xs ${subClr} ${
+                          isMobile ? 'justify-between' : 'gap-4'
+                        }`}>
                           <span className="flex items-center gap-1">
-                            <MapPin size={12} />
-                            {item.location}
+                            <MapPin size={10} />
+                            {isMobile ? item.location.split(' ')[0] : item.location}
                           </span>
-                          <span>{item.condition}</span>
+                          <span className={`${
+                            isMobile 
+                              ? 'px-1.5 py-0.5 rounded text-xs bg-gray-100 dark:bg-gray-800' 
+                              : ''
+                          }`}>
+                            {item.condition}
+                          </span>
                         </div>
 
-                        <div className={`text-xs ${subClr} mb-3`}>
-                          Posted {formatDate(item.created_at)}
-                        </div>
+                        {!isMobile && (
+                          <div className={`text-xs ${subClr}`}>
+                            Posted {formatDate(item.created_at)}
+                          </div>
+                        )}
 
-                        <button className="w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg group-hover:scale-[1.02]">
-                          View Details
+                        <button className={`w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg group-hover:scale-[1.02] ${
+                          isMobile ? 'py-1.5 px-2 text-xs' : 'py-2.5 px-4'
+                        }`}>
+                          {isMobile ? 'View' : 'View Details'}
                         </button>
                       </div>
                     </div>

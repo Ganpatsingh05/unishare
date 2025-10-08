@@ -364,6 +364,10 @@ export const prepareRoomFormData = (roomData, imageFiles = []) => {
     processedData.rent = processedData.price;
   }
   
+  // Handle existingImages separately to avoid JSON.stringify issues
+  const existingImages = processedData.existingImages;
+  delete processedData.existingImages;
+  
   // Add room data fields
   Object.keys(processedData).forEach(key => {
     if (processedData[key] !== null && processedData[key] !== undefined) {
@@ -374,6 +378,13 @@ export const prepareRoomFormData = (roomData, imageFiles = []) => {
       }
     }
   });
+  
+  // Add existing images as separate fields to avoid array literal issues
+  if (existingImages && Array.isArray(existingImages)) {
+    existingImages.forEach((imageUrl, index) => {
+      formData.append(`existingImages[${index}]`, imageUrl);
+    });
+  }
   
   // Add image files
   imageFiles.forEach((file, index) => {
