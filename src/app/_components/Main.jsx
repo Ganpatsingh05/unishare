@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Car, ShoppingCart, Tag, Search, Star, Home, Megaphone, BookOpen, Phone, Users, RotateCw, CheckCircle, Filter, TrendingUp, Zap, Ticket } from 'lucide-react';
 import Image from 'next/image';
 import logoImage from '../assets/images/logounishare1.png';
-import MobileMain from "./MobileMain.jsx";
+import MobileMain from "./mobilemain";
 
 // Animated Counter Component
 const AnimatedCounter = ({ end, duration = 2000, isVisible, suffix = "" }) => {
