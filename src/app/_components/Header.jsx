@@ -25,6 +25,9 @@ const Header = ({ logoRotation = 0 }) => {
   // Check if we're on the home page
   const isHomePage = pathname === '/';
   
+  // Check if we're on the profile page
+  const isProfilePage = pathname === '/profile';
+  
   // Function to go back to previous page
   const handleBackNavigation = () => {
     if (window.history.length > 1) {
@@ -131,9 +134,14 @@ const Header = ({ logoRotation = 0 }) => {
     setMobileMenu(false);
   };
 
+  // Hide header entirely on profile page
+  if (isProfilePage) {
+    return null;
+  }
+
   return (
-    <header className={`sticky top-0 z-50 w-full overflow-x-clip overflow-y-visible transition-all duration-300 backdrop-blur-md ${
-      darkMode ? 'bg-transparent shadow-gray-900/10' : 'bg-transparent shadow-orange-200/20'
+    <header className={`fixed top-0 z-50 w-full overflow-x-clip overflow-y-visible transition-all duration-300 backdrop-blur-md ${
+      darkMode ? 'bg-gray-900/80 shadow-gray-900/10' : 'bg-white/80 shadow-orange-200/20'
     }`}>
       {/* Mobile-only header */}
       <div className="md:hidden">
@@ -196,7 +204,7 @@ const Header = ({ logoRotation = 0 }) => {
                 </div>
               </Link>
             
-            {/* Enhanced Search Bar */}
+            {/* Search Bar - Always show instead of profile island */}
             <div className="hidden md:flex items-center relative flex-1 max-w-2xl mx-4">
               <div className={`absolute left-4 transition-all duration-300 z-10 ${
                 searchFocused || searchValue 

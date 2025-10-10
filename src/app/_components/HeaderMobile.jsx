@@ -14,6 +14,14 @@ export default function HeaderMobile() {
   const router = useRouter();
   const pathname = usePathname();
   const logoRef = useRef(null);
+
+  // Check if we're on the profile page
+  const isProfilePage = pathname === '/profile';
+  
+  // Hide header entirely on profile page
+  if (isProfilePage) {
+    return null;
+  }
   const [userProfile, setUserProfile] = useState(null); // Add user profile state
 
   // Check if we're on the home page
@@ -215,40 +223,33 @@ export default function HeaderMobile() {
           </Link>
         )}
         
-        {/* Center - Brand name with logo when not on home page */}
+        {/* Center - Brand name with logo on all pages */}
         <div className="absolute left-0 right-0 mx-auto flex justify-center items-center h-16 pointer-events-none">
-          {!isHomePage ? (
-            <Link className="flex items-center gap-2 group cursor-pointer pointer-events-auto" href="/">
-              <span className="sr-only">UniShare Home</span>
-              <div
-                ref={!isHomePage ? logoRef : null}
-                className="h-8 w-8 transform group-hover:scale-110"
-                style={{
-                  transform: `scale(1) rotate(${logoRotation}deg)`,
-                  transition: 'transform 120ms ease-out',
-                  filter: darkMode ? 'drop-shadow(0 0 10px rgba(251, 191, 36, 0.2))' : 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.15))'
-                }}
-              >
-                <Image
-                  src={logoImage}
-                  alt="UniShare Logo"
-                  width={64}
-                  height={64}
-                  className="w-full h-full object-contain bg-transparent"
-                  priority
-                />
-              </div>
-              <span className="brand-wordmark font-bold text-lg whitespace-nowrap">
-                <span className="brand-uni">Uni</span>
-                <span className="brand-share">Share</span>
-              </span>
-            </Link>
-          ) : (
-            <span className="brand-wordmark font-bold text-xl whitespace-nowrap">
+          <Link className="flex items-center gap-2 group cursor-pointer pointer-events-auto" href="/">
+            <span className="sr-only">UniShare Home</span>
+            <div
+              ref={!isHomePage ? logoRef : null}
+              className="h-8 w-8 transform group-hover:scale-110"
+              style={{
+                transform: `scale(1) rotate(${logoRotation}deg)`,
+                transition: 'transform 120ms ease-out',
+                filter: darkMode ? 'drop-shadow(0 0 10px rgba(251, 191, 36, 0.2))' : 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.15))'
+              }}
+            >
+              <Image
+                src={logoImage}
+                alt="UniShare Logo"
+                width={64}
+                height={64}
+                className="w-full h-full object-contain bg-transparent"
+                priority
+              />
+            </div>
+            <span className="brand-wordmark font-bold text-lg whitespace-nowrap">
               <span className="brand-uni">Uni</span>
               <span className="brand-share">Share</span>
             </span>
-          )}
+          </Link>
         </div>
 
         {/* Hamburger with proper z-index to stay on top */}

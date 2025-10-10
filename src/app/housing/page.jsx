@@ -35,7 +35,7 @@ export default function HousingHubPage() {
   return (
     <div className="min-h-screen">
 
-      <main className="px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <main className="px-4 sm:px-6 lg:px-8 py-8 sm:py-12" style={{ paddingTop: '120px' }}>
         <div className="mx-auto max-w-3xl">
           <header className="mb-6 sm:mb-8">
             <h1 className={`text-2xl sm:text-3xl font-bold tracking-tight ${titleClr}`}>Housing</h1>
