@@ -23,13 +23,8 @@ export default function SiteChrome({ children }) {
           <ClientHeader />
         </>
       )}
-      {/* Add spacing for fixed header and notice bar when not in admin mode */}
-      <div 
-        className={!isAdmin ? "pt-[calc(var(--notice-bar-height,0px)+6rem)]" : ""}
-        style={{
-          paddingTop: !isAdmin ? 'calc(var(--notice-bar-height, 0px) + 6rem)' : '0'
-        }}
-      >
+      {/* Content area - no padding needed since header now scrolls with page */}
+      <div>
         {children}
       </div>
     </>

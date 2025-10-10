@@ -19,7 +19,9 @@ import {
   Instagram,
   Shield,
   Star,
-  MapPin
+  MapPin,
+  Home,
+  Bed
 } from 'lucide-react';
 import { useUI } from '../lib/contexts/UniShareContext';
 
@@ -234,7 +236,7 @@ const RequestManager = ({
 
   const getItemPrice = (request) => {
     return request.item?.price || 
-           request.room?.price || 
+           request.room?.rent || 
            request.ticket?.price || 
            request.ride?.price || 
            null;
@@ -254,6 +256,35 @@ const RequestManager = ({
       return rideDateTime < now;
     } catch (error) {
       console.warn('Error parsing ride date/time:', error);
+      return false;
+    }
+  };
+
+  // Check if a room move-in date has passed
+  const isRoomMoveInPassed = (request) => {
+    if (module !== 'rooms') return false;
+    
+    // Check user's preferred move-in date from the request
+    const moveInDate = request.move_in_date || request.room?.move_in_date;
+    if (!moveInDate) return false;
+    
+    try {
+      const requestedDate = new Date(moveInDate);
+      const now = new Date();
+      // Set time to start of day for accurate comparison
+      requestedDate.setHours(0, 0, 0, 0);
+      now.setHours(0, 0, 0, 0);
+      
+      console.log('Move-in date check:', {
+        moveInDate,
+        requestedDate: requestedDate.toDateString(),
+        now: now.toDateString(),
+        isPassed: requestedDate < now
+      });
+      
+      return requestedDate < now;
+    } catch (error) {
+      console.warn('Error parsing room move-in date:', error);
       return false;
     }
   };
@@ -564,7 +595,7 @@ const RequestManager = ({
                           <div className="lg:col-span-2">
                             <h4 className={`text-lg font-semibold mb-4 ${theme.text} flex items-center gap-2`}>
                               <User className="w-5 h-5" />
-                              Seller Profile
+                              {module === 'rooms' ? 'Landlord Profile' : 'Seller Profile'}
                             </h4>
                             
                             <div className={`p-4 rounded-xl ${theme.bg} border ${theme.border}`}>
@@ -598,20 +629,10 @@ const RequestManager = ({
                                     <Mail className="w-4 h-4" />
                                     <span>{request.seller.email}</span>
                                   </div>
-                                  <div className="flex items-center gap-2">
-                                    <div className="flex items-center gap-1 text-yellow-500">
-                                      <Star className="w-4 h-4 fill-current" />
-                                      <Star className="w-4 h-4 fill-current" />
-                                      <Star className="w-4 h-4 fill-current" />
-                                      <Star className="w-4 h-4 fill-current" />
-                                      <Star className="w-4 h-4" />
-                                    </div>
-                                    <span className={`text-sm ${theme.textMuted}`}>4.2 rating</span>
-                                  </div>
                                 </div>
                               </div>
 
-                              {/* Item Information */}
+                              {/* Item/Room Information */}
                               {request.item && (
                                 <div className="space-y-3">
                                   <h6 className={`text-sm font-semibold ${theme.text} mb-2`}>Item Details:</h6>
@@ -648,6 +669,64 @@ const RequestManager = ({
                                   </div>
                                 </div>
                               )}
+
+                              {/* Room Information */}
+                              {request.room && (
+                                <div className="space-y-3">
+                                  <h6 className={`text-sm font-semibold ${theme.text} mb-2`}>Room Details:</h6>
+                                  <div className="grid grid-cols-1 gap-3">
+                                    <div className="flex items-center gap-3 p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20">
+                                      <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center">
+                                        <Home className="w-4 h-4 text-white" />
+                                      </div>
+                                      <div>
+                                        <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Room</p>
+                                        <p className={`font-semibold ${theme.text}`}>{request.room.title}</p>
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-3 p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                                      <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
+                                        <MapPin className="w-4 h-4 text-white" />
+                                      </div>
+                                      <div>
+                                        <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">Location</p>
+                                        <p className={`font-semibold ${theme.text}`}>{request.room.location}</p>
+                                      </div>
+                                    </div>
+
+                                    {request.room.beds && (
+                                      <div className="flex items-center gap-3 p-2 rounded-lg bg-purple-50 dark:bg-purple-900/20">
+                                        <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center">
+                                          <Bed className="w-4 h-4 text-white" />
+                                        </div>
+                                        <div>
+                                          <p className="text-xs text-purple-600 dark:text-purple-400 font-medium">Bedrooms</p>
+                                          <p className={`font-semibold ${theme.text}`}>{request.room.beds} bed{request.room.beds > 1 ? 's' : ''}</p>
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {request.room.move_in_date && (
+                                      <div className="flex items-center gap-3 p-2 rounded-lg bg-orange-50 dark:bg-orange-900/20">
+                                        <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center">
+                                          <Calendar className="w-4 h-4 text-white" />
+                                        </div>
+                                        <div>
+                                          <p className="text-xs text-orange-600 dark:text-orange-400 font-medium">Available From</p>
+                                          <p className={`font-semibold ${theme.text}`}>
+                                            {new Date(request.room.move_in_date).toLocaleDateString('en-IN', {
+                                              day: 'numeric',
+                                              month: 'short',
+                                              year: 'numeric'
+                                            })}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </div>
                         )}
@@ -680,9 +759,34 @@ const RequestManager = ({
                             </div>
                           )}
 
+                          {/* Move-in Date for Room Requests */}
+                          {module === 'rooms' && request.move_in_date && (
+                            <div className="mb-6">
+                              <h4 className={`text-lg font-semibold mb-3 ${theme.text} flex items-center gap-2`}>
+                                <Calendar className="w-5 h-5" />
+                                Preferred Move-in Date
+                              </h4>
+                              <div className={`p-4 rounded-xl ${theme.bg} border ${theme.border}`}>
+                                <p className={`text-sm leading-relaxed ${theme.text}`}>
+                                  {new Date(request.move_in_date).toLocaleDateString('en-IN', {
+                                    weekday: 'long',
+                                    day: 'numeric',
+                                    month: 'long',
+                                    year: 'numeric'
+                                  })}
+                                </p>
+                                {isRoomMoveInPassed(request) && (
+                                  <p className={`text-xs mt-2 text-orange-600 dark:text-orange-400 italic`}>
+                                    Note: This date has already passed
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
                           {/* Actions */}
                           <div className="space-y-3">
-                            {activeTab === 'received' && request.status === 'pending' && !isRidePassed(request) && (
+                            {activeTab === 'received' && request.status === 'pending' && !isRidePassed(request) && !isRoomMoveInPassed(request) && (
                               <>
                                 <button 
                                   onClick={() => respondToRequest(request.id, 'accepted')}
@@ -707,6 +811,16 @@ const RequestManager = ({
                                 <Clock className={`w-5 h-5 mx-auto mb-2 ${theme.textMuted}`} />
                                 <span className={`text-sm ${theme.textMuted} italic`}>
                                   This ride has already passed
+                                </span>
+                              </div>
+                            )}
+
+                            {/* Show message for passed room move-in dates */}
+                            {activeTab === 'received' && request.status === 'pending' && isRoomMoveInPassed(request) && (
+                              <div className={`text-center py-3 px-4 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600`}>
+                                <Clock className={`w-5 h-5 mx-auto mb-2 ${theme.textMuted}`} />
+                                <span className={`text-sm ${theme.textMuted} italic`}>
+                                  The preferred move-in date has already passed
                                 </span>
                               </div>
                             )}

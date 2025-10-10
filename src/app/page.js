@@ -292,16 +292,16 @@ export default function Page() {
   };
 
   return (
-      <div className="min-h-screen relative">
+      <div className="relative">
 
   {/* Particles background removed */}
 
-      <div className="relative z-10 mb-0 md:mb-5">
+      <div className="relative z-10 mb-0 md:mb-5 mt-4">
       {/* SLIDER SECTION (replacing previous hero) */}
       <HeroSlider darkMode={darkMode} />
 
       {/* ENHANCED MAIN SECTION */}
-      <div ref={mainRef} className="mt-0">
+      <div ref={mainRef} className="mt-4">
         <Main darkMode={darkMode} isVisible={isMainVisible} scrollProgress={scrollProgress} />
       </div>
 

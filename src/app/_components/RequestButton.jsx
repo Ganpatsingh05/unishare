@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, X, Package } from 'lucide-react';
+import { Send, X, Package, ChevronDown, Calendar, Phone, Mail, Instagram } from 'lucide-react';
 import { useUI } from '../lib/contexts/UniShareContext';
 
-const RequestButton = ({ module, itemId, onRequestSent, disabled = false, className = '' }) => {
+const RequestButton = ({ module, itemId, onRequestSent, disabled = false, className = '', isOwnItem = false }) => {
   const { darkMode } = useUI();
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -19,6 +21,15 @@ const RequestButton = ({ module, itemId, onRequestSent, disabled = false, classN
   // Additional request fields
   const [offeredPrice, setOfferedPrice] = useState('');
   const [pickupPreference, setPickupPreference] = useState('');
+  const [moveInDate, setMoveInDate] = useState(null);
+  
+  // Custom dropdown states
+  const [showContactDropdown, setShowContactDropdown] = useState(false);
+  const [showDateDropdown, setShowDateDropdown] = useState(false);
+  
+  // Refs for dropdown management
+  const contactDropdownRef = useRef(null);
+  const dateDropdownRef = useRef(null);
 
   // Handle escape key to close modal
   useEffect(() => {
@@ -42,6 +53,23 @@ const RequestButton = ({ module, itemId, onRequestSent, disabled = false, classN
     };
   }, [showModal]);
 
+  // Handle click outside for dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (contactDropdownRef.current && !contactDropdownRef.current.contains(event.target)) {
+        setShowContactDropdown(false);
+      }
+      if (dateDropdownRef.current && !dateDropdownRef.current.contains(event.target)) {
+        setShowDateDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const theme = {
     bg: darkMode ? 'bg-gray-900' : 'bg-white',
     modal: darkMode ? 'bg-gray-800' : 'bg-white',
@@ -51,10 +79,62 @@ const RequestButton = ({ module, itemId, onRequestSent, disabled = false, classN
     border: darkMode ? 'border-gray-600' : 'border-gray-300',
     input: darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900',
     button: 'bg-blue-600 hover:bg-blue-700 text-white',
-    buttonSecondary: darkMode ? 'bg-gray-600 hover:bg-gray-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
+    buttonSecondary: darkMode ? 'bg-gray-600 hover:bg-gray-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-900',
+    dropdown: darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300',
+    dropdownHover: darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-50'
   };
 
+  // Contact method options
+  const contactMethods = [
+    { value: 'mobile', label: 'Mobile/Phone', icon: Phone },
+    { value: 'email', label: 'Email', icon: Mail },
+    { value: 'instagram', label: 'Instagram', icon: Instagram }
+  ];
+
+  // Generate date options (next 60 days)
+  const generateDateOptions = () => {
+    const options = [];
+    const today = new Date();
+    
+    for (let i = 0; i < 60; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      
+      const value = date.toISOString().split('T')[0];
+      const label = i === 0 ? 'Today' : 
+                   i === 1 ? 'Tomorrow' :
+                   date.toLocaleDateString('en-US', { 
+                     weekday: 'short', 
+                     month: 'short', 
+                     day: 'numeric' 
+                   });
+      
+      options.push({ value, label, fullDate: date.toLocaleDateString('en-US') });
+    }
+    
+    return options;
+  };
+
+  const dateOptions = generateDateOptions();
+
   const sendRequest = async () => {
+    // Prevent users from requesting their own items
+    if (isOwnItem) {
+      const itemType = module === 'rooms' ? 'room' : 
+                      module === 'itemsell' ? 'item' : 
+                      module === 'ticketsell' ? 'ticket' : 
+                      module === 'shareride' ? 'ride' : 'listing';
+      
+      const event = new CustomEvent('showMessage', {
+        detail: { 
+          message: `You cannot request your own ${itemType}. This is your listing!`, 
+          type: 'error' 
+        }
+      });
+      window.dispatchEvent(event);
+      return;
+    }
+
     setIsLoading(true);
     try {
       // Dynamic import based on module
@@ -124,6 +204,18 @@ const RequestButton = ({ module, itemId, onRequestSent, disabled = false, classN
         payload.quantity = quantity;
       }
 
+      // Add move-in date for rooms (required)
+      if (module === 'rooms') {
+        if (!moveInDate) {
+          throw new Error('Preferred move-in date is required');
+        }
+        // Convert Date object to ISO string format
+        const dateString = moveInDate instanceof Date 
+          ? moveInDate.toISOString().split('T')[0] 
+          : moveInDate;
+        payload.moveInDate = dateString;
+      }
+
       const response = await api.sendRequest(itemId, payload);
       
       // Show success message
@@ -139,11 +231,27 @@ const RequestButton = ({ module, itemId, onRequestSent, disabled = false, classN
       setContactValue('');
       setOfferedPrice('');
       setPickupPreference('');
+      setMoveInDate(null);
+      setShowContactDropdown(false);
+      setShowDateDropdown(false);
       onRequestSent?.(response.data);
     } catch (error) {
-      // Show error message
+      // Show error message with better handling for specific cases
+      let errorMessage = error.message || 'Failed to send request';
+      
+      // Handle specific error cases with user-friendly messages
+      if (error.message?.includes('cannot request your own')) {
+        errorMessage = module === 'rooms' 
+          ? "You cannot request your own room listing. This is your property!" 
+          : "You cannot request your own item listing.";
+      } else if (error.message?.includes('Preferred move-in date is required')) {
+        errorMessage = 'Please select your preferred move-in date.';
+      } else if (error.message?.includes('authentication') || error.message?.includes('login')) {
+        errorMessage = 'Please log in to send a request.';
+      }
+      
       const event = new CustomEvent('showMessage', {
-        detail: { message: error.message || 'Failed to send request', type: 'error' }
+        detail: { message: errorMessage, type: 'error' }
       });
       window.dispatchEvent(event);
     } finally {
@@ -176,18 +284,22 @@ const RequestButton = ({ module, itemId, onRequestSent, disabled = false, classN
   return (
     <>
       <button
-        onClick={() => setShowModal(true)}
-        disabled={disabled || isLoading}
+        onClick={() => isOwnItem ? null : setShowModal(true)}
+        disabled={disabled || isLoading || isOwnItem}
         className={`
           inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200
-          ${theme.button}
+          ${isOwnItem 
+            ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
+            : theme.button
+          }
           disabled:opacity-50 disabled:cursor-not-allowed
           hover:shadow-lg
           ${className}
         `}
+        title={isOwnItem ? "You cannot request your own listing" : ""}
       >
         <Send className="w-4 h-4" />
-        Send Request
+        {isOwnItem ? 'Your Listing' : 'Send Request'}
       </button>
 
       <AnimatePresence>
@@ -196,7 +308,7 @@ const RequestButton = ({ module, itemId, onRequestSent, disabled = false, classN
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[100]"
             onClick={() => setShowModal(false)}
             onMouseLeave={undefined} // Prevent mouse leave from affecting the modal
           >
@@ -241,26 +353,93 @@ const RequestButton = ({ module, itemId, onRequestSent, disabled = false, classN
                 </div>
               )}
 
+              {/* Move-in Date for Housing Requests */}
+              {module === 'rooms' && (
+                <div className="mb-4">
+                  <label className={`block text-sm font-medium mb-2 ${theme.text}`}>
+                    Preferred Move-in Date <span className="text-red-500">*</span>
+                  </label>
+                  <DatePicker
+                    selected={moveInDate}
+                    onChange={date => setMoveInDate(date)}
+                    minDate={new Date()}
+                    dateFormat="yyyy-MM-dd"
+                    placeholderText="Select move-in date"
+                    className={`w-full px-4 py-3 rounded-xl border transition-colors ${theme.input} focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
+                    required
+                  />
+                  <p className={`text-xs mt-1 ${theme.textMuted}`}>
+                    When would you like to move in?
+                  </p>
+                </div>
+              )}
+
               <div className="mb-4">
                 <label className={`block text-sm font-medium mb-2 ${theme.text}`}>
                   Preferred Contact Method
                 </label>
-                <select
-                  value={preferredContactMethod}
-                  onChange={(e) => {
-                    setPreferredContactMethod(e.target.value);
-                    setContactValue(''); // Clear contact value when method changes
-                  }}
-                  className={`
-                    w-full px-4 py-3 rounded-xl border transition-colors
-                    ${theme.input}
-                    focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                  `}
-                >
-                  <option value="mobile">Mobile/Phone</option>
-                  <option value="email">Email</option>
-                  <option value="instagram">Instagram</option>
-                </select>
+                <div className="relative" ref={contactDropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setShowContactDropdown(!showContactDropdown)}
+                    className={`
+                      w-full px-4 py-3 rounded-xl border transition-colors text-left flex items-center justify-between
+                      ${theme.input}
+                      focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                    `}
+                  >
+                    <div className="flex items-center gap-3">
+                      {(() => {
+                        const method = contactMethods.find(m => m.value === preferredContactMethod);
+                        const IconComponent = method?.icon;
+                        return (
+                          <>
+                            {IconComponent && <IconComponent className="w-4 h-4" />}
+                            <span>{method?.label}</span>
+                          </>
+                        );
+                      })()}
+                    </div>
+                    <ChevronDown className={`w-4 h-4 transition-transform ${showContactDropdown ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  <AnimatePresence>
+                    {showContactDropdown && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className={`
+                          absolute top-full left-0 right-0 mt-1 rounded-xl border shadow-lg z-50
+                          ${theme.dropdown}
+                        `}
+                      >
+                        {contactMethods.map((method) => {
+                          const IconComponent = method.icon;
+                          return (
+                            <button
+                              key={method.value}
+                              type="button"
+                              onClick={() => {
+                                setPreferredContactMethod(method.value);
+                                setContactValue(''); // Clear contact value when method changes
+                                setShowContactDropdown(false);
+                              }}
+                              className={`
+                                w-full px-4 py-3 text-left flex items-center gap-3 transition-colors first:rounded-t-xl last:rounded-b-xl
+                                ${theme.dropdownHover}
+                                ${preferredContactMethod === method.value ? 'bg-blue-50 dark:bg-blue-900/30' : ''}
+                              `}
+                            >
+                              <IconComponent className="w-4 h-4" />
+                              <span>{method.label}</span>
+                            </button>
+                          );
+                        })}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
 
               {/* Dynamic Contact Information Input */}

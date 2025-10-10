@@ -63,7 +63,7 @@ const FloatingActionButton = ({ darkMode }) => {
 
   const FAQModal = () => (
     <div 
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
       onClick={handleOverlayClick}
     >
       <div className={`w-full max-w-2xl max-h-[80vh] overflow-hidden rounded-2xl shadow-2xl ${
@@ -158,7 +158,7 @@ const FloatingActionButton = ({ darkMode }) => {
 
     return (
       <div 
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
         onClick={handleOverlayClick}
       >
         <div className={`w-full max-w-md rounded-2xl shadow-2xl ${

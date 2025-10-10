@@ -467,12 +467,3 @@ body {
 .safe-area-pb {
   padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
 }
-
-/* Ensure content doesn't get hidden behind mobile nav */
-@media (max-width: 768px) {
-  main, 
-  .main-content,
-  [role="main"] {
-    margin-bottom: 80px;
-  }
-}

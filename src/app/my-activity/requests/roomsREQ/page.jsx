@@ -15,7 +15,9 @@ export default function RoomsRequestsPage() {
           />
         </div>
       </main>
+      <div className="hidden md:block">
       <SmallFooter />
+      </div>
     </div>
   );
 }

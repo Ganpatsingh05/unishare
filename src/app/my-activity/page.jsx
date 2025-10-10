@@ -164,7 +164,7 @@ export default function RequestsMadePage() {
       path: "/my-activity/requests/ticketsREQ",
       count: requestCounts.tickets?.total || 0,
       color: "from-indigo-500 to-purple-500",
-      description: "Event ticket requests"
+      description: "Get Event ticket requests"
     },
     {
       name: "Announcements",

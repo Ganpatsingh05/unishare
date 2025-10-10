@@ -140,9 +140,9 @@ const Header = ({ logoRotation = 0 }) => {
   }
 
   return (
-    <header className={`fixed w-full overflow-x-clip overflow-y-visible transition-all duration-300 backdrop-blur-md ${
+    <header className={`relative w-full overflow-x-clip overflow-y-visible transition-all duration-300 backdrop-blur-md ${
       darkMode ? 'bg-gray-900/80 shadow-gray-900/10' : 'bg-white/80 shadow-orange-200/20'
-    }`} style={{ top: 'var(--notice-bar-height, 0px)', zIndex: 70 }}>
+    }`} style={{ zIndex: 70 }}>
       {/* Mobile-only header */}
       <div className="md:hidden">
         <HeaderMobile 

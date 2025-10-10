@@ -310,6 +310,13 @@ export default function ProfilePage() {
           min-height: 100vh;
         }
 
+        /* Mobile navigation padding - same as global styles */
+        @media (max-width: 768px) {
+          body {
+            padding-bottom: 90px; /* Slightly more space for mobile bottom nav */
+          }
+        }
+
         .profile-container {
           min-height: 100vh;
           position: relative;
@@ -763,7 +770,7 @@ export default function ProfilePage() {
           display: flex;
           flex-direction: column;
           align-items: center;
-          padding-top: 15rem; /* Further reduced padding for less space between name and bio */
+          padding-top: 22rem; /* Increased padding to prevent overlap with name */
           padding-bottom: 2rem; /* Add bottom padding for footer spacing */
           position: relative;
           z-index: 5;
@@ -857,6 +864,13 @@ export default function ProfilePage() {
           max-width: 600px;
           padding: 0 1rem;
           margin-bottom: 2rem;
+        }
+
+        /* Add extra bottom padding to account section on mobile for navigation */
+        @media (max-width: 768px) {
+          .account-section {
+            margin-bottom: 0rem; /* Reduced space for mobile navigation */
+          }
         }
 
         .section-title {
@@ -1189,7 +1203,7 @@ export default function ProfilePage() {
           }
 
           .main-content {
-            padding-top: 13rem; /* Further reduced padding on mobile for less space */
+            padding-top: 19rem; /* Increased padding on mobile to prevent overlap */
           }
 
           .bio-section {
@@ -1732,8 +1746,7 @@ export default function ProfilePage() {
             </ul>
           </div>
 
-          {/* Spacer for scrolling */}
-          <div style={{ height: '4rem' }}></div>
+          {/* No spacer needed - mobile navigation handled by body padding */}
         </div>
 
         {/* Edit Profile Modal */}

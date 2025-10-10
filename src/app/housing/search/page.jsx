@@ -181,7 +181,10 @@ const RoomCard = ({ room, darkMode, onRequestSent }) => {
               onRequestSent={onRequestSent}
               className="flex-1"
             />
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-1">
+            <button 
+              onClick={() => window.location.href = `/housing/${room.id}`}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-1"
+            >
               <Eye className="w-4 h-4" />
               View Details
             </button>
