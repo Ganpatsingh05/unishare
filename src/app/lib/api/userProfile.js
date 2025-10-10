@@ -33,10 +33,12 @@ export const updateUserProfile = async (profileData, profileImage = null) => {
       // Use FormData for image upload
       const formData = new FormData();
       
-      // Add profile fields
-      if (profileData.display_name) formData.append('display_name', profileData.display_name);
-      if (profileData.bio) formData.append('bio', profileData.bio);
-      if (profileData.custom_user_id) formData.append('custom_user_id', profileData.custom_user_id);
+      // Add profile fields - always include core fields even if empty
+      if (profileData.display_name !== undefined) formData.append('display_name', profileData.display_name);
+      if (profileData.bio !== undefined) formData.append('bio', profileData.bio);
+      if (profileData.custom_user_id !== undefined) formData.append('custom_user_id', profileData.custom_user_id);
+      if (profileData.phone !== undefined) formData.append('phone_number', profileData.phone);
+      if (profileData.campus_name !== undefined) formData.append('campus_name', profileData.campus_name);
       
       // Add image file
       formData.append('profileImage', profileImage);
@@ -45,9 +47,16 @@ export const updateUserProfile = async (profileData, profileImage = null) => {
       return response;
     } else {
       // Use JSON for text-only updates
+      // Transform phone field to phone_number for backend compatibility
+      const transformedData = { ...profileData };
+      if (transformedData.phone !== undefined) {
+        transformedData.phone_number = transformedData.phone;
+        delete transformedData.phone;
+      }
+      
       const response = await apiCall('/api/profile', {
         method: 'POST',
-        body: JSON.stringify(profileData)
+        body: JSON.stringify(transformedData)
       });
       return response;
     }
@@ -83,6 +92,75 @@ export const validateCustomUserId = (customUserId) => {
   const reserved = ['@admin', '@system', '@support', '@help', '@api', '@www', '@mail'];
   if (reserved.includes(customUserId.toLowerCase())) {
     return { valid: false, message: 'This username is reserved and cannot be used' };
+  }
+  
+  return { valid: true };
+};
+
+// Validate campus name
+export const validateCampusName = (campusName) => {
+  if (!campusName || campusName.trim() === '') return { valid: true }; // Optional field
+  
+  const trimmed = campusName.trim();
+  
+  // Check length (2-100 characters)
+  if (trimmed.length < 2 || trimmed.length > 100) {
+    return {
+      valid: false,
+      error: 'Campus name must be between 2-100 characters'
+    };
+  }
+  
+  // Check for valid characters (letters, numbers, spaces, hyphens, dots, commas, ampersands, apostrophes, parentheses)
+  const validCharsRegex = /^[a-zA-Z0-9\s\-\.\,\&'()]+$/;
+  if (!validCharsRegex.test(trimmed)) {
+    return {
+      valid: false,
+      error: 'Campus name can only contain letters, numbers, spaces, hyphens, dots, commas, ampersands, apostrophes, and parentheses'
+    };
+  }
+  
+  // Must start with letter or number
+  if (!/^[a-zA-Z0-9]/.test(trimmed)) {
+    return {
+      valid: false,
+      error: 'Campus name must start with a letter or number'
+    };
+  }
+  
+  // Must end with letter, number, or closing parenthesis
+  if (!/[a-zA-Z0-9)]$/.test(trimmed)) {
+    return {
+      valid: false,
+      error: 'Campus name must end with a letter, number, or closing parenthesis'
+    };
+  }
+  
+  return { valid: true };
+};
+
+// Validate phone number
+export const validatePhoneNumber = (phone) => {
+  if (!phone || phone.trim() === '') return { valid: true }; // Optional field
+  
+  // Remove all non-digit characters for length check
+  const digitsOnly = phone.replace(/\D/g, '');
+  
+  // Check digit count (10-15 digits for international numbers)
+  if (digitsOnly.length < 10 || digitsOnly.length > 15) {
+    return { 
+      valid: false, 
+      error: 'Phone number must be between 10-15 digits'
+    };
+  }
+  
+  // Check for valid phone number characters (digits, spaces, hyphens, dots, parentheses, plus)
+  const validPhoneRegex = /^[\d\s\-\.\(\)\+]+$/;
+  if (!validPhoneRegex.test(phone)) {
+    return { 
+      valid: false, 
+      error: 'Phone number contains invalid characters'
+    };
   }
   
   return { valid: true };
@@ -340,6 +418,28 @@ export const validateProfileDataEnhanced = (profileData, profileImage = null) =>
     }
   }
   
+  // Phone number validation
+  if (profileData.phone) {
+    const phoneValidation = validatePhoneNumber(profileData.phone);
+    if (!phoneValidation.valid) {
+      errors.phone = {
+        message: phoneValidation.error,
+        error_code: 'INVALID_PHONE'
+      };
+    }
+  }
+
+  // Campus name validation
+  if (profileData.campus_name) {
+    const campusValidation = validateCampusName(profileData.campus_name);
+    if (!campusValidation.valid) {
+      errors.campus_name = {
+        message: campusValidation.error,
+        error_code: 'INVALID_CAMPUS_NAME'
+      };
+    }
+  }
+
   // Profile image validation
   if (profileImage) {
     const imageValidation = validateProfileImage(profileImage);
@@ -350,7 +450,7 @@ export const validateProfileDataEnhanced = (profileData, profileImage = null) =>
       };
     }
   }
-  
+
   return {
     valid: Object.keys(errors).length === 0,
     errors

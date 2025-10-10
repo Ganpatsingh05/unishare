@@ -8,7 +8,7 @@ import {
   Camera, Star, Key, TrendingUp, Volume2, Share2, ArrowLeft, 
   Edit3, ShoppingBag, Search, Home, Car, Ticket, MapPin, User, Settings,Bell,
   Save, X, Upload, Store, Eye, PartyPopper, Navigation, Calendar, LogOut,
-  Copy, Check, ExternalLink
+  Copy, Check, ExternalLink, Phone, GraduationCap
 } from 'lucide-react';
 import logoImage from '../assets/images/logounishare1.png';
 import { useAuth } from '../lib/contexts/UniShareContext';
@@ -16,13 +16,21 @@ import SmallFooter from '../_components/SmallFooter';
 import { 
   getCurrentUserProfile, 
   updateUserProfile, 
-  validateProfileDataEnhanced 
+  validateProfileDataEnhanced,
+  validateCampusName
 } from '../lib/api/userProfile';
+import { fetchMyItems } from '../lib/api/marketplace';
+import { fetchMyLostFoundItems } from '../lib/api/lostFound';
+import { fetchMyRooms } from '../lib/api/housing';
+import { getMyRides } from '../lib/api/rideSharing';
+import { fetchMyTickets } from '../lib/api/tickets';
 
 export default function ProfilePage() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, authLoading, logout } = useAuth();
   const router = useRouter();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [showProfileCompletion, setShowProfileCompletion] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -32,7 +40,7 @@ export default function ProfilePage() {
     bio: "Loading...",
     email: "",
     phone: "",
-    location: "Loading...",
+    campusName: "",
     profileImage: "https://assets.codepen.io/605876/cropped-headshot--saturated-low-res.jpg"
   });
   
@@ -42,12 +50,81 @@ export default function ProfilePage() {
   const [validationErrors, setValidationErrors] = useState({});
   const fileInputRef = useRef(null);
 
+  // Activity data state
+  const [activityData, setActivityData] = useState({
+    myItems: { count: 0, loading: true },
+    lostItems: { count: 0, loading: true },
+    foundItems: { count: 0, loading: true },
+    myRooms: { count: 0, loading: true },
+    myRides: { count: 0, loading: true },
+    myTickets: { count: 0, loading: true }
+  });
+
   // Fetch profile data on component mount
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchProfileData();
+    // Wait for auth to finish loading
+    if (authLoading) {
+      return;
     }
-  }, [isAuthenticated]);
+    
+    if (isAuthenticated === false) {
+      // User is not authenticated, stop loading and redirect to login
+      setLoading(false);
+      router.push('/login');
+      return;
+    }
+    
+    if (isAuthenticated === true) {
+      fetchProfileData();
+      fetchActivityData();
+    }
+  }, [isAuthenticated, authLoading, router]);
+
+  // Check if profile is complete
+  const isProfileComplete = (profile) => {
+    return profile.display_name && 
+           profile.bio && 
+           profile.bio !== "Welcome to my UniShare profile! I'm a student passionate about sharing resources and connecting with fellow students." &&
+           profile.campus_name && 
+           profile.campus_name.length > 0;
+  };
+
+  // Auto-populate profile from Google auth data
+  const createDefaultProfile = async () => {
+    try {
+      if (!user) return;
+
+      const defaultProfile = {
+        display_name: user.name || user.full_name || "Student",
+        bio: "Welcome to my UniShare profile! I'm a student passionate about sharing resources and connecting with fellow students.",
+        email: user.email || "",
+        phone: "",
+        campus_name: "",
+        profile_image_url: user.picture || user.avatar_url || "",
+        custom_user_id: ""
+      };
+
+      // Save the default profile to backend
+      const response = await updateUserProfile(defaultProfile, null);
+      
+      if (response.success) {
+        setProfileData({
+          name: defaultProfile.display_name,
+          bio: defaultProfile.bio,
+          email: defaultProfile.email,
+          phone: defaultProfile.phone,
+          campusName: defaultProfile.campus_name,
+          profileImage: defaultProfile.profile_image_url || "https://assets.codepen.io/605876/cropped-headshot--saturated-low-res.jpg",
+          customUserId: defaultProfile.custom_user_id
+        });
+        
+        setIsNewUser(true);
+        setShowProfileCompletion(true);
+      }
+    } catch (error) {
+      console.error('Error creating default profile:', error);
+    }
+  };
 
   const fetchProfileData = async () => {
     try {
@@ -58,54 +135,168 @@ export default function ProfilePage() {
       
       if (response.success && (response.profile || response.data)) {
         const profile = response.profile || response.data;
+        
+        // Check if profile is complete
+        if (!isProfileComplete(profile)) {
+          setIsNewUser(true);
+          setShowProfileCompletion(true);
+        }
+        
         setProfileData({
-          name: profile.display_name || profile.full_name || "Your Name",
+          name: profile.display_name || user?.name || user?.full_name || "Your Name",
           bio: profile.bio || "Welcome to my UniShare profile! I'm a student passionate about sharing resources and connecting with fellow students.",
           email: profile.email || user?.email || "",
-          phone: profile.phone || "",
-          location: profile.location || "University Campus",
-          profileImage: profile.profile_image_url || "https://assets.codepen.io/605876/cropped-headshot--saturated-low-res.jpg",
+          phone: profile.phone_number || "",
+          campusName: profile.campus_name || "",
+          profileImage: profile.profile_image_url || user?.picture || user?.avatar_url || "https://assets.codepen.io/605876/cropped-headshot--saturated-low-res.jpg",
           customUserId: profile.custom_user_id || ""
         });
       } else {
-        // If no profile exists, use default values with user data
-        setProfileData({
-          name: user?.name || user?.full_name || "Your Name",
-          bio: "Welcome to my UniShare profile! I'm a student passionate about sharing resources and connecting with fellow students.",
-          email: user?.email || "",
-          phone: "",
-          location: "University Campus",
-          profileImage: "https://assets.codepen.io/605876/cropped-headshot--saturated-low-res.jpg",
-          customUserId: ""
-        });
+        // No profile exists - create default profile from Google auth
+        await createDefaultProfile();
       }
     } catch (err) {
       console.error('Error fetching profile:', err);
       setError('Failed to load profile data. Please refresh the page.');
       
-      // Use fallback data even on error
+      // Use fallback data with Google auth info
       setProfileData({
         name: user?.name || user?.full_name || "Your Name",
         bio: "Welcome to my UniShare profile! I'm a student passionate about sharing resources and connecting with fellow students.",
         email: user?.email || "",
         phone: "",
-        location: "University Campus",
-        profileImage: "https://assets.codepen.io/605876/cropped-headshot--saturated-low-res.jpg",
+        campusName: "",
+        profileImage: user?.picture || user?.avatar_url || "https://assets.codepen.io/605876/cropped-headshot--saturated-low-res.jpg",
         customUserId: ""
       });
+      
+      setIsNewUser(true);
+      setShowProfileCompletion(true);
     } finally {
       setLoading(false);
     }
   };
 
+  // Fetch all activity data
+  const fetchActivityData = async () => {
+    if (!isAuthenticated) return;
+
+    const fetchActivities = async () => {
+      try {
+        // Fetch marketplace items (My Items)
+        try {
+          const itemsResponse = await fetchMyItems({ limit: 1 });
+          setActivityData(prev => ({
+            ...prev,
+            myItems: { count: itemsResponse.total || itemsResponse.data?.length || 0, loading: false }
+          }));
+        } catch (error) {
+          console.error('Error fetching my items:', error);
+          setActivityData(prev => ({
+            ...prev,
+            myItems: { count: 0, loading: false }
+          }));
+        }
+
+        // Fetch lost and found items
+        try {
+          const lostFoundResponse = await fetchMyLostFoundItems();
+          if (lostFoundResponse.success && lostFoundResponse.data) {
+            const lostItems = lostFoundResponse.data.filter(item => item.mode === 'lost') || [];
+            const foundItems = lostFoundResponse.data.filter(item => item.mode === 'found') || [];
+            
+            setActivityData(prev => ({
+              ...prev,
+              lostItems: { count: lostItems.length, loading: false },
+              foundItems: { count: foundItems.length, loading: false }
+            }));
+          } else {
+            setActivityData(prev => ({
+              ...prev,
+              lostItems: { count: 0, loading: false },
+              foundItems: { count: 0, loading: false }
+            }));
+          }
+        } catch (error) {
+          console.error('Error fetching lost/found items:', error);
+          setActivityData(prev => ({
+            ...prev,
+            lostItems: { count: 0, loading: false },
+            foundItems: { count: 0, loading: false }
+          }));
+        }
+
+        // Fetch room listings
+        try {
+          const roomsResponse = await fetchMyRooms({ limit: 1 });
+          setActivityData(prev => ({
+            ...prev,
+            myRooms: { count: roomsResponse.total || roomsResponse.data?.length || 0, loading: false }
+          }));
+        } catch (error) {
+          console.error('Error fetching my rooms:', error);
+          setActivityData(prev => ({
+            ...prev,
+            myRooms: { count: 0, loading: false }
+          }));
+        }
+
+        // Fetch ride shares
+        try {
+          const ridesResponse = await getMyRides({ limit: 1 });
+          setActivityData(prev => ({
+            ...prev,
+            myRides: { count: ridesResponse.total || ridesResponse.data?.length || 0, loading: false }
+          }));
+        } catch (error) {
+          console.error('Error fetching my rides:', error);
+          setActivityData(prev => ({
+            ...prev,
+            myRides: { count: 0, loading: false }
+          }));
+        }
+
+        // Fetch tickets
+        try {
+          const ticketsResponse = await fetchMyTickets({ limit: 1 });
+          setActivityData(prev => ({
+            ...prev,
+            myTickets: { count: ticketsResponse.total || ticketsResponse.data?.length || 0, loading: false }
+          }));
+        } catch (error) {
+          console.error('Error fetching my tickets:', error);
+          setActivityData(prev => ({
+            ...prev,
+            myTickets: { count: 0, loading: false }
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching activity data:', error);
+        // Set all counts to 0 and loading to false on general error
+        setActivityData({
+          myItems: { count: 0, loading: false },
+          lostItems: { count: 0, loading: false },
+          foundItems: { count: 0, loading: false },
+          myRooms: { count: 0, loading: false },
+          myRides: { count: 0, loading: false },
+          myTickets: { count: 0, loading: false }
+        });
+      }
+    };
+
+    fetchActivities();
+  };
+
   const handleProfileEdit = () => {
-    setEditForm({
+    const newEditForm = {
       display_name: profileData.name,
       bio: profileData.bio,
       phone: profileData.phone,
-      location: profileData.location,
+      campus_name: profileData.campusName,
       custom_user_id: profileData.customUserId
-    });
+    };
+    
+    setEditForm(newEditForm);
     setPreviewImage(null);
     setProfileImageFile(null);
     setValidationErrors({});
@@ -134,9 +325,9 @@ export default function ProfilePage() {
         setProfileData({
           name: updatedProfile.display_name || editForm.display_name,
           bio: updatedProfile.bio || editForm.bio,
-          email: profileData.email, // Keep existing email
-          phone: updatedProfile.phone || editForm.phone,
-          location: updatedProfile.location || editForm.location,
+          email: profileData.email, // Keep existing email - not editable in forms
+          phone: updatedProfile.phone_number || editForm.phone,
+          campusName: updatedProfile.campus_name || editForm.campus_name,
           profileImage: updatedProfile.profile_image_url || profileData.profileImage,
           customUserId: updatedProfile.custom_user_id || editForm.custom_user_id
         });
@@ -144,6 +335,12 @@ export default function ProfilePage() {
         setIsEditingProfile(false);
         setPreviewImage(null);
         setProfileImageFile(null);
+        
+        // Close profile completion modal if this was from new user onboarding
+        if (isNewUser) {
+          setShowProfileCompletion(false);
+          setIsNewUser(false);
+        }
       } else {
         setError(response.message || 'Failed to update profile. Please try again.');
       }
@@ -162,6 +359,24 @@ export default function ProfilePage() {
     setProfileImageFile(null);
     setValidationErrors({});
     setError(null);
+  };
+
+  // Profile completion handlers
+  const handleCompleteProfile = () => {
+    setEditForm({
+      display_name: profileData.name,
+      bio: profileData.bio,
+      phone: profileData.phone,
+      campus_name: profileData.campusName,
+      custom_user_id: profileData.customUserId
+    });
+    setShowProfileCompletion(false);
+    setIsEditingProfile(true);
+  };
+
+  const handleSkipProfileCompletion = () => {
+    setShowProfileCompletion(false);
+    setIsNewUser(false);
   };
 
   const handleLogout = async () => {
@@ -264,13 +479,15 @@ export default function ProfilePage() {
     fileInputRef.current?.click();
   };
 
-  // Show loading spinner while fetching data
-  if (loading) {
+  // Show loading spinner while fetching data or checking authentication
+  if (loading || authLoading) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-slate-300">Loading profile...</p>
+          <p className="text-slate-300">
+            {authLoading ? 'Checking authentication...' : 'Loading profile...'}
+          </p>
         </div>
       </div>
     );
@@ -903,44 +1120,12 @@ export default function ProfilePage() {
           text-decoration: none;
           color: inherit;
           position: relative;
-          overflow: hidden;
+          overflow: visible;
           aspect-ratio: 1;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
           text-align: center;
-        }
-
-        .activity-card::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: linear-gradient(145deg, 
-            rgba(79, 172, 254, 0.15), 
-            rgba(139, 69, 219, 0.1),
-            rgba(236, 72, 153, 0.05)
-          );
-          opacity: 0;
-          transition: opacity 0.4s ease;
-        }
-
-        .activity-card::after {
-          content: '';
-          position: absolute;
-          top: -50%;
-          left: -50%;
-          width: 200%;
-          height: 200%;
-          background: linear-gradient(45deg, 
-            transparent 30%, 
-            rgba(255, 255, 255, 0.1) 50%, 
-            transparent 70%
-          );
-          transform: translateX(-100%) translateY(-100%) rotate(45deg);
-          transition: transform 0.6s ease;
         }
 
         .activity-card:hover {
@@ -951,27 +1136,20 @@ export default function ProfilePage() {
             inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
-        .activity-card:hover::before {
-          opacity: 1;
-        }
-
-        .activity-card:hover::after {
-          transform: translateX(100%) translateY(100%) rotate(45deg);
-        }
-
         .activity-card-header {
           display: flex;
           flex-direction: column;
           align-items: center;
           gap: 0.75rem;
           margin-bottom: 0.5rem;
+          overflow: visible;
         }
 
         .activity-card-icon {
-          width: 48px;
-          height: 48px;
+          width: 60px;
+          height: 60px;
           background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-          border-radius: 16px;
+          border-radius: 18px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -981,18 +1159,9 @@ export default function ProfilePage() {
             inset 0 1px 0 rgba(255, 255, 255, 0.3);
           transition: all 0.3s ease;
           position: relative;
-          overflow: hidden;
+          overflow: visible;
         }
-
-        .activity-card-icon::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: -100%;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-          transition: left 0.5s ease;
+          overflow: hidden;
         }
 
         .activity-card:hover .activity-card-icon {
@@ -1000,10 +1169,6 @@ export default function ProfilePage() {
           box-shadow: 
             0 10px 24px rgba(79, 172, 254, 0.6),
             inset 0 1px 0 rgba(255, 255, 255, 0.4);
-        }
-
-        .activity-card:hover .activity-card-icon::before {
-          left: 100%;
         }
 
         /* Unique gradients for each card type */
@@ -1035,6 +1200,31 @@ export default function ProfilePage() {
         .activity-card:nth-child(6) .activity-card-icon {
           background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
           box-shadow: 0 6px 16px rgba(168, 237, 234, 0.4);
+        }
+
+        /* Notification badge for activity cards */
+        .activity-notification-badge {
+          position: absolute;
+          top: -6px;
+          right: -6px;
+          background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+          color: white;
+          border-radius: 12px;
+          min-width: 24px;
+          height: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          font-weight: 700;
+          border: 3px solid #0f1419;
+          box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+          animation: badgePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes badgePulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.1); }
         }
 
         .activity-card-title {
@@ -1074,32 +1264,58 @@ export default function ProfilePage() {
           transform: scale(1.05);
         }
 
+        /* Medium screens (tablets) */
+        @media (max-width: 768px) and (min-width: 641px) {
+          .activity-card-icon {
+            width: 52px;
+            height: 52px;
+          }
+          .activity-card-icon svg {
+            width: 30px !important;
+            height: 30px !important;
+          }
+        }
+
         @media (max-width: 640px) {
           .activity-cards-grid {
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0.75rem;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
           }
           
           .activity-card {
-            padding: 1rem 0.75rem;
-            border-radius: 16px;
+            padding: 1.25rem 1rem;
+            border-radius: 18px;
           }
           
           .activity-card-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 12px;
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+          }
+
+          .activity-card-icon svg {
+            width: 42px !important;
+            height: 42px !important;
           }
           
           .activity-card-title {
-            font-size: 0.7rem;
-            line-height: 1.1;
+            font-size: 0.8rem;
+            line-height: 1.2;
+          }
+
+          .activity-notification-badge {
+            min-width: 24px;
+            height: 24px;
+            font-size: 12px;
+            top: -6px;
+            right: -6px;
+            border: 3px solid white;
           }
           
           .activity-card-count {
-            font-size: 0.6rem;
-            padding: 0.2rem 0.4rem;
-            border-radius: 8px;
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 10px;
           }
         }
 
@@ -1429,6 +1645,17 @@ export default function ProfilePage() {
           animation: spin 1s linear infinite;
         }
 
+        /* Inline spinner for activity cards */
+        .inline-spinner {
+          display: inline-block;
+          width: 12px;
+          height: 12px;
+          border: 1.5px solid transparent;
+          border-top: 1.5px solid currentColor;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
         @keyframes spin {
           to {
             transform: rotate(360deg);
@@ -1489,6 +1716,187 @@ export default function ProfilePage() {
 
         .animate-slide-in-right {
           animation: slide-in-right 0.3s ease-out forwards;
+        }
+
+        /* Profile Completion Modal */
+        .profile-completion-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.8);
+          backdrop-filter: blur(15px);
+          z-index: 1100;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 1rem;
+        }
+
+        .profile-completion-modal {
+          background: linear-gradient(135deg, #1e293b, #334155);
+          border-radius: 20px;
+          width: 100%;
+          max-width: 450px;
+          max-height: 85vh;
+          overflow-y: auto;
+          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          animation: slideInFromBottom 0.4s ease-out;
+        }
+
+        @keyframes slideInFromBottom {
+          from {
+            opacity: 0;
+            transform: translateY(50px) scale(0.9);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+
+        .completion-modal-header {
+          background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+          padding: 1.5rem;
+          text-align: center;
+          position: relative;
+        }
+
+        .completion-modal-header::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(255,255,255,0.1) 100%);
+          pointer-events: none;
+        }
+
+        .completion-welcome-icon {
+          width: 60px;
+          height: 60px;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 1rem;
+          border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .completion-modal-title {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: white;
+          margin-bottom: 0.5rem;
+        }
+
+        .completion-modal-subtitle {
+          color: rgba(255, 255, 255, 0.9);
+          font-size: 0.9rem;
+          line-height: 1.4;
+        }
+
+        .completion-modal-content {
+          padding: 1.5rem;
+        }
+
+        .completion-feature-list {
+          list-style: none;
+          margin: 1rem 0;
+          padding: 0;
+        }
+
+        .completion-feature-item {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.75rem;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 10px;
+          margin-bottom: 0.5rem;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          transition: all 0.3s ease;
+        }
+
+        .completion-feature-item:hover {
+          background: rgba(255, 255, 255, 0.08);
+          transform: translateX(3px);
+        }
+
+        .completion-feature-icon {
+          width: 32px;
+          height: 32px;
+          background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          flex-shrink: 0;
+        }
+
+        .completion-feature-text {
+          color: #e2e8f0;
+          font-size: 0.85rem;
+          line-height: 1.3;
+        }
+
+        .completion-modal-actions {
+          display: flex;
+          gap: 0.75rem;
+          padding: 1.5rem;
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-complete-primary {
+          flex: 2;
+          height: 44px;
+          border-radius: 10px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          background: linear-gradient(135deg, #10b981, #059669);
+          border: 1px solid #10b981;
+          color: white;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+          font-size: 0.9rem;
+        }
+
+        .btn-complete-primary:hover {
+          background: linear-gradient(135deg, #059669, #047857);
+          border-color: #059669;
+          box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+          transform: translateY(-2px);
+        }
+
+        .btn-complete-secondary {
+          flex: 1;
+          height: 44px;
+          border-radius: 10px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(51, 65, 85, 0.8);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          color: #cbd5e1;
+          font-size: 0.9rem;
+        }
+
+        .btn-complete-secondary:hover {
+          background: rgba(71, 85, 105, 0.9);
+          color: #f1f5f9;
+          transform: translateY(-1px);
         }
       `}</style>
 
@@ -1607,11 +2015,50 @@ export default function ProfilePage() {
             <div className="bio-container">
               <div className="bio-content">
                 <p className="bio-text">{profileData.bio}</p>
-                <div className="contact-info">
-                  <div className="contact-item">
-                    <MapPin size={16} />
-                    <span>{profileData.location}</span>
+                {isNewUser && (
+                  <div style={{ 
+                    marginTop: '1rem', 
+                    padding: '0.75rem', 
+                    background: 'rgba(59, 130, 246, 0.1)', 
+                    border: '1px solid rgba(59, 130, 246, 0.3)', 
+                    borderRadius: '12px', 
+                    textAlign: 'center' 
+                  }}>
+                    <p style={{ color: '#3b82f6', fontSize: '0.875rem', margin: '0 0 0.5rem 0', fontWeight: '500' }}>
+                      📝 Complete your profile to unlock all features
+                    </p>
+                    <button 
+                      onClick={handleCompleteProfile}
+                      style={{
+                        background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                        color: 'white',
+                        border: 'none',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '8px',
+                        fontSize: '0.875rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
+                      onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+                    >
+                      Complete Now
+                    </button>
                   </div>
+                )}
+                <div className="contact-info">
+                  {profileData.phone && (
+                    <div className="contact-item">
+                      <Phone size={16} />
+                      <span>{profileData.phone}</span>
+                    </div>
+                  )}
+                  {profileData.campusName && (
+                    <div className="contact-item">
+                      <GraduationCap size={16} />
+                      <span>{profileData.campusName}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1623,72 +2070,138 @@ export default function ProfilePage() {
               <Link href="/profile/my-items" className="activity-card">
                 <div className="activity-card-header">
                   <div className="activity-card-icon">
-                    <Store size={22} />
+                    <Store size={40} />
+                    {!activityData.myItems.loading && activityData.myItems.count > 0 && (
+                      <span className="activity-notification-badge">
+                        {activityData.myItems.count > 99 ? '99+' : activityData.myItems.count}
+                      </span>
+                    )}
                   </div>
                   <h3 className="activity-card-title">My Items</h3>
                 </div>
                 <div className="activity-card-footer">
-                  <span className="activity-card-count">12 items</span>
+                  <span className="activity-card-count">
+                    {activityData.myItems.loading ? (
+                      <div className="inline-spinner"></div>
+                    ) : (
+                      'Marketplace'
+                    )}
+                  </span>
                 </div>
               </Link>
 
               <Link href="/profile/my-lost-items" className="activity-card">
                 <div className="activity-card-header">
                   <div className="activity-card-icon">
-                    <Eye size={22} />
+                    <Eye size={40} />
+                    {!activityData.lostItems.loading && activityData.lostItems.count > 0 && (
+                      <span className="activity-notification-badge">
+                        {activityData.lostItems.count > 99 ? '99+' : activityData.lostItems.count}
+                      </span>
+                    )}
                   </div>
                   <h3 className="activity-card-title">Lost Items</h3>
                 </div>
                 <div className="activity-card-footer">
-                  <span className="activity-card-count">3 reported</span>
+                  <span className="activity-card-count">
+                    {activityData.lostItems.loading ? (
+                      <div className="inline-spinner"></div>
+                    ) : (
+                      'Reported'
+                    )}
+                  </span>
                 </div>
               </Link>
 
               <Link href="/profile/my-found-items" className="activity-card">
                 <div className="activity-card-header">
                   <div className="activity-card-icon">
-                    <PartyPopper size={22} />
+                    <PartyPopper size={40} />
+                    {!activityData.foundItems.loading && activityData.foundItems.count > 0 && (
+                      <span className="activity-notification-badge">
+                        {activityData.foundItems.count > 99 ? '99+' : activityData.foundItems.count}
+                      </span>
+                    )}
                   </div>
                   <h3 className="activity-card-title">Found Items</h3>
                 </div>
                 <div className="activity-card-footer">
-                  <span className="activity-card-count">7 found</span>
+                  <span className="activity-card-count">
+                    {activityData.foundItems.loading ? (
+                      <div className="inline-spinner"></div>
+                    ) : (
+                      'Discovered'
+                    )}
+                  </span>
                 </div>
               </Link>
 
               <Link href="/profile/my-rooms" className="activity-card">
                 <div className="activity-card-header">
                   <div className="activity-card-icon">
-                    <MapPin size={22} />
+                    <MapPin size={40} />
+                    {!activityData.myRooms.loading && activityData.myRooms.count > 0 && (
+                      <span className="activity-notification-badge">
+                        {activityData.myRooms.count > 99 ? '99+' : activityData.myRooms.count}
+                      </span>
+                    )}
                   </div>
                   <h3 className="activity-card-title">My Rooms</h3>
                 </div>
                 <div className="activity-card-footer">
-                  <span className="activity-card-count">2 listings</span>
+                  <span className="activity-card-count">
+                    {activityData.myRooms.loading ? (
+                      <div className="inline-spinner"></div>
+                    ) : (
+                      'Housing'
+                    )}
+                  </span>
                 </div>
               </Link>
 
               <Link href="/profile/my-rides" className="activity-card">
                 <div className="activity-card-header">
                   <div className="activity-card-icon">
-                    <Navigation size={22} />
+                    <Navigation size={40} />
+                    {!activityData.myRides.loading && activityData.myRides.count > 0 && (
+                      <span className="activity-notification-badge">
+                        {activityData.myRides.count > 99 ? '99+' : activityData.myRides.count}
+                      </span>
+                    )}
                   </div>
                   <h3 className="activity-card-title">My Rides</h3>
                 </div>
                 <div className="activity-card-footer">
-                  <span className="activity-card-count">5 trips</span>
+                  <span className="activity-card-count">
+                    {activityData.myRides.loading ? (
+                      <div className="inline-spinner"></div>
+                    ) : (
+                      'Transportation'
+                    )}
+                  </span>
                 </div>
               </Link>
 
               <Link href="/profile/my-tickets" className="activity-card">
                 <div className="activity-card-header">
                   <div className="activity-card-icon">
-                    <Calendar size={22} />
+                    <Calendar size={40} />
+                    {!activityData.myTickets.loading && activityData.myTickets.count > 0 && (
+                      <span className="activity-notification-badge">
+                        {activityData.myTickets.count > 99 ? '99+' : activityData.myTickets.count}
+                      </span>
+                    )}
                   </div>
                   <h3 className="activity-card-title">My Tickets</h3>
                 </div>
                 <div className="activity-card-footer">
-                  <span className="activity-card-count">8 tickets</span>
+                  <span className="activity-card-count">
+                    {activityData.myTickets.loading ? (
+                      <div className="inline-spinner"></div>
+                    ) : (
+                      'Events'
+                    )}
+                  </span>
                 </div>
               </Link>
             </div>
@@ -1748,6 +2261,76 @@ export default function ProfilePage() {
 
           {/* No spacer needed - mobile navigation handled by body padding */}
         </div>
+
+        {/* Profile Completion Modal for New Users */}
+        {showProfileCompletion && (
+          <div className="profile-completion-overlay">
+            <div className="profile-completion-modal">
+              <div className="completion-modal-header">
+                <div className="completion-welcome-icon">
+                  <User size={28} />
+                </div>
+                <h2 className="completion-modal-title">Welcome to UniShare!</h2>
+                <p className="completion-modal-subtitle">
+                  Complete your profile to unlock all features
+                </p>
+              </div>
+              
+              <div className="completion-modal-content">
+                <ul className="completion-feature-list">
+                  <li className="completion-feature-item">
+                    <div className="completion-feature-icon">
+                      <User size={16} />
+                    </div>
+                    <div className="completion-feature-text">
+                      Personalize your profile with custom bio and location
+                    </div>
+                  </li>
+                  <li className="completion-feature-item">
+                    <div className="completion-feature-icon">
+                      <Store size={16} />
+                    </div>
+                    <div className="completion-feature-text">
+                      Start buying and selling items in the marketplace
+                    </div>
+                  </li>
+                  <li className="completion-feature-item">
+                    <div className="completion-feature-icon">
+                      <Eye size={16} />
+                    </div>
+                    <div className="completion-feature-text">
+                      Report lost items and help others find their belongings
+                    </div>
+                  </li>
+                  <li className="completion-feature-item">
+                    <div className="completion-feature-icon">
+                      <Navigation size={16} />
+                    </div>
+                    <div className="completion-feature-text">
+                      Connect with roommates and share rides
+                    </div>
+                  </li>
+                </ul>
+              </div>
+              
+              <div className="completion-modal-actions">
+                <button 
+                  onClick={handleSkipProfileCompletion}
+                  className="btn-complete-secondary"
+                >
+                  Skip for now
+                </button>
+                <button 
+                  onClick={handleCompleteProfile}
+                  className="btn-complete-primary"
+                >
+                  <Edit3 size={18} />
+                  Complete Profile
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Edit Profile Modal */}
         {isEditingProfile && (
@@ -1846,36 +2429,45 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Email</label>
-                  <input
-                    type="email"
-                    className="form-input"
-                    value={editForm.email || ''}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    placeholder="your.email@university.edu"
-                  />
-                </div>
-
-                <div className="form-group">
                   <label className="form-label">Phone</label>
                   <input
                     type="tel"
-                    className="form-input"
+                    className={`form-input ${validationErrors.phone ? 'error' : ''}`}
                     value={editForm.phone || ''}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
                     placeholder="+1 (555) 123-4567"
                   />
+                  {validationErrors.phone && (
+                    <p className="field-error">{validationErrors.phone.message}</p>
+                  )}
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Location</label>
+                  <label className="form-label">Campus/University (Optional)</label>
                   <input
                     type="text"
-                    className="form-input"
-                    value={editForm.location || ''}
-                    onChange={(e) => handleInputChange('location', e.target.value)}
-                    placeholder="University Campus"
+                    className={`form-input ${validationErrors.campus_name ? 'error' : ''}`}
+                    value={editForm.campus_name || ''}
+                    onChange={(e) => handleInputChange('campus_name', e.target.value)}
+                    placeholder="e.g., Stanford University, MIT, UC Berkeley"
+                    list="campus-suggestions"
                   />
+                  <datalist id="campus-suggestions">
+                    <option value="Stanford University" />
+                    <option value="MIT" />
+                    <option value="Harvard University" />
+                    <option value="University of California, Berkeley" />
+                    <option value="Texas A&M University" />
+                    <option value="Georgia Tech" />
+                    <option value="Carnegie Mellon University" />
+                    <option value="UCLA" />
+                    <option value="University of Michigan" />
+                    <option value="Cal Poly (SLO)" />
+                  </datalist>
+                  {validationErrors.campus_name && (
+                    <p className="field-error">{validationErrors.campus_name.message}</p>
+                  )}
+                  <small className="field-help">Enter your university or college name (2-100 characters)</small>
                 </div>
               </div>
 
