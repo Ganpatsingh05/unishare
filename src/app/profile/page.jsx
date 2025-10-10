@@ -13,6 +13,7 @@ import {
 import logoImage from '../assets/images/logounishare1.png';
 import { useAuth } from '../lib/contexts/UniShareContext';
 import SmallFooter from '../_components/SmallFooter';
+import ProfileNavBar from '../_components/ProfileNavBar';
 import { 
   getCurrentUserProfile, 
   updateUserProfile, 
@@ -527,16 +528,16 @@ export default function ProfilePage() {
           min-height: 100vh;
         }
 
-        /* Mobile navigation padding - same as global styles */
-        @media (max-width: 768px) {
-          body {
-            padding-bottom: 90px; /* Slightly more space for mobile bottom nav */
-          }
-        }
-
         .profile-container {
           min-height: 100vh;
           position: relative;
+        }
+
+        /* Add mobile bottom padding for profile navigation */
+        @media (max-width: 768px) {
+          body {
+            padding-bottom: 55px !important;
+          }
         }
 
         /* Background Grid */
@@ -988,7 +989,7 @@ export default function ProfilePage() {
           flex-direction: column;
           align-items: center;
           padding-top: 22rem; /* Increased padding to prevent overlap with name */
-          padding-bottom: 2rem; /* Add bottom padding for footer spacing */
+          padding-bottom: 0; /* Remove bottom padding to eliminate gap */
           position: relative;
           z-index: 5;
         }
@@ -1080,14 +1081,7 @@ export default function ProfilePage() {
           width: 100%;
           max-width: 600px;
           padding: 0 1rem;
-          margin-bottom: 2rem;
-        }
-
-        /* Add extra bottom padding to account section on mobile for navigation */
-        @media (max-width: 768px) {
-          .account-section {
-            margin-bottom: 0rem; /* Reduced space for mobile navigation */
-          }
+          margin-bottom: 0; /* Remove bottom margin to eliminate gap */
         }
 
         .section-title {
@@ -1420,6 +1414,7 @@ export default function ProfilePage() {
 
           .main-content {
             padding-top: 19rem; /* Increased padding on mobile to prevent overlap */
+            padding-bottom: 2rem; /* Normal bottom padding */
           }
 
           .bio-section {
@@ -2507,6 +2502,9 @@ export default function ProfilePage() {
       <div className='hidden md:block'>
         <SmallFooter />
       </div>
+
+      {/* Profile-specific mobile navigation */}
+      <ProfileNavBar />
     </div>
     </>
   );

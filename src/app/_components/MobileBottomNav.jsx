@@ -14,6 +14,11 @@ export default function MobileBottomNav() {
   const { darkMode } = useUI();
   const pathname = usePathname();
 
+  // Hide mobile bottom nav on profile page
+  if (pathname === '/profile') {
+    return null;
+  }
+
   // Check if current path matches the nav item
   const isActive = (path) => {
     if (path === '/') {
