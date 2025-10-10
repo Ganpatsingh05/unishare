@@ -337,7 +337,7 @@ export default function ProfilePage() {
         /* Logo and Brand positioned exactly like other pages */
         .header-brand {
           position: fixed;
-          top: 1rem;
+          top: 0.5rem; /* Moved up from 1rem */
           left: 2rem;
           z-index: 150;
         }
@@ -414,7 +414,7 @@ export default function ProfilePage() {
         @media (max-width: 768px) {
           .header-brand {
             left: 1rem; /* Shift left on mobile */
-            top: 1rem; /* Move down slightly on mobile */
+            top: 0.5rem; /* Moved up from 1rem on mobile */
           }
           
           .header-brand .logo-container {
@@ -501,47 +501,77 @@ export default function ProfilePage() {
           animation-timeline: scroll(root);
           animation-range: 0 200px;
         }
+        
+        /* For larger screens (desktop) */
+        @media (min-width: 768px) {
+          .profile-header {
+            height: 280px;
+          }
+        }
 
         @keyframes headerGradualFade {
           0% {
-            top: -50px;
+            top: 0px;
+            height: 260px;
             background: rgba(15, 23, 42, 0); /* slate-900 transparent */
             box-shadow: none;
+            backdrop-filter: blur(0px);
           }
           10% {
-            top: -65px;
+            top: 0px;
+            height: 240px;
             background: rgba(15, 23, 42, 0.1);
             box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(2px);
           }
           25% {
-            top: -85px;
-            background: rgba(15, 23, 42, 0.3);
+            top: 0px;
+            height: 200px;
+            background: rgba(15, 23, 42, 0.25);
             box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(4px);
           }
           40% {
-            top: -110px;
-            background: rgba(15, 23, 42, 0.5);
+            top: 0px;
+            height: 160px;
+            background: rgba(15, 23, 42, 0.4);
             box-shadow: 0 2px 20px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(6px);
+          }
+          50% {
+            top: 0px;
+            height: 80px; /* Height reduction stops here - reduced further */
+            background: rgba(15, 23, 42, 0.5);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.18);
+            backdrop-filter: blur(7px);
           }
           55% {
-            top: -135px;
-            background: rgba(15, 23, 42, 0.7);
+            top: 0px;
+            height: 80px; /* Height stays constant from here */
+            background: rgba(15, 23, 42, 0.55);
             box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(8px);
           }
           70% {
-            top: -155px;
-            background: rgba(15, 23, 42, 0.85);
+            top: 0px;
+            height: 80px; /* Height remains constant */
+            background: rgba(15, 23, 42, 0.65);
             box-shadow: 0 2px 20px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(10px);
           }
           85% {
-            top: -170px;
-            background: rgba(15, 23, 42, 0.95);
+            top: 0px;
+            height: 80px; /* Height remains constant */
+            background: rgba(15, 23, 42, 0.7);
             box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(12px);
           }
           100% {
-            top: -187px;
-            background: rgba(15, 23, 42, 1); /* solid slate-900 */
+            top: 0px;
+            height: 80px; /* Final height stays at 80px */
+            background: rgba(15, 23, 42, 0.75); /* 75% opacity for glass effect */
             box-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(15px);
           }
         }
 
@@ -733,7 +763,7 @@ export default function ProfilePage() {
           display: flex;
           flex-direction: column;
           align-items: center;
-          padding-top: 22rem; /* Increased padding to avoid overlap */
+          padding-top: 15rem; /* Further reduced padding for less space between name and bio */
           padding-bottom: 2rem; /* Add bottom padding for footer spacing */
           position: relative;
           z-index: 5;
@@ -1159,7 +1189,7 @@ export default function ProfilePage() {
           }
 
           .main-content {
-            padding-top: 20rem; /* Less padding on mobile */
+            padding-top: 13rem; /* Further reduced padding on mobile for less space */
           }
 
           .bio-section {
