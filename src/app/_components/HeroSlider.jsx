@@ -146,7 +146,7 @@ export default function HeroSlider({ darkMode = true }) {
         </div>
 
         {/* Dot Navigation Below Slider */}
-        <div className="mt-6 flex items-center justify-center gap-3">
+        {/* <div className="mt-6 flex items-center justify-center gap-3">
           {slides.map((_, i) => (
             <button
               key={i}
@@ -167,7 +167,7 @@ export default function HeroSlider({ darkMode = true }) {
               />
             </button>
           ))}
-        </div>
+        </div> */}
       </div>
     </section>
   );

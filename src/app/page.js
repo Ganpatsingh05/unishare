@@ -296,17 +296,17 @@ export default function Page() {
 
   {/* Particles background removed */}
 
-      <div className="relative z-10">
+      <div className="relative z-10 mb-0 md:mb-5">
       {/* SLIDER SECTION (replacing previous hero) */}
       <HeroSlider darkMode={darkMode} />
 
       {/* ENHANCED MAIN SECTION */}
-      <div ref={mainRef} className="-mt-2 md:mt-0">
+      <div ref={mainRef} className="mt-2 md:mt-0">
         <Main darkMode={darkMode} isVisible={isMainVisible} scrollProgress={scrollProgress} />
       </div>
 
-      {/* Interactive How It Works Section */}
-      <section className="py-16 md:py-20 transition-all duration-300">
+      {/* Interactive How It Works Section - Hidden on mobile, shown in FAB popup */}
+      <section className="py-16 md:py-20 transition-all duration-300 hidden md:block">
         <div className="max-w-6xl mx-auto px-4">
           {/* Header */}
           <div className="text-center mb-12 md:mb-16">
@@ -361,8 +361,8 @@ export default function Page() {
         </div>
       </section>
 
-      {/* Call to Action Section */}
-      <section className="py-20 transition-all duration-300">
+      {/* Call to Action Section - Hidden on mobile, shown in FAB popup */}
+      <section className="py-20 transition-all duration-300 hidden md:block">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className={`text-4xl md:text-5xl font-bold mb-6 ${
             darkMode ? 'text-white' : 'text-gray-900'
@@ -413,7 +413,10 @@ export default function Page() {
         </div>
       </section>
 
-  <Footer darkMode={darkMode} />
+      {/* Footer - Hidden on mobile */}
+      <div className="hidden md:block">
+        <Footer darkMode={darkMode} />
+      </div>
 
       {/* Floating Action Button */}
       <FloatingActionButton darkMode={darkMode} />

@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { Search, MapPin, IndianRupee, Calendar, Bed, Heart, Share2, Phone, Mail, Instagram, Filter, ChevronDown, Eye } from "lucide-react";
 import { fetchhousedata } from "../../lib/api";
+import RequestButton from "../../_components/RequestButton";
 
 
 const Footer = ({ darkMode }) => (
@@ -17,7 +18,7 @@ const Footer = ({ darkMode }) => (
 );
 
 // Room Card Component
-const RoomCard = ({ room, darkMode }) => {
+const RoomCard = ({ room, darkMode, onRequestSent }) => {
   const [liked, setLiked] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -173,10 +174,18 @@ const RoomCard = ({ room, darkMode }) => {
             )}
           </div>
           
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-1">
-            <Eye className="w-4 h-4" />
-            View Details
-          </button>
+          <div className="flex gap-2">
+            <RequestButton
+              module="rooms"
+              itemId={room.id}
+              onRequestSent={onRequestSent}
+              className="flex-1"
+            />
+            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-1">
+              <Eye className="w-4 h-4" />
+              View Details
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -245,6 +254,16 @@ export default function HousingSearchPage() {
   };
 
   const handleThemeToggle = () => setDarkMode((p) => !p);
+
+  // Handle room request sent
+  const handleRequestSent = (requestData) => {
+    console.log('Room request sent:', requestData);
+    // Show success message
+    const event = new CustomEvent('showMessage', {
+      detail: { message: 'Room request sent successfully!', type: 'success' }
+    });
+    window.dispatchEvent(event);
+  };
 
   const labelClr = darkMode ? "text-gray-300" : "text-gray-700";
   const inputBg = darkMode ? "bg-gray-900 border-gray-800 text-gray-100" : "bg-white border-gray-200 text-gray-900";
@@ -407,7 +426,7 @@ export default function HousingSearchPage() {
           {!loading && rooms.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {rooms.map((room) => (
-                <RoomCard key={room.id} room={room} darkMode={darkMode} />
+                <RoomCard key={room.id} room={room} darkMode={darkMode} onRequestSent={handleRequestSent} />
               ))}
             </div>
           )}

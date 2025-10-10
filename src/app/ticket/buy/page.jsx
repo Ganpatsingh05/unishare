@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import useIsMobile from "../../_components/useIsMobile";
+import RequestButton from "../../_components/RequestButton";
 import { fetchTickets } from "../../lib/api";
 import { 
   useAuth, 
@@ -178,6 +179,16 @@ export default function TicketBuyPage() {
     }
   };
 
+  // Handle ticket request sent
+  const handleRequestSent = (requestData) => {
+    console.log('Ticket request sent:', requestData);
+    // Show success message
+    const event = new CustomEvent('showMessage', {
+      detail: { message: 'Ticket request sent successfully!', type: 'success' }
+    });
+    window.dispatchEvent(event);
+  };
+
   const getEventTypeIcon = (type, cat) => {
     if (cat === 'travel') return Clock; // representing journey
     if (cat === 'other') return Tag;
@@ -323,9 +334,12 @@ export default function TicketBuyPage() {
 
           {/* Action buttons */}
           <div className="flex gap-3 pt-2">
-            <button className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-medium transition-all shadow-md hover:shadow-lg">
-              Contact Seller
-            </button>
+            <RequestButton
+              module="ticketsell"
+              itemId={ticket.id}
+              onRequestSent={handleRequestSent}
+              className="flex-1"
+            />
             <button className={`px-4 py-3 rounded-xl border transition-colors ${darkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-300 hover:bg-gray-50'}`}>
               <Star className="w-5 h-5" />
             </button>

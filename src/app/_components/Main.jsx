@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Car, ShoppingCart, Tag, Search, Star, Home, Megaphone, BookOpen, Phone, Users, RotateCw, CheckCircle, Filter, TrendingUp, Zap, Ticket } from 'lucide-react';
 import Image from 'next/image';
 import logoImage from '../assets/images/logounishare1.png';
-import MobileMain from "./mobilemain";
+import MobileMain from "./MobileMain";
 
 // Animated Counter Component
 const AnimatedCounter = ({ end, duration = 2000, isVisible, suffix = "" }) => {
@@ -297,7 +297,7 @@ const Main = ({ darkMode, isVisible = false }) => {
               placeholder="Search services, features..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className={`relative block w-full pl-18 pr-12 py-4 rounded-2xl border-2 transition-all duration-300 focus:outline-none focus:ring-4 focus:scale-105 z-0 ${
+              className={`relative block w-full pl-18 pr-12 py-4  rounded-2xl border-2 transition-all duration-300 focus:outline-none focus:ring-4 focus:scale-105 z-0 ${
                 darkMode 
                   ? 'bg-gray-800/80 border-gray-700 text-white placeholder-gray-400 focus:ring-yellow-400/20 focus:border-yellow-400 backdrop-blur-sm' 
                   : 'bg-white/80 border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500/20 focus:border-blue-500 backdrop-blur-sm'
@@ -469,8 +469,8 @@ const Main = ({ darkMode, isVisible = false }) => {
         </div>
       )}
 
-      {/* Enhanced Animated Stats Section */}
-      <div className="mt-20">
+      {/* Enhanced Animated Stats Section - Hidden on mobile, shown in FAB popup */}
+      <div className="mt-20 hidden md:block">
         <div className="text-center mb-12">
           <h3 className={`text-3xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
             Community Impact

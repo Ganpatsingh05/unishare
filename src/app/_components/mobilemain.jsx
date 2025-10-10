@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import Link from 'next/link';
@@ -195,14 +195,14 @@ const MobileMain = ({ darkMode, isVisible = false }) => {
   };
 
   return (
-    <main 
-      className="max-w-sm mx-auto px-3 pt-4 pb-12 min-h-screen"
+    <div
+      className="max-w-sm mx-auto px-3 pt-2 pb-2 min-h-screen"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
       {/* Mobile Header - Compact */}
       <div 
-        className="text-center mb-6 transition-all duration-800 opacity-100"
+        className="text-center mb-4 transition-all duration-800 opacity-100"
       >
         {/* Compact Welcome Badge */}
         <div 
@@ -248,7 +248,7 @@ const MobileMain = ({ darkMode, isVisible = false }) => {
               placeholder="Search services..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className={`w-full pl-14 pr-10 py-3 rounded-xl border transition-all duration-200 focus:outline-none focus:ring-2 text-sm ${
+              className={`w-full pl-14 pr-10 py-3  rounded-xl border transition-all duration-200 focus:outline-none focus:ring-2 text-sm ${
                 darkMode 
                   ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:ring-yellow-400/30 focus:border-yellow-400' 
                   : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500/30 focus:border-blue-500'
@@ -266,46 +266,11 @@ const MobileMain = ({ darkMode, isVisible = false }) => {
           </div>
         </div>
 
-        {/* Mobile Filter Toggle */}
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-            showFilters
-              ? darkMode ? 'bg-yellow-400 text-gray-900' : 'bg-blue-600 text-white'
-              : darkMode ? 'bg-gray-800 text-gray-300 border border-gray-700' : 'bg-gray-100 text-gray-700 border border-gray-200'
-          }`}
-        >
-          <Filter className="w-4 h-4" />
-          <span>{activeFilter}</span>
-          {showFilters ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-        </button>
-
-        {/* Collapsible Filters */}
-        {showFilters && (
-          <div className="flex flex-wrap justify-center gap-2 mt-3 p-3 rounded-lg bg-opacity-50 backdrop-blur-sm border">
-            {['All', 'Transport', 'Housing', 'Marketplace', 'Resources'].map((filter) => (
-              <button
-                key={filter}
-                onClick={() => {
-                  setActiveFilter(filter);
-                  setShowFilters(false);
-                }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
-                  activeFilter === filter
-                    ? darkMode ? 'bg-yellow-400 text-gray-900' : 'bg-blue-600 text-white'
-                    : darkMode ? 'bg-gray-800 text-gray-400' : 'bg-gray-200 text-gray-600'
-                }`}
-              >
-                {filter}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Mobile Services Grid - Compact Cards */}
       {filteredSections.length > 0 ? (
-        <div className="grid grid-cols-2 gap-3 mb-8">
+        <div className="grid grid-cols-2 gap-3 mb-2 mt-8">
           {filteredSections.map((section, index) => (
             <Link
               key={index}
@@ -348,84 +313,7 @@ const MobileMain = ({ darkMode, isVisible = false }) => {
           <p className="text-sm">Try a different search term</p>
         </div>
       )}
-
-      {/* Mobile Stats Section - Compact */}
-      <div className="mt-8">
-        <div className="text-center mb-6">
-          <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-            Community Impact
-          </h3>
-          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            Making campus life better together
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { 
-              label: 'Users', 
-              value: '2,500', 
-              icon: <Users className="w-5 h-5" />,
-              color: 'from-blue-500 to-cyan-500',
-              suffix: '+'
-            },
-            { 
-              label: 'Rides', 
-              value: '15,000', 
-              icon: <Car className="w-5 h-5" />,
-              color: 'from-green-500 to-emerald-500',
-              suffix: '+'
-            },
-            { 
-              label: 'Items', 
-              value: '8,500', 
-              icon: <ShoppingCart className="w-5 h-5" />,
-              color: 'from-purple-500 to-violet-500',
-              suffix: '+'
-            },
-            { 
-              label: 'Satisfaction', 
-              value: '96', 
-              icon: <Star className="w-5 h-5" />,
-              color: 'from-yellow-500 to-orange-500',
-              suffix: '%'
-            }
-          ].map((stat, index) => (
-            <div
-              key={index}
-              className={`text-center p-4 rounded-xl transition-all duration-300 active:scale-95 ${
-                darkMode 
-                  ? 'bg-gray-800/60 border border-gray-700/50' 
-                  : 'bg-white/60 border border-gray-200/50'
-              } backdrop-blur-sm shadow-md`}
-            >
-              <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl mb-3 bg-gradient-to-br ${stat.color} text-white shadow-md`}>
-                {stat.icon}
-              </div>
-              
-              <div className={`text-2xl font-bold mb-1 ${
-                darkMode ? 'text-white' : 'text-gray-900'
-              }`}>
-                <AnimatedCounter 
-                  end={stat.value} 
-                  isVisible={animatedStats} 
-                  suffix={stat.suffix}
-                />
-              </div>
-              
-              <div className={`text-xs font-medium ${
-                darkMode ? 'text-gray-400' : 'text-gray-600'
-              }`}>
-                {stat.label}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Mobile Bottom Spacing */}
-      <div className="h-4" />
-    </main>
+    </div>
   );
 };
 

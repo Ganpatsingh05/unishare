@@ -5,6 +5,8 @@ import RouteChangeOverlay from "./_components/RouteChangeOverlay";
 import NavigationLoader from "./_components/NavigationLoader";
 import InitialAppLoader from "./_components/InitialAppLoader";
 import ScrollToTop from "./_components/ScrollToTop";
+import MobileBottomNav from "./_components/MobileBottomNav";
+import MessageNotification from "./_components/MessageNotification";
 import { UniShareProvider } from "./lib/contexts/UniShareContext";
 import ThemeWrapper from "./_components/ThemeWrapper";
 import SiteChrome from "./_components/SiteChrome";
@@ -36,7 +38,9 @@ export default function RootLayout({ children }) {
             <SiteChrome>
               {children}
             </SiteChrome>
+            <MobileBottomNav />
             <CookieConsent />
+            <MessageNotification />
             {/* Client-side route change loader overlay */}
             <RouteChangeOverlay />
           </ThemeWrapper>
