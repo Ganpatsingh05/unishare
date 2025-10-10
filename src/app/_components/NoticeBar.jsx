@@ -19,6 +19,16 @@ export default function AnnouncementBar() {
   // LocalStorage key for dismiss (stores announcement id & timestamp)
   const DISMISS_KEY = 'unishare_announcement_dismiss';
 
+  // Set CSS custom property for notice bar height
+  useEffect(() => {
+    if (visible) {
+      // Set a reasonable height estimate for the notice bar
+      document.documentElement.style.setProperty('--notice-bar-height', '48px');
+    } else {
+      document.documentElement.style.setProperty('--notice-bar-height', '0px');
+    }
+  }, [visible]);
+
   useEffect(() => {
     let cancelled = false;
     const fetchData = async () => {
@@ -75,6 +85,8 @@ export default function AnnouncementBar() {
       } catch {/* ignore */}
     }
     setVisible(false);
+    // Update CSS custom property when dismissed
+    document.documentElement.style.setProperty('--notice-bar-height', '0px');
   };
 
   if (!visible) return null;
@@ -86,7 +98,7 @@ export default function AnnouncementBar() {
       : (darkMode ? 'text-yellow-400' : 'text-orange-600');
 
   return (
-    <div className={`w-full transition-all duration-300 border-b backdrop-blur-md ${darkMode ? 'bg-gradient-to-r from-gray-900/95 via-gray-950/90 to-gray-900/95 border-gray-700/50' : 'bg-gradient-to-r from-orange-50/95 via-orange-100/90 to-orange-50/95 border-orange-200/50'}`}> 
+    <div className={`w-full transition-all duration-300 border-b backdrop-blur-md fixed top-0 left-0 z-60 ${darkMode ? 'bg-gradient-to-r from-gray-900/95 via-gray-950/90 to-gray-900/95 border-gray-700/50' : 'bg-gradient-to-r from-orange-50/95 via-orange-100/90 to-orange-50/95 border-orange-200/50'}`}> 
       <div className="mx-auto max-w-screen-xl px-4 sm:px-6">
         <div className="flex items-center gap-3 py-2.5 sm:py-3">
           <p className={`flex-1 text-center text-xs sm:text-sm tracking-wide transition-all duration-500 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>

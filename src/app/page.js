@@ -301,7 +301,7 @@ export default function Page() {
       <HeroSlider darkMode={darkMode} />
 
       {/* ENHANCED MAIN SECTION */}
-      <div ref={mainRef} className="mt-2 md:mt-0">
+      <div ref={mainRef} className="mt-0">
         <Main darkMode={darkMode} isVisible={isMainVisible} scrollProgress={scrollProgress} />
       </div>
 

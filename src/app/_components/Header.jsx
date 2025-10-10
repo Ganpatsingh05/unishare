@@ -140,9 +140,9 @@ const Header = ({ logoRotation = 0 }) => {
   }
 
   return (
-    <header className={`fixed top-0 z-50 w-full overflow-x-clip overflow-y-visible transition-all duration-300 backdrop-blur-md ${
+    <header className={`fixed w-full overflow-x-clip overflow-y-visible transition-all duration-300 backdrop-blur-md ${
       darkMode ? 'bg-gray-900/80 shadow-gray-900/10' : 'bg-white/80 shadow-orange-200/20'
-    }`}>
+    }`} style={{ top: 'var(--notice-bar-height, 0px)', zIndex: 70 }}>
       {/* Mobile-only header */}
       <div className="md:hidden">
         <HeaderMobile 
@@ -176,12 +176,12 @@ const Header = ({ logoRotation = 0 }) => {
             {/* Logo and Search Section */}
             <div className="flex items-center gap-4 flex-1 py-2">
               {/* Original Logo - Always show as before */}
-              <Link className="block group cursor-pointer" href="/">
+              <Link className="block group cursor-pointer relative" href="/">
                 <span className="sr-only">UniShare Home</span>
                 <div className="flex items-center gap-3">
-                  <div className="w-20 h-20 flex items-end justify-center overflow-visible pb-2">
+                  <div className="w-20 h-20 flex items-center justify-center overflow-visible mt-2 relative">
                     <div 
-                      className="h-16 w-16 transition-all duration-300 transform group-hover:scale-125 animate-float"
+                      className="h-16 w-16 transition-all duration-300 transform group-hover:scale-125 animate-float relative"
                       style={{ 
                         transform: `scale(1) rotate(${logoRotation}deg)`,
                         filter: darkMode ? 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.3))' : 'drop-shadow(0 0 15px rgba(59, 130, 246, 0.2))'

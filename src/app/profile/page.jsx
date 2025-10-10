@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
   Camera, Star, Key, TrendingUp, Volume2, Share2, ArrowLeft, 
-  Edit3, ShoppingBag, Search, Home, Car, Ticket, MapPin, User, Settings,
+  Edit3, ShoppingBag, Search, Home, Car, Ticket, MapPin, User, Settings,Bell,
   Save, X, Upload, Store, Eye, PartyPopper, Navigation, Calendar, LogOut,
   Copy, Check, ExternalLink
 } from 'lucide-react';
@@ -432,6 +432,47 @@ export default function ProfilePage() {
             width: 2.5rem; /* Smaller back button */
             height: 2.5rem;
           }
+
+          /* Mobile notification bell styling */
+          .mobile-notification-bell {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 150;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            color: #374151;
+          }
+
+          .mobile-notification-bell:hover {
+            background: rgba(249, 250, 251, 0.95);
+            transform: scale(1.05);
+            color: #111827;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          }
+
+          /* Dark mode styles for mobile notification bell */
+          @media (prefers-color-scheme: dark) {
+            .mobile-notification-bell {
+              background: rgba(31, 41, 55, 0.9);
+              border-color: rgba(255, 255, 255, 0.1);
+              color: #e5e7eb;
+            }
+            
+            .mobile-notification-bell:hover {
+              background: rgba(55, 65, 81, 0.95);
+              color: white;
+            }
+          }
         }
 
         .brand-uni {
@@ -452,7 +493,7 @@ export default function ProfilePage() {
         .profile-header {
           position: fixed;
           top: -50px;
-          height: 280px;
+          height: 260px;
           width: 100%;
           z-index: 10;
           background: rgba(255, 255, 255, 0);
@@ -1464,6 +1505,15 @@ export default function ProfilePage() {
               />
             </div>
           </Link>
+          
+          {/* Mobile notification bell icon */}
+          <button
+            onClick={handleNotifications}
+            className="mobile-notification-bell"
+            aria-label="Notifications"
+          >
+            <Bell size={20} />
+          </button>
         </div>
 
         {/* Background Grid */}
@@ -1507,7 +1557,7 @@ export default function ProfilePage() {
         </header>
 
         {/* Main Content */}
-        <main className="main-content">
+      <div className="main-content">
           {/* Bio/About Section */}
           <div className="bio-section">
             <div className="bio-container">
@@ -1654,7 +1704,7 @@ export default function ProfilePage() {
 
           {/* Spacer for scrolling */}
           <div style={{ height: '4rem' }}></div>
-        </main>
+        </div>
 
         {/* Edit Profile Modal */}
         {isEditingProfile && (
@@ -1819,7 +1869,9 @@ export default function ProfilePage() {
       </div>
 
       {/* Small Footer */}
-      <SmallFooter />
+      <div className='hidden md:block'>
+        <SmallFooter />
+      </div>
     </div>
     </>
   );
