@@ -6,9 +6,11 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, X, Package, ChevronDown, Calendar, Phone, Mail, Instagram } from 'lucide-react';
 import { useUI } from '../lib/contexts/UniShareContext';
+import { useDynamicIslandNotification } from '../lib/hooks/useDynamicIslandNotification';
 
 const RequestButton = ({ module, itemId, onRequestSent, disabled = false, className = '', isOwnItem = false }) => {
   const { darkMode } = useUI();
+  const { showRequestSuccess, showError, showLoginRequired } = useDynamicIslandNotification();
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -218,11 +220,8 @@ const RequestButton = ({ module, itemId, onRequestSent, disabled = false, classN
 
       const response = await api.sendRequest(itemId, payload);
       
-      // Show success message
-      const event = new CustomEvent('showMessage', {
-        detail: { message: 'Request sent successfully!', type: 'success' }
-      });
-      window.dispatchEvent(event);
+      // Show success message using Dynamic Island
+      showRequestSuccess('sent');
       
       setShowModal(false);
       setMessage('');
@@ -247,13 +246,13 @@ const RequestButton = ({ module, itemId, onRequestSent, disabled = false, classN
       } else if (error.message?.includes('Preferred move-in date is required')) {
         errorMessage = 'Please select your preferred move-in date.';
       } else if (error.message?.includes('authentication') || error.message?.includes('login')) {
-        errorMessage = 'Please log in to send a request.';
+        // Show login required notification for auth errors
+        showLoginRequired(window.location.pathname);
+        return; // Don't show generic error for auth issues
       }
       
-      const event = new CustomEvent('showMessage', {
-        detail: { message: errorMessage, type: 'error' }
-      });
-      window.dispatchEvent(event);
+      // Show error using Dynamic Island
+      showError(errorMessage, 'Request Failed');
     } finally {
       setIsLoading(false);
     }

@@ -273,13 +273,13 @@ const Main = ({ darkMode, isVisible = false }) => {
           <div className="relative">
             {/* Logo inside search bar - left side with higher z-index */}
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center z-20">
-              <Link href="/" className="flex items-center">
+              <Link href="/" className="flex items-center w-7 h-8">
                 <Image
                   src={logoImage}
                   alt="UniShare Logo"
                   width={28}
                   height={32}
-                  className="transition-transform duration-300 hover:scale-110 hover:rotate-6 active:scale-95 cursor-pointer"
+                  className="transition-transform duration-300 hover:scale-110 hover:rotate-6 active:scale-95 cursor-pointer w-full h-full object-contain"
                   style={{
                     background: 'transparent',
                     filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))',

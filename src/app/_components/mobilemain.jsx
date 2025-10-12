@@ -231,13 +231,14 @@ const MobileMain = ({ darkMode, isVisible = false }) => {
         <div className="relative mb-4">
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-20">
-              <Link href="/" className="flex items-center">
+              <Link href="/" className="flex items-center w-5 h-6">
                 <Image
                   src={logoImage}
                   alt="UniShare"
                   width={20}
                   height={24}
-                  className="transition-transform duration-200 active:scale-95"
+                  className="transition-transform duration-200 active:scale-95 w-full h-full object-contain"
+                  style={{ width: 'auto', height: 'auto' }}
                   priority
                 />
               </Link>

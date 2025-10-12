@@ -69,9 +69,7 @@ export const getPublicNotices = async () => {
   
   for (const endpoint of endpoints) {
     try {
-      console.log(`🔍 Trying notices endpoint: ${endpoint}`);
       const data = await apiCall(endpoint);
-      console.log(`✅ Success from ${endpoint}:`, data);
       
       if (data.success && data.notices && Array.isArray(data.notices)) {
         // The /api/notice endpoint already returns only active notices
@@ -127,7 +125,6 @@ export const getNoticesForNoticeBar = async () => {
     if (cached) {
       const { data, timestamp } = JSON.parse(cached);
       if (Date.now() - timestamp < CACHE_DURATION) {
-        console.log('📢 Using cached notices');
         return data;
       }
     }
@@ -137,7 +134,6 @@ export const getNoticesForNoticeBar = async () => {
   
   try {
     const response = await getPublicNotices();
-    console.log('📢 getNoticesForNoticeBar response:', response);
     
     if (response.success && response.notices && response.notices.length > 0) {
       // Transform notices to match NoticeBar expected format

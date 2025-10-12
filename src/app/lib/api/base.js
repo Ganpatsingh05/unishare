@@ -88,9 +88,6 @@ export const apiCall = async (endpoint, options = {}) => {
   if (cache && cacheKey) {
     const cachedData = apiCache.get(cacheKey);
     if (cachedData) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`📦 Cache hit for ${endpoint}`);
-      }
       return cachedData;
     }
   }
@@ -151,10 +148,6 @@ export const apiCall = async (endpoint, options = {}) => {
         apiCache.set(cacheKey, data, cacheTTL);
       }
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`✅ API ${method} ${endpoint}:`, data);
-      }
-
       return data;
 
     } catch (error) {
@@ -203,11 +196,6 @@ export const apiCallFormData = async (endpoint, formData, options = {}) => {
 
   if (!BACKEND_URL) {
     throw new APIError('Backend not available', 503, 'NEXT_PUBLIC_BACKEND_URL not configured');
-  }
-
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`📁 FormData ${method} ${endpoint}`);
-    console.log('FormData contents:', Array.from(formData.entries()));
   }
 
   let attempt = 0;

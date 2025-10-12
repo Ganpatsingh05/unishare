@@ -446,14 +446,9 @@ export const UniShareProvider = ({ children }) => {
       try {
         // Check if this is first visit in this browser session
         const hasSeenLoader = sessionStorage.getItem('uniShareLoaderShown');
-        console.log('UniShare: sessionStorage check:', { 
-          hasSeenLoader, 
-          allSessionStorage: Object.keys(sessionStorage) 
-        });
         
         if (!hasSeenLoader) {
           // Show loader for first time in this session
-          console.log('UniShare: First visit in session - showing loader');
           // Ensure the loader state is set correctly
           dispatch({ type: ActionTypes.SET_INITIAL_LOADING, payload: true });
           dispatch({ type: ActionTypes.SET_APP_READY, payload: false });
@@ -475,7 +470,6 @@ export const UniShareProvider = ({ children }) => {
           return;
         } else {
           // Skip loader, go directly to app ready state
-          console.log('UniShare: Already seen loader in session - skipping');
           dispatch({ type: ActionTypes.SET_INITIAL_LOADING, payload: false });
           dispatch({ type: ActionTypes.SET_APP_READY, payload: true });
         }

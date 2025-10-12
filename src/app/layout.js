@@ -3,13 +3,14 @@ import "./globals.css";
 import CookieConsent from "./_components/CookieConsent";
 import RouteChangeOverlay from "./_components/RouteChangeOverlay";
 import NavigationLoader from "./_components/NavigationLoader";
-import InitialAppLoader from "./_components/InitialAppLoader";
 import ScrollToTop from "./_components/ScrollToTop";
 import MobileBottomNav from "./_components/MobileBottomNav";
 import MessageNotification from "./_components/MessageNotification";
 import { UniShareProvider } from "./lib/contexts/UniShareContext";
 import ThemeWrapper from "./_components/ThemeWrapper";
 import SiteChrome from "./_components/SiteChrome";
+import DynamicIslandWrapper from "./_components/DynamicIslandWrapper";
+import PageNavigationNotifier from "./_components/PageNavigationNotifier";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,14 +34,15 @@ export default function RootLayout({ children }) {
         <UniShareProvider>
           <ThemeWrapper>
             <ScrollToTop />
-            <InitialAppLoader />
             <NavigationLoader />
+            <PageNavigationNotifier />
             <SiteChrome>
               {children}
             </SiteChrome>
             <MobileBottomNav />
             <CookieConsent />
             <MessageNotification />
+            <DynamicIslandWrapper />
             {/* Client-side route change loader overlay */}
             <RouteChangeOverlay />
           </ThemeWrapper>

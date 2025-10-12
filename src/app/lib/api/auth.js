@@ -6,7 +6,6 @@ import { apiCall, BACKEND_URL } from './base.js';
 export const fetchCurrentUser = async () => {
   try {
     const data = await apiCall('/auth/me');
-    console.log("User data from backend:", data);
     
     // Your backend returns { success: true, user: {...} } or { success: true, user: null }
     if (data.success) {
@@ -62,8 +61,6 @@ export const checkAdminStatus = async () => {
     ];
 
     const isAdmin = ADMIN_EMAILS.includes(user.email);
-    
-    console.log('Admin status check:', { userEmail: user.email, isAdmin });
     
     return { 
       isAdmin, 

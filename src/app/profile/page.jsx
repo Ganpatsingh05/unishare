@@ -2382,9 +2382,9 @@ export default function ProfilePage() {
           <div className="edit-modal-overlay" onClick={handleCancelEdit}>
             <div className="edit-modal" onClick={(e) => e.stopPropagation()}>
 
-        {/* Success Toast for Link Copied */}
+        {/* Success Toast for Link Copied - Lower z-index than Dynamic Island */}
         {linkCopied && (
-          <div className="fixed top-20 right-4 z-[9999] bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-slide-in-right">
+          <div className="fixed top-20 right-4 z-[9000] bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-slide-in-right">
             <Check size={16} />
             <span>Profile link copied to clipboard!</span>
           </div>

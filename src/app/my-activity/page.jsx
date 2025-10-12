@@ -3,8 +3,9 @@
 import { useState, useMemo, memo, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Car, ShoppingCart, Home, Search, Megaphone, Ticket } from "lucide-react";
-import { useUI } from '../lib/contexts/UniShareContext';
+import { Car, ShoppingCart, Home, Search, Megaphone, Ticket, LogIn, User } from "lucide-react";
+import { useUI, useAuth } from '../lib/contexts/UniShareContext';
+import { useDynamicIslandNotification } from '../lib/hooks/useDynamicIslandNotification';
 
 
 const NotificationBadge = memo(({ count, gradient }) => (
@@ -84,8 +85,80 @@ const ActivityCard = memo(({ category, index, theme }) => {
 });
 ActivityCard.displayName = 'ActivityCard';
 
+// Login Prompt Component
+const LoginPrompt = memo(({ theme }) => (
+  <div className={`min-h-screen ${theme.bg} relative overflow-hidden flex items-center justify-center`}>
+    {/* Animated Background Elements */}
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-purple-400/10 to-indigo-400/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-indigo-400/5 to-blue-400/5 rounded-full blur-3xl animate-pulse delay-2000"></div>
+    </div>
+
+    {/* Main Content */}
+    <div className="relative z-10 px-4 sm:px-6 lg:px-8">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center max-w-md mx-auto"
+      >
+        {/* Login Icon */}
+        <div className="mb-8">
+          <div className={`
+            w-24 h-24 mx-auto rounded-full flex items-center justify-center
+            bg-gradient-to-r from-blue-500 to-purple-500
+            shadow-lg ring-4 ring-blue-500/20
+          `}>
+            <User className="w-12 h-12 text-white" />
+          </div>
+        </div>
+
+        {/* Title and Message */}
+        <h1 className={`text-3xl font-bold ${theme.text} mb-4`}>
+          Login Required
+        </h1>
+        <p className={`${theme.textMuted} text-lg mb-8`}>
+          You need to be logged in to view your activity and manage your requests.
+        </p>
+
+        {/* Login Button */}
+        <Link href="/login?redirect=/my-activity">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className={`
+              inline-flex items-center justify-center gap-3
+              px-8 py-4 rounded-2xl font-semibold text-lg
+              bg-gradient-to-r from-blue-600 to-purple-600
+              text-white shadow-lg hover:shadow-xl
+              transition-all duration-300
+              ring-2 ring-blue-500/20 hover:ring-blue-500/40
+            `}
+          >
+            <LogIn className="w-5 h-5" />
+            Login to Continue
+          </motion.button>
+        </Link>
+
+        {/* Additional Links */}
+        <div className="mt-8 space-y-2">
+          <p className={`${theme.textMuted} text-sm`}>
+            Don't have an account?{' '}
+            <Link href="/register" className="text-blue-600 hover:text-blue-700 font-medium">
+              Sign up here
+            </Link>
+          </p>
+        </div>
+      </motion.div>
+    </div>
+  </div>
+));
+LoginPrompt.displayName = 'LoginPrompt';
+
 export default function RequestsMadePage() {
   const { darkMode } = useUI();
+  const { isAuthenticated, user } = useAuth();
+  const { showLoginRequired } = useDynamicIslandNotification();
   const [requestCounts, setRequestCounts] = useState({
     rooms: { total: 0 },
     marketplace: { total: 0 },
@@ -96,8 +169,32 @@ export default function RequestsMadePage() {
   });
   const [loading, setLoading] = useState(true);
 
-  // Fetch request counts
+  const theme = useMemo(() => ({
+    bg: darkMode ? 'bg-gray-900' : 'bg-gray-50',
+    card: darkMode ? 'bg-gray-800' : 'bg-white',
+    cardSecondary: darkMode ? 'bg-gray-800/50 backdrop-blur-xl' : 'bg-white/70 backdrop-blur-xl',
+    border: darkMode ? 'border-gray-700' : 'border-gray-200',
+    borderLight: darkMode ? 'border-gray-700/50' : 'border-white/20',
+    text: darkMode ? 'text-white' : 'text-gray-900',
+    textMuted: darkMode ? 'text-gray-400' : 'text-gray-600',
+    textSecondary: darkMode ? 'text-gray-300' : 'text-gray-700',
+  }), [darkMode]);
+
+  // Check if user is authenticated first and show dynamic island notification
   useEffect(() => {
+    if (!isAuthenticated || !user) {
+      // Show Dynamic Island notification for login requirement
+      showLoginRequired('/my-activity');
+    }
+  }, [isAuthenticated, user, showLoginRequired]);
+
+  // Fetch request counts only when authenticated
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      setLoading(false);
+      return;
+    }
+
     const fetchRequestCounts = async () => {
       try {
         const { getAllRequestCounts } = await import('../lib/api/requests');
@@ -111,20 +208,9 @@ export default function RequestsMadePage() {
     };
 
     fetchRequestCounts();
-  }, []);
+  }, [isAuthenticated, user]);
 
-  const theme = useMemo(() => ({
-    bg: darkMode ? 'bg-gray-900' : 'bg-gray-50',
-    card: darkMode ? 'bg-gray-800' : 'bg-white',
-    cardSecondary: darkMode ? 'bg-gray-800/50 backdrop-blur-xl' : 'bg-white/70 backdrop-blur-xl',
-    border: darkMode ? 'border-gray-700' : 'border-gray-200',
-    borderLight: darkMode ? 'border-gray-700/50' : 'border-white/20',
-    text: darkMode ? 'text-white' : 'text-gray-900',
-    textMuted: darkMode ? 'text-gray-400' : 'text-gray-600',
-    textSecondary: darkMode ? 'text-gray-300' : 'text-gray-700',
-  }), [darkMode]);
-
-  // Request categories with real counts
+  // Request categories with real counts - MUST be before conditional return
   const requestCategories = useMemo(() => [
     {
       name: "Share Ride",
@@ -175,6 +261,11 @@ export default function RequestsMadePage() {
       description: "Announcement requests"
     }
   ], [requestCounts]);
+
+  // Check if user is authenticated first
+  if (!isAuthenticated || !user) {
+    return <LoginPrompt theme={theme} />;
+  }
 
   return (
     <div className={`min-h-screen ${theme.bg} relative overflow-hidden`}>
