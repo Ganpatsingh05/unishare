@@ -49,7 +49,7 @@ export default function CookieConsent() {
       aria-live="polite"
       aria-label="Cookie consent"
       aria-modal="false"
-      className="fixed z-[60] bottom-4 left-4 right-4 sm:right-auto sm:w-[420px]"
+      className="fixed z-[10002] bottom-4 left-4 right-4 sm:right-auto sm:w-[420px]"
     >
       <div className="relative rounded-2xl bg-white text-gray-800 shadow-2xl ring-1 ring-black/5 px-5 pt-8 pb-4 sm:px-6 sm:pt-9 sm:pb-5">
         {/* Cookie badge overlay */}

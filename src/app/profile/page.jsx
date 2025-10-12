@@ -13,7 +13,6 @@ import {
 import logoImage from '../assets/images/logounishare1.png';
 import { useAuth } from '../lib/contexts/UniShareContext';
 import SmallFooter from '../_components/SmallFooter';
-import ProfileNavBar from '../_components/ProfileNavBar';
 import { 
   getCurrentUserProfile, 
   updateUserProfile, 
@@ -531,13 +530,6 @@ export default function ProfilePage() {
         .profile-container {
           min-height: 100vh;
           position: relative;
-        }
-
-        /* Add mobile bottom padding for profile navigation */
-        @media (max-width: 768px) {
-          body {
-            padding-bottom: 55px !important;
-          }
         }
 
         /* Background Grid */
@@ -1412,11 +1404,6 @@ export default function ProfilePage() {
             max-width: calc(100vw - 2rem);
           }
 
-          .main-content {
-            padding-top: 19rem; /* Increased padding on mobile to prevent overlap */
-            padding-bottom: 2rem; /* Normal bottom padding */
-          }
-
           .bio-section {
             padding: 0 0.75rem; /* Adjust padding for mobile */
           }
@@ -1893,6 +1880,71 @@ export default function ProfilePage() {
           color: #f1f5f9;
           transform: translateY(-1px);
         }
+
+        /* Profile Page Mobile Navigation Fixes */
+        @media (max-width: 768px) {
+          /* Reduce body bottom padding for profile page */
+          body {
+            padding-bottom: 63px !important; /* Reduced for shorter navbar */
+          }
+          
+          /* Ensure last content section has minimal bottom margin */
+          .account-section {
+            margin-bottom: 0.25rem !important;
+          }
+          
+          .activity-cards-grid {
+            margin-bottom: 0.5rem !important; /* Reduced bottom margin */
+          }
+          
+          /* Main content specific adjustments */
+          .main-content {
+            padding-bottom: 0 !important; /* No bottom padding */
+          }
+          
+          /* Enhanced mobile nav positioning and sizing for profile page */
+          .mobile-bottom-nav {
+            bottom: 0 !important;
+            padding-bottom: env(safe-area-inset-bottom, 0) !important;
+            height: auto !important;
+            min-height: 62px; /* Reduced from 64px */
+          }
+          
+          /* Profile page navbar content styling */
+          .mobile-bottom-nav .flex {
+            padding: 6px 16px !important; /* Reduced padding for less height */
+          }
+          
+          /* Keep icon size same but increase spacing */
+          .mobile-bottom-nav .flex a {
+            padding: 8px 8px !important; /* Increased vertical padding */
+          }
+          
+          .mobile-bottom-nav svg {
+            width: 18px !important; /* Keep same size */
+            height: 18px !important;
+            stroke-width: 1.5 !important; /* Reduced stroke width for less bold icons */
+          }
+          
+          .mobile-bottom-nav span {
+            font-size: 11px !important; /* Keep same text size */
+            font-weight: 150 !important; /* Reduced from 300 to extra light weight */
+            margin-top: 2px !important; /* More space between icon and text */
+            letter-spacing: -0.01em !important; /* Reduce space between letters */
+          }
+          
+          /* Profile page container adjustments */
+          .profile-container {
+            padding-bottom: 0 !important;
+            margin-bottom: 0 !important;
+          }
+          
+          /* Menu list adjustments */
+          .menu-list {
+            margin-bottom: 0 !important;
+            padding-bottom: 0.5rem !important;
+          }
+        }
       `}</style>
 
       {/* SVG Filters */}
@@ -2253,8 +2305,6 @@ export default function ProfilePage() {
               </li>
             </ul>
           </div>
-
-          {/* No spacer needed - mobile navigation handled by body padding */}
         </div>
 
         {/* Profile Completion Modal for New Users */}
@@ -2502,9 +2552,6 @@ export default function ProfilePage() {
       <div className='hidden md:block'>
         <SmallFooter />
       </div>
-
-      {/* Profile-specific mobile navigation */}
-      <ProfileNavBar />
     </div>
     </>
   );

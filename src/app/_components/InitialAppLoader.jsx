@@ -197,7 +197,7 @@ const InitialAppLoader = () => {
     <AnimatePresence>
       <motion.div 
         ref={containerRef}
-        className={`fixed inset-0 z-[100] overflow-hidden ${
+        className={`fixed inset-0 z-[10003] overflow-hidden ${
           darkMode 
             ? 'bg-gradient-to-br from-indigo-950 via-purple-950 to-slate-900' 
             : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'
@@ -617,7 +617,7 @@ const InitialAppLoader = () => {
             {/* Confetti Effect */}
             <AnimatePresence>
               {showConfetti && (
-                <div className="fixed inset-0 pointer-events-none overflow-hidden z-50">
+                <div className="fixed inset-0 pointer-events-none overflow-hidden z-[10004]">
                   {confettiPieces.map((piece) => (
                     <motion.div
                       key={piece.id}
