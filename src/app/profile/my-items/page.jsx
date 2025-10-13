@@ -15,6 +15,7 @@ import {
   updateItem, 
   deleteItem 
 } from '../../lib/api/marketplace';
+import { MarketplaceNotifications } from '../../lib/utils/actionNotifications';
 
 // Import contexts
 import { useAuth, useUI, useUniShare } from '../../lib/contexts/UniShareContext';
@@ -381,23 +382,41 @@ const MyItemsPage = () => {
       if (id) {
         // Edit existing item
         const itemUpdateData = {
-          ...editFormData,
+          title: editFormData.title,
+          price: editFormData.price,
+          category: editFormData.category,
+          condition: editFormData.condition,
+          location: editFormData.location,
+          available_from: editFormData.available_from,
+          description: editFormData.description || '',
           contact_info: formatContactInfo(editFormData)
         };
         const itemImageFile = selectedImages.length > 0 ? selectedImages[0] : null;
         result = await updateItem(id, itemUpdateData, itemImageFile);
         if (result.success && result.data) {
+          // Show Dynamic Island notification
+          MarketplaceNotifications.itemUpdated();
+          
           setUserItems(prev => prev.map(item => item.id === id ? result.data : item));
         }
       } else {
         // Create new item
         const itemCreateData = {
-          ...editFormData,
+          title: editFormData.title,
+          price: editFormData.price,
+          category: editFormData.category,
+          condition: editFormData.condition,
+          location: editFormData.location,
+          available_from: editFormData.available_from,
+          description: editFormData.description || '',
           contact_info: formatContactInfo(editFormData)
         };
         const itemCreateImageFile = selectedImages.length > 0 ? selectedImages[0] : null;
         result = await createItem(itemCreateData, itemCreateImageFile);
         if (result.success && result.data) {
+          // Show Dynamic Island notification
+          MarketplaceNotifications.itemListed(result.data.title);
+          
           setUserItems(prev => [result.data, ...prev]);
         }
       }
@@ -435,6 +454,10 @@ const MyItemsPage = () => {
 
     try {
       await deleteItem(itemToDelete.id);
+      
+      // Show Dynamic Island notification
+      MarketplaceNotifications.itemDeleted();
+      
       setUserItems(prev => prev.filter(item => item.id !== itemToDelete.id));
 
       try {

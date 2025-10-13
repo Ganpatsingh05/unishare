@@ -36,6 +36,7 @@ import {
   useMessages, 
   useUI 
 } from "../../lib/contexts/UniShareContext";
+import { TicketNotifications } from "../../lib/utils/actionNotifications";
 
 export default function TicketSellPage() {
   const { isAuthenticated, user } = useAuth();
@@ -571,6 +572,9 @@ function TicketCreateModal({ onClose, onTicketCreated, editingTicket, darkMode, 
         // Update existing ticket
         result = await updateTicket(editingTicket.id, payload);
         if(result.success){ 
+          // Show Dynamic Island notification
+          TicketNotifications.ticketUpdated();
+          
           showTemporaryMessage(`Listing "${result.data.title}" updated!`, true, 3500); 
           handleReset(); 
           onTicketCreated && onTicketCreated(result.data); 
@@ -581,6 +585,9 @@ function TicketCreateModal({ onClose, onTicketCreated, editingTicket, darkMode, 
         // Create new ticket
         result = await createTicket(payload);
         if(result.success){ 
+          // Show Dynamic Island notification
+          TicketNotifications.ticketListed(result.data.title);
+          
           showTemporaryMessage(`Listing "${result.data.title}" created!`, true, 3500); 
           handleReset(); 
           onTicketCreated && onTicketCreated(result.data); 

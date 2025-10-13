@@ -35,7 +35,7 @@ export default function RootLayout({ children }) {
           <ThemeWrapper>
             <ScrollToTop />
             <NavigationLoader />
-            <PageNavigationNotifier />
+            {/* <PageNavigationNotifier /> */}
             <SiteChrome>
               {children}
             </SiteChrome>

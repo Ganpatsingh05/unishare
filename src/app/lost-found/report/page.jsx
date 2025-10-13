@@ -6,6 +6,7 @@ import { Calendar, Clock, MapPin, Image as ImageIcon, Phone, Instagram, Mail, Li
 import { createLostFoundItem } from "../../lib/api";
 import { useAuth } from "../../lib/contexts/UniShareContext";
 import { useMessages, useUI } from "../../lib/contexts/UniShareContext";
+import { LostFoundNotifications } from "../../lib/utils/actionNotifications";
 import { useRouter } from "next/navigation";
 
 export default function ReportLostFoundPage() {
@@ -154,6 +155,13 @@ export default function ReportLostFoundPage() {
       const result = await createLostFoundItem(itemData, images);
       
       if (result.success) {
+        // Show Dynamic Island notification
+        if (mode === 'lost') {
+          LostFoundNotifications.lostItemReported(itemName.trim());
+        } else {
+          LostFoundNotifications.foundItemPosted(itemName.trim());
+        }
+        
         showTemporaryMessage(result.message || `${mode === 'lost' ? 'Lost' : 'Found'} item report submitted successfully!`, 'success');
         
         // Reset form

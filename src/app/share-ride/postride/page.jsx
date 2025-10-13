@@ -25,6 +25,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useUI, useAuth, useMessages } from "../../lib/contexts/UniShareContext";
+import { RideNotifications } from "../../lib/utils/actionNotifications";
 import Link from "next/link";
 
 // Loading Component
@@ -719,6 +720,9 @@ export default function PostRidePage() {
       const result = await createRide(rideData);
       
       if (result.success) {
+        // Show Dynamic Island notification
+        RideNotifications.ridePosted(toLoc.trim());
+        
         // Show beautiful success popup instead of temporary message
         setShowSuccessPopup(true);
         

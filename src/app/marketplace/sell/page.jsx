@@ -30,6 +30,7 @@ import {
   useUI, 
   useUserData 
 } from "../../lib/contexts/UniShareContext";
+import { MarketplaceNotifications } from "../../lib/utils/actionNotifications";
 import Footer from "../../_components/Footer";
 import SmallFooter from "../../_components/SmallFooter";
 import useIsMobile from "../../_components/useIsMobile";
@@ -195,6 +196,9 @@ export default function MarketplaceSellPage() {
       const result = await createItem(itemData, imageFile);
       
       if (result.success) {
+        // Show Dynamic Island notification
+        MarketplaceNotifications.itemListed(result.data.title);
+        
         // Add to context state
         addUserItem(result.data);
         

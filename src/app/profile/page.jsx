@@ -19,6 +19,7 @@ import {
   validateProfileDataEnhanced,
   validateCampusName
 } from '../lib/api/userProfile';
+import { ProfileNotifications } from '../lib/utils/actionNotifications';
 import { fetchMyItems } from '../lib/api/marketplace';
 import { fetchMyLostFoundItems } from '../lib/api/lostFound';
 import { fetchMyRooms } from '../lib/api/housing';
@@ -320,6 +321,13 @@ export default function ProfilePage() {
       const response = await updateUserProfile(editForm, profileImageFile);
       
       if (response.success) {
+        // Show Dynamic Island notification
+        if (profileImageFile) {
+          ProfileNotifications.profilePictureUpdated();
+        } else {
+          ProfileNotifications.profileUpdated();
+        }
+        
         // Update local state with the response data
         const updatedProfile = response.profile || response.data || {};
         setProfileData({

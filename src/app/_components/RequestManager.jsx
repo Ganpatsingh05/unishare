@@ -24,6 +24,7 @@ import {
   Bed
 } from 'lucide-react';
 import { useUI } from '../lib/contexts/UniShareContext';
+import { SystemNotifications } from '../lib/utils/actionNotifications';
 
 const RequestManager = ({ 
   module, 
@@ -132,9 +133,16 @@ const RequestManager = ({
 
       await api.respondToRequest(requestId, action);
       
+      // Show Dynamic Island notification
+      if (action === 'confirm') {
+        SystemNotifications.success('Request accepted successfully!');
+      } else if (action === 'decline') {
+        SystemNotifications.success('Request declined');
+      }
+      
       const event = new CustomEvent('showMessage', {
         detail: { 
-          message: `Request ${action === 'accepted' ? 'accepted' : 'rejected'} successfully!`, 
+          message: `Request ${action === 'confirm' ? 'accepted' : 'declined'} successfully!`, 
           type: 'success' 
         }
       });
@@ -189,6 +197,9 @@ const RequestManager = ({
       }
 
       await api.cancelRequest(requestId);
+      
+      // Show Dynamic Island notification
+      SystemNotifications.success('Request cancelled');
       
       const event = new CustomEvent('showMessage', {
         detail: { 
@@ -789,14 +800,14 @@ const RequestManager = ({
                             {activeTab === 'received' && request.status === 'pending' && !isRidePassed(request) && !isRoomMoveInPassed(request) && (
                               <>
                                 <button 
-                                  onClick={() => respondToRequest(request.id, 'accepted')}
+                                  onClick={() => respondToRequest(request.id, 'confirm')}
                                   className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${theme.buttonSuccess} hover:shadow-lg`}
                                 >
                                   <CheckCircle className="w-5 h-5" />
                                   Accept Request
                                 </button>
                                 <button 
-                                  onClick={() => respondToRequest(request.id, 'rejected')}
+                                  onClick={() => respondToRequest(request.id, 'decline')}
                                   className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${theme.buttonDanger} hover:shadow-lg`}
                                 >
                                   <XCircle className="w-5 h-5" />

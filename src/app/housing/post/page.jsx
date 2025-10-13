@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Moon, Sun, Home, MapPin, Bed, Calendar, Mail, Phone, Instagram, Camera, Upload, LogIn, User } from 'lucide-react';
 import { postRoom, startGoogleLogin } from '../../lib/api';
 import { useAuth, useUI, useMessages } from '../../lib/contexts/UniShareContext';
+import { HousingNotifications } from '../../lib/utils/actionNotifications';
 
 export default function AuthProtectedRoomForm() {
   const { isAuthenticated, user, authLoading, userAvatar, userInitials } = useAuth();
@@ -90,6 +91,9 @@ export default function AuthProtectedRoomForm() {
       const res = await postRoom(formData);
       
       if (res.success) {
+        // Show Dynamic Island notification
+        HousingNotifications.roomPosted(form.title);
+        
         showTemporaryMessage('Room posted successfully! Your listing is now live and visible to potential roommates.', true, 5000);
         
         // Reset form on success
