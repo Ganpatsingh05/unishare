@@ -25,7 +25,7 @@ export default function ViewFoundPage() {
   const inputBg = isGradient
     ? 'bg-white/10 border-white/25 text-white placeholder-white/70 focus:ring-4 focus:ring-[#FF6F3C33] focus:border-[#FF6F3C]'
     : isDark
-      ? 'bg-[#0B1220]/60 border-[#334155] text-[#E5E7EB] placeholder-[#E5E7EB]/50 focus:ring-4 focus:ring-[#FF6F3C33] focus:border-[#FF6F3C]'
+      ? 'bg-[#1a1a1a]/60 border-[#334155] text-[#E5E7EB] placeholder-[#E5E7EB]/50 focus:ring-4 focus:ring-[#FF6F3C33] focus:border-[#FF6F3C]'
       : isNeutral
         ? 'bg-white border-[#FFD6C8] text-[#333333] placeholder-[#333333]/50 focus:ring-4 focus:ring-[#FF6F3C33] focus:border-[#FF6F3C]'
         : (isCool
@@ -109,7 +109,7 @@ export default function ViewFoundPage() {
             isGradient
               ? 'text-white border-transparent shadow-[0_10px_30px_-10px_rgba(255,111,60,0.35)]'
               : isDark
-                ? 'bg-[#0F172A] border-[#1F2937] text-white shadow-[0_10px_30px_-10px_rgba(0,0,0,0.45)]'
+                ? 'bg-[#1a1a1a] border-[#2a2a2a] text-white shadow-[0_10px_30px_-10px_rgba(0,0,0,0.45)]'
               : isNeutral
                 ? 'bg-[#FFFFFF] border-[#FF6F3C] text-[#333333] shadow-[0_10px_30px_-10px_rgba(255,111,60,0.35)]'
                 : isCool
@@ -169,7 +169,7 @@ export default function ViewFoundPage() {
             <button
               onClick={() => setPalette('dark')}
               className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                isDark ? 'bg-[#111827] text-white border-[#111827]' : 'border-[#111827] text-[#111827] bg-transparent'
+                isDark ? 'bg-[#1a1a1a] text-white border-[#1a1a1a]' : 'border-[#1a1a1a] text-[#1a1a1a] bg-transparent'
               }`}
             >
               Dark

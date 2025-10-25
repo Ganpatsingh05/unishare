@@ -778,7 +778,7 @@ export default function PostRidePage() {
   }
 
   return (
-    <div className={`min-h-screen ${darkMode ? "bg-gray-950" : "bg-gray-50"}`}>
+    <div className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-gray-50"}`}>
       <main className="max-w-2xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10">
         {/* Header */}
         <div className="mb-8">

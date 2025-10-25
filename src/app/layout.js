@@ -10,7 +10,6 @@ import { UniShareProvider } from "./lib/contexts/UniShareContext";
 import ThemeWrapper from "./_components/ThemeWrapper";
 import SiteChrome from "./_components/SiteChrome";
 import DynamicIslandWrapper from "./_components/DynamicIslandWrapper";
-import PageNavigationNotifier from "./_components/PageNavigationNotifier";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

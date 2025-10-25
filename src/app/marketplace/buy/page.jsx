@@ -54,7 +54,7 @@ export default function MarketplaceBuyPage() {
   // Theme classes
   const labelClr = darkMode ? "text-gray-300" : "text-gray-700";
   const inputBg = darkMode ? "bg-gray-900 border-gray-800 text-gray-100 placeholder-gray-500" : "bg-white border-gray-200 text-gray-900 placeholder-gray-500";
-  const cardBg = darkMode ? "bg-gray-950 border-gray-900" : "bg-white border-gray-200";
+  const cardBg = darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200";
   const titleClr = darkMode ? "text-white" : "text-gray-900";
   const subClr = darkMode ? "text-gray-400" : "text-gray-600";
 
@@ -125,7 +125,7 @@ export default function MarketplaceBuyPage() {
     <div className="min-h-screen">
 
       <main className={`${isMobile ? 'px-3 py-4' : 'max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10'}`}>
-        <div className={`rounded-2xl border shadow-xl ${isMobile ? 'p-3' : 'p-4 sm:p-6'} ${darkMode ? 'bg-gray-950/60 border-gray-900' : 'bg-white/80 border-gray-200'} backdrop-blur-sm`}>
+        <div className={`rounded-2xl border shadow-xl ${isMobile ? 'p-3' : 'p-4 sm:p-6'} ${darkMode ? 'bg-gray-800/60 border-gray-700' : 'bg-white/80 border-gray-200'} backdrop-blur-sm`}>
           
           {/* Search and filters header */}
           <div className={`flex items-center justify-between gap-3 ${isMobile ? 'flex-col' : 'flex-wrap'} mb-6`}>

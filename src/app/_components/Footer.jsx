@@ -88,11 +88,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className={`relative transition-all duration-300 ${
-      darkMode 
-        ? 'bg-gradient-to-b from-gray-900 to-gray-950 text-gray-100' 
-        : 'bg-gradient-to-b from-orange-100 to-orange-50 text-gray-800'
-    }`}>
+    <footer className={`w-full transition-all duration-300 border-b backdrop-blur-md relative z-[80] ${darkMode ? 'bg-gradient-to-r from-[#1a1a1a]/95 via-[#222222]/90 to-[#1a1a1a]/95 border-gray-700/50' : 'bg-gradient-to-r from-orange-50/95 via-orange-100/90 to-orange-50/95 border-orange-200/50'}`}>
       
       {/* Main Footer Content */}
       <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 pt-16 pb-8">

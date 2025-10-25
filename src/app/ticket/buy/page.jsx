@@ -60,7 +60,7 @@ export default function TicketBuyPage() {
   const inputStyles = darkMode 
     ? "bg-gray-900 border-gray-800 text-gray-100 placeholder-gray-500 focus:ring-yellow-400/30 focus:border-yellow-400" 
     : "bg-white border-gray-200 text-gray-900 placeholder-gray-500 focus:ring-blue-500/30 focus:border-blue-500";
-  const cardBg = darkMode ? "bg-gray-950/60 border-gray-900" : "bg-white/80 border-gray-200";
+  const cardBg = darkMode ? "bg-gray-800/60 border-gray-700" : "bg-white/80 border-gray-200";
   const titleClr = "text-primary";
   const subClr = "text-muted";
 

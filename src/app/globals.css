@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: transparent;
   --foreground: #171717;
   /* Theme text tokens (light defaults) */
   --text-primary: #0f172a; /* slate-900 */
@@ -22,18 +22,20 @@
 
 /* Dark theme token overrides (driven by UniShareProvider setting html[data-theme]) */
 html[data-theme='dark'] {
-  --text-primary: #e6f0ff; /* blue-50 */
-  --text-secondary: #cde0ff; /* soft light blue */
-  --text-muted: #a8c1e6; /* desaturated light blue */
-  --panel-text-primary: #eaf4ff; /* for frosted blue panels */
-  --panel-text-secondary: #d3e8ff;
-  --panel-text-muted: #b6d2f2;
+  --background: transparent; /* Transparent to show galaxy */
+  --foreground: #FFFFFF;
+  --text-primary: #FFFFFF; /* Pure white for best contrast */
+  --text-secondary: #E2E8F0; /* slate-200 */
+  --text-muted: #94A3B8; /* slate-400 */
+  --panel-text-primary: #FFFFFF;
+  --panel-text-secondary: #E2E8F0;
+  --panel-text-muted: #CBD5E1;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: transparent;
+    --foreground: #FFFFFF;
   }
 }
 
@@ -72,9 +74,14 @@ html[data-theme='dark'] {
   animation: shimmer 1.5s infinite;
 }
 
+html {
+  background-color: transparent;
+}
+
 body {
   /* Base text uses theme token for better contrast */
   color: var(--text-primary);
+  background-color: transparent;
   font-family: Arial, Helvetica, sans-serif;
   overflow-x: hidden;
   scrollbar-width: none !important;
@@ -92,15 +99,84 @@ body::-webkit-scrollbar {
    🌟 Global Theme Backgrounds
    ========================= */
 .theme-bg-light {
-  background: linear-gradient(to bottom right, #fff7ed, #fed7aa, #fdba74);
+  background: #F9FAFB;
   color: #1f2937;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .theme-bg-dark {
-  background: linear-gradient(to bottom right, #111827, #030712, #111827);
-  color: #f3f4f6;
+  background: #1a1a1a;
+  color: #FFFFFF;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* =========================
+   🎨 Utility Classes for Consistent Theming
+   ========================= */
+/* Background utilities */
+.bg-theme-primary {
+  background-color: var(--background);
+}
+
+.bg-theme-card-light { background: #FFFFFF; }
+.bg-theme-card-dark { background: #1a1a1a; }
+
+.bg-theme-surface-light { background: #F9FAFB; }
+.bg-theme-surface-dark { background: #1a1a1a; }
+
+/* Dark mode background replacements */
+.dark .bg-gray-900,
+.dark .bg-slate-900 {
+  background-color: #1a1a1a !important;
+}
+
+.dark .bg-gray-900\/90,
+.dark .bg-slate-900\/90 {
+  background-color: rgba(26, 26, 26, 0.9) !important;
+}
+
+.dark .bg-gray-900\/70,
+.dark .bg-slate-900\/70 {
+  background-color: rgba(26, 26, 26, 0.7) !important;
+}
+
+.dark .bg-gray-900\/50,
+.dark .bg-slate-900\/50 {
+  background-color: rgba(26, 26, 26, 0.5) !important;
+}
+
+.dark .bg-gray-900\/30,
+.dark .bg-slate-900\/30 {
+  background-color: rgba(26, 26, 26, 0.3) !important;
+}
+
+.dark .bg-gray-900\/60,
+.dark .bg-slate-900\/60 {
+  background-color: rgba(26, 26, 26, 0.6) !important;
+}
+
+.dark .bg-gray-900\/95,
+.dark .bg-slate-900\/95 {
+  background-color: rgba(26, 26, 26, 0.95) !important;
+}
+
+/* Override min-h-screen backgrounds */
+.dark .min-h-screen.bg-gray-50,
+.dark [class*="min-h-screen"][class*="dark:bg-gray-900"] {
+  background-color: #1a1a1a !important;
+}
+
+/* Override specific hex color values used in components */
+.dark [style*="#0f172a"],
+.dark [style*="#0F172A"],
+.dark [style*="#111827"] {
+  background-color: #1a1a1a !important;
+}
+
+/* Override rgba backgrounds with old colors */
+.dark [style*="rgba(17,24,39"],
+.dark [style*="rgba(15,23,42"] {
+  background-color: rgba(26, 26, 26, 0.98) !important;
 }
 
 /*

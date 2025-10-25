@@ -77,7 +77,7 @@ export default function MarketplaceSellPage() {
   const labelClr = darkMode ? "text-gray-300" : "text-gray-700";
   const inputBg = darkMode ? "bg-gray-900 border-gray-800 text-gray-100 placeholder-gray-500" : "bg-white border-gray-200 text-gray-900 placeholder-gray-500";
   const titleClr = darkMode ? "text-white" : "text-gray-900";
-  const cardBg = darkMode ? "bg-gray-950/60 border-gray-900" : "bg-white/80 border-gray-200";
+  const cardBg = darkMode ? "bg-gray-800/60 border-gray-700" : "bg-white/80 border-gray-200";
   const dropBorder = darkMode ? "border-gray-800" : "border-gray-300";
 
   const iconForType = (type) => {

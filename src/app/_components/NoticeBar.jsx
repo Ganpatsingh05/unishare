@@ -98,24 +98,42 @@ export default function AnnouncementBar() {
       : (darkMode ? 'text-yellow-400' : 'text-orange-600');
 
   return (
-    <div className={`w-full transition-all duration-300 border-b backdrop-blur-md relative z-60 ${darkMode ? 'bg-gradient-to-r from-gray-900/95 via-gray-950/90 to-gray-900/95 border-gray-700/50' : 'bg-gradient-to-r from-orange-50/95 via-orange-100/90 to-orange-50/95 border-orange-200/50'}`}> 
-      <div className="mx-auto max-w-screen-xl px-4 sm:px-6">
-        <div className="flex items-center gap-3 py-2.5 sm:py-3">
-          <p className={`flex-1 text-center text-xs sm:text-sm tracking-wide transition-all duration-500 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-            <Megaphone className={`inline-block w-4 h-4 mr-2 align-[-2px] ${priorityAccent}`} />
-            {announcement && (
-              <>
-                <span className="font-semibold mr-1">{announcement.title}:</span>
-                <span>{announcement.body}</span>
-                {announcement.expiresAt && (
-                  <span className={`ml-2 italic ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>({new Date(announcement.expiresAt).toLocaleDateString()})</span>
-                )}
-              </>
-            )}
-          </p>
-          <button aria-label="Dismiss notice" onClick={dismiss} className={`flex h-8 w-8 flex-none items-center justify-center rounded-full border transition-colors ${darkMode ? 'border-gray-600/50 text-gray-300 hover:bg-gray-800/80 hover:border-gray-500' : 'border-orange-300/50 text-gray-700 hover:bg-orange-100/80 hover:border-orange-400'}`}>
-            <X className="w-4 h-4" />
-          </button>
+    <div className="w-full relative z-[80]">
+      <div className={`transition-all duration-300 ${
+        darkMode 
+          ? 'bg-[#1a1a1a]/95 border-b border-white/5' 
+          : 'bg-orange-50/95 border-b border-orange-200/50'
+      } backdrop-blur-xl`}>
+        <div className="mx-auto max-w-screen-xl px-4 sm:px-6">
+          <div className="flex items-center gap-3 py-3 sm:py-3.5">
+            <p className={`flex-1 text-center text-xs sm:text-sm font-medium tracking-wide transition-all duration-500 ${
+              darkMode ? 'text-gray-200' : 'text-gray-800'
+            }`}>
+              <Megaphone className={`inline-block w-4 h-4 mr-2 align-[-2px] ${priorityAccent}`} />
+              {announcement && (
+                <>
+                  <span className="font-bold mr-1">{announcement.title}:</span>
+                  <span className="font-normal">{announcement.body}</span>
+                  {announcement.expiresAt && (
+                    <span className={`ml-2 text-[11px] ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      ({new Date(announcement.expiresAt).toLocaleDateString()})
+                    </span>
+                  )}
+                </>
+              )}
+            </p>
+            <button 
+              aria-label="Dismiss notice" 
+              onClick={dismiss} 
+              className={`flex h-7 w-7 flex-none items-center justify-center rounded-md transition-all duration-200 ${
+                darkMode 
+                  ? 'text-gray-400 hover:text-gray-200 hover:bg-white/5' 
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'
+              }`}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

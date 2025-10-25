@@ -4,8 +4,21 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
 import logoImage from '../assets/images/logounishare1.png'; 
-import { Search, Bell, Sun, Moon, User, LogOut, Settings, Menu, X, ArrowLeft } from 'lucide-react';
+import {
+  Search,
+  Bell,
+  Sun,
+  Moon,
+  User,
+  LogOut,
+  Settings,
+  Menu,
+  X,
+  ArrowLeft,
+  ArrowRight, // Add ArrowRight
+} from "lucide-react";
 import NotificationPanel from './NotificationPanel';
 import HeaderMobile from './HeaderMobile';
 import { useUniShare, useAuth, useUI, useNotifications } from '../lib/contexts/UniShareContext';
@@ -21,6 +34,14 @@ const Header = ({ logoRotation = 0 }) => {
   const [isNotificationActive, setIsNotificationActive] = useState(false);
   const [notifInlineOpen, setNotifInlineOpen] = useState(false);
   const [notifInlineFilter, setNotifInlineFilter] = useState('All');
+  
+  // Use Framer Motion for smooth animations
+  const headerTop = useMotionValue(50);
+  const smoothHeaderTop = useSpring(headerTop, {
+    stiffness: 300,
+    damping: 30,
+    mass: 0.5
+  });
   
   // Check if we're on the home page
   const isHomePage = pathname === '/';
@@ -88,6 +109,53 @@ const Header = ({ logoRotation = 0 }) => {
     fetchUserProfile();
   }, [isAuthenticated, user, authLoading]);
 
+  // Handle scroll to adjust header position
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      // Get the actual notice bar height from CSS custom property
+      const noticeBarHeight = parseInt(
+        getComputedStyle(document.documentElement).getPropertyValue('--notice-bar-height') || '0'
+      );
+      const gap = noticeBarHeight > 0 ? 2 : 0; // Only add gap if notice bar is visible
+      const totalOffset = noticeBarHeight + gap;
+      
+      // Calculate new top position: starts at totalOffset, moves to 0 as we scroll
+      const newTop = Math.max(0, totalOffset - scrollY);
+      headerTop.set(newTop);
+    };
+
+    // Initial call to set correct position
+    handleScroll();
+
+    // Listen for notice bar changes via MutationObserver
+    const observer = new MutationObserver(() => {
+      handleScroll();
+      // Trigger a tiny scroll to force position recalculation
+      const currentScroll = window.scrollY;
+      if (currentScroll === 0) {
+        // If at top, scroll down 1px then back
+        window.scrollTo({ top: 1, behavior: 'instant' });
+        setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 10);
+      } else {
+        // If scrolled, scroll up 1px then back
+        window.scrollTo({ top: currentScroll - 1, behavior: 'instant' });
+        setTimeout(() => window.scrollTo({ top: currentScroll, behavior: 'smooth' }), 10);
+      }
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['style']
+    });
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      observer.disconnect();
+    };
+  }, [headerTop]);
+
   const handleProfileMenuToggle = () => {
     if (isAuthenticated) {
       setProfileMenuOpen((prev) => !prev);
@@ -140,337 +208,216 @@ const Header = ({ logoRotation = 0 }) => {
   }
 
   return (
-    <header className={`relative w-full overflow-x-clip overflow-y-visible transition-all duration-300 backdrop-blur-md ${
-      darkMode ? 'bg-gray-900/80 shadow-gray-900/10' : 'bg-white/80 shadow-orange-200/20'
-    }`} style={{ zIndex: 70 }}>
+    <motion.header
+      className={`fixed left-0 right-0 w-full overflow-x-clip overflow-y-visible ${
+        darkMode
+          ? "bg-transparent"
+          : "bg-transparent"
+      }`}
+      style={{ zIndex: 70, top: smoothHeaderTop }}
+    >
       {/* Mobile-only header */}
       <div className="md:hidden">
-        <HeaderMobile 
-          logoRotation={logoRotation}
-        />
+        <HeaderMobile logoRotation={logoRotation} />
       </div>
 
       {/* Desktop/Tablet header */}
-      <div className="hidden md:block relative">
-        {/* Back Navigation Button - Extreme Left Position */}
-        {!isHomePage && (
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 z-50">
-            <button
-              onClick={handleBackNavigation}
-              className={`p-3 rounded-xl border-2 transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer group ${
-                darkMode 
-                  ? 'border-gray-600 text-gray-200 hover:border-yellow-300 hover:bg-gray-800 hover:text-yellow-300 hover:shadow-lg hover:shadow-yellow-300/20' 
-                  : 'border-gray-300 text-gray-700 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 hover:shadow-lg hover:shadow-blue-500/20'
-              }`}
-              title="Go back"
-            >
-              <ArrowLeft className="w-5 h-5 transition-all duration-300 group-hover:translate-x-[-2px]" />
-            </button>
-          </div>
-        )}
-        
-        {/* Main header content with original layout */}
-        <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-24 items-center justify-between">
+      <div className="hidden md:flex justify-center w-full pt-3">
+        <nav
+          className={`relative backdrop-blur supports-[backdrop-filter]:bg-white/70 bg-white/80 dark:supports-[backdrop-filter]:bg-black/50 dark:bg-black/80 border border-black/10 dark:border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.35)] rounded-full px-8 sm:px-10 py-3 sm:py-4 max-w-6xl w-full flex items-center justify-between gap-6`}
+        >
+          <div className="flex items-center gap-6 flex-shrink-0">
+            <Link href="/" className="flex items-center gap-3">
+              <Image
+                src={logoImage}
+                alt="UniShare"
+                width={36}
+                height={36}
+                className="rounded"
+                priority
+              />
+            </Link>
             
-            {/* Logo and Search Section */}
-            <div className="flex items-center gap-4 flex-1 py-2">
-              {/* Original Logo - Always show as before */}
-              <Link className="block group cursor-pointer relative" href="/">
-                <span className="sr-only">UniShare Home</span>
-                <div className="flex items-center gap-3">
-                  <div className="w-20 h-20 flex items-center justify-center overflow-visible mt-2 relative">
-                    <div 
-                      className="h-16 w-16 transition-all duration-300 transform group-hover:scale-125 animate-float relative"
-                      style={{ 
-                        transform: `scale(1) rotate(${logoRotation}deg)`,
-                        filter: darkMode ? 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.3))' : 'drop-shadow(0 0 15px rgba(59, 130, 246, 0.2))'
+            <span className="brand-wordmark font-bold text-xl whitespace-nowrap">
+              <span className="brand-uni">Uni</span>
+              <span className="brand-share">Share</span>
+            </span>
+          </div>
+          
+          {/* Center: Navigation Links */}
+          <div className="flex-1 flex items-center justify-end gap-1 mr-4">
+            <Link href="#features" className="group relative inline-flex items-center px-3 py-1.5 text-sm font-bold text-neutral-700 hover:text-black dark:text-white/80 dark:hover:text-white transition-colors">
+              <span className="relative z-10">Features</span>
+              <span className="pointer-events-none absolute inset-0 rounded-full bg-black/5 dark:bg-white/5 opacity-0 transition-opacity group-hover:opacity-100"></span>
+            </Link>
+            <Link href="#how-it-works" className="group relative inline-flex items-center px-3 py-1.5 text-sm font-bold text-neutral-700 hover:text-black dark:text-white/80 dark:hover:text-white transition-colors">
+              <span className="relative z-10">How it works</span>
+              <span className="pointer-events-none absolute inset-0 rounded-full bg-black/5 dark:bg-white/5 opacity-0 transition-opacity group-hover:opacity-100"></span>
+            </Link>
+            <Link href="/info/help" className="group relative inline-flex items-center px-3 py-1.5 text-sm font-bold text-neutral-700 hover:text-black dark:text-white/80 dark:hover:text-white transition-colors">
+              <span className="relative z-10">Help</span>
+              <span className="pointer-events-none absolute inset-0 rounded-full bg-black/5 dark:bg-white/5 opacity-0 transition-opacity group-hover:opacity-100"></span>
+            </Link>
+            <Link href="/info/faqs" className="group relative inline-flex items-center px-3 py-1.5 text-sm font-bold text-neutral-700 hover:text-black dark:text-white/80 dark:hover:text-white transition-colors">
+              <span className="relative z-10">FAQ</span>
+              <span className="pointer-events-none absolute inset-0 rounded-full bg-black/5 dark:bg-white/5 opacity-0 transition-opacity group-hover:opacity-100"></span>
+            </Link>
+          </div>
+
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            <div className="ml-1">
+              <button
+                onClick={handleThemeToggle}
+                className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:text-accent-foreground h-10 w-10 hover:bg-transparent"
+                aria-label="Toggle theme"
+              >
+                {darkMode ? <Moon className="h-[1.4rem] w-[1.4rem]" /> : <Sun className="h-[1.4rem] w-[1.4rem]" />}
+              </button>
+            </div>
+            {!isAuthenticated ? (
+                <Link
+                  href="/login"
+                  className="group relative inline-flex items-center gap-2 rounded-full border border-black/10 bg-black/5 px-4 py-1.5 text-sm font-medium text-neutral-900 shadow-inner transition-colors hover:bg-black/10 dark:border-white/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
+                >
+                  <span className="absolute -inset-px rounded-full bg-gradient-to-r from-white/10 via-white/0 to-white/10 opacity-0 blur transition-opacity group-hover:opacity-100"></span>
+                  <span className="relative inline-flex items-center gap-2 align-middle">
+                    Sign in
+                  </span>
+                  <ArrowRight className="relative h-4 w-4 opacity-80 transition-transform group-hover:translate-x-0.5" />
+                </Link>
+              ) : (
+                <div className="relative">
+                  <button
+                    onClick={handleProfileMenuToggle}
+                    className="flex items-center gap-3 rounded-full transition-all duration-300 hover:scale-105 p-[3px]"
+                    style={{
+                      background: 'linear-gradient(90deg, #facc15 0%, #facc15 50%, #38bdf8 50%, #38bdf8 100%)',
+                      borderRadius: '9999px'
+                    }}
+                  >
+                    <div className="h-10 w-10 overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-purple-600 transition-all duration-300">
+                      {(() => {
+                        const profileImage = getProfileImageUrl(
+                          userProfile,
+                          user
+                        );
+                        if (profileImage) {
+                          return (
+                            <Image
+                              src={profileImage}
+                              alt="User"
+                              width={40}
+                              height={40}
+                              className="h-full w-full object-cover"
+                            />
+                          );
+                        } else {
+                          return (
+                            <span className="flex h-full w-full items-center justify-center text-sm font-bold text-white">
+                              {getUserInitials(userProfile, user)}
+                            </span>
+                          );
+                        }
+                      })()}
+                    </div>
+                  </button>
+
+                  {/* Profile Dropdown */}
+                  {profileMenuOpen && (
+                    <div
+                      className={`absolute right-0 top-full mt-3 w-64 origin-top-right rounded-2xl border shadow-2xl backdrop-blur-xl ${
+                        darkMode
+                          ? "border-white/10 bg-[#1a1a1a]/70"
+                          : "border-gray-200/80 bg-white/70"
+                      }`}
+                      style={{
+                        backdropFilter: "blur(12px) saturate(150%)",
+                        WebkitBackdropFilter: "blur(12px) saturate(150%)",
                       }}
                     >
-                      <Image
-                        src={logoImage}
-                        alt="UniShare Logo"
-                        width={100}
-                        height={100}
-                        className="w-full h-full object-contain bg-transparent transition-all duration-300 group-hover:animate-pulse-glow"
-                        priority
-                      />
+                      <div className="p-2">
+                        <div className="px-3 py-2">
+                          <p
+                            className={`truncate text-sm font-semibold ${
+                              darkMode ? "text-white" : "text-gray-900"
+                            }`}
+                          >
+                            {userProfile?.fullName ||
+                              userProfile?.username ||
+                              "Welcome"}
+                          </p>
+                          <p
+                            className={`truncate text-xs ${
+                              darkMode ? "text-gray-400" : "text-gray-500"
+                            }`}
+                          >
+                            {user?.email}
+                          </p>
+                        </div>
+                        <hr
+                          className={`my-1 ${
+                            darkMode ? "border-white/10" : "border-gray-200/80"
+                          }`}
+                        />
+                        <div className="py-1">
+                          <Link
+                            href="/profile"
+                            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+                              darkMode
+                                ? "text-gray-300 hover:bg-white/5"
+                                : "text-gray-700 hover:bg-black/5"
+                            }`}
+                          >
+                            <User className="h-4 w-4" />
+                            <span>My Profile</span>
+                          </Link>
+                          <Link
+                            href="/settings"
+                            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+                              darkMode
+                                ? "text-gray-300 hover:bg-white/5"
+                                : "text-gray-700 hover:bg-black/5"
+                            }`}
+                          >
+                            <Settings className="h-4 w-4" />
+                            <span>Settings</span>
+                          </Link>
+                        </div>
+                        <hr
+                          className={`my-1 ${
+                            darkMode ? "border-white/10" : "border-gray-200/80"
+                          }`}
+                        />
+                        <div className="p-1">
+                          <button
+                            onClick={handleLogout}
+                            className={`w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+                              darkMode
+                                ? "text-red-400 hover:bg-red-500/10"
+                                : "text-red-600 hover:bg-red-500/10"
+                            }`}
+                          >
+                            <LogOut className="h-4 w-4" />
+                            <span>Logout</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <span className="brand-wordmark font-bold text-2xl transition-all duration-300 group-hover:opacity-90 whitespace-nowrap">
-                    <span className="brand-uni">Uni</span>
-                    <span className="brand-share">Share</span>
-                  </span>
-                </div>
-              </Link>
-            
-            {/* Search Bar - Always show instead of profile island */}
-            <div className="hidden md:flex items-center relative flex-1 max-w-2xl mx-4">
-              <div className={`absolute left-4 transition-all duration-300 z-10 ${
-                searchFocused || searchValue 
-                  ? (darkMode ? 'text-yellow-300 transform scale-110' : 'text-blue-500 transform scale-110')
-                  : (darkMode ? 'text-gray-400' : 'text-gray-500')
-              }`}>
-                <Search className="w-5 h-5" />
-              </div>
-              
-              <input
-                type="text"
-                placeholder="Search for rides, items, rooms, or resources..."
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setSearchFocused(false)}
-                className={`w-full pl-12 pr-12 py-3 rounded-2xl border-2 text-sm transition-all duration-300 transform cursor-text ${
-                  searchFocused 
-                    ? `scale-[1.02] ${darkMode 
-                        ? 'bg-gray-700 text-gray-100 border-yellow-300 shadow-xl shadow-yellow-300/20 ring-2 ring-yellow-300/20' 
-                        : 'bg-white text-gray-800 border-blue-500 shadow-xl shadow-blue-500/20 ring-2 ring-blue-500/20'
-                      }` 
-                    : `${darkMode 
-                        ? 'bg-gray-800 text-gray-100 border-gray-700 hover:border-gray-600 hover:bg-gray-750' 
-                        : 'bg-gray-50 text-gray-800 border-gray-200 hover:border-gray-300 hover:bg-white hover:shadow-md'
-                      }`
-                } outline-none placeholder-gray-500`}
-              />
-              
-              {searchValue && (
-                <button
-                  onClick={() => setSearchValue('')}
-                  className={`absolute right-4 p-1 rounded-full transition-all duration-200 hover:scale-110 cursor-pointer ${
-                    darkMode ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-              )}
-              
-              {/* Search suggestions dropdown */}
-              {searchFocused && searchValue.length > 0 && (
-                <div className={`absolute top-full left-0 right-0 mt-2 rounded-xl border-2 shadow-xl z-50 ${
-                  darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-                }`}>
-                  <div className="p-2">
-                    {['rides to downtown', 'textbooks for sale', 'single room available', 'study materials'].filter(suggestion => 
-                      suggestion.toLowerCase().includes(searchValue.toLowerCase())
-                    ).slice(0, 4).map((suggestion, index) => (
-                      <button
-                        key={index}
-                        onClick={() => {
-                          setSearchValue(suggestion);
-                          setSearchFocused(false);
-                        }}
-                        className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors duration-200 flex items-center gap-3 cursor-pointer ${
-                          darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
-                        }`}
-                      >
-                        <Search className="w-4 h-4 opacity-50" />
-                        {suggestion}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Right Section */}
-          <div className="flex items-center gap-3">
-            {/* Action Buttons */}
-            <div className="flex items-center gap-2">
-              
-              {/* Enhanced Notifications - Only show when authenticated */}
-              {isAuthenticated && (
-                <button 
-                  className={`hidden sm:flex p-3 rounded-xl transition-all duration-300 transform hover:scale-110 active:scale-95 relative cursor-pointer ${
-                    isNotificationActive 
-                      ? `animate-bounce ${darkMode ? 'bg-yellow-300/20' : 'bg-blue-600/20'}`
-                      : `${darkMode 
-                          ? 'text-gray-100 hover:bg-gray-800 bg-gray-850 hover:shadow-lg hover:text-yellow-300' 
-                          : 'text-blue-600 hover:bg-gray-100 bg-gray-50 hover:shadow-lg hover:text-blue-700'
-                        }`
-                  }`}
-                  onClick={handleNotificationClick}
-                  title="Notifications"
-                >
-                  <Bell className="w-5 h-5 transition-all duration-300" />
-                  {/* Notification badge */}
-                  {hasUnread && (
-                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
                   )}
-                </button>
+                </div>
               )}
-
-              {/* Enhanced Theme Toggle */}
-              <button 
-                data-theme-toggle
-                className={`hidden sm:flex p-3 rounded-xl transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer ${
-                  darkMode 
-                    ? 'text-yellow-300 hover:bg-gray-800 bg-gray-850 hover:shadow-lg hover:shadow-yellow-300/30 hover:text-yellow-200' 
-                    : 'text-yellow-600 hover:bg-gray-100 bg-gray-50 hover:shadow-lg hover:shadow-yellow-600/30 hover:text-yellow-700'
-                }`}
-                onClick={handleThemeToggle}
-                title={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
-              >
-                <div className="relative">
-                  {darkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                </div>
-              </button>
-
-              {/* Enhanced Profile Dropdown */}
-              <div className="relative hidden md:block">
-                <button 
-                  onClick={handleProfileMenuToggle}
-                  className={`overflow-hidden rounded-4xl border-3 shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95 cursor-pointer inline-block ${
-                    darkMode 
-                      ? 'border-gray-600 hover:border-yellow-300 hover:shadow-yellow-300/20' 
-                      : 'border-gray-300 hover:border-blue-500 hover:shadow-blue-500/20'
-                  }`}
-                >
-                  <span className="sr-only">{isAuthenticated ? 'Profile' : 'Login'}</span>
-                  <div className={`size-12 rounded-full flex items-center justify-center font-bold text-xl transition-all duration-300 overflow-hidden ${
-                    isAuthenticated ? 'bg-white text-gray-900' : (darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600')
-                  }`}>
-                    {(() => {
-                      const profileImage = getProfileImageUrl(userProfile, user);
-                      if (isAuthenticated && profileImage) {
-                        return (
-                          <Image
-                            src={profileImage}
-                            alt="User Avatar"
-                            width={48}
-                            height={48}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              // Fallback to initials if image fails to load
-                              e.target.style.display = 'none';
-                              const fallback = e.target.parentElement.querySelector('.avatar-fallback');
-                              if (fallback) fallback.style.display = 'flex';
-                            }}
-                          />
-                        );
-                      } else if (isAuthenticated) {
-                        const initials = getUserInitials(user?.name || user?.displayName || user?.email || 'User');
-                        return (
-                          <span className="font-semibold text-sm">
-                            {initials}
-                          </span>
-                        );
-                      } else {
-                        return <User className="w-5 h-5" />;
-                      }
-                    })()}
-                    {/* Hidden fallback for failed image loads */}
-                    <span 
-                      className="avatar-fallback font-semibold text-sm absolute inset-0 flex items-center justify-center"
-                      style={{ display: 'none' }}
-                    >
-                      {isAuthenticated ? getUserInitials(user?.name || user?.displayName || user?.email || 'User') : ''}
-                    </span>
-                  </div>
-                </button>
-
-                {/* Profile Dropdown Menu */}
-                {profileMenuOpen && isAuthenticated && (
-                  <div className={`absolute right-0 mt-2 w-48 rounded-xl shadow-lg border-2 z-50 ${
-                    darkMode 
-                      ? 'bg-gray-800 border-gray-700' 
-                      : 'bg-white border-gray-200'
-                  }`}>
-                    <div className="py-1">
-                      <Link
-                        href="/profile"
-                        className={`block px-4 py-2 text-sm transition-colors duration-200 ${
-                          darkMode 
-                            ? 'text-gray-200 hover:bg-gray-700' 
-                            : 'text-gray-700 hover:bg-gray-100'
-                        }`}
-                        onClick={() => setProfileMenuOpen(false)}
-                      >
-                        <div className="flex items-center gap-2">
-                          <User className="w-4 h-4" />
-                          <span>Profile</span>
-                        </div>
-                      </Link>
-                      <Link
-                        href="/settings"
-                        className={`block px-4 py-2 text-sm transition-colors duration-200 ${
-                          darkMode 
-                            ? 'text-gray-200 hover:bg-gray-700' 
-                            : 'text-gray-700 hover:bg-gray-100'
-                        }`}
-                        onClick={() => setProfileMenuOpen(false)}
-                      >
-                        <div className="flex items-center gap-2">
-                          <Settings className="w-4 h-4" />
-                          <span>Settings</span>
-                        </div>
-                      </Link>
-                      <button
-                        onClick={handleLogout}
-                        className={`block w-full text-left px-4 py-2 text-sm transition-colors duration-200 ${
-                          darkMode 
-                            ? 'text-red-300 hover:bg-gray-700' 
-                            : 'text-red-600 hover:bg-gray-100'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <LogOut className="w-4 h-4" />
-                          <span>Logout</span>
-                        </div>
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
-        </div>
+        </nav>
+      </div>
 
-        {/* Mobile menu */}
-        <div className={`${mobileMenuOpen ? 'block' : 'hidden'} md:hidden w-full mt-2`} id="navbar-hamburger">
-          <ul className={`flex flex-col font-medium rounded-lg border overflow-hidden ${
-            darkMode ? 'bg-gray-900 border-gray-800' : 'bg-gray-50 border-gray-200'
-          }`}>
-            {/* Search row */}
-            <li className={`${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-              <div className="px-3 py-2">
-                <div className="relative">
-                  <Search className={`w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                  <input
-                    type="text"
-                    placeholder="Search..."
-                    value={searchValue}
-                    onChange={(e) => setSearchValue(e.target.value)}
-                    onFocus={() => setSearchFocused(true)}
-                    onBlur={() => setSearchFocused(false)}
-                    className={`w-full pl-10 pr-3 py-2 rounded-md border text-sm ${
-                      darkMode ? 'bg-gray-800 text-gray-100 border-gray-700 placeholder-gray-400' : 'bg-white text-gray-900 border-gray-300 placeholder-gray-500'
-                    }`}
-                  />
-                </div>
-              </div>
-            </li>
-            
-            {/* Mobile menu items can be added here using similar pattern */}
-          </ul>
-        </div>
-      </div>
-      </div>
-      
-      {/* Notification Panel Portal */}
-      <NotificationPanel
-        open={notifOpen}
-        onClose={() => setNotifOpen(false)}
-        darkMode={darkMode}
-        notifications={notifications}
-        setNotifications={setNotifications}
-        loadNotifications={loadNotifications}
-        isAuthenticated={isAuthenticated}
-      />
-    </header>
+      {/* Notification Panel */}
+      {notifOpen && (
+        <NotificationPanel
+          isOpen={notifOpen}
+          onClose={() => setNotifOpen(false)}
+        />
+      )}
+    </motion.header>
   );
 };
 

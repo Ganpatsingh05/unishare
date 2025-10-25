@@ -44,7 +44,7 @@ export default function ClientHeader() {
   // Show loading skeleton until mounted
   if (!mounted) {
     return (
-      <header className="sticky top-0 z-50 w-full h-20 bg-white/95 dark:bg-gray-900/95 border-b border-gray-200 dark:border-gray-800 shadow-lg backdrop-blur-md">
+      <header className="sticky top-0 z-50 w-full h-20 bg-white/95 dark:bg-[#1a1a1a]/95 border-b border-gray-200 dark:border-gray-800 shadow-lg backdrop-blur-md">
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-20 items-center justify-between">
             <div className="flex items-center gap-4 flex-1">

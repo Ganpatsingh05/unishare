@@ -490,7 +490,7 @@ export default function ProfilePage() {
   // Show loading spinner while fetching data or checking authentication
   if (loading || authLoading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p className="text-slate-300">
@@ -530,7 +530,7 @@ export default function ProfilePage() {
 
         body {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-          background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%); /* Dark gradient background */
+          background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 50%, #3a3a3a 100%); /* Matte Black Charcoal gradient */
           overflow-x: hidden;
           min-height: 100vh;
         }

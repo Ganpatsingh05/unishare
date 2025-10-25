@@ -75,7 +75,7 @@ export default function MobileBottomNav() {
   return (
     <div className={`mobile-bottom-nav fixed bottom-0 left-0 right-0 z-[10000] md:hidden ${
       darkMode 
-        ? 'bg-gray-900/95 border-gray-700' 
+        ? 'bg-[#1a1a1a]/95 border-gray-700' 
         : 'bg-white/95 border-gray-200'
     } border-t backdrop-blur-lg shadow-2xl`}>
       <div className="flex items-center justify-around py-2 px-4 safe-area-pb">

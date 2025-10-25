@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { HelpCircle, MessageSquare, X, ChevronUp, Mail, Phone } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 const FloatingActionButton = ({ darkMode }) => {
   const router = useRouter();
@@ -8,6 +9,19 @@ const FloatingActionButton = ({ darkMode }) => {
   const [showFAQ, setShowFAQ] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
+
+  // Add CSS for rotating border animation
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
 
   // FAQ data
   const faqs = [
@@ -338,23 +352,67 @@ const FloatingActionButton = ({ darkMode }) => {
           </div>
         </div>
 
-        {/* Main FAB Button */}
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className={`w-14 h-14 rounded-full shadow-xl transition-all duration-300 transform hover:scale-110 flex items-center justify-center ${
-            isOpen 
-              ? darkMode 
-                ? 'bg-red-600 hover:bg-red-700 rotate-45' 
-                : 'bg-red-500 hover:bg-red-600 rotate-45'
-              : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
-          } text-white`}
-        >
-          {isOpen ? (
-            <X className="w-6 h-6" />
-          ) : (
-            <MessageSquare className="w-6 h-6" />
-          )}
-        </button>
+        {/* Main FAB Button with UniShare Logo and Perfectly Aligned Colorful Border */}
+        <div className="relative w-16 h-16 md:w-[72px] md:h-[72px] flex items-center justify-center">
+          {/* Colorful Border Background - Matching Header Profile Colors */}
+          <div 
+            className={`absolute inset-0 rounded-full transition-all duration-300 ${
+              isOpen 
+                ? 'opacity-0 scale-95' 
+                : 'opacity-100 scale-100'
+            }`}
+            style={{
+              background: 'linear-gradient(90deg, #facc15 0%, #facc15 50%, #38bdf8 50%, #38bdf8 100%)',
+              animation: isOpen ? 'none' : 'spin 8s linear infinite'
+            }}
+          >
+          </div>
+          
+          {/* Inner White/Dark Circle */}
+          <div 
+            className={`absolute inset-[2px] md:inset-[3px] rounded-full ${
+              darkMode ? 'bg-gray-900' : 'bg-white'
+            }`}
+          >
+          </div>
+          
+          {/* Main Button - Perfectly Centered */}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className={`relative w-14 h-14 md:w-16 md:h-16 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center z-10 ${
+              isOpen 
+                ? darkMode 
+                  ? 'bg-red-600/95 hover:bg-red-700/95 rotate-45' 
+                  : 'bg-red-500/95 hover:bg-red-600/95 rotate-45'
+                : darkMode 
+                  ? 'bg-gray-900 hover:bg-gray-800'
+                  : 'bg-white hover:bg-gray-50'
+            }`}
+          >
+            {isOpen ? (
+              <X className="w-6 h-6 md:w-7 md:h-7 text-white" />
+            ) : (
+              <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden flex items-center justify-center">
+                <Image
+                  src="/assets/images/logounishare1.png"
+                  alt="UniShare"
+                  width={28}
+                  height={28}
+                  className="md:w-8 md:h-8 object-contain filter drop-shadow-sm"
+                />
+                {/* Text fallback */}
+                <div 
+                  className={`hidden text-base md:text-lg font-black tracking-tight ${
+                    darkMode ? 'text-white' : 'text-gray-900'
+                  }`}
+                  style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+                >
+                  <span className="text-blue-500">Uni</span><span className="text-orange-500">S</span>
+                </div>
+              </div>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Modals */}

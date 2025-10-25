@@ -206,106 +206,148 @@ const MobileMain = ({ darkMode, isVisible = false }) => {
       >
         {/* Compact Welcome Badge */}
         <div 
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium mb-4 transition-all duration-500 ${
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium mb-6 transition-all duration-500 ${
             darkMode 
-              ? 'bg-gradient-to-r from-yellow-300/20 to-blue-300/20 text-yellow-300 border border-yellow-300/30' 
-              : 'bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 border border-blue-200'
+              ? 'bg-gradient-to-r from-blue-500/20 to-violet-500/20 border border-blue-400/30' 
+              : 'bg-gradient-to-r from-blue-500/10 to-violet-500/10 border border-blue-300/30'
           }`}
+          style={{
+            color: '#FFFFFF',
+            fontWeight: 600,
+            letterSpacing: '0.05em',
+            textTransform: 'uppercase'
+          }}
         >
-          <Zap className="w-3 h-3" />
+          <Zap className="w-3.5 h-3.5" style={{ color: darkMode ? '#06B6D4' : '#3B82F6' }} />
           <span>Campus Community</span>
-          <div className={`w-2 h-2 rounded-full animate-pulse ${
-            darkMode ? 'bg-green-400' : 'bg-green-500'
-          }`} />
+          <div 
+            className="w-2 h-2 rounded-full animate-pulse"
+            style={{
+              backgroundColor: darkMode ? '#06B6D4' : '#3B82F6'
+            }}
+          />
         </div>
 
-        <p 
-          className={`text-lg mb-6 px-2 leading-relaxed font-bold italic ${
-            darkMode ? 'text-blue-200' : 'text-blue-700'
-          }`}
+        {/* Modern Tagline */}
+        <h2 
+          className="text-2xl font-bold mb-3 px-2 leading-tight"
+          style={{
+            color: '#FFFFFF',
+            letterSpacing: '-0.02em'
+          }}
         >
-          Everything you need for campus life
+          Everything you need for{' '}
+          <span 
+            className={`${
+              darkMode 
+                ? 'bg-gradient-to-r from-cyan-400 to-blue-500' 
+                : 'bg-gradient-to-r from-blue-500 to-violet-500'
+            } bg-clip-text text-transparent`}
+            style={{
+              fontWeight: 800
+            }}
+          >
+            campus life
+          </span>
+        </h2>
+
+        {/* Bottom Tagline */}
+        <p 
+          className="text-sm mb-6 px-2"
+          style={{
+            color: darkMode ? '#9CA3AF' : '#6B7280',
+            fontWeight: 400,
+            letterSpacing: '-0.01em'
+          }}
+        >
+          All in one place,{' '}
+          <span style={{ 
+            fontWeight: 600,
+            color: darkMode ? '#06B6D4' : '#3B82F6'
+          }}>
+            designed for Students
+          </span>
         </p>
-        
-        {/* Compact Search Bar with Logo */}
-        <div className="relative mb-4">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center z-20">
-              <Link href="/" className="flex items-center w-5 h-6">
-                <Image
-                  src={logoImage}
-                  alt="UniShare"
-                  width={20}
-                  height={24}
-                  className="transition-transform duration-200 active:scale-95 w-full h-full object-contain"
-                  style={{ width: 'auto', height: 'auto' }}
-                  priority
-                />
-              </Link>
-            </div>
-            
-            <input
-              type="text"
-              placeholder="Search services..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={`w-full pl-14 pr-10 py-3  rounded-xl border transition-all duration-200 focus:outline-none focus:ring-2 text-sm ${
-                darkMode 
-                  ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400 focus:ring-yellow-400/30 focus:border-yellow-400' 
-                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500/30 focus:border-blue-500'
-              } shadow-sm`}
-            />
-            
-            <button
-              type="button"
-              className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg ${
-                darkMode ? 'text-gray-400 active:text-yellow-300 active:bg-gray-700' : 'text-gray-500 active:text-blue-600 active:bg-gray-100'
-              }`}
-            >
-              <Search className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
 
       </div>
 
-      {/* Mobile Services Grid - Compact Cards */}
+      {/* Mobile Services Grid - Modern Card Design */}
       {filteredSections.length > 0 ? (
         <div className="grid grid-cols-2 gap-3 mb-2 mt-8">
-          {filteredSections.map((section, index) => (
-            <Link
-              key={index}
-              href={section.href}
-              className="block group active:scale-95 transition-transform duration-150"
-            >
-              <div
-                className={`relative p-4 rounded-2xl border transition-all duration-300 ${
-                  darkMode
-                    ? 'bg-gray-800/60 border-gray-700/50 active:bg-gray-800/80'
-                    : 'bg-white/60 border-gray-200/50 active:bg-white/80'
-                } backdrop-blur-sm shadow-md active:shadow-lg flex flex-col min-h-[175px]`}
+          {filteredSections.map((section, index) => {
+            const cardColor = darkMode
+              ? ['#2563EB', '#FBBF24', '#1D4ED8', '#F59E0B', '#3B82F6', '#D97706', '#1E40AF', '#EAB308'][index % 8]
+              : ['#3B82F6', '#F59E0B', '#2563EB', '#FBBF24', '#1D4ED8', '#D97706', '#1E40AF', '#EAB308'][index % 8];
+            
+            const isYellow = cardColor.startsWith('#F') || cardColor.startsWith('#D') || cardColor.startsWith('#E');
+
+            return (
+              <Link
+                key={index}
+                href={section.href}
+                className="block group rounded-3xl overflow-hidden transition-all duration-300 ease-in-out transform active:scale-95 focus:outline-none focus:ring-4 focus:ring-opacity-50"
+                style={{
+                  boxShadow: darkMode ? `0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.2)` : `0 10px 25px -5px ${cardColor}40, 0 8px 10px -6px ${cardColor}20`,
+                  '--card-color': cardColor,
+                  '--ring-color': isYellow ? 'rgba(251, 191, 36, 0.5)' : 'rgba(59, 130, 246, 0.5)',
+                }}
               >
-                <div 
-                  className={`absolute inset-0 rounded-2xl opacity-0 group-active:opacity-10 transition-opacity duration-200 bg-gradient-to-br ${section.color}`}
-                />
-                <div className="relative z-10 flex flex-col h-full">
-                  <div>
-                    <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl mb-3 transition-all duration-200 group-active:scale-110 bg-gradient-to-br ${section.color} text-white shadow-md`}>
-                      {section.icon}
+                <div
+                  className="relative w-full h-full pt-6 pb-5 px-4 flex flex-col justify-between min-h-[210px] transition-all duration-300 ease-in-out"
+                  style={{
+                    background: `linear-gradient(150deg, ${cardColor} 30%, ${isYellow ? '#A16207' : '#1E3A8A'} 100%)`,
+                  }}
+                >
+                  {/* Glossy Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50 group-hover:opacity-70 transition-opacity duration-300"></div>
+                  
+                  {/* Icon */}
+                  <div className="relative z-10 flex justify-start">
+                    <div
+                      className="w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 ease-in-out transform group-hover:scale-110 group-hover:-rotate-6"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.15)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        color: 'white',
+                      }}
+                    >
+                      <div className="transform scale-125">
+                        {section.icon}
+                      </div>
                     </div>
-                    <h3 className={`text-sm font-bold mb-1 leading-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>{section.title}</h3>
-                    <p className={`text-xs leading-relaxed line-clamp-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{section.description}</p>
                   </div>
-                  <div className="mt-auto pt-2">
-                    <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
-                      <div className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${section.color}`} />
-                      <span className="truncate max-w-[80px]">{section.keyFeature}</span>
-                    </div>
+
+                  {/* Text Content */}
+                  <div className="relative z-10 mt-auto">
+                    <h3
+                      className="text-white text-lg font-black tracking-tight leading-tight"
+                      style={{
+                        textShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
+                      }}
+                    >
+                      {section.title}
+                    </h3>
+                    <p
+                      className="text-white/70 text-xs mt-1"
+                      style={{
+                        textShadow: '0 1px 4px rgba(0, 0, 0, 0.3)',
+                      }}
+                    >
+                      {section.description}
+                    </p>
+                  </div>
+
+                  {/* Arrow Icon */}
+                  <div className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 text-white/70 group-hover:bg-white/20 group-hover:text-white transition-all duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                      <path fillRule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                    </svg>
                   </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       ) : (
         <div className={`text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>

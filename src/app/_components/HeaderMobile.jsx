@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
 import logoImage from '../assets/images/logounishare1.png';
 import { Search, Globe, Bell, Sun, Moon, User, LogOut, Menu, X, Settings, Camera, Edit3, Shield, HelpCircle, Info, ChevronRight, ArrowLeft } from 'lucide-react';
 import { useAuth, useNotifications, useUI } from '../lib/contexts/UniShareContext';
@@ -14,6 +15,7 @@ export default function HeaderMobile() {
   const router = useRouter();
   const pathname = usePathname();
   const logoRef = useRef(null);
+  const headerRef = useRef(null);
 
   // Check if we're on the profile page
   const isProfilePage = pathname === '/profile';
@@ -23,6 +25,14 @@ export default function HeaderMobile() {
     return null;
   }
   const [userProfile, setUserProfile] = useState(null); // Add user profile state
+  
+  // Use Framer Motion for smooth animations
+  const headerTop = useMotionValue(0);
+  const smoothHeaderTop = useSpring(headerTop, {
+    stiffness: 300,
+    damping: 30,
+    mass: 0.5
+  });
 
   // Check if we're on the home page
   const isHomePage = pathname === '/';
@@ -116,6 +126,68 @@ export default function HeaderMobile() {
     };
   }, [mobileMenuOpen]);
 
+  // Handle scroll to adjust header position
+  useEffect(() => {
+    const getNoticeBarHeight = () => {
+      const noticeBar = document.querySelector('.notice-bar-container');
+      if (noticeBar) {
+        return noticeBar.getBoundingClientRect().height;
+      }
+      return parseInt(
+        getComputedStyle(document.documentElement).getPropertyValue('--notice-bar-height') || '0'
+      );
+    };
+
+    const updateContentOffset = (noticeBarHeight) => {
+      if (!headerRef.current) return;
+      const headerHeight = headerRef.current.getBoundingClientRect().height;
+      const breathingRoom = 6;
+      if (typeof window !== 'undefined' && window.innerWidth < 768) {
+        const contentOffset = noticeBarHeight + headerHeight + breathingRoom;
+        document.documentElement.style.setProperty('--mobile-header-offset', `${contentOffset}px`);
+      } else {
+        document.documentElement.style.removeProperty('--mobile-header-offset');
+      }
+    };
+
+    const handlePositionUpdate = () => {
+      const scrollY = window.scrollY;
+      const noticeBarHeight = getNoticeBarHeight();
+
+      updateContentOffset(noticeBarHeight);
+
+      const gap = 4;
+      const totalOffset = noticeBarHeight > 0 ? noticeBarHeight + gap : gap;
+
+      const newTop = Math.max(gap, totalOffset - scrollY);
+      headerTop.set(newTop);
+    };
+
+    const initialTimeout = setTimeout(handlePositionUpdate, 80);
+
+    const observer = new MutationObserver(handlePositionUpdate);
+
+    const noticeBarContainer = document.querySelector('.notice-bar-container');
+    if (noticeBarContainer) {
+      observer.observe(noticeBarContainer, {
+        attributes: true,
+        childList: true,
+        subtree: true,
+      });
+    }
+
+    window.addEventListener('scroll', handlePositionUpdate, { passive: true });
+    window.addEventListener('resize', handlePositionUpdate, { passive: true });
+
+    return () => {
+      clearTimeout(initialTimeout);
+      window.removeEventListener('scroll', handlePositionUpdate);
+      window.removeEventListener('resize', handlePositionUpdate);
+      observer.disconnect();
+      document.documentElement.style.removeProperty('--mobile-header-offset');
+    };
+  }, [headerTop]);
+
   // Fetch user profile data when user is authenticated
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -179,103 +251,95 @@ export default function HeaderMobile() {
   );
 
   return (
-    <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
-      <div className="relative flex h-16 items-center justify-between">
-        {/* Left side - Back button when not on home page */}
-        {!isHomePage && (
-          <button
-            onClick={handleBackNavigation}
-            className={`p-3 rounded-xl border transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer group z-10 ${
-              darkMode 
-                ? 'border-gray-600 text-gray-200 hover:border-yellow-300 hover:bg-gray-800 hover:text-yellow-300' 
-                : 'border-gray-300 text-gray-700 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700'
-            }`}
-            title="Go back"
-          >
-            <ArrowLeft className="w-5 h-5 transition-all duration-300 group-hover:translate-x-[-1px]" />
-          </button>
-        )}
+    <motion.div
+      ref={headerRef}
+      className="fixed left-0 right-0 w-full px-2 py-3 z-50"
+      style={{ top: smoothHeaderTop }}
+    >
+      <nav className={`relative backdrop-blur supports-[backdrop-filter]:bg-white/70 bg-white/80 dark:supports-[backdrop-filter]:bg-black/50 dark:bg-black/80 border border-black/10 dark:border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.35)] rounded-full px-6 sm:px-8 py-2.5 sm:py-3 flex items-center justify-between max-w-full`}>
+        {/* Left - Logo */}
+        <Link className="flex items-center gap-2 cursor-pointer flex-shrink-0 ml-2" href="/">
+          <div className="h-8 w-8">
+            <Image
+              src={logoImage}
+              alt="UniShare Logo"
+              width={32}
+              height={32}
+              className="w-full h-full object-contain rounded"
+              priority
+            />
+          </div>
+        </Link>
 
-        {/* Logo - positioned differently based on page */}
-        {isHomePage && (
-          <Link className="block group cursor-pointer z-10" href="/">
-            <span className="sr-only">UniShare Home</span>
-            <div className="flex items-center">
-              <div
-                ref={logoRef}
-                className="h-12 w-12 transform group-hover:scale-110"
-                style={{
-                  transform: `scale(1) rotate(${logoRotation}deg)`,
-                  transition: 'transform 120ms ease-out',
-                  filter: darkMode ? 'drop-shadow(0 0 14px rgba(251, 191, 36, 0.25))' : 'drop-shadow(0 0 10px rgba(59, 130, 246, 0.2))'
-                }}
-              >
-                <Image
-                  src={logoImage}
-                  alt="UniShare Logo"
-                  width={80}
-                  height={80}
-                  className="w-full h-full object-contain bg-transparent"
-                  priority
-                />
-              </div>
-            </div>
+        {/* Center - Brand Name (absolutely positioned) */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+          <Link className="flex items-center gap-2 cursor-pointer pointer-events-auto" href="/">
+            <span className="brand-wordmark font-bold text-lg whitespace-nowrap">
+              <span className="brand-uni">Uni</span>
+              <span className="brand-share">Share</span>
+            </span>
           </Link>
-        )}
-        
-        {/* Center - Brand name with logo on non-home pages, just brand name on home page */}
-        <div className="absolute left-0 right-0 mx-auto flex justify-center items-center h-16 pointer-events-none">
-          {isHomePage ? (
-            /* Home page: Just show the brand name centered */
-            <div className="flex items-center pointer-events-auto">
-              <span className="brand-wordmark font-bold text-lg whitespace-nowrap">
-                <span className="brand-uni">Uni</span>
-                <span className="brand-share">Share</span>
-              </span>
-            </div>
-          ) : (
-            /* Non-home pages: Show logo + brand name */
-            <Link className="flex items-center gap-2 group cursor-pointer pointer-events-auto" href="/">
-              <span className="sr-only">UniShare Home</span>
-              <div
-                ref={!isHomePage ? logoRef : null}
-                className="h-8 w-8 transform group-hover:scale-110"
-                style={{
-                  transform: `scale(1) rotate(${logoRotation}deg)`,
-                  transition: 'transform 120ms ease-out',
-                  filter: darkMode ? 'drop-shadow(0 0 10px rgba(251, 191, 36, 0.2))' : 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.15))'
-                }}
-              >
-                <Image
-                  src={logoImage}
-                  alt="UniShare Logo"
-                  width={64}
-                  height={64}
-                  className="w-full h-full object-contain bg-transparent"
-                  priority
-                />
-              </div>
-              <span className="brand-wordmark font-bold text-lg whitespace-nowrap">
-                <span className="brand-uni">Uni</span>
-                <span className="brand-share">Share</span>
-              </span>
-            </Link>
-          )}
         </div>
 
-        {/* Hamburger with proper z-index to stay on top */}
-        <button
-          className={`relative z-50 inline-flex items-center justify-center p-3 rounded-xl border transition-all duration-200 ${
-            darkMode ? 'border-gray-700 text-gray-200 hover:bg-gray-800' : 'border-gray-200 text-gray-700 hover:bg-gray-100'
-          }`}
-          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-          aria-controls="navbar-hamburger"
-          aria-expanded={mobileMenuOpen ? 'true' : 'false'}
-          onClick={toggleMobileMenu}
-        >
-          <HamburgerIcon isOpen={mobileMenuOpen} />
-        </button>
-      </div>
+        {/* Right - Theme Toggle & Menu/Sign In */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            onClick={toggleDarkMode}
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:text-accent-foreground h-10 w-10 hover:bg-transparent"
+            aria-label="Toggle theme"
+          >
+            {darkMode ? (
+              <Moon className="h-5 w-5" />
+            ) : (
+              <Sun className="h-5 w-5" />
+            )}
+          </button>
+          
+          {!isAuthenticated ? (
+            <button
+              onClick={toggleMobileMenu}
+              className="flex items-center gap-2 rounded-full p-1 transition-colors duration-300 hover:bg-gray-500/10 dark:hover:bg-white/5"
+              aria-label="Open menu"
+            >
+              <div className="h-9 w-9 overflow-hidden rounded-full bg-gradient-to-br from-gray-400 to-gray-500 dark:from-gray-600 dark:to-gray-700 flex items-center justify-center border-2 border-gray-300 dark:border-gray-500">
+                <User className="h-5 w-5 text-white" />
+              </div>
+            </button>
+          ) : (
+            <button
+              onClick={toggleMobileMenu}
+              className="flex items-center gap-2 rounded-full transition-all duration-300 hover:scale-105 p-[3px]"
+              style={{
+                background: 'linear-gradient(90deg, #facc15 0%, #facc15 50%, #38bdf8 50%, #38bdf8 100%)',
+                borderRadius: '9999px'
+              }}
+            >
+              <div className="h-9 w-9 overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center transition-all duration-300">
+                {(() => {
+                  const profileImage = getProfileImageUrl(userProfile, user);
+                  if (profileImage) {
+                    return (
+                      <Image
+                        src={profileImage}
+                        alt="User"
+                        width={36}
+                        height={36}
+                        className="h-full w-full object-cover"
+                      />
+                    );
+                  } else {
+                    return (
+                      <span className="flex h-full w-full items-center justify-center text-sm font-bold text-white">
+                        {getUserInitials(userProfile, user)}
+                      </span>
+                    );
+                  }
+                })()}
+              </div>
+            </button>
+          )}
+        </div>
+      </nav>
 
       {/* Mobile menu panel */}
       <div
@@ -283,7 +347,7 @@ export default function HeaderMobile() {
           mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
         style={{
-          background: darkMode ? 'rgba(17,24,39,0.98)' : 'rgba(249,250,251,0.98)',
+          background: darkMode ? 'rgba(26,26,26,0.98)' : 'rgba(249,250,251,0.98)',
           backdropFilter: 'blur(12px)',
           borderRadius: '1.25rem 0 0 1.25rem',
           border: darkMode ? '1px solid #374151' : '1px solid #e5e7eb',
@@ -292,6 +356,21 @@ export default function HeaderMobile() {
         id="navbar-hamburger"
       >
         <div className={`flex flex-col h-full overflow-hidden ${darkMode ? 'bg-transparent' : 'bg-transparent'}`}>
+          {/* Close Button */}
+          <div className="absolute top-4 right-4 z-50">
+            <button
+              onClick={closeMobileMenu}
+              className={`p-2 rounded-full transition-all duration-200 ${
+                darkMode 
+                  ? 'bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white' 
+                  : 'bg-gray-200 hover:bg-gray-300 text-gray-700 hover:text-gray-900'
+              }`}
+              aria-label="Close menu"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
           {/* Profile section */}
           <div className={`px-4 py-5 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
             {authLoading ? (
@@ -646,6 +725,6 @@ export default function HeaderMobile() {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

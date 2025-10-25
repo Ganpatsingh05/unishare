@@ -1244,7 +1244,7 @@ export default function FindRidePage() {
   }
 
   return (
-    <div className={`min-h-screen ${darkMode ? "bg-gray-950" : "bg-gray-50"}`}>
+    <div className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-gray-50"}`}>
       {/* Modals */}
       <RideDetailsModal />
       <JoinRideModal />

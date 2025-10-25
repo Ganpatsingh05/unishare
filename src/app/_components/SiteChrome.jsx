@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import AnnouncementBar from "./NoticeBar";
 import ClientHeader from "./ClientHeader";
@@ -12,6 +12,21 @@ import ClientHeader from "./ClientHeader";
  */
 export default function SiteChrome({ children }) {
   const pathname = usePathname();
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
+  // Prevent hydration mismatch by ensuring client-side rendering for conditional logic
+  if (!isClient) {
+    return (
+      <div className="pt-16 md:pt-20" style={{ minHeight: '100vh', backgroundColor: 'transparent' }}>
+        {children}
+      </div>
+    );
+  }
+  
   const isAdmin = pathname?.startsWith("/admin");
   const isProfile = pathname === "/profile";
 
@@ -23,8 +38,8 @@ export default function SiteChrome({ children }) {
           <ClientHeader />
         </>
       )}
-      {/* Content area - no padding needed since header now scrolls with page */}
-      <div>
+      {/* Content area - adding proper padding to prevent header overlap */}
+      <div className="pt-16 md:pt-20" style={{ minHeight: '100vh', backgroundColor: 'transparent' }}>
         {children}
       </div>
     </>

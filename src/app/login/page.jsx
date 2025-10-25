@@ -12,10 +12,16 @@ const LoginPage = () => {
   const [showOwlMessage, setShowOwlMessage] = useState(false);
   const [currentOwlMessage, setCurrentOwlMessage] = useState('');
   const [authMessage, setAuthMessage] = useState('');
+  const [isClient, setIsClient] = useState(false);
   const { darkMode, showAuthLoading, stopNavigationLoading } = useUI();
   const { isAuthenticated, user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Handle OAuth callback and redirect logic
   useEffect(() => {
@@ -95,12 +101,24 @@ const LoginPage = () => {
     }, 3000);
   };
 
+  // Prevent hydration mismatch by ensuring client-side rendering
+  if (!isClient) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* Mobile Layout (hidden on lg and above) */}
       <div className={`lg:hidden min-h-screen flex flex-col ${
         darkMode 
-          ? 'bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900' 
+          ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' 
           : 'bg-gradient-to-br from-orange-50 via-orange-100 to-orange-200'
       }`}>
         {/* Mobile Header */}
@@ -124,7 +142,7 @@ const LoginPage = () => {
           <h1 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'} leading-tight mb-3`}>
             Welcome Back!
           </h1>
-          <p className={`text-sm mb-6 ${darkMode ? 'text-slate-300' : 'text-gray-600'}`}>
+          <p className={`text-sm mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
             Sign in to your campus community
           </p>
         </div>
@@ -133,7 +151,7 @@ const LoginPage = () => {
         <div className="flex-1 px-6 pb-6">
           <div className={`relative backdrop-blur-sm rounded-2xl border p-6 ${
             darkMode 
-              ? 'bg-slate-800/50 border-slate-700/50' 
+              ? 'bg-gray-800/50 border-gray-700/50' 
               : 'bg-white/50 border-orange-200/50'
           }`}>
             {/* Mobile Owl Mascot */}
@@ -182,7 +200,7 @@ const LoginPage = () => {
 
             {/* Mobile Create Account Link */}
             <div className="text-center mt-6">
-              <p className={`text-sm mb-3 ${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>Don't have an account?</p>
+              <p className={`text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Don't have an account?</p>
               <Link 
                 href="/register" 
                 className="inline-flex items-center justify-center px-6 py-2.5 bg-transparent border-2 border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-white font-semibold rounded-xl transition-all duration-300"
@@ -196,13 +214,13 @@ const LoginPage = () => {
         {/* Mobile Footer */}
         <footer className={`backdrop-blur-sm border-t py-6 px-6 ${
           darkMode 
-            ? 'bg-slate-900/50 border-slate-700/50' 
+            ? 'bg-gray-900/50 border-gray-700/50' 
             : 'bg-white/50 border-orange-200/50'
         }`}>
           <div className="text-center">
             {/* Main Footer Links */}
             <div className={`flex flex-wrap justify-center gap-6 text-sm mb-4 ${
-              darkMode ? 'text-slate-300' : 'text-gray-700'
+              darkMode ? 'text-gray-300' : 'text-gray-700'
             }`}>
               <Link href="/footerpages/about" className={`transition-colors ${
                 darkMode ? 'hover:text-cyan-400' : 'hover:text-orange-600'
@@ -220,7 +238,7 @@ const LoginPage = () => {
             
             {/* Secondary Links */}
             <div className={`flex flex-wrap justify-center gap-4 text-xs mb-4 ${
-              darkMode ? 'text-slate-400' : 'text-gray-600'
+              darkMode ? 'text-gray-400' : 'text-gray-600'
             }`}>
               <Link href="/footerpages/careers" className={`transition-colors ${
                 darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
@@ -240,7 +258,7 @@ const LoginPage = () => {
             </div>
             
             {/* Copyright */}
-            <div className={`text-xs ${darkMode ? 'text-slate-500' : 'text-gray-500'}`}>
+            <div className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
               © 2024-2025 UniShare. All rights reserved.
             </div>
           </div>
@@ -250,7 +268,7 @@ const LoginPage = () => {
       {/* Desktop Layout (hidden below lg) */}
       <div className={`hidden lg:flex min-h-screen flex-col ${
         darkMode 
-          ? 'bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900' 
+          ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' 
           : 'bg-gradient-to-br from-orange-50 via-orange-100 to-orange-200'
       }`}>
         {/* Main Content */}
@@ -265,7 +283,7 @@ const LoginPage = () => {
             {/* Left Side - Brand/Welcome */}
             <div className={`flex flex-col justify-center items-start p-4 sm:p-6 lg:p-12 backdrop-blur-sm rounded-2xl lg:rounded-r-none border order-2 lg:order-1 ${
               darkMode 
-                ? 'bg-slate-800/50 border-slate-700/50' 
+                ? 'bg-gray-800/50 border-gray-700/50' 
                 : 'bg-white/50 border-orange-200/50'
             }`}>
               {/* Logo */}
@@ -282,7 +300,7 @@ const LoginPage = () => {
               </h1>
               
               <p className={`text-sm lg:text-base mb-4 lg:mb-6 leading-relaxed text-center lg:text-left ${
-                darkMode ? 'text-slate-300' : 'text-gray-600'
+                darkMode ? 'text-gray-300' : 'text-gray-600'
               }`}>
                 Hi there! Sign in to your account and enjoy your campus community experience on UniShare.
               </p>
@@ -300,7 +318,7 @@ const LoginPage = () => {
             {/* Right Side - Sign In Form */}
             <div className={`relative flex flex-col justify-center p-4 sm:p-6 lg:p-12 backdrop-blur-sm rounded-2xl lg:rounded-l-none border order-1 lg:order-2 ${
               darkMode 
-                ? 'bg-slate-700/50 border-slate-600/50' 
+                ? 'bg-gray-700/50 border-gray-600/50' 
                 : 'bg-orange-50/50 border-orange-300/50'
             }`}>
               {/* Peeking Owl Mascot */}
@@ -362,14 +380,14 @@ const LoginPage = () => {
         {/* Desktop Footer */}
         <footer className={`relative z-10 backdrop-blur-sm border-t py-6 px-4 sm:px-6 lg:px-8 ${
           darkMode 
-            ? 'bg-slate-900/50 border-slate-700/50' 
+            ? 'bg-gray-900/50 border-gray-700/50' 
             : 'bg-white/50 border-orange-200/50'
         }`}>
           <div className="max-w-5xl mx-auto">
             {/* Main Footer Links */}
             <div className="flex flex-wrap justify-center lg:justify-between items-center gap-6 mb-4">
               <div className={`flex flex-wrap justify-center gap-6 sm:gap-8 text-sm ${
-                darkMode ? 'text-slate-300' : 'text-gray-700'
+                darkMode ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 <Link href="/footerpages/about" className={`transition-colors ${
                   darkMode ? 'hover:text-cyan-400' : 'hover:text-orange-600'
@@ -395,7 +413,7 @@ const LoginPage = () => {
               
               {/* Language Selector */}
               <div className={`flex items-center gap-2 text-sm ${
-                darkMode ? 'text-slate-400' : 'text-gray-600'
+                darkMode ? 'text-gray-400' : 'text-gray-600'
               }`}>
                 <span>🌐</span>
                 <span>English</span>
@@ -404,7 +422,7 @@ const LoginPage = () => {
             
             {/* Secondary Links */}
             <div className={`flex flex-wrap justify-center gap-4 sm:gap-6 text-xs mb-4 ${
-              darkMode ? 'text-slate-400' : 'text-gray-600'
+              darkMode ? 'text-gray-400' : 'text-gray-600'
             }`}>
               <Link href="/footerpages/terms" className={`transition-colors ${
                 darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
@@ -440,7 +458,7 @@ const LoginPage = () => {
             
             {/* Copyright */}
             <div className={`text-center text-sm ${
-              darkMode ? 'text-slate-500' : 'text-gray-500'
+              darkMode ? 'text-gray-500' : 'text-gray-500'
             }`}>
               © 2024-2025 UniShare Campus Community. All rights reserved.
             </div>

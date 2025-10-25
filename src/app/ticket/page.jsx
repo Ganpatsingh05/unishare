@@ -7,23 +7,22 @@ import SmallFooter from "../_components/SmallFooter";
 import { fetchTickets } from "../lib/api";
 
 export default function TicketHubPage() {
-  // Directly read darkMode from context each render for live reactivity
-  let darkMode = false;
-  try { darkMode = useUI()?.darkMode ?? false; } catch {}
+  // Use proper dark mode from context
+  const { darkMode } = useUI();
 
   // Local state for recent tickets
   const [recentTickets, setRecentTickets] = useState([]);
   const [loadingRecent, setLoadingRecent] = useState(false);
 
 
-  const cardBorder = darkMode ? "border-gray-800" : "border-gray-200";
-  const cardBg = darkMode ? "bg-gray-900/70" : "bg-white/80";
-  const textMuted = darkMode ? "text-gray-300" : "text-gray-700"; // darken for light mode contrast
-  const titleClr = darkMode ? "text-gray-100" : "text-gray-800"; // slightly softer but visible
-  const tipBg = darkMode ? "bg-gray-900/60" : "bg-gray-100";
-  const tipBorder = darkMode ? "border-gray-800" : "border-gray-300";
-  const badgeBlue = darkMode ? "text-blue-300 bg-blue-500/10" : "text-blue-700 bg-blue-100";
-  const badgeGreen = darkMode ? "text-emerald-300 bg-emerald-500/10" : "text-emerald-700 bg-emerald-100";
+  const cardBorder = darkMode ? "border-gray-700/50" : "border-gray-200";
+  const cardBg = darkMode ? "bg-gray-800/50" : "bg-white/80";
+  const textMuted = darkMode ? "text-gray-300" : "text-gray-700";
+  const titleClr = darkMode ? "text-gray-100" : "text-gray-800";
+  const tipBg = darkMode ? "bg-gray-800/60" : "bg-gray-100";
+  const tipBorder = darkMode ? "border-gray-700/50" : "border-gray-300";
+  const badgeBlue = darkMode ? "text-blue-300 bg-blue-500/20" : "text-blue-700 bg-blue-100";
+  const badgeGreen = darkMode ? "text-emerald-300 bg-emerald-500/20" : "text-emerald-700 bg-emerald-100";
 
   // Helpers reused from buy page for consistency
   const formatDate = (dateString) => {
@@ -81,7 +80,7 @@ export default function TicketHubPage() {
   }, []);
 
   return (
-    <div className={`min-h-screen flex flex-col relative transition-colors ${darkMode ? 'bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800' : 'bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50'}`}>
+    <div className={`min-h-screen flex flex-col relative transition-colors ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50'}`}>
 
       <main className="relative flex-1 min-h-[115vh] px-4 sm:px-6 lg:px-8 py-10 sm:py-14 pb-24">
         {/* subtle background glow */}

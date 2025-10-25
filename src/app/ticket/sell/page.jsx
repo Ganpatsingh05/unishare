@@ -52,7 +52,7 @@ export default function TicketSellPage() {
 
   // Theme classes using global CSS custom properties and consistent focus states
   const labelClr = "text-secondary";
-  const cardBg = darkMode ? "bg-gray-950/60 border-gray-900" : "bg-white/80 border-gray-200";
+  const cardBg = darkMode ? "bg-gray-800/60 border-gray-700" : "bg-white/80 border-gray-200";
   const titleClr = "text-primary";
   const subClr = "text-muted";
 

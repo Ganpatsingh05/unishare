@@ -420,14 +420,14 @@ export const UniShareProvider = ({ children }) => {
     const html = document.documentElement;
     
     if (state.darkMode) {
-      // Dark mode - Ocean Blue theme
+      // Dark mode - Matte Black Charcoal theme
       body.classList.add('dark', 'theme-ocean');
       body.classList.remove('light', 'theme-warm');
       html.setAttribute('data-theme', 'dark');
       
       // Apply dark theme styles to body
-      body.style.backgroundColor = '#0f172a'; // slate-900
-      body.style.color = '#f0f9ff'; // blue-50
+      body.style.backgroundColor = '#1a1a1a'; // Matte Black Charcoal
+      body.style.color = '#FFFFFF'; // Pure white
     } else {
       // Light mode - Warm Orange theme
       body.classList.add('light', 'theme-warm');
@@ -435,8 +435,8 @@ export const UniShareProvider = ({ children }) => {
       html.setAttribute('data-theme', 'light');
       
       // Apply light theme styles to body
-      body.style.backgroundColor = '#fed7aa'; // orange-200
-      body.style.color = '#111827'; // gray-900
+      body.style.backgroundColor = '#F9FAFB'; // Off-white
+      body.style.color = '#1f2937'; // gray-800
     }
   }, [state.darkMode]);
   

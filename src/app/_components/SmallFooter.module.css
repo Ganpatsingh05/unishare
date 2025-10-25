@@ -7,7 +7,7 @@
 }
 
 .footer.dark {
-  background: linear-gradient(to bottom, rgb(31, 41, 55), rgb(17, 24, 39));
+  background: linear-gradient(to bottom, rgb(26, 26, 26), rgb(20, 20, 20));
   color: rgb(243, 244, 246);
   border-color: rgb(55, 65, 81);
 }

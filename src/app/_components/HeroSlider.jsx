@@ -84,10 +84,10 @@ export default function HeroSlider({ darkMode = true }) {
 
   return (
     <section className="w-full">
-  <div className="mx-auto px-4 w-full">
+      <div className="mx-auto px-4 w-full max-w-[80rem]">
         {/* Main Slider Container */}
         <div
-          className="relative group px-4 sm:px-8 md:px-12 lg:px-16"
+          className="relative group"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         >
@@ -109,8 +109,8 @@ export default function HeroSlider({ darkMode = true }) {
                       className="
                         w-full 
                         h-auto          /* good for mobile */
-                        md:h-[400px]    /* fix height for desktops */
-                        lg:h-[500px] 
+                        md:h-[340px]    /* fix height for desktops */
+                        lg:h-[400px] 
                         object-cover 
                         rounded-xl
                       "
@@ -118,16 +118,16 @@ export default function HeroSlider({ darkMode = true }) {
                       sizes="100vw"
                     />
                     {/* CTA Button positioned consistently */}
-                    <div className="absolute bottom-4 left-4 z-10">
+                    <div className="absolute bottom-6 left-6 md:bottom-8 md:left-8 z-10">
                       <Link
                         href={slide.cta.href}
                         className="
                           inline-block 
                           bg-[#5B46F6] hover:bg-[#4a38e5] 
                           text-white font-semibold
-                          px-2 py-1       /* smaller padding on mobile */
+                          px-3 py-1.5     /* smaller padding on mobile */
                           sm:px-4 sm:py-2 /* medium padding on tablet */
-                          md:px-5 md:py-3 /* full size on desktop */
+                          md:px-6 md:py-3 /* full size on desktop */
                           rounded-lg sm:rounded-xl
                           shadow-md sm:shadow-lg
                           transition-all duration-200 
