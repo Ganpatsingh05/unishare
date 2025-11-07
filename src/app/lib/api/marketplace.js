@@ -1,5 +1,5 @@
 // api/marketplace.js - Marketplace and item trading API functions
-import { apiCall, apiCallFormData } from './base.js';
+import { apiCall, apiCallFormData } from "./base.js";
 
 // ============== ITEM MARKETPLACE ==============
 

@@ -5,7 +5,7 @@
  * Shows Dynamic Island notifications for every significant user interaction
  */
 
-import { showDynamicIslandNotification } from '../../_components/DynamicIsland';
+import { showDynamicIslandNotification } from "./../../_components/ui/DynamicIsland";
 
 // ============================================
 // HOUSING & ROOMS NOTIFICATIONS

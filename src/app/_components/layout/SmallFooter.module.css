@@ -1,0 +1,497 @@
+/* SmallFooter Styles - Isolated from page conflicts */
+
+.footer {
+  position: relative;
+  transition: all 300ms ease;
+  border-top: 1px solid;
+}
+
+.footer.dark {
+  background: linear-gradient(to bottom, rgb(26, 26, 26), rgb(20, 20, 20));
+  color: rgb(243, 244, 246);
+  border-color: rgb(55, 65, 81);
+}
+
+.footer.light {
+  background: linear-gradient(to bottom, rgb(255, 247, 237), rgb(254, 243, 199));
+  color: rgb(31, 41, 55);
+  border-color: rgb(229, 231, 235);
+}
+
+.container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding: 1.5rem 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding: 2rem 1.5rem;
+  }
+}
+
+.mainGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 640px) {
+  .mainGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mainGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 2rem;
+  }
+}
+
+.logoSection {
+  grid-column: span 2;
+}
+
+@media (min-width: 640px) {
+  .logoSection {
+    grid-column: span 3;
+  }
+}
+
+@media (min-width: 1024px) {
+  .logoSection {
+    grid-column: span 1;
+  }
+}
+
+.logoLink {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .logoLink {
+    margin-bottom: 1rem;
+  }
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: transform 300ms ease;
+}
+
+@media (min-width: 640px) {
+  .logoContainer {
+    gap: 0.75rem;
+  }
+}
+
+.logoContainer:hover {
+  transform: scale(1.05);
+}
+
+.logoImage {
+  height: 1.5rem;
+  width: 1.5rem;
+  transition: transform 300ms ease;
+}
+
+@media (min-width: 640px) {
+  .logoImage {
+    height: 2rem;
+    width: 2rem;
+  }
+}
+
+.logoImage:hover {
+  transform: scale(1.1);
+}
+
+.brandWordmark {
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+@media (min-width: 640px) {
+  .brandWordmark {
+    font-size: 1.25rem;
+  }
+}
+
+.brandUni {
+  background: linear-gradient(to right, #fbbf24, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.brandShare {
+  background: linear-gradient(to right, #3b82f6, #1d4ed8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.description {
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+@media (min-width: 640px) {
+  .description {
+    font-size: 0.875rem;
+  }
+}
+
+.description.dark {
+  color: rgb(209, 213, 219);
+}
+
+.description.light {
+  color: rgb(75, 85, 99);
+}
+
+.section {
+  grid-column: span 1;
+}
+
+@media (min-width: 640px) {
+  .contactSection {
+    grid-column: span 2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .contactSection {
+    grid-column: span 1;
+  }
+}
+
+.sectionTitle {
+  font-weight: 600;
+  font-size: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .sectionTitle {
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.sectionTitle.dark {
+  color: white;
+}
+
+.sectionTitle.light {
+  color: rgb(17, 24, 39);
+}
+
+.linkList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+@media (min-width: 640px) {
+  .linkList {
+    gap: 0.5rem;
+  }
+}
+
+.linkItem {
+  margin: 0;
+}
+
+.quickLink {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  text-decoration: none;
+  transition: all 200ms ease;
+  transform: translateX(0);
+}
+
+@media (min-width: 640px) {
+  .quickLink {
+    gap: 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+.quickLink:hover {
+  transform: translateX(0.25rem);
+  text-decoration: underline;
+}
+
+.quickLink.dark {
+  color: rgb(156, 163, 175);
+}
+
+.quickLink.light {
+  color: rgb(75, 85, 99);
+}
+
+.quickLink.dark:hover {
+  color: rgb(252, 211, 77);
+}
+
+.quickLink.light:hover {
+  color: rgb(217, 119, 6);
+}
+
+.quickIcon {
+  width: 0.625rem;
+  height: 0.625rem;
+  transition: transform 200ms ease;
+}
+
+@media (min-width: 640px) {
+  .quickIcon {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+}
+
+.quickLink:hover .quickIcon {
+  transform: scale(1.1);
+}
+
+.supportLink {
+  font-size: 0.75rem;
+  text-decoration: none;
+  transition: colors 200ms ease;
+}
+
+@media (min-width: 640px) {
+  .supportLink {
+    font-size: 0.875rem;
+  }
+}
+
+.supportLink:hover {
+  text-decoration: underline;
+}
+
+.supportLink.dark {
+  color: rgb(156, 163, 175);
+}
+
+.supportLink.light {
+  color: rgb(75, 85, 99);
+}
+
+.supportLink.dark:hover {
+  color: rgb(125, 211, 252);
+}
+
+.supportLink.light:hover {
+  color: rgb(37, 99, 235);
+}
+
+.contactInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .contactInfo {
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.contactItem {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .contactItem {
+    gap: 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+.contactIcon {
+  width: 0.625rem;
+  height: 0.625rem;
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .contactIcon {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+}
+
+.contactIcon.email.dark {
+  color: rgb(252, 211, 77);
+}
+
+.contactIcon.email.light {
+  color: rgb(217, 119, 6);
+}
+
+.contactIcon.phone.dark {
+  color: rgb(125, 211, 252);
+}
+
+.contactIcon.phone.light {
+  color: rgb(37, 99, 235);
+}
+
+.contactText {
+  word-break: break-all;
+}
+
+.contactText.dark {
+  color: rgb(209, 213, 219);
+}
+
+.contactText.light {
+  color: rgb(75, 85, 99);
+}
+
+.bottomBar {
+  padding-top: 0.75rem;
+  border-top: 1px solid;
+}
+
+@media (min-width: 640px) {
+  .bottomBar {
+    padding-top: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .bottomBar {
+    padding-top: 1.5rem;
+  }
+}
+
+.bottomBar.dark {
+  border-color: rgb(55, 65, 81);
+}
+
+.bottomBar.light {
+  border-color: rgb(209, 213, 219);
+}
+
+.bottomContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .bottomContent {
+    flex-direction: row;
+    gap: 1rem;
+  }
+}
+
+.copyright {
+  font-size: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .copyright {
+    font-size: 0.875rem;
+  }
+}
+
+.copyright.dark {
+  color: rgb(156, 163, 175);
+}
+
+.copyright.light {
+  color: rgb(107, 114, 128);
+}
+
+.madeWith {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .madeWith {
+    gap: 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+.madeWith.dark {
+  color: rgb(156, 163, 175);
+}
+
+.madeWith.light {
+  color: rgb(107, 114, 128);
+}
+
+.heartIcon {
+  width: 0.75rem;
+  height: 0.75rem;
+  fill: currentColor;
+}
+
+@media (min-width: 640px) {
+  .heartIcon {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+.heartIcon.dark {
+  color: rgb(248, 113, 113);
+}
+
+.heartIcon.light {
+  color: rgb(239, 68, 68);
+}
+
+.coffeeIcon {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .coffeeIcon {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+.coffeeIcon.dark {
+  color: rgb(251, 191, 36);
+}
+
+.coffeeIcon.light {
+  color: rgb(217, 119, 6);
+}

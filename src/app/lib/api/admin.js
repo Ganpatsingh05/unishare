@@ -1,5 +1,5 @@
 // api/admin.js - Admin panel related API functions
-import { apiCall } from './base.js';
+import { apiCall } from "./base.js";
 
 // ===== ADMIN FUNCTIONS =====
 

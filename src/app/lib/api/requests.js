@@ -1,7 +1,7 @@
 // Universal Request System API
 // Handles requests across all modules: rooms, itemsell, lostfound, ticketsell, shareride
 
-import { apiCall, API_CONFIG } from './base';
+import { apiCall, API_CONFIG } from "./base";
 
 const BASE_URL = API_CONFIG.BASE_URL;
 

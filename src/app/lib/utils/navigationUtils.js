@@ -1,7 +1,7 @@
 // utils/navigationUtils.js
 "use client";
 
-import { useUI } from '../contexts/UniShareContext';
+import { useUI } from "../contexts/UniShareContext";
 
 // Custom hook for triggering navigation loading in components
 export const useNavigationLoading = () => {

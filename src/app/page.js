@@ -19,13 +19,13 @@ import {
   ChevronRight,
   CheckCircle,
 } from "lucide-react";
-import Main from "./_components/Main";
-import HeroSlider from "./_components/HeroSlider";
-import Footer from "./_components/Footer";
-import FloatingActionButton from "./_components/FloatingActionButton";
+import Main from "./_components/layout/Main";
+import HeroSlider from "./_components/ui/HeroSlider";
+import Footer from "./_components/layout/Footer";
+import FloatingActionButton from "./_components/ui/FloatingActionButton";
 import { useUI } from "./lib/contexts/UniShareContext";
-import Backgroundgalaxy from "./_components/GalaxyMobile";
-import GalaxyDesktop from "./_components/GalaxyDesktop";
+import Backgroundgalaxy from "./_components/ui/GalaxyMobile";
+import GalaxyDesktop from "./_components/ui/GalaxyDesktop";
 /**
  * Page component with interactive hero section and enhanced scroll effects
  */

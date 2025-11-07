@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { DynamicIslandNotifications } from '../../_components/DynamicIsland';
+import { useCallback } from "react";
+import { useRouter } from "next/navigation";
+import DynamicIsland from "./../../_components/ui/DynamicIsland";
 
 /**
  * Custom hook for using Dynamic Island notifications with common app patterns

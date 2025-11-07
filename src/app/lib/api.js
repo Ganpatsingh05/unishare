@@ -2,7 +2,7 @@
 // This file maintains backward compatibility while using the new modular structure
 
 // Re-export all base utilities
-export { apiCall, apiCallFormData, BACKEND_URL } from './api/base.js';
+export { apiCall, apiCallFormData, BACKEND_URL } from "./api/base.js";
 
 // Re-export all authentication functions
 export {
@@ -11,7 +11,7 @@ export {
   logout,
   checkAdminStatus,
   startGoogleLogin
-} from './api/auth.js';
+} from "./api/auth.js";
 
 // Re-export all profile functions  
 export {
@@ -22,7 +22,7 @@ export {
   getUserStats,
   getUserDashboard,
   fetchPublicProfile
-} from './api/profile.js';
+} from "./api/profile.js";
 
 // Re-export all housing functions
 export {
@@ -39,7 +39,7 @@ export {
   searchRoomsAdvanced,
   validateRoomData,
   prepareRoomFormData
-} from './api/housing.js';
+} from "./api/housing.js";
 
 // Re-export all marketplace functions
 export {
@@ -52,7 +52,7 @@ export {
   uploadItemImage,
   deleteItemImage,
   validateItemData
-} from './api/marketplace.js';
+} from "./api/marketplace.js";
 
 // Re-export all ride sharing functions
 export {
@@ -68,7 +68,7 @@ export {
   getRideStats,
   validateRideData,
   getUserSentRequests
-} from './api/rideSharing.js';
+} from "./api/rideSharing.js";
 
 // Re-export all ticket functions
 export {
@@ -78,7 +78,7 @@ export {
   updateTicket,
   deleteTicket,
   fetchTicket
-} from './api/tickets.js';
+} from "./api/tickets.js";
 
 // Re-export all lost & found functions
 export {
@@ -90,7 +90,7 @@ export {
   fetchLostFoundItem,
   contactLostFoundItem,
   getLostFoundStats
-} from './api/lostFound.js';
+} from "./api/lostFound.js";
 
 // Re-export all announcement functions
 export {
@@ -98,7 +98,7 @@ export {
   getSystemAnnouncements,
   updateSystemAnnouncement,
   deleteSystemAnnouncement
-} from './api/announcements.js';
+} from "./api/announcements.js";
 
 // Re-export all notice functions
 export {
@@ -108,7 +108,7 @@ export {
   updateNotice,
   deleteNotice,
   getNoticesForNoticeBar
-} from './api/notice.js';
+} from "./api/notice.js";
 
 // Re-export all notification functions
 export {
@@ -125,7 +125,7 @@ export {
   deleteAdminNotification,
   getNotificationStats,
   getNotificationsForUser
-} from './api/notifications.js';
+} from "./api/notifications.js";
 
 // Re-export all utility functions
 export {
@@ -135,7 +135,7 @@ export {
   formatDate,
   getTimeSince,
   validateImageFile
-} from './api/utils.js';
+} from "./api/utils.js";
 
 // Re-export all admin functions
 export {
@@ -163,4 +163,4 @@ export {
   getBackupHistory,
   downloadBackup,
   exportData
-} from './api/admin.js';
+} from "./api/admin.js";

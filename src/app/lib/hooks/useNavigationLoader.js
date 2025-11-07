@@ -1,8 +1,8 @@
 // hooks/useNavigationLoader.js
 "use client";
 
-import { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 // Routes that should NOT use the custom navigation loader
 // These will use their existing custom GIF loaders

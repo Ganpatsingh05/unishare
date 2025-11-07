@@ -1,7 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
-import { checkAuthStatus, logout as apiLogout } from '../api';
+import React, { createContext, useContext, useReducer, useEffect, useCallback } from "react";
+import { checkAuthStatus, logout as apiLogout } from "../api";
 
 // =============================================================================
 // CONTEXT DEFINITION

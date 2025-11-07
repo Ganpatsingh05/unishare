@@ -1,5 +1,5 @@
 // api/housing.js - Optimized housing and room related API functions
-import { apiCall, apiCallFormData, buildQueryParams, batchAPICall, clearAPICache, APIError } from './base.js';
+import { apiCall, apiCallFormData, buildQueryParams, batchAPICall, clearAPICache, APIError } from "./base.js";
 
 // ============== ROOM LISTINGS ==============
 

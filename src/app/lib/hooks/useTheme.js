@@ -1,6 +1,6 @@
 // hooks/useTheme.js - Centralized theme configuration hook
-import { useMemo } from 'react';
-import { useUI } from '../contexts/UniShareContext';
+import { useMemo } from "react";
+import { useUI } from "../contexts/UniShareContext";
 
 export const useProfileTheme = () => {
   const { darkMode } = useUI();

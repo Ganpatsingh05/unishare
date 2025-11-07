@@ -1,6 +1,6 @@
 // User Profile API functions
-import { useState, useCallback } from 'react';
-import { apiCall, apiCallFormData } from './base.js';
+import { useState, useCallback } from "react";
+import { apiCall, apiCallFormData } from "./base.js";
 
 // Get current user's profile
 export const getCurrentUserProfile = async () => {

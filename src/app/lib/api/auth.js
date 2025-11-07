@@ -1,5 +1,5 @@
 // api/auth.js - Authentication related API functions
-import { apiCall, BACKEND_URL } from './base.js';
+import { apiCall, BACKEND_URL } from "./base.js";
 
 // ============== AUTHENTICATION ==============
 

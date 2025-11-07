@@ -1,5 +1,5 @@
 // api/notifications.js - Enhanced notification management API functions
-import { apiCall, buildQueryParams, APIError, clearAPICache } from './base.js';
+import { apiCall, buildQueryParams, APIError, clearAPICache } from "./base.js";
 
 // ============== USER NOTIFICATION FUNCTIONS ==============
 

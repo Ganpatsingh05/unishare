@@ -46,7 +46,7 @@ export default function AdminNoticePage() {
   const loadAllNotices = async () => {
     setError(null);
     try {
-      const { getAllNotices } = await import('../../lib/api/notice');
+      const { getAllNotices } = await import("../../lib/api/notice");
       const res = await getAllNotices();
       if (res.success) {
         setAllNotices(res.notices || res.data || []);
@@ -101,7 +101,7 @@ export default function AdminNoticePage() {
     if (!form.heading.trim() || !form.body.trim()) return;
     setSubmitting(true);
     try {
-      const { createNotice, updateNotice } = await import('../../lib/api/notice');
+      const { createNotice, updateNotice } = await import("../../lib/api/notice");
 
       const payload = {
         user_id: user?.id, // Admin's user ID for new notices
@@ -131,7 +131,7 @@ export default function AdminNoticePage() {
 
   const toggleActive = async (notice) => {
     try {
-      const { updateNotice } = await import('../../lib/api/notice');
+      const { updateNotice } = await import("../../lib/api/notice");
       const newActive = !notice.active;
       // Update only the active status, keep other fields unchanged
       await updateNotice(notice.id, {
@@ -149,7 +149,7 @@ export default function AdminNoticePage() {
 
   const performDelete = async (id) => {
     try {
-      const { deleteNotice } = await import('../../lib/api/notice');
+      const { deleteNotice } = await import("../../lib/api/notice");
       await deleteNotice(id);
       await loadAllNotices(); // Reload all notices
       setConfirmDelete(null);

@@ -1,5 +1,5 @@
 // api/profile.js - User profile related API functions
-import { apiCall, apiCallFormData } from './base.js';
+import { apiCall, apiCallFormData } from "./base.js";
 
 // ============== USER PROFILE MANAGEMENT ==============
 
