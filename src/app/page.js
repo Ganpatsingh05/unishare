@@ -24,7 +24,6 @@ import HeroSlider from "./_components/ui/HeroSlider";
 import Footer from "./_components/layout/Footer";
 import FloatingActionButton from "./_components/ui/FloatingActionButton";
 import { useUI } from "./lib/contexts/UniShareContext";
-import Backgroundgalaxy from "./_components/ui/GalaxyMobile";
 import GalaxyDesktop from "./_components/ui/GalaxyDesktop";
 /**
  * Page component with interactive hero section and enhanced scroll effects
@@ -441,18 +440,19 @@ export default function Page() {
   };
 
   return (
-      <div className="relative min-h-screen" style={{ backgroundColor: '#0a0a0a' }}>
-        <div className="hidden md:block">
-          <GalaxyDesktop/>
-        </div>
-        <div className="block md:hidden">
-          <Backgroundgalaxy/>
-        </div>
+      <div 
+        className="relative min-h-screen" 
+        style={{ 
+          backgroundColor: darkMode ? '#0a0a0a' : '#f0f9ff' 
+        }}
+      >
+        <GalaxyDesktop/>
+        
       <div
         className="relative z-10 mb-0 md:mb-5"
       >
       {/* SLIDER SECTION (replacing previous hero) */}
-      <div className="mt-4 md:mt-8">
+      <div className="mt-8 md:mt-8">
         <HeroSlider darkMode={darkMode} />
       </div>
 

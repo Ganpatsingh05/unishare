@@ -7,7 +7,10 @@ const BASE_URL = API_CONFIG.BASE_URL;
 
 // Handle API errors consistently
 const handleApiError = (error) => {
-  console.error('Request API Error:', error);
+  // Silently handle authentication errors (user not logged in)
+  if (error?.message?.includes('Authentication required')) {
+    throw error; // Rethrow without logging
+  }
   
   // Use existing error handling from apiCall
   if (error?.message) {

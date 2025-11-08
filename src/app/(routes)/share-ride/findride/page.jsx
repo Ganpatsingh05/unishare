@@ -13,6 +13,8 @@ import {
   Instagram,
   Mail,
   Link2,
+  Star,
+  Shield,
   ArrowLeft,
   Search,
   Filter,
@@ -368,7 +370,7 @@ export default function FindRidePage() {
           from: ride.from_location,
           to: ride.to_location,
           date: ride.date,
-          time: ride.time,
+          time: ride.time.substring(0, 5), // Format time to HH:MM (remove seconds)
           seats: ride.available_seats,
           price: ride.price,
           vehicle: ride.vehicle_info,
@@ -379,7 +381,7 @@ export default function FindRidePage() {
           }))
         }));
         
-        // Filter out user's own rides
+        // Filter out user's own rides (you can't join your own ride)
         const filteredRides = user && user.id 
           ? transformedRides.filter(ride => ride.driverId !== user.id)
           : transformedRides;
@@ -390,7 +392,6 @@ export default function FindRidePage() {
         throw new Error(result.error || 'Failed to fetch rides');
       }
     } catch (error) {
-      console.error('Error fetching rides:', error);
       setError(error.message);
       setRides([]);
     } finally {
@@ -413,11 +414,9 @@ export default function FindRidePage() {
         setUserSentRequests(result.data || []);
         setLastRefreshTime(new Date());
       } else {
-        console.error('Error fetching user sent requests:', result.error);
         setUserSentRequests([]);
       }
     } catch (error) {
-      console.error('Error fetching user sent requests:', error);
       setUserSentRequests([]);
     }
   }, [isAuthenticated, user?.id]);
@@ -465,7 +464,7 @@ export default function FindRidePage() {
     };
   }, [isAuthenticated, fetchUserSentRequests, fetchRides]);
 
-  // Filter rides to show only those user hasn't requested
+  // Filter rides to show only those user hasn't requested or can request again
   const filteredRides = useMemo(() => {
     // Helper function to check if user has requested a specific ride
     const getUserRequestStatus = (rideId) => {
@@ -474,10 +473,13 @@ export default function FindRidePage() {
       return { hasRequested: true, status: request.status };
     };
 
-    // Show rides user hasn't requested
+    // Show rides user hasn't requested OR rides where previous request was rejected/cancelled
+    // Hide only: pending and accepted requests
     return rides.filter(ride => {
       const requestStatus = getUserRequestStatus(ride.id);
-      return !requestStatus.hasRequested;
+      return !requestStatus.hasRequested || 
+             requestStatus.status === 'rejected' || 
+             requestStatus.status === 'cancelled';
     });
   }, [rides, userSentRequests]);
 
@@ -652,7 +654,7 @@ export default function FindRidePage() {
           actionCallback: () => {
             // Close modal and redirect to requests page
             setShowErrorModal(false);
-            window.location.href = '/share-ride/requests';
+            window.location.href = '/my-activity/requests/sharerideREQ';
           }
         });
         setShowErrorModal(true);
@@ -831,7 +833,7 @@ export default function FindRidePage() {
                     // Pending status
                     return (
                       <button
-                        onClick={() => window.location.href = 'http://localhost:3000/share-ride/requests'}
+                        onClick={() => window.location.href = '/my-activity/requests/sharerideREQ'}
                         className="w-full px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors cursor-pointer flex items-center justify-center gap-2"
                       >
                         <Clock className="w-5 h-5" />
@@ -1123,28 +1125,34 @@ export default function FindRidePage() {
           {/* Search Bar */}
           <div className="flex items-center gap-3 px-4 sm:px-5 py-3 rounded-xl border backdrop-blur-lg transition-all duration-300 relative overflow-hidden group hover:shadow-xl"
             style={{
-              background: '#1D3557',
-              borderColor: 'rgba(255,255,255,0.05)',
-              boxShadow: '0 4px 16px -4px rgba(29, 53, 87, 0.4)'
+              background: darkMode 
+                ? '#1D3557' 
+                : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)',
+              borderColor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(148, 163, 184, 0.2)',
+              boxShadow: darkMode 
+                ? '0 4px 16px -4px rgba(29, 53, 87, 0.4)'
+                : '0 4px 16px -4px rgba(100, 116, 139, 0.2)'
             }}>
             {/* Decorative Elements */}
-            <div className="absolute -bottom-8 -left-8 w-24 h-24 rounded-full border-2 border-white/10 pointer-events-none" />
-            <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full border-2 border-white/10 pointer-events-none" />
-            <div className="absolute top-3 right-12 w-1.5 h-1.5 rounded-full bg-white/10 pointer-events-none" />
-            <div className="absolute bottom-3 left-20 w-2 h-2 rounded-full bg-white/5 pointer-events-none" />
+            <div className={`absolute -bottom-8 -left-8 w-24 h-24 rounded-full border-2 ${darkMode ? 'border-white/10' : 'border-gray-300/20'} pointer-events-none`} />
+            <div className={`absolute -top-4 -right-4 w-16 h-16 rounded-full border-2 ${darkMode ? 'border-white/10' : 'border-gray-300/20'} pointer-events-none`} />
+            <div className={`absolute top-3 right-12 w-1.5 h-1.5 rounded-full ${darkMode ? 'bg-white/10' : 'bg-blue-400/20'} pointer-events-none`} />
+            <div className={`absolute bottom-3 left-20 w-2 h-2 rounded-full ${darkMode ? 'bg-white/5' : 'bg-blue-400/15'} pointer-events-none`} />
             
             {/* Gradient Overlay */}
             <div 
               className="absolute inset-0 pointer-events-none opacity-60 rounded-xl"
               style={{
-                background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.12) 100%)'
+                background: darkMode 
+                  ? 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.12) 100%)'
+                  : 'linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 100%)'
               }}
             />
 
             {/* Content - with relative z-index to stay above decorations */}
             <div className="relative z-10 flex items-center gap-3 w-full">
               {/* Search Icon */}
-              <Search className="w-5 h-5 flex-shrink-0" style={{ color: '#facc15' }} />
+              <Search className="w-5 h-5 flex-shrink-0" style={{ color: darkMode ? '#facc15' : '#d97706' }} />
               
               {/* Search Text */}
               <button
@@ -1152,7 +1160,7 @@ export default function FindRidePage() {
                 className="flex-1 text-left min-w-0"
               >
                 {(fromLoc || toLoc || date || seatsNeeded > 1) ? (
-                  <p className="text-sm sm:text-base font-medium truncate text-white">
+                  <p className={`text-sm sm:text-base font-medium truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                     {[
                       fromLoc && `${fromLoc}`,
                       toLoc && `${toLoc}`,
@@ -1161,7 +1169,7 @@ export default function FindRidePage() {
                     ].filter(Boolean).join(' • ')}
                   </p>
                 ) : (
-                  <p className="text-sm sm:text-base font-normal" style={{ color: '#93C5FD' }}>
+                  <p className="text-sm sm:text-base font-normal" style={{ color: darkMode ? '#93C5FD' : '#3b82f6' }}>
                     Search rides...
                   </p>
                 )}
@@ -1172,11 +1180,11 @@ export default function FindRidePage() {
                 onClick={() => setShowFilters(!showFilters)}
                 className="flex-shrink-0 p-1.5 rounded-full backdrop-blur-md border transition-all duration-300"
                 style={{
-                  background: 'rgba(56, 189, 248, 0.15)',
-                  borderColor: 'rgba(56, 189, 248, 0.3)'
+                  background: darkMode ? 'rgba(56, 189, 248, 0.15)' : 'rgba(59, 130, 246, 0.1)',
+                  borderColor: darkMode ? 'rgba(56, 189, 248, 0.3)' : 'rgba(59, 130, 246, 0.2)'
                 }}
               >
-                <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${showFilters ? 'rotate-180' : ''}`} style={{ color: '#38bdf8' }} />
+                <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${showFilters ? 'rotate-180' : ''}`} style={{ color: darkMode ? '#38bdf8' : '#3b82f6' }} />
               </button>
             </div>
           </div>
@@ -1187,27 +1195,33 @@ export default function FindRidePage() {
           }`}>
             <div className="p-4 sm:p-6 rounded-[20px] border backdrop-blur-lg relative"
               style={{
-                background: '#1D3557',
-                borderColor: 'rgba(255,255,255,0.05)',
-                boxShadow: '0 8px 20px -6px rgba(29, 53, 87, 0.3)',
+                background: darkMode 
+                  ? '#1D3557' 
+                  : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)',
+                borderColor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(148, 163, 184, 0.2)',
+                boxShadow: darkMode 
+                  ? '0 8px 20px -6px rgba(29, 53, 87, 0.3)'
+                  : '0 8px 20px -6px rgba(100, 116, 139, 0.2)',
                 overflow: 'visible'
               }}>
               {/* Decorative Elements */}
-              <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full border-2 border-white/10 pointer-events-none -z-10" />
-              <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full border-2 border-white/10 pointer-events-none -z-10" />
+              <div className={`absolute -bottom-16 -left-16 w-48 h-48 rounded-full border-2 ${darkMode ? 'border-white/10' : 'border-gray-300/20'} pointer-events-none -z-10`} />
+              <div className={`absolute -top-8 -right-8 w-32 h-32 rounded-full border-2 ${darkMode ? 'border-white/10' : 'border-gray-300/20'} pointer-events-none -z-10`} />
               
               {/* Gradient Overlay */}
               <div 
                 className="absolute inset-0 pointer-events-none opacity-60 rounded-[20px] -z-10"
                 style={{
-                  background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.12) 100%)'
+                  background: darkMode 
+                    ? 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.12) 100%)'
+                    : 'linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 100%)'
                 }}
               />
 
               <div className="relative">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pb-4">
               <div className="group">
-                <label className="block text-sm font-semibold mb-3 transition-colors" style={{ color: '#facc15' }}>
+                <label className="block text-sm font-semibold mb-3 transition-colors" style={{ color: darkMode ? '#facc15' : '#d97706' }}>
                   📍 From Location
                 </label>
                 <div className="relative">
@@ -1222,7 +1236,7 @@ export default function FindRidePage() {
               </div>
 
               <div className="group">
-                <label className="block text-sm font-semibold mb-3 transition-colors" style={{ color: '#38bdf8' }}>
+                <label className="block text-sm font-semibold mb-3 transition-colors" style={{ color: darkMode ? '#38bdf8' : '#0284c7' }}>
                   🎯 To Location
                 </label>
                 <div className="relative">
@@ -1237,7 +1251,7 @@ export default function FindRidePage() {
               </div>
 
               <div className="group relative">
-                <label className="block text-sm font-semibold mb-3 transition-colors" style={{ color: '#facc15' }}>
+                <label className="block text-sm font-semibold mb-3 transition-colors" style={{ color: darkMode ? '#facc15' : '#d97706' }}>
                   📅 Date
                 </label>
                 <div className="relative">
@@ -1253,7 +1267,7 @@ export default function FindRidePage() {
               </div>
 
               <div className="group">
-                <label className="block text-sm font-semibold mb-3 transition-colors" style={{ color: '#38bdf8' }}>
+                <label className="block text-sm font-semibold mb-3 transition-colors" style={{ color: darkMode ? '#38bdf8' : '#0284c7' }}>
                   👥 Seats Needed
                 </label>
                 <div className="relative">
@@ -1317,16 +1331,20 @@ export default function FindRidePage() {
           
           <div className="flex items-center gap-4">
             {/* Live Status Indicator */}
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-100 to-green-100 dark:from-emerald-900/30 dark:to-green-900/30 border border-emerald-200 dark:border-emerald-800">
+            <div className={`flex items-center gap-2 px-4 py-2 rounded-full border ${
+              darkMode 
+                ? 'bg-gradient-to-r from-emerald-900/30 to-green-900/30 border-emerald-800' 
+                : 'bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-300'
+            }`}>
               <div className={`w-2 h-2 rounded-full ${loading ? 'bg-yellow-400 animate-pulse' : 'bg-emerald-400'}`}></div>
-              <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+              <span className={`text-sm font-medium ${darkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>
                 {loading ? 'Updating...' : 'Live Results'}
               </span>
             </div>
             
             {/* Stats */}
             {lastRefreshTime && !loading && (
-              <div className="text-xs text-gray-400 hidden sm:block">
+              <div className={`text-xs hidden sm:block ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                 Last updated {lastRefreshTime.toLocaleTimeString('en-US', { 
                   hour: '2-digit', 
                   minute: '2-digit' 
@@ -1377,108 +1395,384 @@ export default function FindRidePage() {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filteredRides.map((ride) => (
+            <div className="space-y-4">
+              {filteredRides.map((ride) => {
+                // Check if user has a previous request for this ride
+                const requestStatus = getUserRequestStatus(ride.id);
+                const hasPreviousRequest = requestStatus.hasRequested && 
+                  (requestStatus.status === 'rejected' || requestStatus.status === 'cancelled');
+                
+                return (
                 <div 
                   key={ride.id} 
-                  className="group p-5 rounded-[24px] border backdrop-blur-lg hover:shadow-lg hover:-translate-y-1 hover:scale-[1.01] transition-all duration-500 cursor-pointer relative overflow-hidden"
+                  onClick={() => handleJoinRide(ride.id, ride)}
+                  className="group rounded-2xl border backdrop-blur-sm hover:shadow-xl transition-all duration-300 overflow-hidden relative cursor-pointer"
                   style={{
-                    background: '#1D3557',
-                    borderColor: 'rgba(255,255,255,0.05)',
-                    boxShadow: `
-                      0 15px 35px -10px rgba(29, 53, 87, 0.25),
-                      0 6px 12px -3px rgba(0,0,0,0.2)
-                    `
+                    background: darkMode 
+                      ? '#1b2d47' 
+                      : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)',
+                    borderColor: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(148, 163, 184, 0.3)',
                   }}
-                  onClick={() => handleViewDetails(ride)}
                 >
-                  {/* Decorative Elements */}
-                  <div className="absolute -bottom-16 -left-16 w-40 h-40 rounded-full border-2 border-white/10 pointer-events-none" />
-                  <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full border-2 border-white/10 pointer-events-none" />
-                  <div className="absolute top-6 left-6 w-3 h-3 rounded-full bg-white/20 pointer-events-none" />
-                  <div className="absolute bottom-6 right-6 grid grid-cols-2 gap-1.5 pointer-events-none">
-                    <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
-                    <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
-                    <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
-                    <div className="w-1.5 h-1.5 rounded-full bg-white/5" />
+                  {/* Lotus Flower Pattern - Top Right */}
+                  <div className="absolute top-0 right-0 w-32 h-32 opacity-12 -translate-y-1/4 translate-x-1/4 pointer-events-none">
+                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                      {/* Center of lotus */}
+                      <circle cx="100" cy="100" r="10" fill="white" opacity="0.7"/>
+                      {/* Inner petals - 8 petals */}
+                      <ellipse cx="100" cy="75" rx="8" ry="20" fill="none" stroke="white" strokeWidth="2" opacity="0.6"/>
+                      <ellipse cx="100" cy="125" rx="8" ry="20" fill="none" stroke="white" strokeWidth="2" opacity="0.6"/>
+                      <ellipse cx="75" cy="100" rx="20" ry="8" fill="none" stroke="white" strokeWidth="2" opacity="0.6"/>
+                      <ellipse cx="125" cy="100" rx="20" ry="8" fill="none" stroke="white" strokeWidth="2" opacity="0.6"/>
+                      <ellipse cx="82" cy="82" rx="14" ry="14" fill="none" stroke="white" strokeWidth="2" opacity="0.6" transform="rotate(-45 82 82)"/>
+                      <ellipse cx="118" cy="82" rx="14" ry="14" fill="none" stroke="white" strokeWidth="2" opacity="0.6" transform="rotate(45 118 82)"/>
+                      <ellipse cx="82" cy="118" rx="14" ry="14" fill="none" stroke="white" strokeWidth="2" opacity="0.6" transform="rotate(45 82 118)"/>
+                      <ellipse cx="118" cy="118" rx="14" ry="14" fill="none" stroke="white" strokeWidth="2" opacity="0.6" transform="rotate(-45 118 118)"/>
+                      {/* Outer petals - larger */}
+                      <ellipse cx="100" cy="60" rx="10" ry="28" fill="none" stroke="white" strokeWidth="1.5" opacity="0.5"/>
+                      <ellipse cx="100" cy="140" rx="10" ry="28" fill="none" stroke="white" strokeWidth="1.5" opacity="0.5"/>
+                      <ellipse cx="60" cy="100" rx="28" ry="10" fill="none" stroke="white" strokeWidth="1.5" opacity="0.5"/>
+                      <ellipse cx="140" cy="100" rx="28" ry="10" fill="none" stroke="white" strokeWidth="1.5" opacity="0.5"/>
+                      <ellipse cx="75" cy="75" rx="20" ry="20" fill="none" stroke="white" strokeWidth="1.5" opacity="0.5" transform="rotate(-45 75 75)"/>
+                      <ellipse cx="125" cy="75" rx="20" ry="20" fill="none" stroke="white" strokeWidth="1.5" opacity="0.5" transform="rotate(45 125 75)"/>
+                      <ellipse cx="75" cy="125" rx="20" ry="20" fill="none" stroke="white" strokeWidth="1.5" opacity="0.5" transform="rotate(45 75 125)"/>
+                      <ellipse cx="125" cy="125" rx="20" ry="20" fill="none" stroke="white" strokeWidth="1.5" opacity="0.5" transform="rotate(-45 125 125)"/>
+                    </svg>
+                  </div>
+                  
+                  {/* Lotus Flower Pattern - Bottom Left */}
+                  <div className="absolute bottom-0 left-0 w-28 h-28 opacity-12 translate-y-1/4 -translate-x-1/4 pointer-events-none">
+                    <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+                      {/* Center */}
+                      <circle cx="80" cy="80" r="8" fill="white" opacity="0.7"/>
+                      {/* Inner petals */}
+                      <ellipse cx="80" cy="60" rx="6" ry="16" fill="none" stroke="white" strokeWidth="1.8" opacity="0.6"/>
+                      <ellipse cx="80" cy="100" rx="6" ry="16" fill="none" stroke="white" strokeWidth="1.8" opacity="0.6"/>
+                      <ellipse cx="60" cy="80" rx="16" ry="6" fill="none" stroke="white" strokeWidth="1.8" opacity="0.6"/>
+                      <ellipse cx="100" cy="80" rx="16" ry="6" fill="none" stroke="white" strokeWidth="1.8" opacity="0.6"/>
+                      <ellipse cx="66" cy="66" rx="11" ry="11" fill="none" stroke="white" strokeWidth="1.8" opacity="0.6" transform="rotate(-45 66 66)"/>
+                      <ellipse cx="94" cy="66" rx="11" ry="11" fill="none" stroke="white" strokeWidth="1.8" opacity="0.6" transform="rotate(45 94 66)"/>
+                      <ellipse cx="66" cy="94" rx="11" ry="11" fill="none" stroke="white" strokeWidth="1.8" opacity="0.6" transform="rotate(45 66 94)"/>
+                      <ellipse cx="94" cy="94" rx="11" ry="11" fill="none" stroke="white" strokeWidth="1.8" opacity="0.6" transform="rotate(-45 94 94)"/>
+                      {/* Outer petals */}
+                      <ellipse cx="80" cy="50" rx="7" ry="22" fill="none" stroke="white" strokeWidth="1.3" opacity="0.5"/>
+                      <ellipse cx="80" cy="110" rx="7" ry="22" fill="none" stroke="white" strokeWidth="1.3" opacity="0.5"/>
+                      <ellipse cx="50" cy="80" rx="22" ry="7" fill="none" stroke="white" strokeWidth="1.3" opacity="0.5"/>
+                      <ellipse cx="110" cy="80" rx="22" ry="7" fill="none" stroke="white" strokeWidth="1.3" opacity="0.5"/>
+                    </svg>
                   </div>
 
-                  {/* Gradient Overlay */}
-                  <div 
-                    className="absolute inset-0 pointer-events-none opacity-60 rounded-[24px]"
-                    style={{
-                      background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.12) 100%)'
-                    }}
-                  />
-                
-                  {/* Route with Visual Connector */}
-                  <div className="mb-3 relative z-10">
-                    <div className="flex items-center gap-2">
-                      <div className="flex flex-col items-center">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <div className="w-0.5 h-4 bg-gradient-to-b from-blue-500 to-emerald-500"></div>
-                        <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                  
+
+                  {/* Detailed Mountains & Sun - Center Left */}
+                  <div className="absolute top-1/2 left-0 w-24 h-24 opacity-12 -translate-y-1/2 -translate-x-1/3 pointer-events-none">
+                    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                      {/* Sun with detailed rays */}
+                      <circle cx="40" cy="35" r="14" fill="none" stroke="white" strokeWidth="2" opacity="0.6"/>
+                      <circle cx="40" cy="35" r="10" fill="white" opacity="0.5"/>
+                      {/* Sun rays - 8 directions */}
+                      <line x1="40" y1="16" x2="40" y2="12" stroke="white" strokeWidth="2" opacity="0.5"/>
+                      <line x1="56" y1="19" x2="59" y2="16" stroke="white" strokeWidth="2" opacity="0.5"/>
+                      <line x1="59" y1="35" x2="63" y2="35" stroke="white" strokeWidth="2" opacity="0.5"/>
+                      <line x1="56" y1="51" x2="59" y2="54" stroke="white" strokeWidth="2" opacity="0.5"/>
+                      <line x1="24" y1="19" x2="21" y2="16" stroke="white" strokeWidth="2" opacity="0.5"/>
+                      <line x1="21" y1="35" x2="17" y2="35" stroke="white" strokeWidth="2" opacity="0.5"/>
+                      
+                      {/* Mountain range - more detailed */}
+                      <path d="M 10 100 L 35 60 L 50 75 L 60 100 Z" fill="none" stroke="white" strokeWidth="2.5" opacity="0.6"/>
+                      <path d="M 45 100 L 70 50 L 85 65 L 95 100 Z" fill="none" stroke="white" strokeWidth="2.5" opacity="0.6"/>
+                      <path d="M 75 100 L 90 70 L 105 100 Z" fill="none" stroke="white" strokeWidth="2" opacity="0.5"/>
+                      
+                      {/* Snow peaks */}
+                      <path d="M 35 60 L 32 67 L 38 67 Z" fill="white" opacity="0.6"/>
+                      <path d="M 70 50 L 67 58 L 73 58 Z" fill="white" opacity="0.6"/>
+                      <path d="M 90 70 L 88 75 L 92 75 Z" fill="white" opacity="0.5"/>
+                      
+                      {/* Mountain details - ridges */}
+                      <path d="M 35 60 L 40 72" stroke="white" strokeWidth="1" opacity="0.4"/>
+                      <path d="M 35 60 L 30 72" stroke="white" strokeWidth="1" opacity="0.4"/>
+                      <path d="M 70 50 L 75 62" stroke="white" strokeWidth="1" opacity="0.4"/>
+                      <path d="M 70 50 L 65 62" stroke="white" strokeWidth="1" opacity="0.4"/>
+                    </svg>
+                  </div>
+
+                  {/* Detailed Location Pins & Path - Center */}
+                  <div className="absolute top-1/3 right-1/4 w-28 h-28 opacity-12 pointer-events-none">
+                    <svg viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg">
+                      {/* Starting location pin - detailed */}
+                      <path d="M 50 40 L 50 60 L 55 65 L 50 60 L 45 65 Z" fill="none" stroke="white" strokeWidth="2.5" opacity="0.6"/>
+                      <circle cx="50" cy="48" r="7" fill="none" stroke="white" strokeWidth="2.5" opacity="0.6"/>
+                      <circle cx="50" cy="48" r="3" fill="white" opacity="0.7"/>
+                      
+                      {/* Destination location pin - detailed */}
+                      <path d="M 100 90 L 100 110 L 105 115 L 100 110 L 95 115 Z" fill="none" stroke="white" strokeWidth="2.5" opacity="0.6"/>
+                      <circle cx="100" cy="98" r="7" fill="none" stroke="white" strokeWidth="2.5" opacity="0.6"/>
+                      <circle cx="100" cy="98" r="3" fill="white" opacity="0.7"/>
+                      
+                      {/* Travel path - curved with direction */}
+                      <path d="M 55 55 Q 70 65 85 80 T 98 95" fill="none" stroke="white" strokeWidth="2" strokeDasharray="6,6" opacity="0.5"/>
+                      
+                      {/* Waypoint markers */}
+                      <circle cx="65" cy="62" r="3" fill="white" opacity="0.6"/>
+                      <circle cx="75" cy="70" r="3" fill="white" opacity="0.6"/>
+                      <circle cx="85" cy="80" r="3" fill="white" opacity="0.6"/>
+                      
+                      {/* Direction arrow */}
+                      <path d="M 95 92 L 98 95 L 95 98" fill="none" stroke="white" strokeWidth="2" opacity="0.6"/>
+                    </svg>
+                  </div>
+
+                  {/* Compass Rose - Bottom Center - Bold & Clear */}
+                  <div className="absolute bottom-5 left-1/2 w-20 h-20 opacity-15 -translate-x-1/2 pointer-events-none">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                      {/* Outer circle */}
+                      <circle cx="50" cy="50" r="28" fill="none" stroke="white" strokeWidth="2.5" opacity="0.6"/>
+                      <circle cx="50" cy="50" r="24" fill="none" stroke="white" strokeWidth="1.5" opacity="0.5"/>
+                      {/* Main cross lines */}
+                      <line x1="50" y1="22" x2="50" y2="78" stroke="white" strokeWidth="2" opacity="0.6"/>
+                      <line x1="22" y1="50" x2="78" y2="50" stroke="white" strokeWidth="2" opacity="0.6"/>
+                      {/* Diagonal lines */}
+                      <line x1="33" y1="33" x2="67" y2="67" stroke="white" strokeWidth="1.3" opacity="0.5"/>
+                      <line x1="67" y1="33" x2="33" y2="67" stroke="white" strokeWidth="1.3" opacity="0.5"/>
+                      {/* North arrow - bold and prominent */}
+                      <path d="M 50 22 L 46 36 L 50 34 L 54 36 Z" fill="white" opacity="0.8"/>
+                      <path d="M 50 22 L 46 36 L 50 34 L 54 36 Z" fill="none" stroke="white" strokeWidth="1.5" opacity="0.7"/>
+                      {/* Direction markers */}
+                      <path d="M 78 50 L 68 46 L 70 50 L 68 54 Z" fill="white" opacity="0.6"/>
+                      <path d="M 50 78 L 46 68 L 50 70 L 54 68 Z" fill="white" opacity="0.6"/>
+                      <path d="M 22 50 L 32 46 L 30 50 L 32 54 Z" fill="white" opacity="0.6"/>
+                      {/* Center point */}
+                      <circle cx="50" cy="50" r="6" fill="white" opacity="0.7"/>
+                      <circle cx="50" cy="50" r="3" fill="white" opacity="0.9"/>
+                      {/* Cardinal directions text */}
+                      <text x="50" y="17" fontSize="10" fontWeight="bold" fill="white" opacity="0.8" textAnchor="middle" fontFamily="Arial">N</text>
+                      <text x="84" y="53" fontSize="8" fontWeight="bold" fill="white" opacity="0.7" textAnchor="middle" fontFamily="Arial">E</text>
+                      <text x="50" y="90" fontSize="8" fontWeight="bold" fill="white" opacity="0.7" textAnchor="middle" fontFamily="Arial">S</text>
+                      <text x="15" y="53" fontSize="8" fontWeight="bold" fill="white" opacity="0.7" textAnchor="middle" fontFamily="Arial">W</text>
+                    </svg>
+                  </div>
+
+                  {/* Detailed Road with Car - Bottom Right */}
+                  <div className="absolute bottom-8 right-8 w-24 h-24 opacity-12 pointer-events-none">
+                    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                      {/* Winding road - more prominent */}
+                      <path d="M 20 100 Q 40 80 60 70 T 100 40" fill="none" stroke="white" strokeWidth="10" opacity="0.3"/>
+                      <path d="M 20 100 Q 40 80 60 70 T 100 40" fill="none" stroke="white" strokeWidth="2" strokeDasharray="8,8" opacity="0.6"/>
+                      
+                      {/* Road edges */}
+                      <path d="M 17 103 Q 37 83 57 73 T 97 43" fill="none" stroke="white" strokeWidth="1" opacity="0.4"/>
+                      <path d="M 23 97 Q 43 77 63 67 T 103 37" fill="none" stroke="white" strokeWidth="1" opacity="0.4"/>
+                      
+                      
+                    </svg>
+                  </div>
+
+                  {/* Modern Skyscrapers - Top Center Right */}
+                  <div className="absolute top-8 right-20 w-24 h-24 opacity-12 pointer-events-none">
+                    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                      {/* Tallest building - center */}
+                      <rect x="50" y="20" width="20" height="80" fill="none" stroke="white" strokeWidth="2" opacity="0.6"/>
+                      {/* Antenna */}
+                      <line x1="60" y1="20" x2="60" y2="10" stroke="white" strokeWidth="1.5" opacity="0.6"/>
+                      <circle cx="60" cy="10" r="2" fill="white" opacity="0.7"/>
+                      {/* Building 2 - left */}
+                      <rect x="25" y="45" width="18" height="55" fill="none" stroke="white" strokeWidth="1.8" opacity="0.6"/>
+                      {/* Building 3 - right */}
+                      <rect x="75" y="55" width="16" height="45" fill="none" stroke="white" strokeWidth="1.8" opacity="0.6"/>
+                      {/* Building 4 - far left */}
+                      <rect x="10" y="65" width="12" height="35" fill="none" stroke="white" strokeWidth="1.5" opacity="0.5"/>
+                      {/* Building 5 - far right */}
+                      <rect x="95" y="70" width="13" height="30" fill="none" stroke="white" strokeWidth="1.5" opacity="0.5"/>
+                      
+                      {/* Windows - Building 1 (center tall) - 3 columns */}
+                      <rect x="53" y="28" width="3" height="4" fill="white" opacity="0.5"/>
+                      <rect x="58" y="28" width="3" height="4" fill="white" opacity="0.5"/>
+                      <rect x="63" y="28" width="3" height="4" fill="white" opacity="0.5"/>
+                      <rect x="53" y="38" width="3" height="4" fill="white" opacity="0.5"/>
+                      <rect x="58" y="38" width="3" height="4" fill="white" opacity="0.5"/>
+                      <rect x="63" y="38" width="3" height="4" fill="white" opacity="0.5"/>
+                      <rect x="53" y="48" width="3" height="4" fill="white" opacity="0.5"/>
+                      <rect x="58" y="48" width="3" height="4" fill="white" opacity="0.5"/>
+                      <rect x="63" y="48" width="3" height="4" fill="white" opacity="0.5"/>
+                      <rect x="53" y="58" width="3" height="4" fill="white" opacity="0.5"/>
+                      <rect x="58" y="58" width="3" height="4" fill="white" opacity="0.5"/>
+                      <rect x="63" y="58" width="3" height="4" fill="white" opacity="0.5"/>
+                      <rect x="53" y="68" width="3" height="4" fill="white" opacity="0.5"/>
+                      <rect x="58" y="68" width="3" height="4" fill="white" opacity="0.5"/>
+                      <rect x="63" y="68" width="3" height="4" fill="white" opacity="0.5"/>
+                      <rect x="53" y="78" width="3" height="4" fill="white" opacity="0.5"/>
+                      <rect x="58" y="78" width="3" height="4" fill="white" opacity="0.5"/>
+                      <rect x="63" y="78" width="3" height="4" fill="white" opacity="0.5"/>
+                      <rect x="53" y="88" width="3" height="4" fill="white" opacity="0.5"/>
+                      <rect x="58" y="88" width="3" height="4" fill="white" opacity="0.5"/>
+                      <rect x="63" y="88" width="3" height="4" fill="white" opacity="0.5"/>
+                      
+                      {/* Windows - Building 2 (left) - 2 columns */}
+                      <rect x="28" y="52" width="3" height="3.5" fill="white" opacity="0.5"/>
+                      <rect x="35" y="52" width="3" height="3.5" fill="white" opacity="0.5"/>
+                      <rect x="28" y="60" width="3" height="3.5" fill="white" opacity="0.5"/>
+                      <rect x="35" y="60" width="3" height="3.5" fill="white" opacity="0.5"/>
+                      <rect x="28" y="68" width="3" height="3.5" fill="white" opacity="0.5"/>
+                      <rect x="35" y="68" width="3" height="3.5" fill="white" opacity="0.5"/>
+                      <rect x="28" y="76" width="3" height="3.5" fill="white" opacity="0.5"/>
+                      <rect x="35" y="76" width="3" height="3.5" fill="white" opacity="0.5"/>
+                      <rect x="28" y="84" width="3" height="3.5" fill="white" opacity="0.5"/>
+                      <rect x="35" y="84" width="3" height="3.5" fill="white" opacity="0.5"/>
+                      
+                      {/* Windows - Building 3 (right) - 2 columns */}
+                      <rect x="78" y="62" width="2.5" height="3.5" fill="white" opacity="0.5"/>
+                      <rect x="84" y="62" width="2.5" height="3.5" fill="white" opacity="0.5"/>
+                      <rect x="78" y="70" width="2.5" height="3.5" fill="white" opacity="0.5"/>
+                      <rect x="84" y="70" width="2.5" height="3.5" fill="white" opacity="0.5"/>
+                      <rect x="78" y="78" width="2.5" height="3.5" fill="white" opacity="0.5"/>
+                      <rect x="84" y="78" width="2.5" height="3.5" fill="white" opacity="0.5"/>
+                      <rect x="78" y="86" width="2.5" height="3.5" fill="white" opacity="0.5"/>
+                      <rect x="84" y="86" width="2.5" height="3.5" fill="white" opacity="0.5"/>
+                      
+                      {/* Windows - Building 4 (far left) - 1 column */}
+                      <rect x="13" y="72" width="2" height="3" fill="white" opacity="0.4"/>
+                      <rect x="17" y="72" width="2" height="3" fill="white" opacity="0.4"/>
+                      <rect x="13" y="80" width="2" height="3" fill="white" opacity="0.4"/>
+                      <rect x="17" y="80" width="2" height="3" fill="white" opacity="0.4"/>
+                      <rect x="13" y="88" width="2" height="3" fill="white" opacity="0.4"/>
+                      <rect x="17" y="88" width="2" height="3" fill="white" opacity="0.4"/>
+                      
+                      {/* Windows - Building 5 (far right) - 1 column */}
+                      <rect x="97" y="77" width="2" height="3" fill="white" opacity="0.4"/>
+                      <rect x="102" y="77" width="2" height="3" fill="white" opacity="0.4"/>
+                      <rect x="97" y="85" width="2" height="3" fill="white" opacity="0.4"/>
+                      <rect x="102" y="85" width="2" height="3" fill="white" opacity="0.4"/>
+                    </svg>
+                  </div>
+
+                  {/* Small Decorative Lotus - Top Center */}
+                  <div className="absolute top-3 left-1/2 w-12 h-12 opacity-12 -translate-x-1/2 pointer-events-none">
+                    <svg viewBox="0 0 70 70" xmlns="http://www.w3.org/2000/svg">
+                      {/* Center */}
+                      <circle cx="35" cy="35" r="4" fill="white" opacity="0.7"/>
+                      {/* Inner petals - 4 main directions */}
+                      <ellipse cx="35" cy="24" rx="4" ry="10" fill="none" stroke="white" strokeWidth="1.5" opacity="0.6"/>
+                      <ellipse cx="35" cy="46" rx="4" ry="10" fill="none" stroke="white" strokeWidth="1.5" opacity="0.6"/>
+                      <ellipse cx="24" cy="35" rx="10" ry="4" fill="none" stroke="white" strokeWidth="1.5" opacity="0.6"/>
+                      <ellipse cx="46" cy="35" rx="10" ry="4" fill="none" stroke="white" strokeWidth="1.5" opacity="0.6"/>
+                      {/* Diagonal petals */}
+                      <ellipse cx="28" cy="28" rx="7" ry="7" fill="none" stroke="white" strokeWidth="1.5" opacity="0.6" transform="rotate(-45 28 28)"/>
+                      <ellipse cx="42" cy="28" rx="7" ry="7" fill="none" stroke="white" strokeWidth="1.5" opacity="0.6" transform="rotate(45 42 28)"/>
+                      <ellipse cx="28" cy="42" rx="7" ry="7" fill="none" stroke="white" strokeWidth="1.5" opacity="0.6" transform="rotate(45 28 42)"/>
+                      <ellipse cx="42" cy="42" rx="7" ry="7" fill="none" stroke="white" strokeWidth="1.5" opacity="0.6" transform="rotate(-45 42 42)"/>
+                    </svg>
+                  </div>
+                  
+                  {/* Offer Banner - Top (Like MakeMyTrip) */}
+                  {ride.description && (
+                    <div className="px-4 py-2 bg-orange-100/10 border-b border-orange-200/20 relative z-10">
+                      <p className="text-xs text-orange-300 font-medium flex items-center gap-2">
+                        <span className="text-orange-400">●</span>
+                        {ride.description}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Main Card Content */}
+                  <div className="p-4 relative z-10">
+                    {/* Top Section - Driver Info & Badge */}
+                    <div className={`flex items-center justify-between mb-4 pb-3 border-b ${darkMode ? 'border-white/10' : 'border-gray-200'}`}>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center shadow-md">
+                          <Car className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <h3 className={`text-base font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{ride.driver}</h3>
+                          <p className={`text-xs mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{ride.vehicle}</p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold truncate" style={{ color: '#facc15' }}>
-                          {ride.from}
-                        </p>
-                        <p className="text-sm font-bold truncate mt-1" style={{ color: '#38bdf8' }}>
-                          {ride.to}
-                        </p>
+                      
+                      {hasPreviousRequest && (
+                        <div className="px-2.5 py-1 rounded-lg text-xs font-medium"
+                          style={{
+                            background: requestStatus.status === 'cancelled' ? 'rgba(156, 163, 175, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                            color: requestStatus.status === 'cancelled' ? '#9CA3AF' : '#EF4444',
+                            border: `1px solid ${requestStatus.status === 'cancelled' ? 'rgba(156, 163, 175, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`
+                          }}
+                        >
+                          {requestStatus.status === 'cancelled' ? 'Reapply' : 'Try Again'}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Journey Section - MakeMyTrip Perfect Layout */}
+                    <div className="mb-4">
+                      {/* Top Row - Times, Route, and Price */}
+                      <div className="flex items-center justify-between mb-2">
+                        {/* Departure Time */}
+                        <div className="w-20">
+                          <div className={`text-2xl font-bold leading-none ${darkMode ? 'text-white' : 'text-gray-900'}`}>{ride.time}</div>
+                        </div>
+
+                        {/* Center - Date & Journey Line */}
+                        <div className="flex-1 px-6">
+                          <div className="flex flex-col items-center gap-1">
+                            <div className={`text-[11px] font-medium ${darkMode ? 'text-gray-500' : 'text-gray-600'}`}>
+                              {new Date(ride.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </div>
+                            <div className="w-full relative flex items-center">
+                              <div className={`flex-1 h-px ${darkMode ? 'bg-gray-600' : 'bg-gray-300'}`}></div>
+                            </div>
+                            <div className="px-2.5 py-0.5 bg-orange-500/20 border border-orange-500/30 rounded text-[11px] font-semibold text-orange-400 flex items-center gap-1">
+                              <Users className="w-3 h-3" />
+                              <span>{ride.seats}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Arrival Time Placeholder */}
+                        <div className="w-20 text-center">
+                          <div className={`text-[11px] font-medium leading-none ${darkMode ? 'text-gray-500' : 'text-gray-600'}`}>~varies</div>
+                        </div>
+
+                        {/* Price */}
+                        <div className="ml-6 text-right min-w-[100px]">
+                          <div className="flex items-center justify-end gap-0.5">
+                            <IndianRupee className={`w-5 h-5 ${darkMode ? 'text-white' : 'text-gray-900'}`} />
+                            <span className={`text-2xl font-bold leading-none ${darkMode ? 'text-white' : 'text-gray-900'}`}>{ride.price.toLocaleString()}</span>
+                          </div>
+                          <div className={`text-xs leading-tight mt-0.5 ${darkMode ? 'text-gray-500' : 'text-gray-600'}`}>per adult</div>
+                        </div>
+                      </div>
+
+                      {/* Bottom Row - Location Names */}
+                      <div className="flex items-center mt-3">
+                        {/* Departure Location */}
+                        <div className="flex-shrink-0">
+                          <div className="text-base font-bold leading-tight" style={{ color: '#67E8F9' }}>
+                            {ride.from}
+                          </div>
+                        </div>
+
+                        {/* Arrow - extends dynamically */}
+                        <div className="flex-1 mx-4 flex items-center justify-center">
+                          <div className="w-full flex items-center">
+                            <div className="flex-1 h-0.5" style={{ backgroundColor: '#9CA3AF' }}></div>
+                            <span className="mx-2 text-xl font-bold" style={{ color: '#9CA3AF' }}>→</span>
+                            <div className="flex-1 h-0.5" style={{ backgroundColor: '#9CA3AF' }}></div>
+                          </div>
+                        </div>
+
+                        {/* Arrival Location */}
+                        <div className="flex-shrink-0">
+                          <div className="text-base font-bold leading-tight" style={{ color: '#BEF264' }}>
+                            {ride.to}
+                          </div>
+                        </div>
+
+                        {/* Empty space to maintain alignment with price */}
+                        <div className="ml-6 w-[100px] flex-shrink-0"></div>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Date & Time - Horizontal */}
-                  <div className="flex items-center justify-between mb-3 text-xs relative z-10">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" style={{ color: '#facc15' }} />
-                      <span style={{ color: '#facc15' }}>{ride.date}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" style={{ color: '#38bdf8' }} />
-                      <span style={{ color: '#38bdf8' }}>{ride.time}</span>
-                    </div>
-                  </div>
-
-                  {/* Price & Seats */}
-                  <div className="flex items-center justify-between mb-3 relative z-10">
-                    <div className="flex items-center gap-1">
-                      <IndianRupee className="w-4 h-4" style={{ color: '#facc15' }} />
-                      <span className="text-lg font-bold" style={{ color: '#facc15' }}>{ride.price}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Users className="w-3 h-3" style={{ color: '#38bdf8' }} />
-                      <span className="text-sm" style={{ color: '#38bdf8' }}>{ride.seats} seats</span>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-2 relative z-10">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleViewDetails(ride);
-                      }}
-                      className="flex-1 px-3 py-2.5 border border-white/10 text-xs font-medium rounded-xl backdrop-blur-md bg-white/5 text-white hover:bg-white/10 hover:border-white/20 hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-1.5 group"
-                    >
-                      <Eye className="w-3.5 h-3.5 group-hover:scale-110 transition-transform duration-300" />
-                      Details
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleJoinRide(ride.id, ride);
-                      }}
-                      className="flex-1 px-3 py-2.5 text-xs font-medium rounded-xl backdrop-blur-md border border-white/10 bg-white/10 text-white hover:bg-white/20 hover:border-white/20 transition-all duration-500 flex items-center justify-center gap-1.5 group"
-                    >
-                      <Plus className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform duration-500" />
-                      Join
-                    </button>
                   </div>
                 </div>
-              ))}
+              );
+              })}
             </div>
           )}
         </section>
@@ -1500,47 +1794,52 @@ export default function FindRidePage() {
               href="/share-ride/postride"
               className="group relative p-4 sm:p-6 rounded-[24px] border backdrop-blur-lg hover:-translate-y-1 hover:scale-[1.01] transition-all duration-500 overflow-hidden"
               style={{
-                background: '#1D3557',
-                borderColor: 'rgba(255,255,255,0.05)',
-                boxShadow: `
-                  0 15px 35px -10px rgba(29, 53, 87, 0.25),
-                  0 6px 12px -3px rgba(0,0,0,0.2)
-                `
+                background: darkMode 
+                  ? '#1D3557' 
+                  : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%)',
+                borderColor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(148, 163, 184, 0.3)',
+                boxShadow: darkMode
+                  ? '0 15px 35px -10px rgba(29, 53, 87, 0.25), 0 6px 12px -3px rgba(0,0,0,0.2)'
+                  : '0 15px 35px -10px rgba(100, 116, 139, 0.2), 0 6px 12px -3px rgba(71, 85, 105, 0.12)'
               }}
             >
               {/* Decorative Elements */}
-              <div className="absolute -bottom-16 -left-16 w-40 h-40 rounded-full border-2 border-white/10 pointer-events-none" />
-              <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full border-2 border-white/10 pointer-events-none" />
-              <div className="absolute top-6 left-6 w-3 h-3 rounded-full bg-white/20 pointer-events-none" />
+              <div className={`absolute -bottom-16 -left-16 w-40 h-40 rounded-full border-2 ${darkMode ? 'border-white/10' : 'border-gray-300/25'} pointer-events-none`} />
+              <div className={`absolute -top-8 -right-8 w-28 h-28 rounded-full border-2 ${darkMode ? 'border-white/10' : 'border-gray-300/25'} pointer-events-none`} />
+              <div className={`absolute top-6 left-6 w-3 h-3 rounded-full ${darkMode ? 'bg-white/20' : 'bg-blue-400/25'} pointer-events-none`} />
               <div className="absolute bottom-6 right-6 grid grid-cols-2 gap-1.5 pointer-events-none">
-                <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
-                <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
-                <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
-                <div className="w-1.5 h-1.5 rounded-full bg-white/5" />
+                <div className={`w-1.5 h-1.5 rounded-full ${darkMode ? 'bg-white/20' : 'bg-blue-400/25'}`} />
+                <div className={`w-1.5 h-1.5 rounded-full ${darkMode ? 'bg-white/10' : 'bg-blue-400/20'}`} />
+                <div className={`w-1.5 h-1.5 rounded-full ${darkMode ? 'bg-white/10' : 'bg-blue-400/20'}`} />
+                <div className={`w-1.5 h-1.5 rounded-full ${darkMode ? 'bg-white/5' : 'bg-blue-400/15'}`} />
               </div>
 
               {/* Gradient Overlay */}
               <div 
                 className="absolute inset-0 pointer-events-none opacity-60 rounded-[24px]"
                 style={{
-                  background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.12) 100%)'
+                  background: darkMode 
+                    ? 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.12) 100%)'
+                    : 'linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 100%)'
                 }}
               />
 
               <div className="relative z-10">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Car className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+                <div className={`w-12 h-12 sm:w-14 sm:h-14 backdrop-blur-sm border rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300 ${
+                  darkMode ? 'bg-white/10 border-white/20' : 'bg-blue-50 border-blue-200'
+                }`}>
+                  <Car className={`w-6 h-6 sm:w-7 sm:h-7 ${darkMode ? 'text-white' : 'text-blue-600'}`} />
                 </div>
                 <h4 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3"
                   style={{
                     fontFamily: 'system-ui, -apple-system, "Segoe UI", sans-serif'
                   }}>
-                  <span style={{ color: '#facc15' }}>Post Your</span> <span style={{ color: '#38bdf8' }}>Own Ride</span>
+                  <span style={{ color: darkMode ? '#facc15' : '#d97706' }}>Post Your</span> <span style={{ color: darkMode ? '#38bdf8' : '#0284c7' }}>Own Ride</span>
                 </h4>
-                <p className="text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 font-medium" style={{ color: '#93C5FD' }}>
+                <p className={`text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 font-medium ${darkMode ? 'text-blue-300' : 'text-gray-700'}`}>
                   Offer a ride to fellow students and earn some money while helping the community.
                 </p>
-                <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-white">
+                <div className={`flex items-center gap-2 text-xs sm:text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                   <span>Get Started</span>
                   <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
@@ -1549,50 +1848,55 @@ export default function FindRidePage() {
 
             {/* My Requests Card */}
             <Link
-              href="/share-ride/requests"
+              href="/my-activity/requests/sharerideREQ"
               className="group relative p-4 sm:p-6 rounded-[24px] border backdrop-blur-lg hover:-translate-y-1 hover:scale-[1.01] transition-all duration-500 overflow-hidden"
               style={{
-                background: '#1D3557',
-                borderColor: 'rgba(255,255,255,0.05)',
-                boxShadow: `
-                  0 15px 35px -10px rgba(29, 53, 87, 0.25),
-                  0 6px 12px -3px rgba(0,0,0,0.2)
-                `
+                background: darkMode 
+                  ? '#1D3557' 
+                  : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%)',
+                borderColor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(148, 163, 184, 0.3)',
+                boxShadow: darkMode
+                  ? '0 15px 35px -10px rgba(29, 53, 87, 0.25), 0 6px 12px -3px rgba(0,0,0,0.2)'
+                  : '0 15px 35px -10px rgba(100, 116, 139, 0.2), 0 6px 12px -3px rgba(71, 85, 105, 0.12)'
               }}
             >
               {/* Decorative Elements */}
-              <div className="absolute -bottom-16 -left-16 w-40 h-40 rounded-full border-2 border-white/10 pointer-events-none" />
-              <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full border-2 border-white/10 pointer-events-none" />
-              <div className="absolute top-6 left-6 w-3 h-3 rounded-full bg-white/20 pointer-events-none" />
+              <div className={`absolute -bottom-16 -left-16 w-40 h-40 rounded-full border-2 ${darkMode ? 'border-white/10' : 'border-gray-300/25'} pointer-events-none`} />
+              <div className={`absolute -top-8 -right-8 w-28 h-28 rounded-full border-2 ${darkMode ? 'border-white/10' : 'border-gray-300/25'} pointer-events-none`} />
+              <div className={`absolute top-6 left-6 w-3 h-3 rounded-full ${darkMode ? 'bg-white/20' : 'bg-blue-400/25'} pointer-events-none`} />
               <div className="absolute bottom-6 right-6 grid grid-cols-2 gap-1.5 pointer-events-none">
-                <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
-                <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
-                <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
-                <div className="w-1.5 h-1.5 rounded-full bg-white/5" />
+                <div className={`w-1.5 h-1.5 rounded-full ${darkMode ? 'bg-white/20' : 'bg-blue-400/25'}`} />
+                <div className={`w-1.5 h-1.5 rounded-full ${darkMode ? 'bg-white/10' : 'bg-blue-400/20'}`} />
+                <div className={`w-1.5 h-1.5 rounded-full ${darkMode ? 'bg-white/10' : 'bg-blue-400/20'}`} />
+                <div className={`w-1.5 h-1.5 rounded-full ${darkMode ? 'bg-white/5' : 'bg-blue-400/15'}`} />
               </div>
 
               {/* Gradient Overlay */}
               <div 
                 className="absolute inset-0 pointer-events-none opacity-60 rounded-[24px]"
                 style={{
-                  background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.12) 100%)'
+                  background: darkMode 
+                    ? 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.12) 100%)'
+                    : 'linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 100%)'
                 }}
               />
 
               <div className="relative z-10">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Users className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+                <div className={`w-12 h-12 sm:w-14 sm:h-14 backdrop-blur-sm border rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300 ${
+                  darkMode ? 'bg-white/10 border-white/20' : 'bg-blue-50 border-blue-200'
+                }`}>
+                  <Users className={`w-6 h-6 sm:w-7 sm:h-7 ${darkMode ? 'text-white' : 'text-blue-600'}`} />
                 </div>
                 <h4 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3"
                   style={{
                     fontFamily: 'system-ui, -apple-system, "Segoe UI", sans-serif'
                   }}>
-                  <span style={{ color: '#facc15' }}>View My</span> <span style={{ color: '#38bdf8' }}>Requests</span>
+                  <span style={{ color: darkMode ? '#facc15' : '#d97706' }}>View My</span> <span style={{ color: darkMode ? '#38bdf8' : '#0284c7' }}>Requests</span>
                 </h4>
-                <p className="text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 font-medium" style={{ color: '#93C5FD' }}>
+                <p className={`text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 font-medium ${darkMode ? 'text-blue-300' : 'text-gray-700'}`}>
                   Check the status of your ride requests and manage your bookings.
                 </p>
-                <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-white">
+                <div className={`flex items-center gap-2 text-xs sm:text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                   <span>View Requests</span>
                   <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
                 </div>

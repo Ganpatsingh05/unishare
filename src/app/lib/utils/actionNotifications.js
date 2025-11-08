@@ -84,6 +84,14 @@ export const HousingNotifications = {
 // ============================================
 
 export const RideNotifications = {
+  // Authentication & Access
+  authRequired: () => showDynamicIslandNotification({
+    type: 'warning',
+    title: 'Login Required',
+    message: 'Please login to post a ride',
+    duration: 4000
+  }),
+
   // Ride Posting Actions
   ridePosted: (destination) => showDynamicIslandNotification({
     type: 'success',

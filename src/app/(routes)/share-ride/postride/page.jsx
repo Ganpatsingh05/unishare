@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import SmallFooter from "./../../../_components/layout/SmallFooter";
 import ShareRideTheme from "./../../../_components/ServicesTheme/EarthTheme";
 import {
@@ -533,11 +534,34 @@ function CustomTimePicker({ value, onChange, className, darkMode, errors }) {
 }
 
 export default function PostRidePage() {
+  const router = useRouter();
   const { darkMode } = useUI();
   const { user, isAuthenticated } = useAuth();
   const { showTemporaryMessage } = useMessages();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const hasShownAuthNotification = useRef(false);
+
+  // Check authentication on mount
+  useEffect(() => {
+    if (!isAuthenticated && !hasShownAuthNotification.current) {
+      hasShownAuthNotification.current = true;
+      
+      // Show Dynamic Island notification
+      RideNotifications.authRequired();
+      
+      // Show temporary message
+      showTemporaryMessage("Please login to post a ride", "error");
+      
+      // Redirect to login page after a short delay
+      setTimeout(() => {
+        router.push("/login");
+      }, 1500);
+    } else if (isAuthenticated) {
+      setIsCheckingAuth(false);
+    }
+  }, [isAuthenticated, router, showTemporaryMessage]);
 
   // Form state
   const [fromLoc, setFromLoc] = useState("");
@@ -687,6 +711,21 @@ export default function PostRidePage() {
     ? "bg-gray-900 border-gray-800" 
     : "bg-white border-gray-200";
 
+  // Show loading state while checking authentication
+  if (isCheckingAuth || !isAuthenticated) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${darkMode ? "bg-gray-900" : "bg-gray-50"}`}>
+        <ShareRideTheme />
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-sky-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className={`text-lg font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+            {!isAuthenticated ? 'Redirecting to login...' : 'Loading...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-gray-50"}`}>
       {/* ShareRide Mercury Gray Theme */}
@@ -721,29 +760,104 @@ export default function PostRidePage() {
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className={`relative overflow-hidden rounded-[20px] shadow-2xl border border-white/5 p-6 sm:p-8`}
+        <form onSubmit={handleSubmit} className={`relative overflow-hidden rounded-2xl shadow-2xl border backdrop-blur-sm p-6 sm:p-8`}
           style={{ 
-            background: '#1D3557',
-            backgroundImage: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.12) 100%)'
+            background: darkMode 
+              ? '#1b2d47' 
+              : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)',
+            borderColor: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(148, 163, 184, 0.3)',
           }}
         >
-          {/* Decorative Elements */}
-          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-gradient-to-br from-yellow-400/10 to-transparent pointer-events-none -z-10" />
-          <div className="absolute top-1/4 -left-4 w-16 h-16 rounded-full bg-gradient-to-br from-sky-400/10 to-transparent pointer-events-none -z-10" />
-          <div className="absolute bottom-1/3 right-12 w-1.5 h-1.5 rounded-full bg-yellow-400/30 pointer-events-none -z-10" />
-          <div className="absolute top-1/3 right-1/4 w-2 h-2 rounded-full bg-sky-400/30 pointer-events-none -z-10" />
-          <div className="absolute bottom-1/4 left-1/4 w-1.5 h-1.5 rounded-full bg-yellow-400/20 pointer-events-none -z-10" />
+          {/* Lotus Flower Pattern - Top Right */}
+          <div className="absolute top-0 right-0 w-32 h-32 opacity-12 -translate-y-1/4 translate-x-1/4 pointer-events-none">
+            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+              {/* Center of lotus */}
+              <circle cx="100" cy="100" r="10" fill="white" opacity="0.7"/>
+              {/* Inner petals - 8 petals */}
+              <ellipse cx="100" cy="75" rx="8" ry="20" fill="none" stroke="white" strokeWidth="2" opacity="0.6"/>
+              <ellipse cx="100" cy="125" rx="8" ry="20" fill="none" stroke="white" strokeWidth="2" opacity="0.6"/>
+              <ellipse cx="75" cy="100" rx="20" ry="8" fill="none" stroke="white" strokeWidth="2" opacity="0.6"/>
+              <ellipse cx="125" cy="100" rx="20" ry="8" fill="none" stroke="white" strokeWidth="2" opacity="0.6"/>
+              <ellipse cx="82" cy="82" rx="14" ry="14" fill="none" stroke="white" strokeWidth="2" opacity="0.6" transform="rotate(-45 82 82)"/>
+              <ellipse cx="118" cy="82" rx="14" ry="14" fill="none" stroke="white" strokeWidth="2" opacity="0.6" transform="rotate(45 118 82)"/>
+              <ellipse cx="82" cy="118" rx="14" ry="14" fill="none" stroke="white" strokeWidth="2" opacity="0.6" transform="rotate(45 82 118)"/>
+              <ellipse cx="118" cy="118" rx="14" ry="14" fill="none" stroke="white" strokeWidth="2" opacity="0.6" transform="rotate(-45 118 118)"/>
+              {/* Outer petals - larger */}
+              <ellipse cx="100" cy="60" rx="10" ry="28" fill="none" stroke="white" strokeWidth="1.5" opacity="0.5"/>
+              <ellipse cx="100" cy="140" rx="10" ry="28" fill="none" stroke="white" strokeWidth="1.5" opacity="0.5"/>
+              <ellipse cx="60" cy="100" rx="28" ry="10" fill="none" stroke="white" strokeWidth="1.5" opacity="0.5"/>
+              <ellipse cx="140" cy="100" rx="28" ry="10" fill="none" stroke="white" strokeWidth="1.5" opacity="0.5"/>
+              <ellipse cx="75" cy="75" rx="20" ry="20" fill="none" stroke="white" strokeWidth="1.5" opacity="0.5" transform="rotate(-45 75 75)"/>
+              <ellipse cx="125" cy="75" rx="20" ry="20" fill="none" stroke="white" strokeWidth="1.5" opacity="0.5" transform="rotate(45 125 75)"/>
+              <ellipse cx="75" cy="125" rx="20" ry="20" fill="none" stroke="white" strokeWidth="1.5" opacity="0.5" transform="rotate(45 75 125)"/>
+              <ellipse cx="125" cy="125" rx="20" ry="20" fill="none" stroke="white" strokeWidth="1.5" opacity="0.5" transform="rotate(-45 125 125)"/>
+            </svg>
+          </div>
+          
+          {/* Lotus Flower Pattern - Bottom Left */}
+          <div className="absolute bottom-0 left-0 w-28 h-28 opacity-12 translate-y-1/4 -translate-x-1/4 pointer-events-none">
+            <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+              {/* Center */}
+              <circle cx="80" cy="80" r="8" fill="white" opacity="0.7"/>
+              {/* Inner petals */}
+              <ellipse cx="80" cy="60" rx="6" ry="16" fill="none" stroke="white" strokeWidth="1.8" opacity="0.6"/>
+              <ellipse cx="80" cy="100" rx="6" ry="16" fill="none" stroke="white" strokeWidth="1.8" opacity="0.6"/>
+              <ellipse cx="60" cy="80" rx="16" ry="6" fill="none" stroke="white" strokeWidth="1.8" opacity="0.6"/>
+              <ellipse cx="100" cy="80" rx="16" ry="6" fill="none" stroke="white" strokeWidth="1.8" opacity="0.6"/>
+              <ellipse cx="66" cy="66" rx="11" ry="11" fill="none" stroke="white" strokeWidth="1.8" opacity="0.6" transform="rotate(-45 66 66)"/>
+              <ellipse cx="94" cy="66" rx="11" ry="11" fill="none" stroke="white" strokeWidth="1.8" opacity="0.6" transform="rotate(45 94 66)"/>
+              <ellipse cx="66" cy="94" rx="11" ry="11" fill="none" stroke="white" strokeWidth="1.8" opacity="0.6" transform="rotate(45 66 94)"/>
+              <ellipse cx="94" cy="94" rx="11" ry="11" fill="none" stroke="white" strokeWidth="1.8" opacity="0.6" transform="rotate(-45 94 94)"/>
+              {/* Outer petals */}
+              <ellipse cx="80" cy="50" rx="7" ry="22" fill="none" stroke="white" strokeWidth="1.3" opacity="0.5"/>
+              <ellipse cx="80" cy="110" rx="7" ry="22" fill="none" stroke="white" strokeWidth="1.3" opacity="0.5"/>
+              <ellipse cx="50" cy="80" rx="22" ry="7" fill="none" stroke="white" strokeWidth="1.3" opacity="0.5"/>
+              <ellipse cx="110" cy="80" rx="22" ry="7" fill="none" stroke="white" strokeWidth="1.3" opacity="0.5"/>
+            </svg>
+          </div>
+
+          {/* Detailed Mountains & Sun - Center Left */}
+          <div className="absolute top-1/2 left-0 w-24 h-24 opacity-12 -translate-y-1/2 -translate-x-1/3 pointer-events-none">
+            <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+              {/* Sun with detailed rays */}
+              <circle cx="40" cy="35" r="14" fill="none" stroke="white" strokeWidth="2" opacity="0.6"/>
+              <circle cx="40" cy="35" r="10" fill="white" opacity="0.5"/>
+              {/* Sun rays - 8 directions */}
+              <line x1="40" y1="16" x2="40" y2="12" stroke="white" strokeWidth="2" opacity="0.5"/>
+              <line x1="56" y1="19" x2="59" y2="16" stroke="white" strokeWidth="2" opacity="0.5"/>
+              <line x1="59" y1="35" x2="63" y2="35" stroke="white" strokeWidth="2" opacity="0.5"/>
+              <line x1="56" y1="51" x2="59" y2="54" stroke="white" strokeWidth="2" opacity="0.5"/>
+              <line x1="24" y1="19" x2="21" y2="16" stroke="white" strokeWidth="2" opacity="0.5"/>
+              <line x1="21" y1="35" x2="17" y2="35" stroke="white" strokeWidth="2" opacity="0.5"/>
+              
+              {/* Mountain range - more detailed */}
+              <path d="M 10 100 L 35 60 L 50 75 L 60 100 Z" fill="none" stroke="white" strokeWidth="2.5" opacity="0.6"/>
+              <path d="M 45 100 L 70 50 L 85 65 L 95 100 Z" fill="none" stroke="white" strokeWidth="2.5" opacity="0.6"/>
+              <path d="M 75 100 L 90 70 L 105 100 Z" fill="none" stroke="white" strokeWidth="2" opacity="0.5"/>
+              
+              {/* Snow peaks */}
+              <path d="M 35 60 L 32 67 L 38 67 Z" fill="white" opacity="0.6"/>
+              <path d="M 70 50 L 67 58 L 73 58 Z" fill="white" opacity="0.6"/>
+              <path d="M 90 70 L 88 75 L 92 75 Z" fill="white" opacity="0.5"/>
+              
+              {/* Mountain details - ridges */}
+              <path d="M 35 60 L 40 72" stroke="white" strokeWidth="1" opacity="0.4"/>
+              <path d="M 35 60 L 30 72" stroke="white" strokeWidth="1" opacity="0.4"/>
+              <path d="M 70 50 L 75 62" stroke="white" strokeWidth="1" opacity="0.4"/>
+              <path d="M 70 50 L 65 62" stroke="white" strokeWidth="1" opacity="0.4"/>
+            </svg>
+          </div>
 
           <div className="space-y-6 relative z-10">
             {/* Route Information */}
             <div>
-              <h2 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
+              <h2 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                 <MapPin className="w-5 h-5 text-yellow-400" />
                 Route Details
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-sky-100">
+                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-sky-100' : 'text-gray-700'}`}>
                     From Location *
                   </label>
                   <div className="relative">
@@ -751,8 +865,12 @@ export default function PostRidePage() {
                     <input
                       value={fromLoc}
                       onChange={(e) => setFromLoc(e.target.value)}
-                      className={`w-full pl-10 pr-3 py-3 border rounded-xl transition-colors bg-white/5 backdrop-blur-sm text-white placeholder-gray-400 ${
-                        errors.fromLoc ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-white/10 focus:border-sky-400 focus:ring-4 focus:ring-sky-400/20'
+                      className={`w-full pl-10 pr-3 py-3 border rounded-xl transition-colors backdrop-blur-sm ${
+                        darkMode 
+                          ? 'bg-white/5 text-white placeholder-gray-400 border-white/10 focus:border-sky-400' 
+                          : 'bg-white/60 text-gray-900 placeholder-gray-500 border-gray-200 focus:border-sky-500'
+                      } ${
+                        errors.fromLoc ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'focus:ring-4 focus:ring-sky-400/20'
                       }`}
                       placeholder="Starting point..."
                     />
@@ -766,7 +884,7 @@ export default function PostRidePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-sky-100">
+                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-sky-100' : 'text-gray-700'}`}>
                     To Location *
                   </label>
                   <div className="relative">
@@ -774,8 +892,12 @@ export default function PostRidePage() {
                     <input
                       value={toLoc}
                       onChange={(e) => setToLoc(e.target.value)}
-                      className={`w-full pl-10 pr-3 py-3 border rounded-xl transition-colors bg-white/5 backdrop-blur-sm text-white placeholder-gray-400 ${
-                        errors.toLoc ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-white/10 focus:border-sky-400 focus:ring-4 focus:ring-sky-400/20'
+                      className={`w-full pl-10 pr-3 py-3 border rounded-xl transition-colors backdrop-blur-sm ${
+                        darkMode 
+                          ? 'bg-white/5 text-white placeholder-gray-400 border-white/10 focus:border-sky-400' 
+                          : 'bg-white/60 text-gray-900 placeholder-gray-500 border-gray-200 focus:border-sky-500'
+                      } ${
+                        errors.toLoc ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'focus:ring-4 focus:ring-sky-400/20'
                       }`}
                       placeholder="Destination..."
                     />
@@ -792,13 +914,13 @@ export default function PostRidePage() {
 
             {/* Date & Time */}
             <div>
-              <h2 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
+              <h2 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                 <Calendar className="w-5 h-5 text-yellow-400" />
                 Schedule
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium mb-3 text-sky-100">
+                  <label className={`block text-sm font-medium mb-3 ${darkMode ? 'text-sky-100' : 'text-gray-700'}`}>
                     Date *
                   </label>
                   <div className="relative group">
@@ -806,8 +928,12 @@ export default function PostRidePage() {
                     <CustomDatePicker
                       value={date}
                       onChange={(dateValue) => setDate(dateValue)}
-                      className="bg-white/5 backdrop-blur-sm text-white placeholder-gray-400 border-white/10 focus:border-sky-400 focus:ring-4 focus:ring-sky-400/20"
-                      darkMode={true}
+                      className={`backdrop-blur-sm ${
+                        darkMode 
+                          ? 'bg-white/5 text-white placeholder-gray-400 border-white/10 focus:border-sky-400' 
+                          : 'bg-white/60 text-gray-900 placeholder-gray-500 border-gray-200 focus:border-sky-500'
+                      } focus:ring-4 focus:ring-sky-400/20`}
+                      darkMode={darkMode}
                       errors={errors.date}
                       minDate={new Date().toISOString().split('T')[0]}
                     />
@@ -822,7 +948,7 @@ export default function PostRidePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-3 text-sky-100">
+                  <label className={`block text-sm font-medium mb-3 ${darkMode ? 'text-sky-100' : 'text-gray-700'}`}>
                     Time *
                   </label>
                   <div className="relative group">
@@ -830,8 +956,12 @@ export default function PostRidePage() {
                     <CustomTimePicker
                       value={time}
                       onChange={(timeValue) => setTime(timeValue)}
-                      className="bg-white/5 backdrop-blur-sm text-white placeholder-gray-400 border-white/10 focus:border-sky-400 focus:ring-4 focus:ring-sky-400/20"
-                      darkMode={true}
+                      className={`backdrop-blur-sm ${
+                        darkMode 
+                          ? 'bg-white/5 text-white placeholder-gray-400 border-white/10 focus:border-sky-400' 
+                          : 'bg-white/60 text-gray-900 placeholder-gray-500 border-gray-200 focus:border-sky-500'
+                      } focus:ring-4 focus:ring-sky-400/20`}
+                      darkMode={darkMode}
                       errors={errors.time}
                     />
                     <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-sky-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
@@ -855,13 +985,13 @@ export default function PostRidePage() {
           
           {/* Vehicle & Capacity */}
           <div>
-            <h2 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
+            <h2 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
               <Car className="w-5 h-5 text-yellow-400" />
               Vehicle & Seats
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2 text-sky-100">
+                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-sky-100' : 'text-gray-700'}`}>
                   Vehicle Details *
                 </label>
                 <div className="relative">
@@ -869,8 +999,12 @@ export default function PostRidePage() {
                   <input
                     value={vehicle}
                     onChange={(e) => setVehicle(e.target.value)}
-                    className={`w-full pl-10 pr-3 py-3 border rounded-xl transition-colors bg-white/5 backdrop-blur-sm text-white placeholder-gray-400 ${
-                      errors.vehicle ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-white/10 focus:border-sky-400 focus:ring-4 focus:ring-sky-400/20'
+                    className={`w-full pl-10 pr-3 py-3 border rounded-xl transition-colors backdrop-blur-sm ${
+                      darkMode 
+                        ? 'bg-white/5 text-white placeholder-gray-400 border-white/10 focus:border-sky-400' 
+                        : 'bg-white/60 text-gray-900 placeholder-gray-500 border-gray-200 focus:border-sky-500'
+                    } ${
+                      errors.vehicle ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'focus:ring-4 focus:ring-sky-400/20'
                     }`}
                     placeholder="e.g., Honda City, White, MH12AB1234"
                   />
@@ -884,7 +1018,7 @@ export default function PostRidePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-3 text-sky-100">
+                <label className={`block text-sm font-medium mb-3 ${darkMode ? 'text-sky-100' : 'text-gray-700'}`}>
                   Available Seats *
                 </label>
                 <div className="relative group">
@@ -900,8 +1034,12 @@ export default function PostRidePage() {
                       { value: 6, label: '6 seats', icon: '👥' }
                     ]}
                     placeholder="Select seats"
-                    className="bg-white/5 backdrop-blur-sm text-white placeholder-gray-400 border-white/10 focus:border-sky-400 focus:ring-4 focus:ring-sky-400/20"
-                    darkMode={true}
+                    className={`backdrop-blur-sm ${
+                      darkMode 
+                        ? 'bg-white/5 text-white placeholder-gray-400 border-white/10 focus:border-sky-400' 
+                        : 'bg-white/60 text-gray-900 placeholder-gray-500 border-gray-200 focus:border-sky-500'
+                    } focus:ring-4 focus:ring-sky-400/20`}
+                    darkMode={darkMode}
                     icon={Users}
                   />
                   <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-sky-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
@@ -918,12 +1056,12 @@ export default function PostRidePage() {
 
             {/* Price */}
             <div>
-              <h2 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
+              <h2 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                 <IndianRupee className="w-5 h-5 text-yellow-400" />
                 Price
               </h2>
               <div className="max-w-sm">
-                <label className="block text-sm font-medium mb-2 text-sky-100">
+                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-sky-100' : 'text-gray-700'}`}>
                   Price per Person (₹) *
                 </label>
                 <div className="relative">
@@ -932,8 +1070,12 @@ export default function PostRidePage() {
                     type="number"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
-                    className={`w-full pl-10 pr-3 py-3 border rounded-xl transition-colors bg-white/5 backdrop-blur-sm text-white placeholder-gray-400 ${
-                      errors.price ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-white/10 focus:border-sky-400 focus:ring-4 focus:ring-sky-400/20'
+                    className={`w-full pl-10 pr-3 py-3 border rounded-xl transition-colors backdrop-blur-sm ${
+                      darkMode 
+                        ? 'bg-white/5 text-white placeholder-gray-400 border-white/10 focus:border-sky-400' 
+                        : 'bg-white/60 text-gray-900 placeholder-gray-500 border-gray-200 focus:border-sky-500'
+                    } ${
+                      errors.price ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'focus:ring-4 focus:ring-sky-400/20'
                     }`}
                     placeholder="Enter fare per person..."
                     min="0"
@@ -951,37 +1093,31 @@ export default function PostRidePage() {
 
             {/* Description */}
             <div>
-              <h2 className="text-lg font-semibold mb-4 text-white">Description (Optional)</h2>
+              <h2 className={`text-lg font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Description (Optional)</h2>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
-                className="w-full px-4 py-3 border border-white/10 rounded-xl transition-colors bg-white/5 backdrop-blur-sm text-white placeholder-gray-400 resize-none focus:border-sky-400 focus:ring-4 focus:ring-sky-400/20"
+                className={`w-full px-4 py-3 border rounded-xl transition-colors backdrop-blur-sm resize-none ${
+                  darkMode 
+                    ? 'bg-white/5 text-white placeholder-gray-400 border-white/10 focus:border-sky-400' 
+                    : 'bg-white/60 text-gray-900 placeholder-gray-500 border-gray-200 focus:border-sky-500'
+                } focus:ring-4 focus:ring-sky-400/20`}
                 placeholder="Any additional details about the ride, pickup points, preferences, etc..."
               />
             </div>
 
             {/* Contact Information */}
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                  <Phone className="w-5 h-5 text-yellow-400" />
-                  Contact Information *
-                </h2>
-                <button
-                  type="button"
-                  onClick={addContact}
-                  className="flex items-center gap-2 px-3 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-colors text-sm shadow-lg"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Contact
-                </button>
-              </div>
+              <h2 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                <Phone className="w-5 h-5 text-yellow-400" />
+                Contact Information *
+              </h2>
 
               <div className="space-y-3">
                 {contacts.map((contact, index) => (
-                  <div key={contact.id} className="flex gap-3 items-center">
-                    <div className="w-40">
+                  <div key={contact.id} className="flex flex-col sm:flex-row gap-3">
+                    <div className="w-full sm:w-40">
                       <CustomDropdown
                         value={contact.type}
                         onChange={(value) => updateContact(contact.id, "type", value)}
@@ -991,8 +1127,12 @@ export default function PostRidePage() {
                           { value: 'instagram', label: 'Instagram', icon: '📷' }
                         ]}
                         placeholder="Contact type"
-                        className="bg-white/5 backdrop-blur-sm text-white placeholder-gray-400 border-white/10 focus:border-sky-400 focus:ring-4 focus:ring-sky-400/20 py-3 text-sm"
-                        darkMode={true}
+                        className={`backdrop-blur-sm py-3 text-sm ${
+                          darkMode 
+                            ? 'bg-white/5 text-white placeholder-gray-400 border-white/10 focus:border-sky-400' 
+                            : 'bg-white/60 text-gray-900 placeholder-gray-500 border-gray-200 focus:border-sky-500'
+                        } focus:ring-4 focus:ring-sky-400/20`}
+                        darkMode={darkMode}
                       />
                     </div>
                     
@@ -1003,7 +1143,11 @@ export default function PostRidePage() {
                       <input
                         value={contact.value}
                         onChange={(e) => updateContact(contact.id, "value", e.target.value)}
-                        className="w-full pl-10 pr-3 py-3 border border-white/10 rounded-xl transition-colors bg-white/5 backdrop-blur-sm text-white placeholder-gray-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-400/20"
+                        className={`w-full pl-10 pr-3 py-3 border rounded-xl transition-colors backdrop-blur-sm ${
+                          darkMode 
+                            ? 'bg-white/5 text-white placeholder-gray-400 border-white/10 focus:border-sky-400' 
+                            : 'bg-white/60 text-gray-900 placeholder-gray-500 border-gray-200 focus:border-sky-500'
+                        } focus:ring-4 focus:ring-sky-400/20`}
                         placeholder={
                           contact.type === "mobile" ? "+91 98765 43210" :
                           contact.type === "email" ? "your.email@example.com" :
@@ -1016,17 +1160,35 @@ export default function PostRidePage() {
                       <button
                         type="button"
                         onClick={() => removeContact(contact.id)}
-                        className="p-3 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg transition-colors"
+                        className={`self-start sm:self-center p-3 rounded-lg transition-all ${
+                          darkMode 
+                            ? 'text-red-400 hover:text-red-300 hover:bg-red-500/20' 
+                            : 'text-red-500 hover:text-red-600 hover:bg-red-50'
+                        }`}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     )}
                   </div>
                 ))}
+
+                {/* Add Contact Button */}
+                <button
+                  type="button"
+                  onClick={addContact}
+                  className={`w-full sm:w-auto px-4 py-2.5 border-2 border-dashed rounded-xl flex items-center justify-center gap-2 text-sm font-medium transition-all ${
+                    darkMode 
+                      ? 'border-sky-400/30 text-sky-400 hover:bg-sky-400/10 hover:border-sky-400/50' 
+                      : 'border-sky-500/30 text-sky-600 hover:bg-sky-50 hover:border-sky-500/50'
+                  }`}
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Another Contact
+                </button>
               </div>
 
               {errors.contacts && (
-                <p className="text-red-400 text-sm mt-2 flex items-center gap-1">
+                <p className="text-red-400 text-sm mt-3 flex items-center gap-1">
                   <X className="w-3 h-3" />
                   {errors.contacts}
                 </p>
@@ -1037,7 +1199,11 @@ export default function PostRidePage() {
             <div className="flex gap-4">
               <Link 
                 href="/share-ride"
-                className="flex-1 py-3 px-6 border border-white/20 rounded-xl text-center transition-all hover:bg-white/5 hover:border-white/30 text-white font-medium"
+                className={`flex-1 py-3 px-6 border rounded-xl text-center transition-all font-medium ${
+                  darkMode 
+                    ? 'border-white/20 text-white hover:bg-white/5 hover:border-white/30' 
+                    : 'border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400'
+                }`}
               >
                 Cancel
               </Link>

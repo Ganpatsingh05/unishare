@@ -29,7 +29,6 @@ export const fetchRides = async (filters = {}) => {
       pagination: response.pagination || {}
     };
   } catch (error) {
-    console.error('Error fetching rides:', error);
     return {
       success: false,
       error: error.message
@@ -89,8 +88,6 @@ export const createRide = async (rideData) => {
       contacts: rideData.contacts.filter(contact => contact.value.trim())
     };
 
-    console.log('Creating ride with data:', processedData);
-
     const response = await apiCall('/api/shareride/create', {
       method: 'POST',
       body: JSON.stringify(processedData)
@@ -102,7 +99,6 @@ export const createRide = async (rideData) => {
       message: 'Ride posted successfully!'
     };
   } catch (error) {
-    console.error('Error creating ride:', error);
     return {
       success: false,
       error: error.message
@@ -123,14 +119,11 @@ export const getMyRides = async (options = {}) => {
     const endpoint = `/api/shareride/my${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
     const response = await apiCall(endpoint, { method: 'GET' });
 
-    console.log('getMyRides response:', response.data); // Debug: see the actual ride data structure
-
     return {
       success: true,
       data: response.data || []
     };
   } catch (error) {
-    console.error('Error fetching my rides:', error);
     return {
       success: false,
       error: error.message
@@ -156,7 +149,6 @@ export const updateRide = async (rideId, updateData) => {
       message: 'Ride updated successfully!'
     };
   } catch (error) {
-    console.error('Error updating ride:', error);
     return {
       success: false,
       error: error.message
@@ -180,7 +172,6 @@ export const deleteRide = async (rideId) => {
       message: 'Ride cancelled successfully!'
     };
   } catch (error) {
-    console.error('Error deleting ride:', error);
     return {
       success: false,
       error: error.message
@@ -213,7 +204,6 @@ export const requestRideJoin = async (rideId, requestData) => {
       message: 'Join request sent successfully!'
     };
   } catch (error) {
-    // console.error('Error requesting to join ride:', error);
     return {
       success: false,
       error: error.message
@@ -231,7 +221,6 @@ export const getRideRequests = async () => {
       data: response.data || []
     };
   } catch (error) {
-    // console.error('Error fetching ride requests:', error);
     return {
       success: false,
       error: error.message
@@ -282,7 +271,6 @@ export const respondToRideRequest = async (requestId, action, message = '') => {
       message: `Request ${action}ed successfully!`
     };
   } catch (error) {
-    console.error('Error responding to ride request:', error);
     return {
       success: false,
       error: error.message
@@ -304,7 +292,6 @@ export const getRideById = async (rideId) => {
       data: response.data || response
     };
   } catch (error) {
-    console.error('Error fetching ride details:', error);
     return {
       success: false,
       error: error.message
@@ -322,7 +309,6 @@ export const getRideStats = async () => {
       data: response.data || {}
     };
   } catch (error) {
-    console.error('Error fetching ride stats:', error);
     return {
       success: false,
       error: error.message
@@ -387,7 +373,6 @@ export const getAllRidesAdmin = async (filters = {}) => {
       pagination: response.pagination || {}
     };
   } catch (error) {
-    console.error('Error fetching rides (admin):', error);
     return {
       success: false,
       error: error.message
@@ -409,7 +394,6 @@ export const getRideByIdAdmin = async (rideId) => {
       data: response.data
     };
   } catch (error) {
-    console.error('Error fetching ride details (admin):', error);
     return {
       success: false,
       error: error.message
@@ -434,7 +418,6 @@ export const updateRideStatusAdmin = async (rideId, status, reason = '') => {
       data: response.data
     };
   } catch (error) {
-    console.error('Error updating ride status (admin):', error);
     return {
       success: false,
       error: error.message
@@ -459,7 +442,6 @@ export const deleteRideAdmin = async (rideId, reason = '') => {
       data: response.data
     };
   } catch (error) {
-    console.error('Error deleting ride (admin):', error);
     return {
       success: false,
       error: error.message
@@ -477,7 +459,6 @@ export const getRideSharingStatsAdmin = async () => {
       data: response.data
     };
   } catch (error) {
-    console.error('Error fetching ride sharing stats (admin):', error);
     return {
       success: false,
       error: error.message
@@ -505,7 +486,6 @@ export const getFlaggedRidesAdmin = async (filters = {}) => {
       pagination: response.pagination || {}
     };
   } catch (error) {
-    console.error('Error fetching flagged rides (admin):', error);
     return {
       success: false,
       error: error.message

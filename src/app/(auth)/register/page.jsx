@@ -9,12 +9,12 @@ import {
   Lock, 
   Eye, 
   EyeOff, 
-  ArrowRight,
   Phone,
   GraduationCap
 } from "lucide-react";
 
 import { useUI } from "./../../lib/contexts/UniShareContext";
+import SmallFooter from "./../../_components/layout/SmallFooter";
 
 const RegisterPage = () => {
   const { darkMode } = useUI();
@@ -323,57 +323,7 @@ const RegisterPage = () => {
         </div>
 
         {/* Mobile Footer */}
-        <footer className={`backdrop-blur-sm border-t py-6 px-6 ${
-          darkMode 
-            ? 'bg-slate-900/50 border-slate-700/50' 
-            : 'bg-white/50 border-orange-200/50'
-        }`}>
-          <div className="text-center">
-            {/* Main Footer Links */}
-            <div className={`flex flex-wrap justify-center gap-6 text-sm mb-4 ${
-              darkMode ? 'text-slate-300' : 'text-gray-700'
-            }`}>
-              <Link href="/footerpages/about" className={`transition-colors ${
-                darkMode ? 'hover:text-cyan-400' : 'hover:text-orange-600'
-              }`}>About</Link>
-              <Link href="/footerpages/privacy" className={`transition-colors ${
-                darkMode ? 'hover:text-cyan-400' : 'hover:text-orange-600'
-              }`}>Privacy</Link>
-              <Link href="/footerpages/terms" className={`transition-colors ${
-                darkMode ? 'hover:text-cyan-400' : 'hover:text-orange-600'
-              }`}>Terms</Link>
-              <Link href="/footerpages/help" className={`transition-colors ${
-                darkMode ? 'hover:text-cyan-400' : 'hover:text-orange-600'
-              }`}>Help</Link>
-            </div>
-            
-            {/* Secondary Links */}
-            <div className={`flex flex-wrap justify-center gap-4 text-xs mb-4 ${
-              darkMode ? 'text-slate-400' : 'text-gray-600'
-            }`}>
-              <Link href="/footerpages/careers" className={`transition-colors ${
-                darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
-              }`}>Careers</Link>
-              <Link href="/support" className={`transition-colors ${
-                darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
-              }`}>Support</Link>
-              <Link href="/footerpages/guidelines" className={`transition-colors ${
-                darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
-              }`}>Guidelines</Link>
-              <Link href="/footerpages/faqs" className={`transition-colors ${
-                darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
-              }`}>FAQs</Link>
-              <Link href="/footerpages/cookies" className={`transition-colors ${
-                darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
-              }`}>Cookies</Link>
-            </div>
-            
-            {/* Copyright */}
-            <div className={`text-xs ${darkMode ? 'text-slate-500' : 'text-gray-500'}`}>
-              © 2024-2025 UniShare. All rights reserved.
-            </div>
-          </div>
-        </footer>
+        <SmallFooter />
       </div>
 
       {/* Desktop Layout (hidden below lg) */}
@@ -617,92 +567,7 @@ const RegisterPage = () => {
         </div>
         
         {/* Desktop Footer */}
-        <footer className={`relative z-10 backdrop-blur-sm border-t py-6 px-4 sm:px-6 lg:px-8 ${
-          darkMode 
-            ? 'bg-slate-900/50 border-slate-700/50' 
-            : 'bg-white/50 border-orange-200/50'
-        }`}>
-          <div className="max-w-5xl mx-auto">
-            {/* Main Footer Links */}
-            <div className="flex flex-wrap justify-center lg:justify-between items-center gap-6 mb-4">
-              <div className={`flex flex-wrap justify-center gap-6 sm:gap-8 text-sm ${
-                darkMode ? 'text-slate-300' : 'text-gray-700'
-              }`}>
-                <Link href="/footerpages/about" className={`transition-colors ${
-                  darkMode ? 'hover:text-cyan-400' : 'hover:text-orange-600'
-                }`}>
-                  About UniShare
-                </Link>
-                <Link href="/footerpages/careers" className={`transition-colors ${
-                  darkMode ? 'hover:text-cyan-400' : 'hover:text-orange-600'
-                }`}>
-                  Careers
-                </Link>
-                <Link href="/support" className={`transition-colors ${
-                  darkMode ? 'hover:text-cyan-400' : 'hover:text-orange-600'
-                }`}>
-                  Support
-                </Link>
-                <Link href="/footerpages/help" className={`transition-colors ${
-                  darkMode ? 'hover:text-cyan-400' : 'hover:text-orange-600'
-                }`}>
-                  Help Center
-                </Link>
-              </div>
-              
-              {/* Language Selector */}
-              <div className={`flex items-center gap-2 text-sm ${
-                darkMode ? 'text-slate-400' : 'text-gray-600'
-              }`}>
-                <span>🌐</span>
-                <span>English</span>
-              </div>
-            </div>
-            
-            {/* Secondary Links */}
-            <div className={`flex flex-wrap justify-center gap-4 sm:gap-6 text-xs mb-4 ${
-              darkMode ? 'text-slate-400' : 'text-gray-600'
-            }`}>
-              <Link href="/footerpages/terms" className={`transition-colors ${
-                darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
-              }`}>
-                Terms of Use
-              </Link>
-              <Link href="/footerpages/privacy" className={`transition-colors ${
-                darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
-              }`}>
-                Privacy Policy
-              </Link>
-              <Link href="/footerpages/cookies" className={`transition-colors ${
-                darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
-              }`}>
-                Cookie Policy
-              </Link>
-              <Link href="/footerpages/guidelines" className={`transition-colors ${
-                darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
-              }`}>
-                Community Guidelines
-              </Link>
-              <Link href="/footerpages/faqs" className={`transition-colors ${
-                darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
-              }`}>
-                FAQs
-              </Link>
-              <Link href="/footerpages/data-protection" className={`transition-colors ${
-                darkMode ? 'hover:text-cyan-300' : 'hover:text-orange-500'
-              }`}>
-                Data Protection
-              </Link>
-            </div>
-            
-            {/* Copyright */}
-            <div className={`text-center text-sm ${
-              darkMode ? 'text-slate-500' : 'text-gray-500'
-            }`}>
-              © 2024-2025 UniShare Campus Community. All rights reserved.
-            </div>
-          </div>
-        </footer>
+        <SmallFooter />
       </div>
     </>
   );

@@ -554,12 +554,12 @@ const DynamicIsland = () => {
 
   return (
     <div 
-      className={`fixed top-3 ${getPositionClass()} z-[9999] pointer-events-none`}
+      className={`fixed top-7 ${getPositionClass()} z-[9999] pointer-events-none`}
       style={{
         isolation: 'isolate',
         willChange: 'transform',
         position: 'fixed',
-        top: '12px',
+        top: '26px',
         transform: 'none !important',
         WebkitTransform: 'none !important'
       }}

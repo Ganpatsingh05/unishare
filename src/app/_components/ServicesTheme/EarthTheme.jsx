@@ -1,5 +1,6 @@
 'use client';
 import React from "react";
+import { useUI } from "../../lib/contexts/UniShareContext";
 
 /**
  * Earth Theme for Share Ride & Housing Pages
@@ -9,15 +10,19 @@ import React from "react";
  * Textured cosmic background similar to main page
  */
 const EarthTheme = () => {
+  const { darkMode } = useUI();
+  
   return (
     <>
       {/* Earth-inspired Background - Textured cosmic space like main page */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        {/* Deep blue-teal space background inspired by Earth's oceans */}
+        {/* Conditional background based on theme */}
         <div 
           className="absolute inset-0" 
           style={{
-            background: 'radial-gradient(ellipse at center, #0d2d3a 0%, #0a1f2a 30%, #071419 60%, #030a0d 100%)'
+            background: darkMode 
+              ? 'radial-gradient(ellipse at center, #0d2d3a 0%, #0a1f2a 30%, #071419 60%, #030a0d 100%)'
+              : 'radial-gradient(ellipse at center, #e0f2fe 0%, #f0f9ff 30%, #f8fafc 60%, #ffffff 100%)'
           }}
         />
         
@@ -26,7 +31,7 @@ const EarthTheme = () => {
           className="absolute inset-0 pointer-events-none"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 2000 2000' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='earthGrain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' seed='8' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23earthGrain)' opacity='1'/%3E%3C/svg%3E")`,
-            opacity: 0.45,
+            opacity: darkMode ? 0.45 : 0.25,
             mixBlendMode: 'overlay',
             backgroundSize: 'cover',
             zIndex: 1
@@ -38,7 +43,7 @@ const EarthTheme = () => {
           className="absolute inset-0 pointer-events-none"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 1500 1500' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='fineGrain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.3' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23fineGrain)' opacity='1'/%3E%3C/svg%3E")`,
-            opacity: 0.35,
+            opacity: darkMode ? 0.35 : 0.2,
             mixBlendMode: 'overlay',
             backgroundSize: 'cover',
             zIndex: 1
@@ -50,7 +55,7 @@ const EarthTheme = () => {
           className="absolute inset-0 pointer-events-none"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 1800 1800' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='mediumGrain'%3E%3CfeTurbulence type='turbulence' baseFrequency='1.1' numOctaves='2' seed='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23mediumGrain)' opacity='1'/%3E%3C/svg%3E")`,
-            opacity: 0.3,
+            opacity: darkMode ? 0.3 : 0.15,
             mixBlendMode: 'soft-light',
             backgroundSize: 'cover',
             zIndex: 1
@@ -61,7 +66,9 @@ const EarthTheme = () => {
         <div 
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: 'radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.45) 100%)',
+            background: darkMode 
+              ? 'radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.45) 100%)'
+              : 'radial-gradient(ellipse at center, transparent 0%, rgba(100, 116, 139, 0.08) 100%)',
             zIndex: 2
           }}
         />
@@ -76,7 +83,9 @@ const EarthTheme = () => {
               left: '-10%',
               width: '120%',
               height: '70%',
-              background: 'radial-gradient(ellipse 80% 50% at 50% 50%, rgba(30, 144, 255, 0.12) 0%, rgba(0, 119, 182, 0.06) 40%, transparent 70%)',
+              background: darkMode 
+                ? 'radial-gradient(ellipse 80% 50% at 50% 50%, rgba(30, 144, 255, 0.12) 0%, rgba(0, 119, 182, 0.06) 40%, transparent 70%)'
+                : 'radial-gradient(ellipse 80% 50% at 50% 50%, rgba(56, 189, 248, 0.15) 0%, rgba(14, 165, 233, 0.08) 40%, transparent 70%)',
               transform: 'rotate(-30deg)',
               filter: 'blur(80px)',
             }}
@@ -90,7 +99,9 @@ const EarthTheme = () => {
               left: '-15%',
               width: '130%',
               height: '90%',
-              background: 'radial-gradient(ellipse 90% 60% at 50% 50%, rgba(56, 189, 248, 0.08) 0%, transparent 60%)',
+              background: darkMode 
+                ? 'radial-gradient(ellipse 90% 60% at 50% 50%, rgba(56, 189, 248, 0.08) 0%, transparent 60%)'
+                : 'radial-gradient(ellipse 90% 60% at 50% 50%, rgba(56, 189, 248, 0.12) 0%, transparent 60%)',
               transform: 'rotate(-30deg)',
               filter: 'blur(100px)',
             }}
@@ -104,7 +115,9 @@ const EarthTheme = () => {
               right: '5%',
               width: '70%',
               height: '55%',
-              background: 'radial-gradient(ellipse at center, rgba(16, 185, 129, 0.09) 0%, rgba(5, 150, 105, 0.05) 50%, transparent 70%)',
+              background: darkMode 
+                ? 'radial-gradient(ellipse at center, rgba(16, 185, 129, 0.09) 0%, rgba(5, 150, 105, 0.05) 50%, transparent 70%)'
+                : 'radial-gradient(ellipse at center, rgba(52, 211, 153, 0.12) 0%, rgba(16, 185, 129, 0.06) 50%, transparent 70%)',
               transform: 'rotate(35deg) skewX(-15deg)',
               filter: 'blur(90px)',
             }}
@@ -118,7 +131,9 @@ const EarthTheme = () => {
               left: '8%',
               width: '50%',
               height: '45%',
-              background: 'radial-gradient(ellipse at center, rgba(34, 197, 94, 0.07) 0%, rgba(22, 163, 74, 0.04) 50%, transparent 70%)',
+              background: darkMode 
+                ? 'radial-gradient(ellipse at center, rgba(34, 197, 94, 0.07) 0%, rgba(22, 163, 74, 0.04) 50%, transparent 70%)'
+                : 'radial-gradient(ellipse at center, rgba(52, 211, 153, 0.1) 0%, rgba(34, 197, 94, 0.05) 50%, transparent 70%)',
               transform: 'rotate(-15deg)',
               filter: 'blur(85px)',
             }}
@@ -132,7 +147,9 @@ const EarthTheme = () => {
               right: '15%',
               width: '40%',
               height: '35%',
-              background: 'radial-gradient(circle, rgba(52, 211, 153, 0.06) 0%, transparent 65%)',
+              background: darkMode 
+                ? 'radial-gradient(circle, rgba(52, 211, 153, 0.06) 0%, transparent 65%)'
+                : 'radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 65%)',
               filter: 'blur(75px)',
             }}
           />
@@ -156,7 +173,7 @@ const EarthTheme = () => {
               width: '100%',
               height: '100%',
               filter: 'url(#flowingTexture)',
-              opacity: 0.4,
+              opacity: darkMode ? 0.4 : 0.2,
               mixBlendMode: 'overlay'
             }}
           />
@@ -167,17 +184,21 @@ const EarthTheme = () => {
           <div
             className="absolute inset-0"
             style={{
-              background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%, transparent 70%)',
-              opacity: 0.3,
+              background: darkMode 
+                ? 'radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%, transparent 70%)'
+                : 'radial-gradient(ellipse at center, rgba(56,189,248,0.15) 0%, transparent 70%)',
+              opacity: darkMode ? 0.3 : 0.2,
             }}
           />
           <div
             className="absolute inset-0"
             style={{
-              background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.05) 0%, transparent 50%)',
+              background: darkMode 
+                ? 'radial-gradient(ellipse at center, rgba(255,255,255,0.05) 0%, transparent 50%)'
+                : 'radial-gradient(ellipse at center, rgba(14,165,233,0.1) 0%, transparent 50%)',
               transform: 'scale(1.2)',
               filter: 'blur(2px)',
-              opacity: 0.2,
+              opacity: darkMode ? 0.2 : 0.15,
               mixBlendMode: 'screen',
             }}
           />
@@ -190,14 +211,16 @@ const EarthTheme = () => {
             style={{
               width: '1100px',
               height: '1100px',
-              background: 'radial-gradient(circle, rgba(30, 144, 255, 0.08) 0%, rgba(16, 185, 129, 0.05) 45%, rgba(34, 197, 94, 0.03) 65%, transparent 82%)',
+              background: darkMode 
+                ? 'radial-gradient(circle, rgba(30, 144, 255, 0.08) 0%, rgba(16, 185, 129, 0.05) 45%, rgba(34, 197, 94, 0.03) 65%, transparent 82%)'
+                : 'radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, rgba(52, 211, 153, 0.08) 45%, rgba(16, 185, 129, 0.04) 65%, transparent 82%)',
               filter: 'blur(68px)'
             }}
           />
         </div>
         
         {/* Minimal scattered stars - very subtle like main page */}
-        <div className="absolute inset-0 opacity-20" style={{ zIndex: 3 }}>
+        <div className={`absolute inset-0 ${darkMode ? 'opacity-20' : 'opacity-10'}`} style={{ zIndex: 3 }}>
           {/* Top area */}
           <div className="absolute top-[8%] left-[12%] w-0.5 h-0.5 bg-white/40 rounded-full" />
           <div className="absolute top-[15%] left-[20%] w-0.5 h-0.5 bg-cyan-100/35 rounded-full" />

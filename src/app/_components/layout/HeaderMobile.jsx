@@ -256,24 +256,90 @@ export default function HeaderMobile() {
       className="fixed left-0 right-0 w-full px-2 py-3 z-50"
       style={{ top: smoothHeaderTop }}
     >
-      <nav className={`relative backdrop-blur supports-[backdrop-filter]:bg-white/70 bg-white/80 dark:supports-[backdrop-filter]:bg-black/50 dark:bg-black/80 border border-black/10 dark:border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.35)] rounded-full px-6 sm:px-8 py-2.5 sm:py-3 flex items-center justify-between max-w-full`}>
-        {/* Left - Logo */}
-        <Link className="flex items-center gap-2 cursor-pointer flex-shrink-0 ml-2" href="/">
-          <div className="h-8 w-8">
-            <Image
-              src="/images/logos/logounishare1.png"
-              alt="UniShare Logo"
-              width={32}
-              height={32}
-              className="w-full h-full object-contain rounded"
-              priority
+      <nav 
+        className={`relative border backdrop-blur-2xl shadow-2xl rounded-full px-6 sm:px-8 py-2.5 sm:py-3 flex items-center justify-between max-w-full ${
+          darkMode 
+            ? 'bg-[#0a0a0a]/40 border-white/10' 
+            : 'bg-white/95 border-gray-200/50'
+        }`}
+        style={{
+          backdropFilter: 'blur(24px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        }}
+      >
+        {/* Left - Back Button or Logo */}
+        {!isHomePage ? (
+          <motion.button
+            onClick={handleBackNavigation}
+            className="group relative flex items-center justify-center flex-shrink-0 -ml-2"
+            aria-label="Go back"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            {/* Gradient background */}
+            <div 
+              className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              style={{
+                background: darkMode 
+                  ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(168, 85, 247, 0.2))'
+                  : 'linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(168, 85, 247, 0.25))'
+              }}
             />
+            
+            {/* Icon container with animated border */}
+            <div 
+              className="relative h-10 w-10 flex items-center justify-center rounded-full border backdrop-blur-sm transition-all duration-300 shadow-sm group-hover:shadow-md"
+              style={{
+                borderColor: darkMode ? 'rgba(75, 85, 99, 0.5)' : 'rgba(203, 213, 225, 0.6)',
+                backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.7)',
+              }}
+            >
+              <ArrowLeft 
+                className="h-5 w-5 transition-colors duration-300"
+                style={{
+                  color: darkMode ? '#d1d5db' : '#374151'
+                }}
+              />
+            </div>
+            
+            {/* Ripple effect on click */}
+            <span 
+              className="absolute inset-0 rounded-full scale-0 group-active:scale-100 opacity-0 group-active:opacity-100 transition-all duration-200"
+              style={{
+                backgroundColor: darkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.35)'
+              }}
+            />
+          </motion.button>
+        ) : (
+          <div className="flex items-center gap-2 cursor-pointer flex-shrink-0 ml-2 pointer-events-none">
+            <div className="h-8 w-8">
+              <Image
+                src="/images/logos/logounishare1.png"
+                alt="UniShare Logo"
+                width={32}
+                height={32}
+                className="w-full h-full object-contain rounded"
+                priority
+              />
+            </div>
           </div>
-        </Link>
+        )}
 
-        {/* Center - Brand Name (absolutely positioned) */}
+        {/* Center - Brand Name with Logo (absolutely positioned) */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
           <Link className="flex items-center gap-2 cursor-pointer pointer-events-auto" href="/">
+            {!isHomePage && (
+              <div className="h-6 w-6">
+                <Image
+                  src="/images/logos/logounishare1.png"
+                  alt="UniShare Logo"
+                  width={24}
+                  height={24}
+                  className="w-full h-full object-contain rounded"
+                  priority
+                />
+              </div>
+            )}
             <span className="brand-wordmark font-bold text-lg whitespace-nowrap">
               <span className="brand-uni">Uni</span>
               <span className="brand-share">Share</span>

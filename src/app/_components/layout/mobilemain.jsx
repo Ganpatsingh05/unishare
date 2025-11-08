@@ -196,7 +196,7 @@ const MobileMain = ({ darkMode, isVisible = false }) => {
 
   return (
     <div
-      className="max-w-sm mx-auto px-3 pt-2 pb-2 min-h-screen"
+      className="max-w-sm mx-auto px-3 pt-4 pb-2 min-h-screen"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -206,12 +206,12 @@ const MobileMain = ({ darkMode, isVisible = false }) => {
       >
         {/* Compact Welcome Badge */}
         <div 
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium mb-6 transition-all duration-500 ${
-            darkMode 
-              ? 'bg-gradient-to-r from-blue-500/20 to-violet-500/20 border border-blue-400/30' 
-              : 'bg-gradient-to-r from-blue-500/10 to-violet-500/10 border border-blue-300/30'
-          }`}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium mb-6 transition-all duration-500"
           style={{
+            background: darkMode 
+              ? 'rgba(30, 41, 59, 0.8)'  // Dark slate background
+              : 'rgba(15, 23, 42, 0.7)', // Very dark blue-gray
+            border: '1px solid rgba(71, 85, 105, 0.5)',
             color: '#FFFFFF',
             fontWeight: 600,
             letterSpacing: '0.05em',
@@ -223,7 +223,7 @@ const MobileMain = ({ darkMode, isVisible = false }) => {
           <div 
             className="w-2 h-2 rounded-full animate-pulse"
             style={{
-              backgroundColor: darkMode ? '#06B6D4' : '#3B82F6'
+              backgroundColor: darkMode ? '#257381' : '#0a2b60'
             }}
           />
         </div>
@@ -275,74 +275,139 @@ const MobileMain = ({ darkMode, isVisible = false }) => {
       {filteredSections.length > 0 ? (
         <div className="grid grid-cols-2 gap-3 mb-2 mt-8">
           {filteredSections.map((section, index) => {
-            const cardColor = darkMode
-              ? ['#2563EB', '#FBBF24', '#1D4ED8', '#F59E0B', '#3B82F6', '#D97706', '#1E40AF', '#EAB308'][index % 8]
-              : ['#3B82F6', '#F59E0B', '#2563EB', '#FBBF24', '#1D4ED8', '#D97706', '#1E40AF', '#EAB308'][index % 8];
-            
-            const isYellow = cardColor.startsWith('#F') || cardColor.startsWith('#D') || cardColor.startsWith('#E');
+            // Color mapping matching desktop theme
+            const getCardColor = (colorClass) => {
+              const colorMap = {
+                'from-blue-500 to-cyan-500': '#1A2E4A',      // Darker Navy Blue
+                'from-green-500 to-emerald-500': '#295742',  // Darker Forest Green
+                'from-purple-500 to-violet-500': '#5A327F',  // Darker Royal Purple
+                'from-pink-500 to-rose-500': '#6c193a',      // Darker Magenta Rose
+                'from-orange-500 to-red-500': '#782e2e',     // Darker Crimson Red
+                'from-indigo-500 to-blue-500': '#252b53',    // Darker Deep Indigo
+                'from-teal-500 to-cyan-500': '#005A4F',      // Darker Teal
+                'from-rose-500 to-pink-500': '#592f41',      // Darker Deep Rose
+                'from-teal-500 to-green-500': '#254727',     // Darker Emerald Green
+                'from-violet-500 to-purple-500': '#352e3d',  // Darker Midnight Purple
+              };
+              return colorMap[colorClass] || '#1A2E4A';
+            };
 
+            const cardColor = getCardColor(section.color);
+            const isYellow = false; // No yellow in this theme
+            
             return (
               <Link
                 key={index}
                 href={section.href}
-                className="block group rounded-3xl overflow-hidden transition-all duration-300 ease-in-out transform active:scale-95 focus:outline-none focus:ring-4 focus:ring-opacity-50"
+                className="block group rounded-[28px] overflow-hidden transition-all duration-300 ease-in-out transform active:scale-95 focus:outline-none focus:ring-4 focus:ring-opacity-50"
                 style={{
-                  boxShadow: darkMode ? `0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.2)` : `0 10px 25px -5px ${cardColor}40, 0 8px 10px -6px ${cardColor}20`,
+                  boxShadow: `0 10px 25px -5px ${cardColor}40, 0 8px 10px -6px ${cardColor}20`,
                   '--card-color': cardColor,
-                  '--ring-color': isYellow ? 'rgba(251, 191, 36, 0.5)' : 'rgba(59, 130, 246, 0.5)',
+                  '--ring-color': `${cardColor}50`,
                 }}
               >
                 <div
                   className="relative w-full h-full pt-6 pb-5 px-4 flex flex-col justify-between min-h-[210px] transition-all duration-300 ease-in-out"
                   style={{
-                    background: `linear-gradient(150deg, ${cardColor} 30%, ${isYellow ? '#A16207' : '#1E3A8A'} 100%)`,
+                    background: cardColor,
                   }}
                 >
-                  {/* Glossy Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50 group-hover:opacity-70 transition-opacity duration-300"></div>
-                  
-                  {/* Icon */}
-                  <div className="relative z-10 flex justify-start">
-                    <div
-                      className="w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 ease-in-out transform group-hover:scale-110 group-hover:-rotate-6"
-                      style={{
-                        background: 'rgba(255, 255, 255, 0.15)',
-                        backdropFilter: 'blur(10px)',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                        color: 'white',
-                      }}
-                    >
-                      <div className="transform scale-125">
-                        {section.icon}
-                      </div>
+                  {/* Decorative Background Elements */}
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
+                    {/* Large decorative circle bottom left */}
+                    <div className="absolute -bottom-12 -left-12 w-36 h-36 rounded-full border-2 border-white/20" />
+                    {/* Medium circle top right */}
+                    <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full border-2 border-white/20" />
+                    {/* Small accent circle */}
+                    <div className="absolute top-5 left-5 w-3 h-3 rounded-full bg-white/30" />
+                    {/* Additional decorative circles */}
+                    <div className="absolute top-1/2 right-8 w-4 h-4 rounded-full border-2 border-white/15" />
+                    <div className="absolute bottom-16 left-8 w-5 h-5 rounded-full border-2 border-white/15" />
+                    {/* Decorative dots cluster */}
+                    <div className="absolute bottom-5 right-5 grid grid-cols-2 gap-1.5">
+                      <div className="w-2 h-2 rounded-full bg-white/25" />
+                      <div className="w-2 h-2 rounded-full bg-white/30" />
+                      <div className="w-2 h-2 rounded-full bg-white/30" />
+                      <div className="w-2 h-2 rounded-full bg-white/35" />
                     </div>
+                    {/* Curved lines */}
+                    <div className="absolute top-10 left-1/4 w-12 h-12 rounded-full border-2 border-white/10 transform rotate-45" />
                   </div>
 
-                  {/* Text Content */}
-                  <div className="relative z-10 mt-auto">
-                    <h3
-                      className="text-white text-lg font-black tracking-tight leading-tight"
-                      style={{
-                        textShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
-                      }}
-                    >
-                      {section.title}
-                    </h3>
-                    <p
-                      className="text-white/70 text-xs mt-1"
-                      style={{
-                        textShadow: '0 1px 4px rgba(0, 0, 0, 0.3)',
-                      }}
-                    >
-                      {section.description}
-                    </p>
-                  </div>
+                  {/* 3D Floating Content Card */}
+                  <div
+                    className="absolute top-3 left-2 right-2 backdrop-blur-lg rounded-[18px] border"
+                    style={{
+                      background: darkMode 
+                        ? 'rgba(17, 24, 39, 0.95)'
+                        : 'rgba(255, 255, 255, 0.95)',
+                      borderColor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+                      boxShadow: '0 8px 16px -4px rgba(0,0,0,0.25)',
+                    }}
+                  >
+                    <div className="p-4">
+                      {/* Category Badge */}
+                      <div className="mb-3 flex items-center justify-between">
+                        <div 
+                          className="px-3 py-1.5 rounded-lg text-[9px] font-black tracking-[0.12em] uppercase"
+                          style={{
+                            background: `${cardColor}15`,
+                            color: '#3B82F6',
+                            border: `1px solid ${cardColor}30`,
+                            fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+                          }}
+                        >
+                          {section.category}
+                        </div>
+                        <div className="flex gap-1">
+                          <div 
+                            className="w-1.5 h-1.5 rounded-full"
+                            style={{ backgroundColor: cardColor }} 
+                          />
+                          <div 
+                            className="w-1.5 h-1.5 rounded-full"
+                            style={{ backgroundColor: cardColor }} 
+                          />
+                        </div>
+                      </div>
 
-                  {/* Arrow Icon */}
-                  <div className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 text-white/70 group-hover:bg-white/20 group-hover:text-white transition-all duration-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                      <path fillRule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
-                    </svg>
+                      {/* Icon */}
+                      <div 
+                        className="inline-flex items-center justify-center w-12 h-12 rounded-[14px] mb-3 transition-all duration-300 group-hover:scale-105"
+                        style={{
+                          background: cardColor,
+                          boxShadow: `0 6px 12px -3px ${cardColor}60`,
+                          color: '#ffffff',
+                        }}
+                      >
+                        <div style={{ transform: 'scale(0.9)' }}>
+                          {section.icon}
+                        </div>
+                      </div>
+
+                      {/* Title */}
+                      <h3
+                        className="text-base font-black tracking-tight leading-tight mb-1"
+                        style={{
+                          letterSpacing: '-0.02em',
+                          fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                          color: '#FFFFFF'
+                        }}
+                      >
+                        {section.title}
+                      </h3>
+
+                      {/* Description */}
+                      <p
+                        className="text-xs leading-snug"
+                        style={{
+                          color: darkMode ? '#9CA3AF' : '#6B7280',
+                          fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+                        }}
+                      >
+                        {section.description}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </Link>

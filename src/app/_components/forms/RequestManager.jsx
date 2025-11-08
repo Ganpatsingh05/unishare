@@ -91,7 +91,12 @@ const RequestManager = ({
         
       setRequests(response.data || []);
     } catch (error) {
-      console.error('Failed to fetch requests:', error);
+      // Silently handle authentication errors (user not logged in)
+      if (error?.message?.includes('Authentication required')) {
+        setRequests([]);
+        return;
+      }
+      
       const event = new CustomEvent('showMessage', {
         detail: { message: error.message || 'Failed to load requests', type: 'error' }
       });
