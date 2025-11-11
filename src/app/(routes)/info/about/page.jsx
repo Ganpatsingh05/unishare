@@ -1,10 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import Footer from "./../../../_components/layout/Footer";
+import dynamic from "next/dynamic";
 import Reveal from "./../../../_components/ui/Reveal";
 import useIsMobile from "./../../../_components/ui/useIsMobile";
 import { Users, Heart, Zap, Target, Globe, BookOpen, Car, ShoppingBag, Home, MessageCircle, ArrowRight, Check, Star } from "lucide-react";
+
+// ✅ PERFORMANCE: Lazy load Footer
+const Footer = dynamic(() => import("./../../../_components/layout/Footer"), {
+  loading: () => null,
+  ssr: true,
+});
 
 export default function AboutPage() {
   const [darkMode] = useState(true);

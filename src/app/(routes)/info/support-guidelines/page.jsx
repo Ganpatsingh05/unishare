@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { 
   Shield, 
   AlertTriangle, 
@@ -23,9 +24,14 @@ import {
   MessageSquare,
   Flag
 } from "lucide-react";
-import Footer from "./../../../_components/layout/Footer";
 import { useRouter } from "next/navigation";
 import { useUI } from "./../../../lib/contexts/UniShareContext";
+
+// ✅ PERFORMANCE: Lazy load Footer
+const Footer = dynamic(() => import("./../../../_components/layout/Footer"), {
+  loading: () => null,
+  ssr: true,
+});
 
 export default function SafetyGuidelines() {
   const {darkMode} = useUI();

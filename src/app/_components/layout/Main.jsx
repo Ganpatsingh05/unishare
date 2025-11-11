@@ -2,8 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { Car, ShoppingCart, Tag, Search, Star, Home, Megaphone, BookOpen, Phone, Users, RotateCw, CheckCircle, Filter, TrendingUp, Zap, Ticket } from "lucide-react";
-import MobileMain from "./mobilemain";
+
+// ✅ PERFORMANCE: Lazy load mobile version (16KB) - only needed on mobile devices
+const MobileMain = dynamic(() => import("./mobilemain"), {
+  loading: () => null,
+  ssr: false, // Mobile UI not needed for SSR
+});
 
 // Animated Counter Component
 const AnimatedCounter = ({ end, duration = 2000, isVisible, suffix = "" }) => {

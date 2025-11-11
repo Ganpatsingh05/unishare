@@ -1,8 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import Footer from "./../../../_components/layout/Footer";
+import dynamic from "next/dynamic";
 import { Code, Users, Heart, Coffee, MapPin, Clock, DollarSign, Laptop, BookOpen, Zap, ArrowRight, CheckCircle } from "lucide-react";
+
+// ✅ PERFORMANCE: Lazy load Footer
+const Footer = dynamic(() => import("./../../../_components/layout/Footer"), {
+  loading: () => null,
+  ssr: true,
+});
 
 export default function CareersPage() {
   const [darkMode] = useState(true);

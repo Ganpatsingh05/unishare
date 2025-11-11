@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { 
   MessageCircle, 
   Star, 
@@ -18,9 +19,14 @@ import {
   ExternalLink,
   Loader2
 } from "lucide-react";
-import Footer from "./../../../_components/layout/Footer";
 import { useRouter } from "next/navigation";
 import { useUI, useAuth } from "./../../../lib/contexts/UniShareContext";
+
+// ✅ PERFORMANCE: Lazy load Footer
+const Footer = dynamic(() => import("./../../../_components/layout/Footer"), {
+  loading: () => null,
+  ssr: true,
+});
 
 export default function FeedbackPage() {
   const {darkMode} = useUI();

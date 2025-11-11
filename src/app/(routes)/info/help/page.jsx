@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { 
   Search, 
   HelpCircle, 
@@ -19,10 +20,14 @@ import {
   ThumbsUp,
   ThumbsDown
 } from "lucide-react";
-// import Header from "../components/layout/Header";
-import Footer from "./../../../_components/layout/Footer";
 import { useRouter } from "next/navigation";
 import { useUI } from "./../../../lib/contexts/UniShareContext";
+
+// ✅ PERFORMANCE: Lazy load Footer
+const Footer = dynamic(() => import("./../../../_components/layout/Footer"), {
+  loading: () => null,
+  ssr: true,
+});
 
 export default function HelpCenter() {
   const {darkMode} = useUI();

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { 
   ArrowLeft, 
   ChevronRight, 
@@ -16,11 +17,16 @@ import {
   ToggleRight,
   Mail
 } from "lucide-react";
-import Footer from "./../../../_components/layout/Footer";
 import Reveal from "./../../../_components/ui/Reveal";
 import MobileQuickNav from "./../../../_components/layout/MobileQuickNav";
 import { useRouter } from "next/navigation";
 import { useUI } from "./../../../lib/contexts/UniShareContext";
+
+// ✅ PERFORMANCE: Lazy load Footer
+const Footer = dynamic(() => import("./../../../_components/layout/Footer"), {
+  loading: () => null,
+  ssr: true,
+});
 
 export default function CookiesPage() {
   const { darkMode } = useUI();

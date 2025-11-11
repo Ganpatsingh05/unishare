@@ -1,10 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import Footer from "./../../../_components/layout/Footer";
 import Reveal from "./../../../_components/ui/Reveal";
 import useIsMobile from "./../../../_components/ui/useIsMobile";
+
+// ✅ PERFORMANCE: Lazy load Footer
+const Footer = dynamic(() => import("./../../../_components/layout/Footer"), {
+  loading: () => null,
+  ssr: true,
+});
 import {
 	Target,
 	Heart,

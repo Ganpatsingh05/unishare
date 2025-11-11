@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import {
   User,
   Car,
@@ -21,10 +22,20 @@ import {
 } from "lucide-react";
 import Main from "./_components/layout/Main";
 import HeroSlider from "./_components/ui/HeroSlider";
-import Footer from "./_components/layout/Footer";
-import FloatingActionButton from "./_components/ui/FloatingActionButton";
 import { useUI } from "./lib/contexts/UniShareContext";
 import GalaxyDesktop from "./_components/ui/GalaxyDesktop";
+
+// ✅ PERFORMANCE: Lazy load Footer (19KB) - rarely accessed on mobile
+const Footer = dynamic(() => import("./_components/layout/Footer"), {
+  loading: () => null,
+  ssr: false, // Footer not needed for SSR
+});
+
+// ✅ PERFORMANCE: Lazy load FloatingActionButton (17.86KB) - user interaction
+const FloatingActionButton = dynamic(() => import("./_components/ui/FloatingActionButton"), {
+  loading: () => null,
+  ssr: false,
+});
 /**
  * Page component with interactive hero section and enhanced scroll effects
  */
