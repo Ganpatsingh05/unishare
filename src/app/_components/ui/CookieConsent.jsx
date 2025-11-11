@@ -53,20 +53,14 @@ export default function CookieConsent() {
     >
       <div className="relative rounded-2xl bg-white text-gray-800 shadow-2xl ring-1 ring-black/5 px-5 pt-8 pb-4 sm:px-6 sm:pt-9 sm:pb-5">
         {/* Cookie badge overlay */}
-  <div className="absolute -top-16 left-1/2 -translate-x-1/2">
-          {/* Prefer cookie.png if present; keep .svg as a fallback via onError swap */}
+        <div className="absolute -top-16 left-1/2 -translate-x-1/2">
+          {/* Cookie icon - using correct path */}
           <Image
-            src="/cookie.png"
+            src="\images\services\cookie.webp"
             alt="Cookie"
             width={100}
             height={100}
             priority
-            onError={(e) => {
-              const img = e?.target;
-              if (img && img.tagName === 'IMG') {
-                img.src = '/cookie.svg';
-              }
-            }}
           />
         </div>
 

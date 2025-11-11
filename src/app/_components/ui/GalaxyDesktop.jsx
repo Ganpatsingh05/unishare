@@ -1,8 +1,41 @@
-import React from "react"
+import React, { useMemo } from "react"
 import { useUI } from "../../lib/contexts/UniShareContext"
 
-const GalaxyDesktop = () => {
+// ✅ PERFORMANCE: Memoized component to prevent unnecessary re-renders
+const GalaxyDesktop = React.memo(() => {
   const { darkMode } = useUI();
+
+  // ✅ PERFORMANCE: Memoize gradient calculations to prevent recreation
+  const gradients = useMemo(() => ({
+    base: darkMode
+      ? 'radial-gradient(ellipse at center, #0f2825 0%, #0c1f1d 30%, #091818 60%, #050b0b 100%)'
+      : 'radial-gradient(ellipse at center, #f0f9ff 0%, #e0f2fe 30%, #bae6fd 60%, #7dd3fc 100%)',
+    vignette: darkMode
+      ? 'radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.45) 100%)'
+      : 'radial-gradient(ellipse at center, transparent 0%, rgba(255, 255, 255, 0.25) 100%)',
+  }), [darkMode]);
+
+  // ✅ PERFORMANCE: Memoize grain layers configuration
+  const grainLayers = useMemo(() => [
+    {
+      id: 'grain1',
+      opacity: darkMode ? 0.45 : 0.15,
+      mixBlend: 'overlay',
+      svg: "data:image/svg+xml,%3Csvg viewBox='0 0 2000 2000' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='filmGrain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' seed='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23filmGrain)' opacity='1'/%3E%3C/svg%3E"
+    },
+    {
+      id: 'grain2',
+      opacity: darkMode ? 0.35 : 0.12,
+      mixBlend: 'overlay',
+      svg: "data:image/svg+xml,%3Csvg viewBox='0 0 1500 1500' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='fineGrain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.3' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23fineGrain)' opacity='1'/%3E%3C/svg%3E"
+    },
+    {
+      id: 'grain3',
+      opacity: darkMode ? 0.3 : 0.1,
+      mixBlend: 'soft-light',
+      svg: "data:image/svg+xml,%3Csvg viewBox='0 0 1800 1800' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='mediumGrain'%3E%3CfeTurbulence type='turbulence' baseFrequency='1.1' numOctaves='2' seed='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23mediumGrain)' opacity='1'/%3E%3C/svg%3E"
+    }
+  ], [darkMode]);
 
   return (
     <div>
@@ -11,56 +44,30 @@ const GalaxyDesktop = () => {
         {/* Base background - dark space or light sky */}
         <div 
           className="absolute inset-0" 
-          style={{
-            background: darkMode
-              ? 'radial-gradient(ellipse at center, #0f2825 0%, #0c1f1d 30%, #091818 60%, #050b0b 100%)'
-              : 'radial-gradient(ellipse at center, #f0f9ff 0%, #e0f2fe 30%, #bae6fd 60%, #7dd3fc 100%)'
-          }}
+          style={{ background: gradients.base }}
         />
         
-        {/* Film grain texture - Layer 1 */}
-        <div 
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 2000 2000' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='filmGrain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' seed='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23filmGrain)' opacity='1'/%3E%3C/svg%3E")`,
-            opacity: darkMode ? 0.45 : 0.15,
-            mixBlendMode: 'overlay',
-            backgroundSize: 'cover',
-            zIndex: 1
-          }}
-        />
-        
-        {/* Additional fine grain - Layer 2 */}
-        <div 
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 1500 1500' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='fineGrain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.3' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23fineGrain)' opacity='1'/%3E%3C/svg%3E")`,
-            opacity: darkMode ? 0.35 : 0.12,
-            mixBlendMode: 'overlay',
-            backgroundSize: 'cover',
-            zIndex: 1
-          }}
-        />
-        
-        {/* Medium grain texture - Layer 3 */}
-        <div 
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 1800 1800' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='mediumGrain'%3E%3CfeTurbulence type='turbulence' baseFrequency='1.1' numOctaves='2' seed='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23mediumGrain)' opacity='1'/%3E%3C/svg%3E")`,
-            opacity: darkMode ? 0.3 : 0.1,
-            mixBlendMode: 'soft-light',
-            backgroundSize: 'cover',
-            zIndex: 1
-          }}
-        />
+        {/* ✅ PERFORMANCE: Film grain texture layers - Memoized and reduced complexity */}
+        {grainLayers.map((layer) => (
+          <div 
+            key={layer.id}
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backgroundImage: `url("${layer.svg}")`,
+              opacity: layer.opacity,
+              mixBlendMode: layer.mixBlend,
+              backgroundSize: 'cover',
+              zIndex: 1,
+              willChange: 'opacity', // GPU acceleration hint
+            }}
+          />
+        ))}
         
         {/* Subtle vignette */}
         <div 
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: darkMode
-              ? 'radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.45) 100%)'
-              : 'radial-gradient(ellipse at center, transparent 0%, rgba(255, 255, 255, 0.25) 100%)',
+            background: gradients.vignette,
             zIndex: 2
           }}
         />
@@ -250,7 +257,6 @@ const GalaxyDesktop = () => {
             className="absolute bottom-[16%] right-[20%] w-0.5 h-0.5 rounded-full" 
             style={{ backgroundColor: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(59,130,246,0.5)' }}
           />
-        </div>
           <div 
             className="absolute top-[25%] left-[15%] w-0.5 h-0.5 rounded-full" 
             style={{ backgroundColor: darkMode ? 'rgba(224,242,254,0.25)' : 'rgba(96,165,250,0.35)' }}
@@ -269,7 +275,11 @@ const GalaxyDesktop = () => {
           />
         </div>
       </div>
-  )
-}
+    </div>
+  );
+});
 
-export default GalaxyDesktop
+// Set display name for React DevTools
+GalaxyDesktop.displayName = 'GalaxyDesktop';
+
+export default GalaxyDesktop;

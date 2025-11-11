@@ -81,6 +81,7 @@ const MessageNotification = () => {
             <button
               onClick={() => removeMessage(msg.id)}
               className="flex-shrink-0 p-1 hover:bg-black/10 dark:hover:bg-white/10 rounded transition-colors"
+              aria-label="Dismiss message"
             >
               <X className="w-4 h-4" />
             </button>

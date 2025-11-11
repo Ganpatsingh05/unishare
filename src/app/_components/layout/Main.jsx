@@ -363,6 +363,7 @@ const Main = ({ darkMode, isVisible = false }) => {
               onMouseLeave={() => setHoveredSection(null)}
               onClick={() => handleSectionClick(index)}
               style={{ perspective: '2000px' }}
+              aria-label={`${section.title} - ${section.description}`}
             >
               <div
                 className="relative h-full min-h-[450px] transition-all duration-500 ease-out"

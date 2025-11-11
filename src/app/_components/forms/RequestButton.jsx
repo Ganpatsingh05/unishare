@@ -328,6 +328,7 @@ const RequestButton = ({ module, itemId, onRequestSent, disabled = false, classN
                 <button
                   onClick={() => setShowModal(false)}
                   className={`p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors`}
+                  aria-label="Close modal"
                 >
                   <X className="w-5 h-5" />
                 </button>

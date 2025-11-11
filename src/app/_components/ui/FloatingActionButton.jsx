@@ -105,6 +105,7 @@ const FloatingActionButton = ({ darkMode }) => {
             className={`p-2 rounded-full transition-colors ${
               darkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-600'
             }`}
+            aria-label="Close FAQ"
           >
             <X className="w-5 h-5" />
           </button>
@@ -200,6 +201,7 @@ const FloatingActionButton = ({ darkMode }) => {
               className={`p-2 rounded-full transition-colors ${
                 darkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-600'
               }`}
+              aria-label="Close feedback form"
             >
               <X className="w-5 h-5" />
             </button>
@@ -388,6 +390,8 @@ const FloatingActionButton = ({ darkMode }) => {
                   ? 'bg-gray-900 hover:bg-gray-800'
                   : 'bg-white hover:bg-gray-50'
             }`}
+            aria-label={isOpen ? "Close floating menu" : "Open floating menu"}
+            aria-expanded={isOpen}
           >
             {isOpen ? (
               <X className="w-6 h-6 md:w-6 md:h-6 text-white" />
