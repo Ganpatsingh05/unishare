@@ -8,7 +8,6 @@ const FloatingActionButton = ({ darkMode }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showFAQ, setShowFAQ] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
 
   // Add CSS for rotating border animation
   useEffect(() => {
@@ -50,22 +49,6 @@ const FloatingActionButton = ({ darkMode }) => {
       answer: "You can rate users after each interaction. Users with low ratings will be flagged in the system. For serious issues, use our report feature."
     }
   ];
-
-  // Handle scroll visibility
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-      
-      // Hide when near the bottom to avoid overlapping with footer
-      const nearBottom = scrollY + windowHeight > documentHeight - 200;
-      setIsVisible(!nearBottom);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   // Close modals when clicking outside
   const handleOverlayClick = (e) => {
@@ -304,9 +287,7 @@ const FloatingActionButton = ({ darkMode }) => {
   return (
     <>
       {/* Main FAB */}
-      <div className={`fixed bottom-24 md:bottom-6 right-6 z-40 transition-all duration-300 ${
-        isVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
-      }`}>
+      <div className="fixed bottom-24 md:bottom-6 right-6 z-40">
         {/* Action buttons (shown when expanded) */}
         <div className={`absolute bottom-16 right-0 space-y-3 transition-all duration-300 ${
           isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'

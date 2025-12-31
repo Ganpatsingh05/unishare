@@ -6,11 +6,9 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, X, Package, ChevronDown, Calendar, Phone, Mail, Instagram } from "lucide-react";
 import { useUI } from "./../../lib/contexts/UniShareContext";
-import { useDynamicIslandNotification } from "./../../lib/hooks/useDynamicIslandNotification";
 
 const RequestButton = ({ module, itemId, onRequestSent, disabled = false, className = '', isOwnItem = false }) => {
   const { darkMode } = useUI();
-  const { showRequestSuccess, showError, showLoginRequired } = useDynamicIslandNotification();
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -220,8 +218,8 @@ const RequestButton = ({ module, itemId, onRequestSent, disabled = false, classN
 
       const response = await api.sendRequest(itemId, payload);
       
-      // Show success message using Dynamic Island
-      showRequestSuccess('sent');
+      // Show success message
+      console.log('Request sent successfully');
       
       setShowModal(false);
       setMessage('');
@@ -246,13 +244,14 @@ const RequestButton = ({ module, itemId, onRequestSent, disabled = false, classN
       } else if (error.message?.includes('Preferred move-in date is required')) {
         errorMessage = 'Please select your preferred move-in date.';
       } else if (error.message?.includes('authentication') || error.message?.includes('login')) {
-        // Show login required notification for auth errors
-        showLoginRequired(window.location.pathname);
-        return; // Don't show generic error for auth issues
+        // Handle authentication errors
+        console.error('Authentication required:', errorMessage);
+        window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+        return;
       }
       
-      // Show error using Dynamic Island
-      showError(errorMessage, 'Request Failed');
+      // Show error
+      console.error('Request failed:', errorMessage);
     } finally {
       setIsLoading(false);
     }

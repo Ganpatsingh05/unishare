@@ -24,10 +24,6 @@ const MessageNotification = dynamic(() => import("./MessageNotification"), {
   ssr: false,
 });
 
-const DynamicIslandWrapper = dynamic(() => import("./DynamicIslandWrapper"), {
-  ssr: false,
-});
-
 /**
  * ClientUIComponents - Wrapper for all client-only UI components
  * Keeps layout.js as a Server Component while allowing dynamic imports
@@ -39,7 +35,6 @@ export default function ClientUIComponents() {
       <NavigationLoader />
       <CookieConsent />
       <MessageNotification />
-      <DynamicIslandWrapper />
       <RouteChangeOverlay />
     </>
   );

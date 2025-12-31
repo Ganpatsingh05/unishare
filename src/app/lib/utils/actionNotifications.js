@@ -2,81 +2,23 @@
  * Action Notifications Utility
  * 
  * Comprehensive notification system for all user actions in UniShare
- * Shows Dynamic Island notifications for every significant user interaction
+ * Logs notifications for user interactions
  */
-
-import { showDynamicIslandNotification } from "./../../_components/ui/DynamicIsland";
 
 // ============================================
 // HOUSING & ROOMS NOTIFICATIONS
 // ============================================
 
 export const HousingNotifications = {
-  // Room Listing Actions
-  roomPosted: (roomTitle) => showDynamicIslandNotification({
-    type: 'success',
-    title: 'Room Listed!',
-    message: `"${roomTitle}" is now live and visible to students`,
-    duration: 5000
-  }),
-
-  roomUpdated: () => showDynamicIslandNotification({
-    type: 'checkcheck',
-    title: 'Room Updated',
-    message: 'Your listing has been successfully updated',
-    duration: 4000
-  }),
-
-  roomDeleted: () => showDynamicIslandNotification({
-    type: 'success',
-    title: 'Room Removed',
-    message: 'Your listing has been deleted',
-    duration: 4000
-  }),
-
-  // Room Search & View Actions
-  roomViewed: (roomTitle) => showDynamicIslandNotification({
-    type: 'info',
-    title: 'Viewing Room',
-    message: roomTitle,
-    duration: 3000
-  }),
-
-  roomSaved: () => showDynamicIslandNotification({
-    type: 'star',
-    title: 'Room Saved',
-    message: 'Added to your favorites',
-    duration: 3500
-  }),
-
-  roomUnsaved: () => showDynamicIslandNotification({
-    type: 'info',
-    title: 'Room Removed',
-    message: 'Removed from favorites',
-    duration: 3000
-  }),
-
-  // Contact & Interest Actions
-  contactRequested: () => showDynamicIslandNotification({
-    type: 'send',
-    title: 'Interest Sent!',
-    message: 'The room owner will contact you soon',
-    duration: 5000
-  }),
-
-  phoneRevealed: () => showDynamicIslandNotification({
-    type: 'unlocked',
-    title: 'Contact Revealed',
-    message: 'You can now see the phone number',
-    duration: 4000
-  }),
-
-  emailSent: () => showDynamicIslandNotification({
-    type: 'send',
-    title: 'Email Sent',
-    message: 'Your message has been delivered',
-    duration: 4000
-  }),
+  roomPosted: (roomTitle) => console.log('Room Listed!', `"${roomTitle}" is now live and visible to students`),
+  roomUpdated: () => console.log('Room Updated', 'Your listing has been successfully updated'),
+  roomDeleted: () => console.log('Room Removed', 'Your listing has been deleted'),
+  roomViewed: (roomTitle) => console.log('Viewing Room', roomTitle),
+  roomSaved: () => console.log('Room Saved', 'Added to your favorites'),
+  roomUnsaved: () => console.log('Room Removed', 'Removed from favorites'),
+  contactRequested: () => console.log('Interest Sent!', 'The room owner will contact you soon'),
+  phoneRevealed: () => console.log('Contact Revealed', 'You can now see the phone number'),
+  emailSent: () => console.log('Email Sent', 'Your message has been delivered'),
 };
 
 // ============================================
@@ -84,79 +26,16 @@ export const HousingNotifications = {
 // ============================================
 
 export const RideNotifications = {
-  // Authentication & Access
-  authRequired: () => showDynamicIslandNotification({
-    type: 'warning',
-    title: 'Login Required',
-    message: 'Please login to post a ride',
-    duration: 4000
-  }),
-
-  // Ride Posting Actions
-  ridePosted: (destination) => showDynamicIslandNotification({
-    type: 'success',
-    title: 'Ride Posted!',
-    message: `Your ride to ${destination} is now available`,
-    duration: 5000
-  }),
-
-  rideUpdated: () => showDynamicIslandNotification({
-    type: 'checkcheck',
-    title: 'Ride Updated',
-    message: 'Your ride details have been saved',
-    duration: 4000
-  }),
-
-  rideCancelled: () => showDynamicIslandNotification({
-    type: 'warning',
-    title: 'Ride Cancelled',
-    message: 'All passengers have been notified',
-    duration: 5000
-  }),
-
-  // Ride Finding Actions
-  rideRequested: (driverName) => showDynamicIslandNotification({
-    type: 'send',
-    title: 'Request Sent!',
-    message: `Waiting for ${driverName}'s confirmation`,
-    duration: 5000
-  }),
-
-  rideJoined: () => showDynamicIslandNotification({
-    type: 'usercheck',
-    title: 'Seat Confirmed!',
-    message: 'You\'ve successfully joined this ride',
-    duration: 5000
-  }),
-
-  rideLeft: () => showDynamicIslandNotification({
-    type: 'info',
-    title: 'Ride Left',
-    message: 'You have left the ride',
-    duration: 4000
-  }),
-
-  // Ride Management
-  passengerAccepted: (passengerName) => showDynamicIslandNotification({
-    type: 'usercheck',
-    title: 'Passenger Accepted',
-    message: `${passengerName} joined your ride`,
-    duration: 4500
-  }),
-
-  passengerRejected: () => showDynamicIslandNotification({
-    type: 'info',
-    title: 'Request Declined',
-    message: 'Passenger request has been declined',
-    duration: 4000
-  }),
-
-  rideFull: () => showDynamicIslandNotification({
-    type: 'warning',
-    title: 'Ride Full',
-    message: 'All seats have been taken',
-    duration: 4000
-  }),
+  authRequired: () => console.log('Login Required', 'Please login to post a ride'),
+  ridePosted: (destination) => console.log('Ride Posted!', `Your ride to ${destination} is now available`),
+  rideUpdated: () => console.log('Ride Updated', 'Your ride details have been saved'),
+  rideCancelled: () => console.log('Ride Cancelled', 'Your ride has been cancelled'),
+  rideRequested: (driverName) => console.log('Request Sent!', `Waiting for ${driverName} to accept`),
+  rideJoined: () => console.log('Seat Confirmed!', 'You\'ve successfully joined this ride'),
+  rideLeft: () => console.log('Ride Left', 'You have left the ride'),
+  passengerAccepted: (passengerName) => console.log('Passenger Accepted', `${passengerName} joined your ride`),
+  passengerRejected: () => console.log('Request Declined', 'Passenger request has been declined'),
+  rideFull: () => console.log('Ride Full', 'All seats have been taken'),
 };
 
 // ============================================
@@ -164,92 +43,18 @@ export const RideNotifications = {
 // ============================================
 
 export const MarketplaceNotifications = {
-  // Item Listing Actions
-  itemListed: (itemName) => showDynamicIslandNotification({
-    type: 'success',
-    title: 'Item Listed!',
-    message: `"${itemName}" is now available for sale`,
-    duration: 5000
-  }),
-
-  itemUpdated: () => showDynamicIslandNotification({
-    type: 'checkcheck',
-    title: 'Item Updated',
-    message: 'Your listing has been updated',
-    duration: 4000
-  }),
-
-  itemSold: (itemName) => showDynamicIslandNotification({
-    type: 'success',
-    title: 'Item Sold!',
-    message: `Congratulations! "${itemName}" has been sold`,
-    duration: 5000
-  }),
-
-  itemDeleted: () => showDynamicIslandNotification({
-    type: 'info',
-    title: 'Item Removed',
-    message: 'Your listing has been deleted',
-    duration: 4000
-  }),
-
-  // Shopping Actions
-  itemAddedToCart: (itemName) => showDynamicIslandNotification({
-    type: 'cart',
-    title: 'Added to Cart',
-    message: itemName,
-    duration: 3500
-  }),
-
-  itemRemovedFromCart: () => showDynamicIslandNotification({
-    type: 'info',
-    title: 'Removed from Cart',
-    message: 'Item removed successfully',
-    duration: 3000
-  }),
-
-  itemLiked: () => showDynamicIslandNotification({
-    type: 'like',
-    title: 'Item Liked',
-    message: 'Added to your wishlist',
-    duration: 3500
-  }),
-
-  itemUnliked: () => showDynamicIslandNotification({
-    type: 'info',
-    title: 'Removed from Wishlist',
-    message: 'Item unliked',
-    duration: 3000
-  }),
-
-  // Purchase Actions
-  purchaseRequested: (sellerName) => showDynamicIslandNotification({
-    type: 'send',
-    title: 'Purchase Request Sent',
-    message: `Waiting for ${sellerName}'s response`,
-    duration: 5000
-  }),
-
-  purchaseConfirmed: () => showDynamicIslandNotification({
-    type: 'success',
-    title: 'Purchase Confirmed!',
-    message: 'Contact the seller to arrange pickup',
-    duration: 5000
-  }),
-
-  offerMade: (amount) => showDynamicIslandNotification({
-    type: 'send',
-    title: 'Offer Submitted',
-    message: `Your offer of $${amount} has been sent`,
-    duration: 4500
-  }),
-
-  offerReceived: (amount) => showDynamicIslandNotification({
-    type: 'notification',
-    title: 'New Offer!',
-    message: `Someone offered $${amount} for your item`,
-    duration: 5000
-  }),
+  itemListed: (itemName) => console.log('Item Listed!', `"${itemName}" is now available for sale`),
+  itemUpdated: () => console.log('Item Updated', 'Your listing has been updated'),
+  itemSold: (itemName) => console.log('Item Sold!', `Congratulations! "${itemName}" has been sold`),
+  itemDeleted: () => console.log('Item Removed', 'Your listing has been deleted'),
+  itemAddedToCart: (itemName) => console.log('Added to Cart', itemName),
+  itemRemovedFromCart: () => console.log('Removed from Cart', 'Item removed successfully'),
+  itemLiked: () => console.log('Item Liked', 'Added to your wishlist'),
+  itemUnliked: () => console.log('Removed from Wishlist', 'Item unliked'),
+  purchaseRequested: (sellerName) => console.log('Purchase Request Sent', `Waiting for ${sellerName}'s response`),
+  purchaseConfirmed: () => console.log('Purchase Confirmed!', 'Contact the seller to arrange pickup'),
+  offerMade: (amount) => console.log('Offer Submitted', `Your offer of $${amount} has been sent`),
+  offerReceived: (amount) => console.log('New Offer!', `Someone offered $${amount} for your item`),
 };
 
 // ============================================
@@ -257,56 +62,13 @@ export const MarketplaceNotifications = {
 // ============================================
 
 export const TicketNotifications = {
-  // Ticket Listing
-  ticketListed: (eventName) => showDynamicIslandNotification({
-    type: 'success',
-    title: 'Ticket Listed!',
-    message: `Your ${eventName} ticket is now available`,
-    duration: 5000
-  }),
-
-  ticketUpdated: () => showDynamicIslandNotification({
-    type: 'checkcheck',
-    title: 'Ticket Updated',
-    message: 'Ticket details have been saved',
-    duration: 4000
-  }),
-
-  ticketSold: () => showDynamicIslandNotification({
-    type: 'success',
-    title: 'Ticket Sold!',
-    message: 'Your ticket has been purchased',
-    duration: 5000
-  }),
-
-  // Ticket Purchase
-  ticketPurchased: (eventName) => showDynamicIslandNotification({
-    type: 'success',
-    title: 'Ticket Purchased!',
-    message: `You got a ticket for ${eventName}`,
-    duration: 5000
-  }),
-
-  ticketRequested: () => showDynamicIslandNotification({
-    type: 'send',
-    title: 'Request Sent',
-    message: 'Waiting for seller confirmation',
-    duration: 4500
-  }),
-
-  ticketTransferred: () => showDynamicIslandNotification({
-    type: 'checkcheck',
-    title: 'Ticket Transferred',
-    message: 'Ticket ownership has been transferred',
-    duration: 4500
-  }),
-
-  ticketCancelled: () => showDynamicIslandNotification({
-    type: 'warning',
-    title: 'Ticket Cancelled',
-    message: 'Your ticket listing has been removed',
-    duration: 4000
-  }),
+  ticketListed: (eventName) => console.log('Ticket Listed!', `Your ${eventName} ticket is now available`),
+  ticketUpdated: () => console.log('Ticket Updated', 'Ticket details have been saved'),
+  ticketSold: () => console.log('Ticket Sold!', 'Your ticket has been purchased'),
+  ticketPurchased: (eventName) => console.log('Ticket Purchased!', `You got a ticket for ${eventName}`),
+  ticketRequested: () => console.log('Request Sent', 'Waiting for seller confirmation'),
+  ticketTransferred: () => console.log('Ticket Transferred', 'Ticket ownership has been transferred'),
+  ticketCancelled: () => console.log('Ticket Cancelled', 'Your ticket listing has been removed'),
 };
 
 // ============================================
@@ -314,78 +76,16 @@ export const TicketNotifications = {
 // ============================================
 
 export const LostFoundNotifications = {
-  // Lost Item Actions
-  lostItemReported: (itemName) => showDynamicIslandNotification({
-    type: 'success',
-    title: 'Lost Item Reported',
-    message: `"${itemName}" has been added to lost items`,
-    duration: 5000
-  }),
-
-  lostItemUpdated: () => showDynamicIslandNotification({
-    type: 'checkcheck',
-    title: 'Report Updated',
-    message: 'Lost item details have been updated',
-    duration: 4000
-  }),
-
-  lostItemFound: (itemName) => showDynamicIslandNotification({
-    type: 'success',
-    title: 'Item Found!',
-    message: `Great news! "${itemName}" has been found`,
-    duration: 6000
-  }),
-
-  lostItemClosed: () => showDynamicIslandNotification({
-    type: 'info',
-    title: 'Report Closed',
-    message: 'Lost item report has been closed',
-    duration: 4000
-  }),
-
-  // Found Item Actions
-  foundItemPosted: (itemName) => showDynamicIslandNotification({
-    type: 'success',
-    title: 'Found Item Posted',
-    message: `"${itemName}" is now in found items`,
-    duration: 5000
-  }),
-
-  foundItemUpdated: () => showDynamicIslandNotification({
-    type: 'checkcheck',
-    title: 'Item Updated',
-    message: 'Found item details have been updated',
-    duration: 4000
-  }),
-
-  foundItemClaimed: () => showDynamicIslandNotification({
-    type: 'success',
-    title: 'Item Claimed!',
-    message: 'The owner has been notified',
-    duration: 5000
-  }),
-
-  // Matching & Contact
-  potentialMatchFound: () => showDynamicIslandNotification({
-    type: 'notification',
-    title: 'Possible Match!',
-    message: 'We found an item that might be yours',
-    duration: 6000
-  }),
-
-  claimRequested: (itemName) => showDynamicIslandNotification({
-    type: 'send',
-    title: 'Claim Submitted',
-    message: `Your claim for "${itemName}" has been sent`,
-    duration: 5000
-  }),
-
-  ownerContacted: () => showDynamicIslandNotification({
-    type: 'message',
-    title: 'Message Sent',
-    message: 'The finder has been contacted',
-    duration: 4500
-  }),
+  lostItemReported: (itemName) => console.log('Lost Item Reported', `"${itemName}" has been added to lost items`),
+  lostItemUpdated: () => console.log('Report Updated', 'Lost item details have been updated'),
+  lostItemFound: (itemName) => console.log('Item Found!', `Great news! "${itemName}" has been found`),
+  lostItemClosed: () => console.log('Report Closed', 'Lost item report has been closed'),
+  foundItemPosted: (itemName) => console.log('Found Item Posted', `"${itemName}" is now in found items`),
+  foundItemUpdated: () => console.log('Item Updated', 'Found item details have been updated'),
+  foundItemClaimed: () => console.log('Item Claimed!', 'The owner has been notified'),
+  potentialMatchFound: () => console.log('Possible Match!', 'We found an item that might be yours'),
+  claimRequested: (itemName) => console.log('Claim Submitted', `Your claim for "${itemName}" has been sent`),
+  ownerContacted: () => console.log('Message Sent', 'The finder has been contacted'),
 };
 
 // ============================================
@@ -393,56 +93,13 @@ export const LostFoundNotifications = {
 // ============================================
 
 export const AnnouncementNotifications = {
-  // Announcement Actions
-  announcementPosted: (title) => showDynamicIslandNotification({
-    type: 'success',
-    title: 'Announcement Posted!',
-    message: `"${title}" is now live`,
-    duration: 5000
-  }),
-
-  announcementUpdated: () => showDynamicIslandNotification({
-    type: 'checkcheck',
-    title: 'Announcement Updated',
-    message: 'Your announcement has been updated',
-    duration: 4000
-  }),
-
-  announcementDeleted: () => showDynamicIslandNotification({
-    type: 'info',
-    title: 'Announcement Deleted',
-    message: 'Your announcement has been removed',
-    duration: 4000
-  }),
-
-  // Engagement Actions
-  announcementLiked: () => showDynamicIslandNotification({
-    type: 'like',
-    title: 'Announcement Liked',
-    message: 'Added to your liked announcements',
-    duration: 3500
-  }),
-
-  announcementShared: () => showDynamicIslandNotification({
-    type: 'send',
-    title: 'Announcement Shared',
-    message: 'Shared with your network',
-    duration: 4000
-  }),
-
-  commentPosted: () => showDynamicIslandNotification({
-    type: 'message',
-    title: 'Comment Posted',
-    message: 'Your comment has been added',
-    duration: 3500
-  }),
-
-  announcementSaved: () => showDynamicIslandNotification({
-    type: 'star',
-    title: 'Announcement Saved',
-    message: 'Added to your saved items',
-    duration: 3500
-  }),
+  announcementPosted: (title) => console.log('Announcement Posted!', `"${title}" is now live`),
+  announcementUpdated: () => console.log('Announcement Updated', 'Your announcement has been updated'),
+  announcementDeleted: () => console.log('Announcement Deleted', 'Your announcement has been removed'),
+  announcementLiked: () => console.log('Announcement Liked', 'Added to your liked announcements'),
+  announcementShared: () => console.log('Announcement Shared', 'Shared with your network'),
+  commentPosted: () => console.log('Comment Posted', 'Your comment has been added'),
+  announcementSaved: () => console.log('Announcement Saved', 'Added to your saved items'),
 };
 
 // ============================================
@@ -450,48 +107,12 @@ export const AnnouncementNotifications = {
 // ============================================
 
 export const ResourceNotifications = {
-  // Resource Actions
-  resourceShared: (resourceName) => showDynamicIslandNotification({
-    type: 'success',
-    title: 'Resource Shared!',
-    message: `"${resourceName}" is now available`,
-    duration: 5000
-  }),
-
-  resourceDownloaded: (fileName) => showDynamicIslandNotification({
-    type: 'download',
-    title: 'Download Started',
-    message: `Downloading ${fileName}...`,
-    duration: 4000
-  }),
-
-  resourceDownloadComplete: () => showDynamicIslandNotification({
-    type: 'success',
-    title: 'Download Complete!',
-    message: 'Resource downloaded successfully',
-    duration: 4000
-  }),
-
-  resourceUploaded: () => showDynamicIslandNotification({
-    type: 'upload',
-    title: 'Upload Complete!',
-    message: 'Your resource has been uploaded',
-    duration: 4500
-  }),
-
-  resourceLiked: () => showDynamicIslandNotification({
-    type: 'like',
-    title: 'Resource Liked',
-    message: 'Added to your favorites',
-    duration: 3500
-  }),
-
-  resourceReported: () => showDynamicIslandNotification({
-    type: 'send',
-    title: 'Report Submitted',
-    message: 'Thank you for keeping our community safe',
-    duration: 5000
-  }),
+  resourceShared: (resourceName) => console.log('Resource Shared!', `"${resourceName}" is now available`),
+  resourceDownloaded: (fileName) => console.log('Download Started', `Downloading ${fileName}...`),
+  resourceDownloadComplete: () => console.log('Download Complete!', 'Resource downloaded successfully'),
+  resourceUploaded: () => console.log('Upload Complete!', 'Your resource has been uploaded'),
+  resourceLiked: () => console.log('Resource Liked', 'Added to your favorites'),
+  resourceReported: () => console.log('Report Submitted', 'Thank you for keeping our community safe'),
 };
 
 // ============================================
@@ -499,77 +120,16 @@ export const ResourceNotifications = {
 // ============================================
 
 export const ProfileNotifications = {
-  // Profile Actions
-  profileUpdated: () => showDynamicIslandNotification({
-    type: 'usercheck',
-    title: 'Profile Updated!',
-    message: 'Your changes have been saved',
-    duration: 4000
-  }),
-
-  profilePictureUpdated: () => showDynamicIslandNotification({
-    type: 'success',
-    title: 'Profile Picture Updated',
-    message: 'Your new photo looks great!',
-    duration: 4000
-  }),
-
-  bioUpdated: () => showDynamicIslandNotification({
-    type: 'checkcheck',
-    title: 'Bio Updated',
-    message: 'Your bio has been saved',
-    duration: 3500
-  }),
-
-  passwordChanged: () => showDynamicIslandNotification({
-    type: 'locked',
-    title: 'Password Changed',
-    message: 'Your account is now more secure',
-    duration: 4500
-  }),
-
-  emailVerified: () => showDynamicIslandNotification({
-    type: 'success',
-    title: 'Email Verified!',
-    message: 'Your email has been confirmed',
-    duration: 4500
-  }),
-
-  phoneVerified: () => showDynamicIslandNotification({
-    type: 'success',
-    title: 'Phone Verified!',
-    message: 'Your phone number has been confirmed',
-    duration: 4500
-  }),
-
-  // Privacy & Settings
-  privacyUpdated: () => showDynamicIslandNotification({
-    type: 'security',
-    title: 'Privacy Updated',
-    message: 'Your privacy settings have been saved',
-    duration: 4000
-  }),
-
-  notificationsEnabled: () => showDynamicIslandNotification({
-    type: 'notification',
-    title: 'Notifications On',
-    message: 'You\'ll now receive notifications',
-    duration: 4000
-  }),
-
-  notificationsDisabled: () => showDynamicIslandNotification({
-    type: 'info',
-    title: 'Notifications Off',
-    message: 'Notifications have been disabled',
-    duration: 4000
-  }),
-
-  accountDeactivated: () => showDynamicIslandNotification({
-    type: 'warning',
-    title: 'Account Deactivated',
-    message: 'Your account has been deactivated',
-    duration: 5000
-  }),
+  profileUpdated: () => console.log('Profile Updated!', 'Your changes have been saved'),
+  profilePictureUpdated: () => console.log('Profile Picture Updated', 'Your new photo looks great!'),
+  bioUpdated: () => console.log('Bio Updated', 'Your bio has been saved'),
+  passwordChanged: () => console.log('Password Changed', 'Your account is now more secure'),
+  emailVerified: () => console.log('Email Verified!', 'Your email has been confirmed'),
+  phoneVerified: () => console.log('Phone Verified!', 'Your phone number has been confirmed'),
+  privacyUpdated: () => console.log('Privacy Updated', 'Your privacy settings have been saved'),
+  notificationsEnabled: () => console.log('Notifications On', 'You\'ll now receive notifications'),
+  notificationsDisabled: () => console.log('Notifications Off', 'Notifications have been disabled'),
+  accountDeactivated: () => console.log('Account Deactivated', 'Your account has been deactivated'),
 };
 
 // ============================================
@@ -577,56 +137,13 @@ export const ProfileNotifications = {
 // ============================================
 
 export const AuthNotifications = {
-  // Login & Registration
-  loginSuccess: (username) => showDynamicIslandNotification({
-    type: 'login',
-    title: 'Welcome Back!',
-    message: `Logged in as ${username}`,
-    duration: 4500
-  }),
-
-  loginFailed: () => showDynamicIslandNotification({
-    type: 'error',
-    title: 'Login Failed',
-    message: 'Invalid credentials, please try again',
-    duration: 4500
-  }),
-
-  registrationSuccess: () => showDynamicIslandNotification({
-    type: 'success',
-    title: 'Account Created!',
-    message: 'Welcome to UniShare community',
-    duration: 5000
-  }),
-
-  logoutSuccess: () => showDynamicIslandNotification({
-    type: 'logout',
-    title: 'Logged Out',
-    message: 'See you soon!',
-    duration: 3500
-  }),
-
-  sessionExpired: () => showDynamicIslandNotification({
-    type: 'warning',
-    title: 'Session Expired',
-    message: 'Please log in again to continue',
-    duration: 5000
-  }),
-
-  // Password Recovery
-  passwordResetSent: () => showDynamicIslandNotification({
-    type: 'send',
-    title: 'Reset Link Sent',
-    message: 'Check your email for password reset link',
-    duration: 5000
-  }),
-
-  passwordResetSuccess: () => showDynamicIslandNotification({
-    type: 'success',
-    title: 'Password Reset!',
-    message: 'You can now log in with your new password',
-    duration: 5000
-  }),
+  loginSuccess: (username) => console.log('Welcome Back!', `Logged in as ${username}`),
+  loginFailed: () => console.log('Login Failed', 'Invalid credentials, please try again'),
+  registrationSuccess: () => console.log('Account Created!', 'Welcome to UniShare community'),
+  logoutSuccess: () => console.log('Logged Out', 'See you soon!'),
+  sessionExpired: () => console.log('Session Expired', 'Please log in again to continue'),
+  passwordResetSent: () => console.log('Reset Link Sent', 'Check your email for password reset link'),
+  passwordResetSuccess: () => console.log('Password Reset!', 'You can now log in with your new password'),
 };
 
 // ============================================
@@ -634,40 +151,11 @@ export const AuthNotifications = {
 // ============================================
 
 export const MessagingNotifications = {
-  messageSent: () => showDynamicIslandNotification({
-    type: 'send',
-    title: 'Message Sent',
-    message: 'Your message has been delivered',
-    duration: 3500
-  }),
-
-  messageReceived: (senderName) => showDynamicIslandNotification({
-    type: 'message',
-    title: 'New Message',
-    message: `${senderName} sent you a message`,
-    duration: 4500
-  }),
-
-  messageDeleted: () => showDynamicIslandNotification({
-    type: 'info',
-    title: 'Message Deleted',
-    message: 'Message has been removed',
-    duration: 3000
-  }),
-
-  conversationMuted: () => showDynamicIslandNotification({
-    type: 'info',
-    title: 'Conversation Muted',
-    message: 'You won\'t receive notifications',
-    duration: 3500
-  }),
-
-  conversationUnmuted: () => showDynamicIslandNotification({
-    type: 'notification',
-    title: 'Conversation Unmuted',
-    message: 'Notifications are now enabled',
-    duration: 3500
-  }),
+  messageSent: () => console.log('Message Sent', 'Your message has been delivered'),
+  messageReceived: (senderName) => console.log('New Message', `${senderName} sent you a message`),
+  messageDeleted: () => console.log('Message Deleted', 'Message has been removed'),
+  conversationMuted: () => console.log('Conversation Muted', 'You won\'t receive notifications'),
+  conversationUnmuted: () => console.log('Conversation Unmuted', 'Notifications are now enabled'),
 };
 
 // ============================================
@@ -675,80 +163,16 @@ export const MessagingNotifications = {
 // ============================================
 
 export const SystemNotifications = {
-  // Network Status
-  offline: () => showDynamicIslandNotification({
-    type: 'offline',
-    title: 'No Internet',
-    message: 'You\'re currently offline',
-    duration: 5000
-  }),
-
-  online: () => showDynamicIslandNotification({
-    type: 'network',
-    title: 'Back Online',
-    message: 'Connection restored',
-    duration: 3500
-  }),
-
-  // General Errors
-  error: (message) => showDynamicIslandNotification({
-    type: 'error',
-    title: 'Error',
-    message: message || 'Something went wrong',
-    duration: 4500
-  }),
-
-  success: (message) => showDynamicIslandNotification({
-    type: 'success',
-    title: 'Success',
-    message: message || 'Operation completed successfully',
-    duration: 4000
-  }),
-
-  warning: (message) => showDynamicIslandNotification({
-    type: 'warning',
-    title: 'Warning',
-    message: message || 'Please review your action',
-    duration: 4500
-  }),
-
-  // Copy Actions
-  linkCopied: () => showDynamicIslandNotification({
-    type: 'checkcheck',
-    title: 'Link Copied',
-    message: 'Link copied to clipboard',
-    duration: 3000
-  }),
-
-  textCopied: () => showDynamicIslandNotification({
-    type: 'checkcheck',
-    title: 'Copied',
-    message: 'Text copied to clipboard',
-    duration: 3000
-  }),
-
-  // Share Actions
-  shared: (platform) => showDynamicIslandNotification({
-    type: 'send',
-    title: 'Shared',
-    message: `Shared via ${platform}`,
-    duration: 3500
-  }),
-
-  // Save Actions
-  saved: (itemType) => showDynamicIslandNotification({
-    type: 'star',
-    title: 'Saved',
-    message: `${itemType} saved successfully`,
-    duration: 3500
-  }),
-
-  unsaved: () => showDynamicIslandNotification({
-    type: 'info',
-    title: 'Removed',
-    message: 'Removed from saved items',
-    duration: 3000
-  }),
+  offline: () => console.log('No Internet', 'You\'re currently offline'),
+  online: () => console.log('Back Online', 'Connection restored'),
+  error: (message) => console.log('Error', message || 'Something went wrong'),
+  success: (message) => console.log('Success', message || 'Operation completed successfully'),
+  warning: (message) => console.log('Warning', message || 'Please review your action'),
+  linkCopied: () => console.log('Link Copied', 'Link copied to clipboard'),
+  textCopied: () => console.log('Copied', 'Text copied to clipboard'),
+  shared: (platform) => console.log('Shared', `Shared via ${platform}`),
+  saved: (itemType) => console.log('Saved', `${itemType} saved successfully`),
+  unsaved: () => console.log('Removed', 'Removed from saved items'),
 };
 
 // ============================================
@@ -769,5 +193,4 @@ export const ActionNotifications = {
   System: SystemNotifications,
 };
 
-// Default export for easy imports
 export default ActionNotifications;

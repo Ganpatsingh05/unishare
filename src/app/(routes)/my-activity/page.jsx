@@ -5,7 +5,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Car, ShoppingCart, Home, Search, Megaphone, Ticket, LogIn, User } from "lucide-react";
 import { useUI, useAuth } from "./../../lib/contexts/UniShareContext";
-import { useDynamicIslandNotification } from "./../../lib/hooks/useDynamicIslandNotification";
 
 
 const NotificationBadge = memo(({ count, gradient }) => (
@@ -158,7 +157,6 @@ LoginPrompt.displayName = 'LoginPrompt';
 export default function RequestsMadePage() {
   const { darkMode } = useUI();
   const { isAuthenticated, user } = useAuth();
-  const { showLoginRequired } = useDynamicIslandNotification();
   const [requestCounts, setRequestCounts] = useState({
     rooms: { total: 0 },
     marketplace: { total: 0 },
@@ -179,14 +177,6 @@ export default function RequestsMadePage() {
     textMuted: darkMode ? 'text-gray-400' : 'text-gray-600',
     textSecondary: darkMode ? 'text-gray-300' : 'text-gray-700',
   }), [darkMode]);
-
-  // Check if user is authenticated first and show dynamic island notification
-  useEffect(() => {
-    if (!isAuthenticated || !user) {
-      // Show Dynamic Island notification for login requirement
-      showLoginRequired('/my-activity');
-    }
-  }, [isAuthenticated, user, showLoginRequired]);
 
   // Fetch request counts only when authenticated
   useEffect(() => {

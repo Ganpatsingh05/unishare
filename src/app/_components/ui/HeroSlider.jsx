@@ -9,6 +9,13 @@ export default function HeroSlider({ darkMode = true }) {
   const [index, setIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
   const containerRef = useRef(null);
+  const pauseTimeoutRef = useRef(null);
+
+  // Detect reduced motion preference for accessibility and performance
+  const prefersReducedMotion = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }, []);
 
   // ✅ PERFORMANCE: Moved slides to useMemo to prevent recreation on every render
   // ✅ IMAGES: Using optimized WebP format (90% smaller than JPEG)
@@ -57,10 +64,17 @@ export default function HeroSlider({ darkMode = true }) {
   // Auto-play functionality
   const [paused, setPaused] = useState(false);
   
-  // ✅ PERFORMANCE: useCallback to prevent function recreation
+  // ✅ PERFORMANCE: useCallback with proper timer cleanup to prevent memory leaks
   const pauseAfterInteraction = useCallback(() => {
     setPaused(true);
-    setTimeout(() => setPaused(false), 6000);
+    // Clear existing timeout to prevent stacked timers
+    if (pauseTimeoutRef.current) {
+      clearTimeout(pauseTimeoutRef.current);
+    }
+    pauseTimeoutRef.current = setTimeout(() => {
+      setPaused(false);
+      pauseTimeoutRef.current = null;
+    }, 6000);
   }, []);
 
   const prevSlide = useCallback(() => {
@@ -77,6 +91,81 @@ export default function HeroSlider({ darkMode = true }) {
     setIndex(i);
     pauseAfterInteraction();
   }, [pauseAfterInteraction]);
+
+  // Memoize track style to prevent object recreation
+  const trackStyle = useMemo(() => ({ 
+    transform: `translateX(-${index * 100}%)` 
+  }), [index]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (pauseTimeoutRef.current) {
+        clearTimeout(pauseTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Respect user's reduced motion preference
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setPaused(true);
+    }
+  }, [prefersReducedMotion]);
+
+  // Keyboard navigation for accessibility
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "ArrowLeft") prevSlide();
+      if (e.key === "ArrowRight") nextSlide();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [prevSlide, nextSlide]);
+
+  // Touch/swipe support for mobile
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    let startX = 0;
+    let deltaX = 0;
+
+    const onPointerDown = (e) => { 
+      startX = e.clientX || e.touches?.[0]?.clientX || 0; 
+    };
+    
+    const onPointerMove = (e) => { 
+      const currentX = e.clientX || e.touches?.[0]?.clientX || 0;
+      deltaX = currentX - startX;
+    };
+    
+    const onPointerUp = () => {
+      if (Math.abs(deltaX) > 50) {
+        if (deltaX > 0) prevSlide();
+        else nextSlide();
+        pauseAfterInteraction();
+      }
+      startX = 0;
+      deltaX = 0;
+    };
+
+    el.addEventListener('pointerdown', onPointerDown);
+    el.addEventListener('pointermove', onPointerMove);
+    el.addEventListener('pointerup', onPointerUp);
+    el.addEventListener('touchstart', onPointerDown, { passive: true });
+    el.addEventListener('touchmove', onPointerMove, { passive: true });
+    el.addEventListener('touchend', onPointerUp);
+
+    return () => {
+      el.removeEventListener('pointerdown', onPointerDown);
+      el.removeEventListener('pointermove', onPointerMove);
+      el.removeEventListener('pointerup', onPointerUp);
+      el.removeEventListener('touchstart', onPointerDown);
+      el.removeEventListener('touchmove', onPointerMove);
+      el.removeEventListener('touchend', onPointerUp);
+    };
+  }, [prevSlide, nextSlide, pauseAfterInteraction]);
 
   useEffect(() => {
     if (isHovering || paused) return;
@@ -98,8 +187,11 @@ export default function HeroSlider({ darkMode = true }) {
           {/* Slider Track */}
           <div ref={containerRef} className="overflow-hidden rounded-xl shadow-lg">
             <div
-              className="flex transition-transform duration-700 ease-out"
-              style={{ transform: `translateX(-${index * 100}%)` }}
+              className="flex transition-transform duration-700 ease-out slider-track"
+              style={trackStyle}
+              role="region"
+              aria-roledescription="carousel"
+              aria-live="polite"
             >
               {slides.map((slide, slideIdx) => (
                 <div key={slide.id} className="w-full flex-shrink-0">
@@ -150,31 +242,21 @@ export default function HeroSlider({ darkMode = true }) {
             </div>
           </div>
         </div>
-
-        {/* Dot Navigation Below Slider */}
-        {/* <div className="mt-6 flex items-center justify-center gap-3">
-          {slides.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => goToSlide(i)}
-              className="group/dot relative p-1" // reduced padding
-              aria-label={`Go to slide ${i + 1}`}
-            >
-              <span
-                className={`block rounded-full transition-all duration-300 ${
-                  i === index
-                    ? "bg-[#5B46F6] shadow-lg"
-                    : "bg-gray-300 hover:bg-gray-400"
-                }`}
-                style={{
-                  width: i === index ? "8px" : "5px", // smaller dot sizes
-                  height: i === index ? "8px" : "5px",
-                }}
-              />
-            </button>
-          ))}
-        </div> */}
       </div>
+      
+      {/* Performance-optimized styles */}
+      <style jsx>{`
+        :global(.slider-track) {
+          will-change: transform;
+          backface-visibility: hidden;
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+          :global(.slider-track) {
+            transition: none !important;
+          }
+        }
+      `}</style>
     </section>
   );
 }
