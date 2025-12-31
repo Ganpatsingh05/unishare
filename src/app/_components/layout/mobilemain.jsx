@@ -232,22 +232,18 @@ const MobileMain = ({ darkMode, isVisible = false }) => {
         <h2 
           className="text-2xl font-bold mb-3 px-2 leading-tight"
           style={{
-            color: '#FFFFFF',
+            color: darkMode ? '#FFFFFF' : '#1E293B',
             letterSpacing: '-0.02em'
           }}
         >
           Everything you need for{' '}
           <span 
-            className={`${
-              darkMode 
-                ? 'bg-gradient-to-r from-cyan-400 to-blue-500' 
-                : 'bg-gradient-to-r from-blue-500 to-violet-500'
-            } bg-clip-text text-transparent`}
+            className="brand-wordmark"
             style={{
               fontWeight: 800
             }}
           >
-            campus life
+            <span className="brand-uni">campus</span> <span className="brand-share">life</span>
           </span>
         </h2>
 

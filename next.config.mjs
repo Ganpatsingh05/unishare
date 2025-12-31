@@ -9,9 +9,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   pageExtensions: ["js", "jsx", "ts", "tsx"],
 
   // ✅ PERFORMANCE: Optimized image configuration

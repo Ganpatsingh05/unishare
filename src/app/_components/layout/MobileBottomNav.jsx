@@ -83,7 +83,7 @@ export default function MobileBottomNav() {
     <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden px-3 pb-3 pointer-events-none">
       <div className={`mobile-bottom-nav rounded-[20px] pointer-events-auto border backdrop-blur-2xl shadow-2xl ${
         darkMode 
-          ? 'bg-[#0a0a0a]/40 border-white/10' 
+          ? 'supports-[backdrop-filter]:bg-black/50 bg-black/80 border-white/10' 
           : 'bg-white/30 border-white/20'
       }`}
       style={{

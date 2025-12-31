@@ -77,6 +77,12 @@ const StepCard = memo(function StepCard({ step, index, isActive, isMobile, darkM
   const IconComponent = step.icon;
   const isCompleted = isActive && isMobile;
   
+  // ✅ PERFORMANCE: Adaptive blur for mobile
+  const adaptiveBlur = useMemo(() => {
+    if (isMobile) return 'blur(12px)';
+    return 'blur(30px)';
+  }, [isMobile]);
+  
   // Memoize computed styles to prevent object recreation
   const mobileGlassStyle = useMemo(() => ({
     background: isActive 
@@ -84,14 +90,11 @@ const StepCard = memo(function StepCard({ step, index, isActive, isMobile, darkM
       : darkMode 
         ? `linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%)`
         : `linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.2) 100%)`,
-    backdropFilter: 'blur(40px)',
-    boxShadow: `
-      0 25px 50px -15px rgba(0, 0, 0, 0.15),
-      inset 0 2px 0 rgba(255, 255, 255, 0.2),
-      0 2px 0 rgba(255, 255, 255, 0.1),
-      inset 0 -2px 0 rgba(0, 0, 0, 0.05)
-    `
-  }), [isActive, darkMode, step.color]);
+    backdropFilter: adaptiveBlur,
+    boxShadow: isMobile 
+      ? `0 15px 30px -10px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.2)`
+      : `0 25px 50px -15px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.2), 0 2px 0 rgba(255, 255, 255, 0.1), inset 0 -2px 0 rgba(0, 0, 0, 0.05)`
+  }), [isActive, darkMode, step.color, adaptiveBlur, isMobile]);
 
   const desktopGlassStyle = useMemo(() => ({
     background: darkMode 
@@ -100,14 +103,9 @@ const StepCard = memo(function StepCard({ step, index, isActive, isMobile, darkM
     border: darkMode 
       ? '2px solid rgba(255, 255, 255, 0.12)'
       : '2px solid rgba(255, 255, 255, 0.2)',
-    backdropFilter: 'blur(40px)',
-    boxShadow: `
-      0 25px 50px -15px rgba(0, 0, 0, 0.12),
-      inset 0 2px 0 rgba(255, 255, 255, 0.15),
-      0 2px 0 rgba(255, 255, 255, 0.08),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.05)
-    `
-  }), [darkMode]);
+    backdropFilter: adaptiveBlur,
+    boxShadow: `0 20px 40px -12px rgba(0, 0, 0, 0.12), inset 0 2px 0 rgba(255, 255, 255, 0.15), 0 2px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.05)`
+  }), [darkMode, adaptiveBlur]);
 
   return (
     <div 
@@ -146,12 +144,10 @@ const StepCard = memo(function StepCard({ step, index, isActive, isMobile, darkM
                       : `bg-gradient-to-br ${step.color} text-white scale-100 hover:scale-105`
                   }`}
                   style={{
-                    backdropFilter: 'blur(20px)',
-                    boxShadow: `
-                      0 15px 35px rgba(0, 0, 0, 0.2),
-                      inset 0 2px 0 rgba(255, 255, 255, 0.4),
-                      inset 0 -1px 0 rgba(0, 0, 0, 0.1)
-                    `,
+                    backdropFilter: 'blur(10px)',
+                    boxShadow: isMobile 
+                      ? `0 10px 25px rgba(0, 0, 0, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.4)`
+                      : `0 15px 35px rgba(0, 0, 0, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.4), inset 0 -1px 0 rgba(0, 0, 0, 0.1)`,
                     fontFamily: 'SF Pro Display, -apple-system, system-ui, sans-serif'
                   }}>
                     {isCompleted ? (
@@ -210,26 +206,14 @@ const StepCard = memo(function StepCard({ step, index, isActive, isMobile, darkM
               </div>
 
               {/* Enhanced Expanded Content with Bold Glass */}
-              <div className={`overflow-hidden ${
+              <div className={`overflow-hidden transition-all duration-500 ${
                 isActive ? 'max-h-48 opacity-100 mt-8' : 'max-h-0 opacity-0'
               }`}>
-                <div 
-                  className="backdrop-blur-2xl rounded-3xl p-6 border-2 border-white/30"
-                  style={{
-                    background: 'rgba(255,255,255,0.15)',
-                    boxShadow: `
-                      0 12px 40px rgba(0, 0, 0, 0.15),
-                      inset 0 2px 0 rgba(255, 255, 255, 0.3),
-                      inset 0 -1px 0 rgba(0, 0, 0, 0.05)
-                    `
-                  }}>
+                <div className="expanded-glass rounded-3xl p-6 border-2 border-white/30">
                   <div className="space-y-4">
                     {step.features.map((feature, idx) => (
                       <div key={idx} className="flex items-center gap-4">
-                        <div className="w-2 h-2 bg-white/90 rounded-full shadow-lg"
-                          style={{
-                            boxShadow: '0 0 12px rgba(255,255,255,0.6)'
-                          }} />
+                        <div className="w-2 h-2 bg-white/90 rounded-full feature-dot-glow" />
                         <span className="text-white/95 text-base font-medium"
                           style={{ fontFamily: 'SF Pro Text, -apple-system, system-ui, sans-serif' }}>
                           {feature}
@@ -361,21 +345,26 @@ export default function Page() {
   // Use theme from context instead of local state
   const { darkMode } = useUI();
   
-  const [offset, setOffset] = useState(0);
+  // ✅ PERFORMANCE: Batched scroll state for fewer re-renders
+  const [scrollState, setScrollState] = useState({
+    offset: 0,
+    progress: 0,
+    isMainVisible: false,
+    visibleStats: []
+  });
   const [hoveredFeature, setHoveredFeature] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [isMainVisible, setIsMainVisible] = useState(false);
-  const [visibleStats, setVisibleStats] = useState([]);
   
   // Interactive How It Works states
   const [activeStep, setActiveStep] = useState(0);
   const [visibleSteps, setVisibleSteps] = useState([0, 1, 2]); // Show all steps immediately
   const [isMobile, setIsMobile] = useState(false);
+  const [howItWorksVisible, setHowItWorksVisible] = useState(false);
   
   const heroRef = useRef(null);
   const mainRef = useRef(null);
   const transitionRef = useRef(null);
+  const howItWorksRef = useRef(null);
   
   // Scroll cache for batched updates - moved to top level
   const scrollCache = useRef({
@@ -388,13 +377,20 @@ export default function Page() {
   // Static main quote
   const mainQuote = "Where Students Connect, Share, and Thrive Together";
 
-  // Detect low-performance devices for reduced effects
+  // ✅ PERFORMANCE: Detect low-performance devices for reduced effects
   const isLowPerf = useMemo(() => {
     if (typeof navigator === 'undefined') return false;
     const deviceMem = navigator.deviceMemory || 8;
     const cores = navigator.hardwareConcurrency || 4;
     return isMobile || deviceMem <= 4 || cores <= 2;
   }, [isMobile]);
+  
+  // ✅ PERFORMANCE: Adaptive blur based on device capability
+  const adaptiveBlur = useMemo(() => {
+    if (isMobile) return 'blur(8px)';
+    if (isLowPerf) return 'blur(12px)';
+    return 'blur(24px)';
+  }, [isMobile, isLowPerf]);
 
   // Stable callback to prevent StepCard re-renders
   const handleStepClick = useCallback((index) => {
@@ -402,6 +398,10 @@ export default function Page() {
   }, []);
 
   useEffect(() => {
+    // ✅ PERFORMANCE: Apply performance tier class to body for CSS optimizations
+    const tier = isLowPerf ? 'performance-low' : isMobile ? 'performance-medium' : 'performance-high';
+    document.body.classList.add(tier);
+    
     // Check if mobile
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -461,14 +461,14 @@ export default function Page() {
             }
           }
           
-          // Batch commit all state updates
+          // ✅ PERFORMANCE: Batch commit all state updates into single call
           if (needsUpdate) {
-            setOffset(cache.offset);
-            setScrollProgress(cache.progress);
-            setIsMainVisible(cache.mainVisible);
-            if (cache.statsVisible && visibleStats.length === 0) {
-              setVisibleStats([0, 1, 2, 3]);
-            }
+            setScrollState(prev => ({
+              offset: cache.offset,
+              progress: cache.progress,
+              isMainVisible: cache.mainVisible,
+              visibleStats: cache.statsVisible && prev.visibleStats.length === 0 ? [0, 1, 2, 3] : prev.visibleStats
+            }));
           }
 
           ticking.scroll = false;
@@ -477,6 +477,23 @@ export default function Page() {
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
+
+    // ✅ PERFORMANCE: Lazy load How It Works section when it comes into view
+    if (typeof IntersectionObserver !== 'undefined' && howItWorksRef.current) {
+      const howItWorksObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && !howItWorksVisible) {
+              setHowItWorksVisible(true);
+              howItWorksObserver.disconnect(); // Stop observing once loaded
+            }
+          });
+        },
+        { rootMargin: '100px' } // Load 100px before it comes into view
+      );
+      
+      howItWorksObserver.observe(howItWorksRef.current);
+    }
 
     // Pause animations when off-screen to reduce GPU load
     if (typeof IntersectionObserver !== 'undefined') {
@@ -494,6 +511,8 @@ export default function Page() {
         window.removeEventListener("scroll", onScroll);
         window.removeEventListener('resize', checkMobile);
         obs.disconnect();
+        // Clean up performance class
+        document.body.classList.remove('performance-low', 'performance-medium', 'performance-high');
       };
     }
 
@@ -503,8 +522,10 @@ export default function Page() {
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener('resize', checkMobile);
+      // Clean up performance class
+      document.body.classList.remove('performance-low', 'performance-medium', 'performance-high');
     };
-  }, [visibleStats.length, visibleSteps]);
+  }, [scrollState.visibleStats.length, visibleSteps, isLowPerf, isMobile]);
 
   const scrollToMain = () => {
     mainRef.current?.scrollIntoView({ 
@@ -513,12 +534,12 @@ export default function Page() {
     });
   };
 
-  // Memoize CTA container style to prevent object recreation
+  // ✅ PERFORMANCE: Memoize CTA container style with adaptive blur
   const ctaContainerStyle = useMemo(() => ({
     background: darkMode 
       ? `linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%)`
       : `linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%)`,
-    backdropFilter: isLowPerf ? 'blur(15px)' : 'blur(30px)',
+    backdropFilter: adaptiveBlur,
     border: darkMode 
       ? '1px solid rgba(255, 255, 255, 0.1)'
       : '1px solid rgba(255, 255, 255, 0.2)',
@@ -527,7 +548,7 @@ export default function Page() {
     boxShadow: isLowPerf 
       ? '0 10px 25px rgba(0, 0, 0, 0.1)'
       : `0 25px 50px -15px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 0 rgba(255, 255, 255, 0.05)`
-  }), [darkMode, isLowPerf]);
+  }), [darkMode, adaptiveBlur]);
 
   return (
       <div 
@@ -536,7 +557,8 @@ export default function Page() {
           backgroundColor: darkMode ? '#0a0a0a' : '#f0f9ff' 
         }}
       >
-        <GalaxyDesktop/>
+        {/* ✅ PERFORMANCE: Only render heavy 3D background on desktop */}
+        {!isMobile && <GalaxyDesktop/>}
         
       <div
         className="relative z-10 mb-0 md:mb-5"
@@ -548,12 +570,12 @@ export default function Page() {
 
       {/* ENHANCED MAIN SECTION */}
       <div ref={mainRef} className="mt-0">
-        <Main darkMode={darkMode} isVisible={isMainVisible} scrollProgress={scrollProgress} />
+        <Main darkMode={darkMode} isVisible={scrollState.isMainVisible} scrollProgress={scrollState.progress} />
       </div>
 
       {/* Interactive How It Works Section - Conditionally rendered for desktop only */}
       {!isMobile && (
-      <section className="py-12 md:py-16 transition-all duration-300 relative overflow-hidden animatable">
+      <section ref={howItWorksRef} className="py-12 md:py-16 transition-all duration-300 relative overflow-hidden animatable">
         {/* Clean background without colors */}
         
         <div className="max-w-7xl mx-auto px-4 relative z-10">
@@ -593,7 +615,8 @@ export default function Page() {
             </p>
           </div>
 
-          {/* Enhanced Steps Grid */}
+          {/* Enhanced Steps Grid - Only render when visible */}
+          {howItWorksVisible && (
           <div className="grid grid-cols-3 gap-10">
             {HOW_IT_WORKS_STEPS.map((step, index) => (
               <StepCard
@@ -608,6 +631,7 @@ export default function Page() {
               />
             ))}
           </div>
+          )}
         </div>
       </section>
       )}

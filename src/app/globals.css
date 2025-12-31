@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* ✅ PERFORMANCE: Import mobile optimization styles */
+@import "./_components/ui/mobile-optimizations.css";
+
 :root {
   --background: transparent;
   --foreground: #171717;

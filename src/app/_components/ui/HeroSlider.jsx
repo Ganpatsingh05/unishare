@@ -18,44 +18,51 @@ export default function HeroSlider({ darkMode = true }) {
   }, []);
 
   // ✅ PERFORMANCE: Moved slides to useMemo to prevent recreation on every render
-  // ✅ IMAGES: Using optimized WebP format (90% smaller than JPEG)
+  // ✅ IMAGES: Using optimized WebP format (90% smaller than JPEG/PNG)
+  // ✅ MOBILE: Lazy loading for better initial load performance
   const slides = useMemo(
     () => [
       {
         id: "buysell",
         bgImage: "/images/services/buysell.webp",
         alt: "Buy & Sell on Campus",
-        cta: { label: "Browse Deals", href: "/marketplace/buy" }
+        cta: { label: "Browse Deals", href: "/marketplace/buy" },
+        priority: true // First image loads with priority
       },
       {
         id: "announcement",
         bgImage: "/images/services/announcement.webp",
         alt: "Announcements",
-        cta: { label: "View Announcements", href: "/announcements" }
+        cta: { label: "View Announcements", href: "/announcements" },
+        priority: false
       },
       {
         id: "house",
         bgImage: "/images/services/house.webp",
         alt: "Find Housing",
-        cta: { label: "Find Housing", href: "/housing" }
+        cta: { label: "Find Housing", href: "/housing" },
+        priority: false
       },
       {
         id: "lost",
         bgImage: "/images/services/Lost.webp",
         alt: "Lost & Found",
-        cta: { label: "Lost & Found", href: "/lost-found" }
+        cta: { label: "Lost & Found", href: "/lost-found" },
+        priority: false
       },
       {
         id: "rideshare",
         bgImage: "/images/services/rideshare.webp",
         alt: "Share a Ride",
-        cta: { label: "Find a Ride", href: "/share-ride" }
+        cta: { label: "Find a Ride", href: "/share-ride" },
+        priority: false
       },
       {
         id: "ticket",
         bgImage: "/images/services/ticket.webp",
         alt: "Explore Tickets",
-        cta: { label: "Explore Tickets", href: "/ticket" }
+        cta: { label: "Explore Tickets", href: "/ticket" },
+        priority: false
       },
     ],
     []

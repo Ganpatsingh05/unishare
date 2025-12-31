@@ -1,0 +1,115 @@
+/**
+ * Mobile Performance Optimizations
+ * Replaces heavy inline styles with GPU-optimized CSS classes
+ */
+
+/* ✅ PERFORMANCE: Reduced blur for mobile devices */
+@media (max-width: 768px) {
+  .mobile-glass-card {
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+  
+  .mobile-glass-overlay {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+  
+  /* Disable expensive animations on mobile */
+  .disable-on-mobile {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  /* Optimize transforms for GPU */
+  .gpu-optimized {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+}
+
+/* Expanded content glass effect - replaces inline styles */
+.expanded-glass {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    inset 0 2px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Feature dot glow effect */
+.feature-dot-glow {
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+}
+
+/* Optimized for reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Low-end device optimizations */
+.performance-low {
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+.performance-low .complex-shadow {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+.performance-medium {
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+.performance-high {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+/* Optimized gradient backgrounds */
+.mobile-gradient-bg {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%);
+}
+
+.mobile-gradient-bg-light {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.2) 100%);
+}
+
+/* Simplified shadows for mobile */
+.mobile-shadow {
+  box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.2);
+}
+
+.mobile-shadow-light {
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Hardware acceleration hints */
+.hw-accelerated {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+}
+
+/* Pause animations when element is not visible */
+.paused-anim {
+  animation-play-state: paused !important;
+}
+
+.paused-anim * {
+  animation-play-state: paused !important;
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { useUI } from "./../../lib/contexts/UniShareContext";
 import { Search, Car, ArrowRight, Users, MapPin, Calendar, Clock, IndianRupee, Eye, Plus } from "lucide-react";
@@ -13,53 +13,73 @@ export default function ShareRideHubPage() {
 
   const [recentRides, setRecentRides] = useState([]);
   const [loadingRides, setLoadingRides] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Card styling based on theme
-  const getCardStyle = () => {
+  // ✅ PERFORMANCE: Detect mobile devices
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // ✅ PERFORMANCE: Detect low-performance devices
+  const isLowPerf = useMemo(() => {
+    if (typeof navigator === 'undefined') return false;
+    const deviceMem = navigator.deviceMemory || 8;
+    const cores = navigator.hardwareConcurrency || 4;
+    return isMobile || deviceMem <= 4 || cores <= 2;
+  }, [isMobile]);
+
+  // ✅ PERFORMANCE: Adaptive blur for mobile
+  const adaptiveBlur = useMemo(() => {
+    if (isMobile) return 'backdrop-blur-sm';
+    if (isLowPerf) return 'backdrop-blur-md';
+    return 'backdrop-blur-lg';
+  }, [isMobile, isLowPerf]);
+
+  // ✅ PERFORMANCE: Memoized card styling based on theme and device
+  const cardStyle = useMemo(() => {
     if (darkMode) {
       return {
         background: '#1D3557',
         borderColor: 'rgba(255,255,255,0.05)',
-        boxShadow: `
-          0 20px 40px -10px rgba(29, 53, 87, 0.25),
-          0 8px 16px -4px rgba(0,0,0,0.2)
-        `
+        boxShadow: isMobile
+          ? '0 15px 30px -8px rgba(29, 53, 87, 0.25), 0 6px 12px -3px rgba(0,0,0,0.2)'
+          : '0 20px 40px -10px rgba(29, 53, 87, 0.25), 0 8px 16px -4px rgba(0,0,0,0.2)'
       };
     } else {
       return {
         background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)',
         borderColor: 'rgba(148, 163, 184, 0.2)',
-        boxShadow: `
-          0 20px 40px -10px rgba(100, 116, 139, 0.15),
-          0 8px 16px -4px rgba(71, 85, 105, 0.1),
-          inset 0 2px 0 rgba(255, 255, 255, 0.5)
-        `
+        boxShadow: isMobile
+          ? '0 15px 30px -8px rgba(100, 116, 139, 0.15), 0 6px 12px -3px rgba(71, 85, 105, 0.1)'
+          : '0 20px 40px -10px rgba(100, 116, 139, 0.15), 0 8px 16px -4px rgba(71, 85, 105, 0.1), inset 0 2px 0 rgba(255, 255, 255, 0.5)'
       };
     }
-  };
+  }, [darkMode, isMobile]);
 
-  const getSmallCardStyle = () => {
+  const smallCardStyle = useMemo(() => {
     if (darkMode) {
       return {
         background: '#1D3557',
         borderColor: 'rgba(255,255,255,0.05)',
-        boxShadow: `
-          0 15px 35px -10px rgba(29, 53, 87, 0.25),
-          0 6px 12px -3px rgba(0,0,0,0.2)
-        `
+        boxShadow: isMobile
+          ? '0 10px 25px -8px rgba(29, 53, 87, 0.25), 0 4px 8px -2px rgba(0,0,0,0.2)'
+          : '0 15px 35px -10px rgba(29, 53, 87, 0.25), 0 6px 12px -3px rgba(0,0,0,0.2)'
       };
     } else {
       return {
         background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)',
         borderColor: 'rgba(148, 163, 184, 0.2)',
-        boxShadow: `
-          0 15px 35px -10px rgba(100, 116, 139, 0.15),
-          0 6px 12px -3px rgba(71, 85, 105, 0.1),
-          inset 0 2px 0 rgba(255, 255, 255, 0.5)
-        `
+        boxShadow: isMobile
+          ? '0 10px 25px -8px rgba(100, 116, 139, 0.15), 0 4px 8px -2px rgba(71, 85, 105, 0.1)'
+          : '0 15px 35px -10px rgba(100, 116, 139, 0.15), 0 6px 12px -3px rgba(71, 85, 105, 0.1), inset 0 2px 0 rgba(255, 255, 255, 0.5)'
       };
     }
-  };
+  }, [darkMode, isMobile]);
 
   // Fetch latest rides on mount
   useEffect(() => {
@@ -116,8 +136,8 @@ export default function ShareRideHubPage() {
             {/* Find a ride */}
             <Link
               href="/share-ride/findride"
-              className="group h-full transform rounded-[28px] border backdrop-blur-lg hover:-translate-y-2 hover:scale-[1.01] transition-all duration-500 p-5 sm:p-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-2 relative overflow-hidden"
-              style={getCardStyle()}
+              className={`group h-full transform rounded-[28px] border ${adaptiveBlur} hover:-translate-y-2 hover:scale-[1.01] transition-all duration-500 p-5 sm:p-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-2 relative overflow-hidden`}
+              style={cardStyle}
             >
               {/* Decorative background elements */}
               <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-60">
@@ -191,8 +211,8 @@ export default function ShareRideHubPage() {
             {/* Offer a ride */}
             <Link
               href="/share-ride/postride"
-              className="group h-full transform rounded-[28px] border backdrop-blur-lg hover:-translate-y-2 hover:scale-[1.01] transition-all duration-500 p-5 sm:p-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:ring-offset-2 relative overflow-hidden"
-              style={getCardStyle()}
+              className={`group h-full transform rounded-[28px] border ${adaptiveBlur} hover:-translate-y-2 hover:scale-[1.01] transition-all duration-500 p-5 sm:p-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:ring-offset-2 relative overflow-hidden`}
+              style={cardStyle}
             >
               {/* Decorative background elements */}
               <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-60">
@@ -266,8 +286,8 @@ export default function ShareRideHubPage() {
             {/* Manage requests */}
             <Link
               href="/my-activity/requests/sharerideREQ"
-              className="group h-full transform rounded-[28px] border backdrop-blur-lg hover:-translate-y-2 hover:scale-[1.01] transition-all duration-500 p-5 sm:p-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/40 focus-visible:ring-offset-2 relative overflow-hidden"
-              style={getCardStyle()}
+              className={`group h-full transform rounded-[28px] border ${adaptiveBlur} hover:-translate-y-2 hover:scale-[1.01] transition-all duration-500 p-5 sm:p-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/40 focus-visible:ring-offset-2 relative overflow-hidden`}
+              style={cardStyle}
             >
               {/* Decorative background elements */}
               <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-60">
@@ -349,8 +369,8 @@ export default function ShareRideHubPage() {
             </div>
 
             {loadingRides ? (
-              <div className="rounded-[28px] border backdrop-blur-lg p-6 text-sm relative overflow-hidden"
-                style={getSmallCardStyle()}>
+              <div className={`rounded-[28px] border ${adaptiveBlur} p-6 text-sm relative overflow-hidden`}
+                style={smallCardStyle}>
                 {/* Decorative background elements */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-60">
                   <div className={`absolute -bottom-16 -left-16 w-48 h-48 rounded-full border-2 ${darkMode ? 'border-white/10' : 'border-gray-300/30'}`} />
@@ -378,19 +398,12 @@ export default function ShareRideHubPage() {
                   <Link
                     href="/share-ride/findride"
                     key={ride.id} 
-                    className="group rounded-2xl backdrop-blur-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden"
-                    style={{
-                      background: darkMode 
-                        ? '#1D3557' 
-                        : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)',
-                      borderWidth: '1px',
-                      borderStyle: 'solid',
-                      borderColor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(148, 163, 184, 0.2)',
-                      boxShadow: darkMode
-                        ? '0 10px 25px -5px rgba(29, 53, 87, 0.25), 0 4px 10px -2px rgba(0,0,0,0.2)'
-                        : '0 10px 25px -5px rgba(100, 116, 139, 0.15), 0 4px 10px -2px rgba(71, 85, 105, 0.1)'
-                    }}
+                    className={`group rounded-2xl ${adaptiveBlur} hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 cursor-pointer relative overflow-hidden`}
+                    style={smallCardStyle}
                   >
+                    {/* ✅ PERFORMANCE: Only render decorative SVGs on desktop */}
+                    {!isMobile && (
+                    <>
                     {/* Road Path - Bottom */}
                     <div className="absolute bottom-0 left-0 right-0 h-20 opacity-20 pointer-events-none">
                       <svg viewBox="0 0 400 80" preserveAspectRatio="none" className="w-full h-full">
@@ -398,23 +411,14 @@ export default function ShareRideHubPage() {
                         <path d="M0,60 Q100,50 200,55 T400,60 L400,80 L0,80 Z" 
                           fill={darkMode ? 'white' : '#1e293b'} 
                           opacity="0.3"/>
-                        {/* Road markings */}
-                        <rect x="40" y="62" width="30" height="3" 
-                          fill={darkMode ? '#1D3557' : '#f8fafc'} 
-                          opacity="0.6"/>
+                        {/* Road markings - reduced from 6 to 3 */}
                         <rect x="100" y="62" width="30" height="3" 
                           fill={darkMode ? '#1D3557' : '#f8fafc'} 
                           opacity="0.6"/>
-                        <rect x="160" y="62" width="30" height="3" 
+                        <rect x="200" y="62" width="30" height="3" 
                           fill={darkMode ? '#1D3557' : '#f8fafc'} 
                           opacity="0.6"/>
-                        <rect x="220" y="62" width="30" height="3" 
-                          fill={darkMode ? '#1D3557' : '#f8fafc'} 
-                          opacity="0.6"/>
-                        <rect x="280" y="62" width="30" height="3" 
-                          fill={darkMode ? '#1D3557' : '#f8fafc'} 
-                          opacity="0.6"/>
-                        <rect x="340" y="62" width="30" height="3" 
+                        <rect x="300" y="62" width="30" height="3" 
                           fill={darkMode ? '#1D3557' : '#f8fafc'} 
                           opacity="0.6"/>
                       </svg>
@@ -430,23 +434,7 @@ export default function ShareRideHubPage() {
                       </svg>
                     </div>
 
-                    {/* Location Pin - Top Left */}
-                    <div className="absolute top-3 left-3 opacity-15 pointer-events-none">
-                      <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" 
-                          fill={darkMode ? 'white' : '#1e293b'}/>
-                      </svg>
-                    </div>
-
-                    {/* Destination Flag - Top Right */}
-                    <div className="absolute top-3 right-3 opacity-15 pointer-events-none">
-                      <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z" 
-                          fill={darkMode ? 'white' : '#1e293b'}/>
-                      </svg>
-                    </div>
-
-                    {/* Dotted Route Line - Diagonal */}
+                    {/* Dotted Route Line - Simplified */}
                     <div className="absolute top-8 left-8 right-8 opacity-10 pointer-events-none">
                       <svg width="100%" height="40" viewBox="0 0 200 40" preserveAspectRatio="none">
                         <path d="M0,35 Q50,15 100,25 T200,20" 
@@ -455,24 +443,10 @@ export default function ShareRideHubPage() {
                           strokeDasharray="5,5" 
                           fill="none"
                           opacity="0.4"/>
-                        {/* Small circles along path */}
-                        <circle cx="0" cy="35" r="3" fill={darkMode ? 'white' : '#1e293b'} opacity="0.5"/>
-                        <circle cx="100" cy="25" r="3" fill={darkMode ? 'white' : '#1e293b'} opacity="0.5"/>
-                        <circle cx="200" cy="20" r="3" fill={darkMode ? 'white' : '#1e293b'} opacity="0.5"/>
                       </svg>
                     </div>
-
-                    {/* Compass Rose - Bottom Right */}
-                    <div className="absolute bottom-2 right-3 opacity-12 pointer-events-none">
-                      <svg width="28" height="28" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="12" cy="12" r="10" fill="none" stroke={darkMode ? 'white' : '#1e293b'} strokeWidth="1"/>
-                        <path d="M12 2 L13 11 L12 12 L11 11 Z" fill={darkMode ? 'white' : '#1e293b'}/>
-                        <path d="M22 12 L13 13 L12 12 L13 11 Z" fill={darkMode ? 'white' : '#1e293b'} opacity="0.6"/>
-                        <path d="M12 22 L11 13 L12 12 L13 13 Z" fill={darkMode ? 'white' : '#1e293b'} opacity="0.6"/>
-                        <path d="M2 12 L11 11 L12 12 L11 13 Z" fill={darkMode ? 'white' : '#1e293b'} opacity="0.6"/>
-                        <circle cx="12" cy="12" r="2" fill={darkMode ? 'white' : '#1e293b'}/>
-                      </svg>
-                    </div>
+                    </>
+                    )}
 
                     {/* Main Card Content */}
                     <div className="p-4 relative z-10">
@@ -521,8 +495,8 @@ export default function ShareRideHubPage() {
                 ))}
               </div>
             ) : (
-              <div className="rounded-[28px] border backdrop-blur-lg p-8 text-center relative overflow-hidden"
-                style={getSmallCardStyle()}>
+              <div className={`rounded-[28px] border ${adaptiveBlur} p-8 text-center relative overflow-hidden`}
+                style={smallCardStyle}>
                 {/* Decorative Elements */}
                 <div className={`absolute -bottom-20 -left-20 w-48 h-48 rounded-full border-2 ${darkMode ? 'border-white/10' : 'border-gray-300/30'} pointer-events-none`} />
                 <div className={`absolute -top-12 -right-12 w-32 h-32 rounded-full border-2 ${darkMode ? 'border-white/10' : 'border-gray-300/30'} pointer-events-none`} />
@@ -567,9 +541,9 @@ export default function ShareRideHubPage() {
           </div>
 
           {/* Helpful tips */}
-          <div className="rounded-[28px] border backdrop-blur-lg p-5 sm:p-6 relative overflow-hidden"
+          <div className={`rounded-[28px] border ${adaptiveBlur} p-5 sm:p-6 relative overflow-hidden`}
             style={{
-              ...getSmallCardStyle(),
+              ...smallCardStyle,
               borderColor: darkMode ? 'rgba(251, 191, 36, 0.2)' : 'rgba(245, 158, 11, 0.3)'
             }}>
             {/* Decorative Elements */}
