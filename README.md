@@ -102,17 +102,78 @@ Extending Soon:
 
 ---
 
+## ⚙️ Backend Configuration
+
+### Important Notice
+
+The UniShare backend is a **restricted internal service** and is not publicly accessible for security reasons.
+
+### For Team Members
+
+If you're part of the development team and need backend access:
+
+1. **Contact the internal dev team** for temporary access or testing credentials
+2. You'll receive a backend API URL to use in your development environment
+3. Configure it in your local environment (see setup instructions below)
+
+### For External Contributors
+
+The frontend can run in **standalone mode** without a backend connection:
+
+- Most UI components and layouts will work
+- Features requiring backend data will show appropriate fallback states
+- You can contribute to frontend development, UI/UX improvements, and documentation
+
+### Environment Setup
+
+1. **Copy the example environment file:**
+   ```bash
+   cp .env.example .env.local
+   ```
+
+2. **Configure backend URL (if you have access):**
+   Edit `.env.local` and add your backend URL:
+   ```
+   NEXT_PUBLIC_BACKEND_URL=https://your-backend-url.com
+   ```
+
+3. **Without backend access:**
+   Leave `NEXT_PUBLIC_BACKEND_URL` empty in `.env.local`. The app will run with limited functionality.
+
+### Graceful Degradation
+
+When the backend is not configured or unavailable, the application:
+- ✅ Continues to run without crashing
+- ✅ Shows appropriate loading states and messages
+- ✅ Falls back to mock data where applicable (e.g., admin panels)
+- ✅ Displays helpful error messages to guide users
+
+---
+
 ## ��🖥 Getting Started (Development)
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 18.0 or later
+- npm, yarn, pnpm, or bun package manager
+
+### Installation
+
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Set up environment variables** (see Backend Configuration section above)
+
+3. **Run the development server:**
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   # or
+   pnpm dev
+   # or
+   bun dev
