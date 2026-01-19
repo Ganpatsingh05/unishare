@@ -34,15 +34,15 @@ export default function SiteChrome({ children }) {
 
   return (
     <>
-      {!isAdmin && !isAuthPage && (
+      {!isAdmin && !isAuthPage && !isProfile && (
         <>
-          {!isProfile && <AnnouncementBar />}
+          <AnnouncementBar />
           <ClientHeader />
         </>
       )}
       {/* Content area - adding proper padding to prevent header overlap */}
-      {/* Auth pages handle their own layout */}
-      <div className={isAuthPage ? "" : "pt-16 md:pt-20"} style={{ minHeight: '100vh', backgroundColor: 'transparent' }}>
+      {/* Auth pages and profile page handle their own layout */}
+      <div className={isAuthPage || isProfile ? "" : "pt-16 md:pt-20"} style={{ minHeight: '100vh', backgroundColor: 'transparent' }}>
         {children}
       </div>
     </>

@@ -16,15 +16,7 @@ export default function HeaderMobile() {
   const pathname = usePathname();
   const logoRef = useRef(null);
   const headerRef = useRef(null);
-
-  // Check if we're on the profile page
-  const isProfilePage = pathname === '/profile';
-  
-  // Hide header entirely on profile page
-  if (isProfilePage) {
-    return null;
-  }
-  const [userProfile, setUserProfile] = useState(null); // Add user profile state
+  const [userProfile, setUserProfile] = useState(null);
   
   // Use Framer Motion for smooth animations
   const headerTop = useMotionValue(0);

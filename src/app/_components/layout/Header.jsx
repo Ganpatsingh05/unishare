@@ -202,11 +202,6 @@ const Header = ({ logoRotation = 0 }) => {
     setMobileMenu(false);
   };
 
-  // Hide header entirely on profile page
-  if (isProfilePage) {
-    return null;
-  }
-
   return (
     <motion.header
       className={`fixed left-0 right-0 w-full overflow-x-clip overflow-y-visible ${
