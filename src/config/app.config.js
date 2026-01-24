@@ -24,7 +24,7 @@ export const API_CONFIG = {
 export const ROUTES = {
   HOME: '/',
   LOGIN: '/login',
-  REGISTER: '/register',
+  REGISTER: '/login',
   PROFILE: '/profile',
   SETTINGS: '/settings',
   

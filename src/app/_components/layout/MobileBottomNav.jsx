@@ -15,7 +15,7 @@ export default function MobileBottomNav() {
   const pathname = usePathname();
 
   // Hide on auth pages (login/register) and admin pages
-  const isAuthPage = pathname === "/login" || pathname === "/register";
+  const isAuthPage = pathname === "/login";
   const isAdminPage = pathname?.startsWith("/admin");
   
   if (isAuthPage || isAdminPage) {

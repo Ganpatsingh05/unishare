@@ -158,11 +158,6 @@ const PageNavigationNotifier = () => {
         title: 'Sign In',
         message: 'Welcome back to UniShare.',
     },
-    '/register': {
-        type: 'userplus',
-        title: 'Join UniShare',
-        message: 'Create your account to get started.',
-    },
 
     // Info pages
     '/info/about': {

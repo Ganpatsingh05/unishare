@@ -10,7 +10,10 @@ export {
   checkAuthStatus,
   logout,
   checkAdminStatus,
-  startGoogleLogin
+  startGoogleLogin,
+  loginWithEmail,
+  registerWithEmail,
+  requestPasswordReset
 } from "./api/auth.js";
 
 // Re-export all profile functions  

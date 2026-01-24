@@ -64,7 +64,6 @@ export default function RouteChangeOverlay() {
         '/contacts': 'Loading contacts...',
         '/profile': 'Loading your profile...',
         '/login': 'Signing you in...',
-        '/register': 'Setting up your account...',
         '/admin': 'Loading admin dashboard...',
         '/info': 'Loading information...',
         '/settings': 'Loading settings...',

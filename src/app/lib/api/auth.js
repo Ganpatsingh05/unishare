@@ -77,3 +77,63 @@ export const checkAdminStatus = async () => {
 export const startGoogleLogin = () => {
   window.location.href = `${BACKEND_URL}/auth/google`;
 };
+
+// Email/Password Login
+export const loginWithEmail = async (email, password) => {
+  try {
+    const response = await apiCall('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    });
+    
+    if (response.success) {
+      return { success: true, user: response.user, message: response.message };
+    }
+    return { success: false, message: response.message || 'Login failed' };
+  } catch (error) {
+    console.error('Login error:', error);
+    return { success: false, message: error.message || 'Login failed. Please try again.' };
+  }
+};
+
+// Email/Password Registration
+export const registerWithEmail = async (userData) => {
+  try {
+    const response = await apiCall('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        email: userData.email,
+        password: userData.password,
+        university: userData.university || ''
+      })
+    });
+    
+    if (response.success) {
+      return { success: true, user: response.user, message: response.message || 'Registration successful!' };
+    }
+    return { success: false, message: response.message || 'Registration failed' };
+  } catch (error) {
+    console.error('Registration error:', error);
+    return { success: false, message: error.message || 'Registration failed. Please try again.' };
+  }
+};
+
+// Request password reset
+export const requestPasswordReset = async (email) => {
+  try {
+    const response = await apiCall('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email })
+    });
+    
+    if (response.success) {
+      return { success: true, message: response.message || 'Password reset email sent!' };
+    }
+    return { success: false, message: response.message || 'Failed to send reset email' };
+  } catch (error) {
+    console.error('Password reset error:', error);
+    return { success: false, message: error.message || 'Failed to send reset email. Please try again.' };
+  }
+};

@@ -143,7 +143,7 @@ const LoginPrompt = memo(({ theme }) => (
         <div className="mt-8 space-y-2">
           <p className={`${theme.textMuted} text-sm`}>
             Don't have an account?{' '}
-            <Link href="/register" className="text-blue-600 hover:text-blue-700 font-medium">
+            <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
               Sign up here
             </Link>
           </p>

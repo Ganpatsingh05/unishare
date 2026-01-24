@@ -30,7 +30,7 @@ export default function SiteChrome({ children }) {
   
   const isAdmin = pathname?.startsWith("/admin");
   const isProfile = pathname === "/profile";
-  const isAuthPage = pathname === "/login" || pathname === "/register";
+  const isAuthPage = pathname === "/login";
 
   return (
     <>

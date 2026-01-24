@@ -680,7 +680,7 @@ export default function Page() {
 
                 {/* Floating Glass Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-                  <Link href="/register" className={`group px-8 py-4 rounded-2xl font-medium text-lg flex items-center justify-center gap-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white relative overflow-hidden`}
+                  <Link href="/login" className={`group px-8 py-4 rounded-2xl font-medium text-lg flex items-center justify-center gap-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white relative overflow-hidden`}
                     style={{
                       boxShadow: `
                         0 15px 35px rgba(0, 0, 0, 0.15),
