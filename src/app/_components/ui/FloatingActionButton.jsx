@@ -345,7 +345,7 @@ const FloatingActionButton = ({ darkMode }) => {
                 : 'opacity-100 scale-100'
             }`}
             style={{
-              background: 'linear-gradient(90deg, #facc15 0%, #facc15 50%, #38bdf8 50%, #38bdf8 100%)',
+              background: 'linear-gradient(135deg, #facc15 0%, #fbbf24 15%, #fb923c 30%, #f472b6 45%, #d946ef 60%, #a855f7 75%, #38bdf8 90%, #22d3ee 100%)',
               animation: isOpen ? 'none' : 'spin 8s linear infinite'
             }}
           >
