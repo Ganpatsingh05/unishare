@@ -641,7 +641,7 @@ const Main = ({ darkMode, isVisible = false }) => {
             </h1>
             </div>
             
-            <p className={`text-xl md:text-2xl max-w-3xl mx-auto mt-8 font-medium ${
+            <p className={`text-xl md:text-2xl max-w-3xl mx-auto mt-8 font-bold ${
               darkMode ? 'text-gray-200' : 'text-gray-700'
             }`}>
               See how our platform is making a difference in campus life
@@ -654,42 +654,42 @@ const Main = ({ darkMode, isVisible = false }) => {
               { 
                 label: 'Active Users', 
                 value: '400', 
-                icon: <Users className="w-7 h-7" />,
                 color: 'from-blue-500 to-cyan-400',
+                accentColor: '#3b82f6',
                 suffix: '+',
-               
+                bgPattern: 'users'
               },
               { 
                 label: 'Rides Shared', 
                 value: '630', 
-                icon: <Car className="w-7 h-7" />,
                 color: 'from-green-500 to-emerald-400',
+                accentColor: '#10b981',
                 suffix: '+',
-                
+                bgPattern: 'rides'
               },
               { 
                 label: 'Items Traded', 
                 value: '200', 
-                icon: <ShoppingCart className="w-7 h-7" />,
                 color: 'from-purple-500 to-violet-400',
+                accentColor: '#a855f7',
                 suffix: '+',
-                
+                bgPattern: 'items'
               },
               { 
                 label: 'Satisfaction Rate', 
                 value: '90', 
-                icon: <Star className="w-7 h-7" />,
                 color: 'from-amber-500 to-orange-400',
+                accentColor: '#f59e0b',
                 suffix: '%',
-                
+                bgPattern: 'satisfaction'
               }
             ].map((stat, index) => (
               <div
                 key={index}
                 className="group relative text-center"
               >
-                {/* Ultra-Premium Bold Glass Card */}
-                <div className="relative p-10 rounded-[32px] backdrop-blur-3xl border-2"
+                {/* Ultra-Premium Bold Glass Card with Hover Effects */}
+                <div className="relative p-10 rounded-[32px] backdrop-blur-3xl border-2 transition-all duration-500 group-hover:scale-[1.02] group-hover:shadow-2xl overflow-hidden"
                   style={{
                     background: darkMode 
                       ? `linear-gradient(135deg, 
@@ -710,43 +710,90 @@ const Main = ({ darkMode, isVisible = false }) => {
                     `
                   }}>
                   
-                  {/* Floating Icon Container */}
-                  <div className="relative mb-8">
-                    {/* Bold Glass Icon Background */}
-                    <div 
-                      className={`inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br ${stat.color} text-white relative overflow-hidden`}
+                  {/* Animated Background Pattern */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <div className="absolute inset-0" style={{
+                      backgroundImage: stat.bgPattern === 'users' 
+                        ? `radial-gradient(circle at 20% 50%, ${stat.accentColor}15 0%, transparent 50%),
+                           radial-gradient(circle at 80% 80%, ${stat.accentColor}10 0%, transparent 50%),
+                           radial-gradient(circle at 40% 20%, ${stat.accentColor}08 0%, transparent 50%)`
+                        : stat.bgPattern === 'rides'
+                        ? `linear-gradient(135deg, ${stat.accentColor}08 0%, transparent 50%),
+                           radial-gradient(circle at 70% 30%, ${stat.accentColor}12 0%, transparent 40%)`
+                        : stat.bgPattern === 'items'
+                        ? `radial-gradient(ellipse at 50% 50%, ${stat.accentColor}10 0%, transparent 50%),
+                           conic-gradient(from 45deg at 50% 50%, transparent 0%, ${stat.accentColor}08 25%, transparent 50%)`
+                        : `radial-gradient(circle at 50% 50%, ${stat.accentColor}15 0%, transparent 60%),
+                           linear-gradient(45deg, ${stat.accentColor}05 25%, transparent 25%, transparent 75%, ${stat.accentColor}05 75%)`
+                    }} />
+                  </div>
+
+                  {/* Decorative Background Symbols */}
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    {/* Large Background Symbol */}
+                    <div className={`absolute transition-all duration-700 ${
+                      stat.bgPattern === 'users' ? 'top-4 right-4 w-32 h-32' :
+                      stat.bgPattern === 'rides' ? 'top-2 right-2 w-36 h-36' :
+                      stat.bgPattern === 'items' ? 'bottom-2 right-2 w-32 h-32' :
+                      'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40'
+                    } group-hover:scale-110 group-hover:rotate-6`}
                       style={{
-                        boxShadow: `
-                          0 20px 40px -10px rgba(0, 0, 0, 0.3),
-                          0 10px 25px -5px rgba(0, 0, 0, 0.2),
-                          inset 0 2px 0 rgba(255, 255, 255, 0.4),
-                          inset 0 -1px 0 rgba(0, 0, 0, 0.2)
-                        `
+                        opacity: darkMode ? 0.04 : 0.06,
+                        filter: 'blur(1px)'
                       }}>
-                      <div className="text-2xl">
-                        {stat.icon}
-                      </div>
-                      
-                      {/* Enhanced Glass Shine Effect */}
-                      <div className="absolute inset-0 rounded-3xl"
-                        style={{
-                          background: `linear-gradient(135deg, 
-                            rgba(255, 255, 255, 0.4) 0%,
-                            rgba(255, 255, 255, 0.2) 25%,
-                            transparent 45%,
-                            transparent 100%)`
-                        }} />
+                      {stat.bgPattern === 'users' && (
+                        <svg viewBox="0 0 24 24" fill="currentColor" className={`w-full h-full text-gradient bg-gradient-to-br ${stat.color}`}>
+                          <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                          <circle cx="18" cy="8" r="3" opacity="0.6"/>
+                          <circle cx="6" cy="8" r="3" opacity="0.6"/>
+                        </svg>
+                      )}
+                      {stat.bgPattern === 'rides' && (
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={`w-full h-full text-gradient bg-gradient-to-br ${stat.color}`}>
+                          <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
+                          <path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10M13 16h5.586a1 1 0 00.707-.293l2.414-2.414A1 1 0 0022 12.586V10a1 1 0 00-1-1h-4"/>
+                          <path d="M3 9h10" strokeLinecap="round"/>
+                        </svg>
+                      )}
+                      {stat.bgPattern === 'items' && (
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={`w-full h-full text-gradient bg-gradient-to-br ${stat.color}`}>
+                          <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                          <circle cx="17" cy="8" r="1.5" opacity="0.5"/>
+                          <circle cx="12" cy="6" r="1" opacity="0.5"/>
+                        </svg>
+                      )}
+                      {stat.bgPattern === 'satisfaction' && (
+                        <svg viewBox="0 0 24 24" fill="currentColor" className={`w-full h-full text-gradient bg-gradient-to-br ${stat.color}`}>
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                          <circle cx="12" cy="12" r="4" opacity="0.3"/>
+                        </svg>
+                      )}
                     </div>
+
+                    {/* Small Floating Decorative Elements */}
+                    <div className="absolute top-6 left-6 w-2 h-2 rounded-full bg-white/20 group-hover:scale-150 transition-transform duration-500" style={{ boxShadow: `0 0 20px ${stat.accentColor}40` }} />
+                    <div className="absolute bottom-8 left-8 w-1.5 h-1.5 rounded-full bg-white/15 group-hover:scale-150 group-hover:translate-y-1 transition-all duration-700" style={{ boxShadow: `0 0 15px ${stat.accentColor}30` }} />
+                    <div className="absolute top-1/3 left-4 w-1 h-1 rounded-full bg-white/10 group-hover:scale-[2] transition-transform duration-600" />
+                    
+                    {/* Gradient Accent Line */}
+                    <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${stat.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} 
+                      style={{ 
+                        boxShadow: `0 0 20px ${stat.accentColor}60, 0 0 40px ${stat.accentColor}30` 
+                      }}
+                    />
                   </div>
                   
                   {/* Counter with Enhanced Typography */}
-                  <div className={`text-5xl font-light mb-4 ${
+                  <div className={`relative z-10 text-5xl font-bold mb-4 transition-all duration-500 group-hover:scale-110 ${
                     darkMode ? 'text-white' : 'text-gray-900'
                   }`}
                   style={{
                     fontFamily: 'SF Pro Display, -apple-system, system-ui, sans-serif',
                     letterSpacing: '-0.03em',
-                    fontWeight: 300
+                    fontWeight: 700,
+                    textShadow: darkMode 
+                      ? `0 0 40px ${stat.accentColor}40, 0 2px 8px rgba(0,0,0,0.3)`
+                      : `0 2px 8px rgba(0,0,0,0.1)`
                   }}>
                     <AnimatedCounter 
                       end={stat.value} 
@@ -755,9 +802,9 @@ const Main = ({ darkMode, isVisible = false }) => {
                     />
                   </div>
                   
-                  {/* Enhanced Label Typography */}
-                  <div className={`text-lg font-medium tracking-wide ${
-                    darkMode ? 'text-white/90' : 'text-gray-700'
+                  {/* Enhanced Label Typography with Hover Effect */}
+                  <div className={`relative z-10 text-lg font-bold tracking-wide transition-all duration-300 group-hover:translate-y-1 ${
+                    darkMode ? 'text-white/90 group-hover:text-white' : 'text-gray-700 group-hover:text-gray-900'
                   }`}
                   style={{
                     fontFamily: 'SF Pro Text, -apple-system, system-ui, sans-serif',
@@ -765,6 +812,14 @@ const Main = ({ darkMode, isVisible = false }) => {
                   }}>
                     {stat.label}
                   </div>
+
+                  {/* Hover Glow Effect */}
+                  <div className={`absolute inset-0 rounded-[32px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`}
+                    style={{
+                      background: `radial-gradient(circle at center, ${stat.accentColor}15 0%, transparent 70%)`,
+                      filter: 'blur(20px)'
+                    }}
+                  />
                 </div>
               </div>
             ))}
