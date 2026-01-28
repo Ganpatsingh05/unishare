@@ -34,6 +34,7 @@ const Header = ({ logoRotation = 0 }) => {
   const [isNotificationActive, setIsNotificationActive] = useState(false);
   const [notifInlineOpen, setNotifInlineOpen] = useState(false);
   const [notifInlineFilter, setNotifInlineFilter] = useState('All');
+  const profileMenuRef = useRef(null); // Ref for profile menu
   
   // Use Framer Motion for smooth animations
   const headerTop = useMotionValue(50);
@@ -108,6 +109,23 @@ const Header = ({ logoRotation = 0 }) => {
 
     fetchUserProfile();
   }, [isAuthenticated, user, authLoading]);
+
+  // Handle click outside to close profile menu
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    if (profileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [profileMenuOpen]);
 
   // Handle scroll to adjust header position
   useEffect(() => {
@@ -281,12 +299,12 @@ const Header = ({ logoRotation = 0 }) => {
                   <ArrowRight className="relative h-4 w-4 opacity-80 transition-transform group-hover:translate-x-0.5" />
                 </Link>
               ) : (
-                <div className="relative">
+                <div className="relative" ref={profileMenuRef}>
                   <button
                     onClick={handleProfileMenuToggle}
                     className="flex items-center gap-3 rounded-full transition-all duration-300 hover:scale-105 p-[3px]"
                     style={{
-                      background: 'linear-gradient(90deg, #facc15 0%, #facc15 50%, #38bdf8 50%, #38bdf8 100%)',
+                      background: 'linear-gradient(135deg, #facc15 0%, #fbbf24 15%, #fb923c 30%, #f472b6 45%, #d946ef 60%, #a855f7 75%, #38bdf8 90%, #22d3ee 100%)',
                       borderRadius: '9999px'
                     }}
                   >
