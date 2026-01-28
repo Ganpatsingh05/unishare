@@ -168,7 +168,7 @@ const StepCard = memo(function StepCard({ step, index, isActive, isMobile, darkM
                 </div>
 
                 <div className="flex-1">
-                  <h3 className={`text-2xl font-medium mb-4 transition-colors duration-1000 ${
+                  <h3 className={`text-2xl font-bold mb-4 transition-colors duration-1000 ${
                     isActive 
                       ? 'text-white' 
                       : darkMode 
@@ -182,7 +182,7 @@ const StepCard = memo(function StepCard({ step, index, isActive, isMobile, darkM
                   }}>
                     {step.shortTitle}
                   </h3>
-                  <p className={`text-base leading-relaxed transition-colors duration-1000 opacity-85 ${
+                  <p className={`text-base leading-relaxed transition-colors duration-1000 font-semibold ${
                     isActive 
                       ? 'text-white/90' 
                       : darkMode 
@@ -287,7 +287,7 @@ const StepCard = memo(function StepCard({ step, index, isActive, isMobile, darkM
                 }`} />
               </div>
               
-              <h3 className={`text-2xl font-medium mb-4 transition-colors duration-1000 ${
+              <h3 className={`text-2xl font-bold mb-4 transition-colors duration-1000 ${
                 darkMode ? 'text-white' : 'text-gray-900'
               }`}
               style={{
@@ -298,8 +298,8 @@ const StepCard = memo(function StepCard({ step, index, isActive, isMobile, darkM
                 {step.title}
               </h3>
               
-              <p className={`text-base leading-relaxed transition-colors duration-1000 opacity-75 ${
-                darkMode ? 'text-gray-400' : 'text-gray-600'
+              <p className={`text-base leading-relaxed transition-colors duration-1000 font-semibold ${
+                darkMode ? 'text-gray-300' : 'text-gray-700'
               }`}
               style={{
                 fontFamily: 'SF Pro Text, -apple-system, system-ui, sans-serif'
@@ -316,7 +316,7 @@ const StepCard = memo(function StepCard({ step, index, isActive, isMobile, darkM
                       style={{
                         boxShadow: '0 0 8px rgba(255,255,255,0.4)'
                       }} />
-                    <span className={`${darkMode ? 'text-gray-500' : 'text-gray-500'}`}
+                    <span className={`font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}
                       style={{ fontFamily: 'SF Pro Text, -apple-system, system-ui, sans-serif' }}>
                       {feature}
                     </span>
@@ -561,7 +561,7 @@ export default function Page() {
         {!isMobile && <GalaxyDesktop/>}
         
       <div
-        className="relative z-10 mb-0 md:mb-5"
+        className="relative z-10"
       >
       {/* SLIDER SECTION (replacing previous hero) */}
       <div ref={heroRef} className="mt-8 md:mt-8">
@@ -605,7 +605,7 @@ export default function Page() {
               </h1>
             </div>
             
-            <p className={`text-xl md:text-2xl max-w-3xl mx-auto mt-8 font-medium ${
+            <p className={`text-xl md:text-2xl max-w-3xl mx-auto mt-8 font-bold ${
               darkMode ? 'text-gray-200' : 'text-gray-700'
             }`}>
               {isMobile 
@@ -659,16 +659,18 @@ export default function Page() {
               
               <div className="relative z-10">
                 {/* Premium Typography */}
-                <h2 className={`text-4xl md:text-5xl font-light mb-8 bg-gradient-to-r from-orange-400 via-purple-500 to-blue-400 bg-clip-text text-transparent`}
+                <h2 className={`text-4xl md:text-5xl font-bold mb-8 ${
+                  darkMode ? 'text-white' : 'text-gray-900'
+                }`}
                   style={{
                     fontFamily: 'SF Pro Display, -apple-system, system-ui, sans-serif',
                     letterSpacing: '-0.02em',
                     lineHeight: '1.1'
                   }}>
-                  Ready to make college life more stressful?
+                  Ready to make college life less stressful?
                 </h2>
                 
-                <p className={`text-lg md:text-xl mb-10 max-w-3xl mx-auto opacity-80 ${
+                <p className={`text-lg md:text-xl mb-10 max-w-3xl mx-auto font-bold ${
                   darkMode ? 'text-gray-300' : 'text-gray-700'
                 }`}
                 style={{
@@ -740,7 +742,7 @@ export default function Page() {
                       
                       {/* Floating Check Icon */}
                       <div className="relative">
-                        <span className="text-green-400 text-sm font-bold"
+                        <span className="text-green-400 text-base font-bold"
                           style={{
                             textShadow: '0 0 12px rgba(74, 222, 128, 0.6)',
                             fontFamily: 'SF Pro Text, -apple-system, system-ui, sans-serif'
@@ -750,7 +752,7 @@ export default function Page() {
                         <div className="absolute inset-0 w-2 h-2 bg-green-400/30 rounded-full blur-sm" />
                       </div>
                       
-                      <span className={`text-sm font-medium ${
+                      <span className={`text-sm font-bold ${
                         darkMode ? 'text-gray-300' : 'text-gray-700'
                       }`}
                       style={{
