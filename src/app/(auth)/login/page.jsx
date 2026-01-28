@@ -9,6 +9,7 @@ import { startGoogleLogin, loginWithEmail, registerWithEmail, fetchCurrentUser }
 import { useUI, useAuth } from "./../../lib/contexts/UniShareContext";
 import SmallFooter from "../../_components/layout/SmallFooter";
 import ClientHeader from "../../_components/layout/ClientHeader";
+import MobileLoginPage from "./MobileLoginPage";
 
 const LoginPage = () => {
   const router = useRouter();
@@ -17,12 +18,22 @@ const LoginPage = () => {
   const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoginLoading, setIsLoginLoading] = useState(false);
   const [isRegisterLoading, setIsRegisterLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [activeTab, setActiveTab] = useState('login'); // 'login' or 'register'
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check for mobile on mount
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const [loginData, setLoginData] = useState({
     email: '',
@@ -34,10 +45,24 @@ const LoginPage = () => {
     lastName: '',
     email: '',
     university: '',
+    gender: 'male',
     password: '',
     confirmPassword: '',
     agreeToTerms: false
   });
+
+  const [bowAnimating, setBowAnimating] = useState(false);
+  const [bowDirection, setBowDirection] = useState('toFemale'); // 'toFemale' or 'toMale'
+  const [isHoveringLogin, setIsHoveringLogin] = useState(false); // Track hover on login side for desktop
+
+  // Handle gender toggle with animation
+  const handleGenderToggle = () => {
+    const newGender = registerData.gender === 'male' ? 'female' : 'male';
+    setBowDirection(newGender === 'female' ? 'toFemale' : 'toMale');
+    setBowAnimating(true);
+    setRegisterData(prev => ({ ...prev, gender: newGender }));
+    setTimeout(() => setBowAnimating(false), 550);
+  };
 
   // Handle authenticated user redirect
   useEffect(() => {
@@ -46,6 +71,11 @@ const LoginPage = () => {
       router.push(redirectUrl);
     }
   }, [isAuthenticated, user, router, searchParams]);
+
+  // Render mobile version
+  if (isMobile) {
+    return <MobileLoginPage />;
+  }
 
   const handleInputChange = (field, value) => {
     if (activeTab === 'login') {
@@ -106,6 +136,26 @@ const LoginPage = () => {
     
     if (registerData.password.length < 8) {
       setError('Password must be at least 8 characters long');
+      return;
+    }
+    
+    if (!/[A-Z]/.test(registerData.password)) {
+      setError('Password must contain at least one uppercase letter');
+      return;
+    }
+    
+    if (!/[a-z]/.test(registerData.password)) {
+      setError('Password must contain at least one lowercase letter');
+      return;
+    }
+    
+    if (!/[0-9]/.test(registerData.password)) {
+      setError('Password must contain at least one number');
+      return;
+    }
+    
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(registerData.password)) {
+      setError('Password must contain at least one special character');
       return;
     }
     
@@ -170,6 +220,9 @@ const LoginPage = () => {
         <ClientHeader />
       </div>
       
+      {/* ============================================= */}
+      {/* DESKTOP LAYOUT - Original Design */}
+      {/* ============================================= */}
       <div className={`min-h-screen flex items-center justify-center relative overflow-hidden transition-colors duration-500 ${
         darkMode ? 'bg-gray-950' : 'bg-gradient-to-br from-slate-50 via-blue-50/80 to-indigo-100/90'
       }`} style={{ paddingTop: '80px' }}>
@@ -186,22 +239,7 @@ const LoginPage = () => {
         </div>
 
         {/* Main Container */}
-        <div className="relative w-full max-w-7xl mx-auto px-4 py-8 md:px-6 lg:px-8">
-          
-          {/* Mobile Logo */}
-          <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
-            <Image 
-              src="/images/logos/logounishare1.png" 
-              alt="UniShare" 
-              width={48} 
-              height={48} 
-              className="rounded-xl"
-            />
-            <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              <span className="text-yellow-400">Uni</span>
-              <span className="text-cyan-400">Share</span>
-            </h1>
-          </div>
+        <div className="relative w-full max-w-7xl mx-auto px-4 py-0.5 md:px-6 lg:px-8">
 
           {/* Dual Side Layout - Creative Arrangement */}
           <div className="grid lg:grid-cols-2 gap-0 items-stretch relative">
@@ -235,7 +273,11 @@ const LoginPage = () => {
             </div>
             
             {/* LEFT SIDE - LOGIN */}
-            <div className={`group relative overflow-hidden lg:rounded-l-[2.5rem] lg:rounded-r-none rounded-t-[2.5rem] lg:rounded-t-none lg:rounded-tl-[2.5rem] transition-shadow duration-500 ${darkMode ? 'shadow-2xl shadow-black/40' : 'shadow-2xl shadow-gray-300/60'}`}>
+            <div 
+              className={`group relative overflow-hidden lg:rounded-l-[2.5rem] lg:rounded-r-none rounded-t-[2.5rem] lg:rounded-t-none lg:rounded-tl-[2.5rem] transition-shadow duration-500 h-full ${darkMode ? 'shadow-2xl shadow-black/40' : 'shadow-2xl shadow-gray-300/60'}`}
+              onMouseEnter={() => setIsHoveringLogin(true)}
+              onMouseLeave={() => setIsHoveringLogin(false)}
+            >
               
               {/* Slide Overlay - Modern Glassmorphic */}
               <div className={`absolute inset-0 z-20 flex flex-col items-center justify-center transition-all duration-[800ms] ease-out group-hover:translate-x-[-5%] group-hover:opacity-0 group-hover:backdrop-blur-none group-hover:pointer-events-none group-hover:duration-[6000ms] group-hover:ease-[cubic-bezier(0.16,1,0.3,1)] backdrop-blur-xl ${darkMode ? 'bg-gray-900/70' : 'bg-slate-800/50'}`}>
@@ -270,14 +312,15 @@ const LoginPage = () => {
                 
                 {/* Content */}
                 <div className="relative text-center px-10 py-8">
+                  <p className={`text-sm font-medium uppercase tracking-widest mb-2 ${darkMode ? 'text-cyan-400' : 'text-cyan-300'}`}>Existing User</p>
                   <h3 className={`text-3xl font-bold mb-3 tracking-tight ${darkMode ? 'text-white' : 'text-white'}`}>Welcome Back</h3>
-                  <p className={`text-base mb-8 max-w-xs mx-auto leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-200'}`}>Sign in to access your campus community</p>
+                  <p className={`text-base mb-8 max-w-xs mx-auto leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-200'}`}>Sign in to UniShare</p>
                   
                   {/* CTA Button */}
                   <div className={`inline-flex items-center gap-3 px-6 py-3 rounded-full border backdrop-blur-sm transition-all cursor-pointer hover:scale-105 ${darkMode ? 'bg-white/10 border-white/20 text-white hover:bg-white/20' : 'bg-white/20 border-white/30 text-white hover:bg-white/30 shadow-lg'}`}>
                     <div className={`w-2 h-2 rounded-full animate-pulse ${darkMode ? 'bg-cyan-400' : 'bg-cyan-300'}`} />
                     <span className="text-sm font-medium">Hover to sign in</span>
-                    <ArrowRight className="w-4 h-4 animate-[bounce_1s_ease-in-out_infinite]" style={{ animationDirection: 'alternate' }} />
+                    <ArrowRight className="w-4 h-4 animate-[slideRight_1.2s_ease-in-out_infinite]" />
                   </div>
                 </div>
                 
@@ -286,7 +329,7 @@ const LoginPage = () => {
               </div>
               
               {/* Form Container */}
-              <div className={`relative backdrop-blur-2xl lg:rounded-l-[2.5rem] lg:rounded-r-none rounded-t-[2.5rem] lg:rounded-t-none lg:rounded-tl-[2.5rem] border-r-0 lg:border-r-0 p-8 lg:p-10 min-h-[650px] flex flex-col justify-center transition-all duration-500 overflow-hidden ${
+              <div className={`relative backdrop-blur-2xl lg:rounded-l-[2.5rem] lg:rounded-r-none rounded-t-[2.5rem] lg:rounded-t-none lg:rounded-tl-[2.5rem] border-r-0 lg:border-r-0 p-8 lg:p-10 h-full flex flex-col justify-center transition-all duration-500 overflow-hidden ${
                 darkMode 
                   ? 'bg-gray-900/90 border border-gray-700/60 shadow-[0_8px_32px_rgba(0,0,0,0.5)]' 
                   : 'bg-white/98 border border-gray-200/60 shadow-[0_8px_32px_rgba(0,0,0,0.06)]'
@@ -516,10 +559,10 @@ const LoginPage = () => {
             </div>
 
             {/* RIGHT SIDE - REGISTER */}
-            <div className={`group relative overflow-hidden lg:rounded-r-[2.5rem] lg:rounded-l-none rounded-b-[2.5rem] lg:rounded-b-none lg:rounded-br-[2.5rem] transition-shadow duration-500 ${darkMode ? 'shadow-2xl shadow-black/40' : 'shadow-2xl shadow-gray-300/60'}`}>
+            <div className={`group relative overflow-hidden lg:rounded-r-[2.5rem] lg:rounded-l-none rounded-b-[2.5rem] lg:rounded-b-none lg:rounded-br-[2.5rem] transition-shadow duration-500 h-full ${darkMode ? 'shadow-2xl shadow-black/40' : 'shadow-2xl shadow-gray-300/60'}`}>
               
-              {/* Slide Overlay - Modern Glassmorphic */}
-              <div className={`absolute inset-0 z-20 flex flex-col items-center justify-center transition-all duration-[800ms] ease-out group-hover:translate-x-[5%] group-hover:opacity-0 group-hover:backdrop-blur-none group-hover:pointer-events-none group-hover:duration-[6000ms] group-hover:ease-[cubic-bezier(0.16,1,0.3,1)] backdrop-blur-xl ${darkMode ? 'bg-gray-900/70' : 'bg-slate-800/50'}`}>
+              {/* Slide Overlay - Modern Glassmorphic - Hidden by default on desktop, shows when hovering login side */}
+              <div className={`absolute inset-0 z-20 flex flex-col items-center justify-center transition-all duration-[800ms] ease-out backdrop-blur-xl ${darkMode ? 'bg-gray-900/70' : 'bg-slate-800/50'} ${isHoveringLogin ? 'translate-x-0 opacity-100 pointer-events-auto' : 'lg:translate-x-[5%] lg:opacity-0 lg:backdrop-blur-none lg:pointer-events-none'} group-hover:translate-x-[5%] group-hover:opacity-0 group-hover:backdrop-blur-none group-hover:pointer-events-none group-hover:duration-[6000ms] group-hover:ease-[cubic-bezier(0.16,1,0.3,1)]`}>
                 {/* Gradient mesh background */}
                 <div className={`absolute inset-0 ${darkMode ? 'bg-gradient-to-br from-yellow-600/40 via-orange-600/30 to-rose-700/40' : 'bg-gradient-to-br from-amber-600/50 via-orange-700/40 to-rose-800/50'}`} />
                 
@@ -551,12 +594,13 @@ const LoginPage = () => {
                 
                 {/* Content */}
                 <div className="relative text-center px-10 py-8">
+                  <p className={`text-sm font-medium uppercase tracking-widest mb-2 ${darkMode ? 'text-yellow-400' : 'text-amber-300'}`}>New User</p>
                   <h3 className={`text-3xl font-bold mb-3 tracking-tight ${darkMode ? 'text-white' : 'text-white'}`}>Join UniShare</h3>
-                  <p className={`text-base mb-8 max-w-xs mx-auto leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-200'}`}>Create your account in seconds</p>
+                  <p className={`text-base mb-8 max-w-xs mx-auto leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-200'}`}>Create your account today</p>
                   
                   {/* CTA Button */}
                   <div className={`inline-flex items-center gap-3 px-6 py-3 rounded-full border backdrop-blur-sm transition-all cursor-pointer hover:scale-105 ${darkMode ? 'bg-white/10 border-white/20 text-white hover:bg-white/20' : 'bg-white/20 border-white/30 text-white hover:bg-white/30 shadow-lg'}`}>
-                    <ArrowRight className="w-4 h-4 rotate-180 animate-[bounce_1s_ease-in-out_infinite]" style={{ animationDirection: 'alternate' }} />
+                    <ArrowRight className="w-4 h-4 rotate-180 animate-[slideLeft_1.2s_ease-in-out_infinite]" />
                     <span className="text-sm font-medium">Hover to sign up</span>
                     <div className={`w-2 h-2 rounded-full animate-pulse ${darkMode ? 'bg-yellow-400' : 'bg-amber-500'}`} />
                   </div>
@@ -567,7 +611,7 @@ const LoginPage = () => {
               </div>
               
               {/* Form Container */}
-              <div className={`relative backdrop-blur-2xl lg:rounded-r-[2.5rem] lg:rounded-l-none rounded-b-[2.5rem] lg:rounded-b-none lg:rounded-br-[2.5rem] border-l-0 lg:border-l-0 p-8 lg:p-10 min-h-[650px] flex flex-col justify-center transition-all duration-500 overflow-hidden ${
+              <div className={`relative backdrop-blur-2xl lg:rounded-r-[2.5rem] lg:rounded-l-none rounded-b-[2.5rem] lg:rounded-b-none lg:rounded-br-[2.5rem] border-l-0 lg:border-l-0 p-8 lg:p-10 h-full flex flex-col justify-center transition-all duration-500 overflow-hidden ${
                 darkMode 
                   ? 'bg-gray-900/90 border border-gray-700/60 shadow-[0_8px_32px_rgba(0,0,0,0.5)]' 
                   : 'bg-white/98 border border-gray-200/60 shadow-[0_8px_32px_rgba(0,0,0,0.06)]'
@@ -680,7 +724,7 @@ const LoginPage = () => {
                           type="text"
                           value={registerData.firstName}
                           onChange={(e) => setRegisterData(prev => ({ ...prev, firstName: e.target.value }))}
-                          placeholder="John"
+                          placeholder="Name"
                           className={`relative w-full pl-11 pr-3 py-3 rounded-xl border-2 transition-all duration-300 ${
                             darkMode
                               ? 'bg-gray-800/50 border-gray-700 text-white placeholder-gray-500 focus:border-yellow-500 focus:bg-gray-800/80'
@@ -703,7 +747,7 @@ const LoginPage = () => {
                           type="text"
                           value={registerData.lastName}
                           onChange={(e) => setRegisterData(prev => ({ ...prev, lastName: e.target.value }))}
-                          placeholder="Doe"
+                          placeholder="Last-Name"
                           className={`relative w-full pl-11 pr-3 py-3 rounded-xl border-2 transition-all duration-300 ${
                             darkMode
                               ? 'bg-gray-800/50 border-gray-700 text-white placeholder-gray-500 focus:border-yellow-500 focus:bg-gray-800/80'
@@ -729,7 +773,7 @@ const LoginPage = () => {
                         type="email"
                         value={registerData.email}
                         onChange={(e) => setRegisterData(prev => ({ ...prev, email: e.target.value }))}
-                        placeholder="your.email@university.edu"
+                        placeholder="yourmail@gmail.com"
                         className={`relative w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-all duration-300 ${
                           darkMode
                             ? 'bg-gray-800/50 border-gray-700 text-white placeholder-gray-500 focus:border-yellow-500 focus:bg-gray-800/80'
@@ -740,27 +784,163 @@ const LoginPage = () => {
                     </div>
                   </div>
 
-                  {/* University Field */}
-                  <div className="group/input relative">
-                    <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                      University/College
-                    </label>
-                    <div className="relative">
-                      <div className={`absolute -inset-0.5 rounded-xl opacity-0 group-focus-within/input:opacity-100 blur transition-opacity duration-300 ${darkMode ? 'bg-yellow-500/20' : 'bg-yellow-400/30'}`} />
-                      <div className={`absolute left-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors z-10 ${darkMode ? 'bg-gray-700/50 group-focus-within/input:bg-yellow-500/20' : 'bg-gray-100 group-focus-within/input:bg-yellow-50'}`}>
-                        <GraduationCap className={`w-4 h-4 transition-colors ${darkMode ? 'text-gray-400 group-focus-within/input:text-yellow-400' : 'text-gray-500 group-focus-within/input:text-yellow-600'}`} />
+                  {/* University & Gender Row */}
+                  <div className="flex gap-3 items-end">
+                    {/* University Field */}
+                    <div className="group/input relative flex-1">
+                      <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                        University/College
+                      </label>
+                      <div className="relative">
+                        <div className={`absolute -inset-0.5 rounded-xl opacity-0 group-focus-within/input:opacity-100 blur transition-opacity duration-300 ${darkMode ? 'bg-yellow-500/20' : 'bg-yellow-400/30'}`} />
+                        <div className={`absolute left-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors z-10 ${darkMode ? 'bg-gray-700/50 group-focus-within/input:bg-yellow-500/20' : 'bg-gray-100 group-focus-within/input:bg-yellow-50'}`}>
+                          <GraduationCap className={`w-4 h-4 transition-colors ${darkMode ? 'text-gray-400 group-focus-within/input:text-yellow-400' : 'text-gray-500 group-focus-within/input:text-yellow-600'}`} />
+                        </div>
+                        <input
+                          type="text"
+                          value={registerData.university}
+                          onChange={(e) => setRegisterData(prev => ({ ...prev, university: e.target.value }))}
+                          placeholder="Your University Name"
+                          className={`relative w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-all duration-300 ${
+                            darkMode
+                              ? 'bg-gray-800/50 border-gray-700 text-white placeholder-gray-500 focus:border-yellow-500 focus:bg-gray-800/80'
+                              : 'bg-gray-50/80 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-yellow-500 focus:bg-white'
+                          } focus:outline-none`}
+                        />
                       </div>
-                      <input
-                        type="text"
-                        value={registerData.university}
-                        onChange={(e) => setRegisterData(prev => ({ ...prev, university: e.target.value }))}
-                        placeholder="Your University Name"
-                        className={`relative w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-all duration-300 ${
-                          darkMode
-                            ? 'bg-gray-800/50 border-gray-700 text-white placeholder-gray-500 focus:border-yellow-500 focus:bg-gray-800/80'
-                            : 'bg-gray-50/80 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-yellow-500 focus:bg-white'
-                        } focus:outline-none`}
-                      />
+                    </div>
+
+                    {/* Gender Button */}
+                    <div className="relative" style={{ overflow: 'visible' }}>
+                      <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                        Gender
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleGenderToggle}
+                        className={`h-[56px] w-[135px] pl-1.5 pr-2 rounded-full font-semibold text-sm border-2 flex items-center gap-8 ${
+                          registerData.gender === 'female'
+                            ? darkMode 
+                              ? 'bg-pink-500/20 border-pink-500/50 text-pink-400 hover:bg-pink-500/30' 
+                              : 'bg-pink-50 border-pink-300 text-pink-600 hover:bg-pink-100'
+                            : darkMode 
+                              ? 'bg-[#2a4a7a] border-[#4a7ab8] text-[#7eb3ff] hover:bg-[#345a8a]' 
+                              : 'bg-blue-50 border-blue-300 text-blue-600 hover:bg-blue-100'
+                        }`}
+                        style={{
+                          transition: 'background-color 0.6s ease-in-out, border-color 0.6s ease-in-out',
+                          overflow: 'visible'
+                        }}
+                      >
+                        {/* Circle with Bow */}
+                        <div className="relative flex-shrink-0" style={{ overflow: 'visible' }}>
+                          {/* CSS Keyframes for circular animation */}
+                          <style jsx>{`
+                            @keyframes bowToTop {
+                              0% { transform: translate(-50%, 70%) rotate(0deg); }
+                              20% { transform: translate(5%, 30%) rotate(-30deg); }
+                              40% { transform: translate(35%, -20%) rotate(-65deg); }
+                              60% { transform: translate(40%, -80%) rotate(-100deg); }
+                              80% { transform: translate(28%, -145%) rotate(-142deg); }
+                              90% { transform: translate(32%, -125%) rotate(-132deg); }
+                              100% { transform: translate(30%, -130%) rotate(-135deg); }
+                            }
+                            @keyframes bowToBottom {
+                              0% { transform: translate(30%, -130%) rotate(-135deg); }
+                              20% { transform: translate(42%, -70%) rotate(-95deg); }
+                              40% { transform: translate(35%, -15%) rotate(-60deg); }
+                              60% { transform: translate(5%, 35%) rotate(-25deg); }
+                              80% { transform: translate(-58%, 82%) rotate(8deg); }
+                              90% { transform: translate(-48%, 65%) rotate(-5deg); }
+                              100% { transform: translate(-50%, 70%) rotate(0deg); }
+                            }
+                            .bow-animate-to-top {
+                              animation: bowToTop 0.5s ease-out forwards !important;
+                            }
+                            .bow-animate-to-bottom {
+                              animation: bowToBottom 0.5s ease-out forwards !important;
+                            }
+                            .bow-position-top {
+                              transform: translate(30%, -130%) rotate(-135deg);
+                            }
+                            .bow-position-bottom {
+                              transform: translate(-50%, 70%) rotate(0deg);
+                            }
+                          `}</style>
+                          <div 
+                            className={`w-11 h-11 rounded-full bg-white transition-all duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+                              registerData.gender === 'female'
+                                ? 'shadow-[0_0_3px_rgba(255,226,254,0.4)] rotate-[-135deg]'
+                                : 'shadow-[0_0_3px_rgba(218,228,255,0.4)] rotate-0'
+                            }`}
+                          />
+                          {/* Bow/Ribbon Icon - animates along circular path */}
+                          <div 
+                            className={`absolute ${
+                              bowAnimating 
+                                ? (bowDirection === 'toFemale' ? 'bow-animate-to-top' : 'bow-animate-to-bottom')
+                                : (registerData.gender === 'female' ? 'bow-position-top' : 'bow-position-bottom')
+                            }`}
+                            style={{
+                              top: '50%',
+                              left: '50%'
+                            }}
+                          >
+                            <svg width="20" height="12" viewBox="0 0 24 14" fill="none" className="bow-color-transition">
+                              <style>{`
+                                .bow-color-transition path,
+                                .bow-color-transition rect {
+                                  transition: fill 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), stroke 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+                                }
+                              `}</style>
+                              {/* Left wing */}
+                              <path 
+                                d="M0 2C0 0.9 0.9 0 2 0C4.5 0 7 1.5 9 4V10C7 12.5 4.5 14 2 14C0.9 14 0 13.1 0 12V2Z" 
+                                fill={registerData.gender === 'female' ? '#e91e63' : '#7aa0ff'}
+                              />
+                              {/* Right wing */}
+                              <path 
+                                d="M24 2C24 0.9 23.1 0 22 0C19.5 0 17 1.5 15 4V10C17 12.5 19.5 14 22 14C23.1 14 24 13.1 24 12V2Z" 
+                                fill={registerData.gender === 'female' ? '#e91e63' : '#7aa0ff'}
+                              />
+                              {/* Center knot - rounded square */}
+                              <rect x="9" y="3" width="6" height="8" rx="1.5" fill="white"/>
+                              <rect x="9.5" y="3.5" width="5" height="7" rx="1" stroke={registerData.gender === 'female' ? '#e91e63' : '#7aa0ff'} strokeWidth="1" fill="none"/>
+                            </svg>
+                          </div>
+                        </div>
+                        {/* Animated Gender Text */}
+                        <div className="relative inline-flex items-center">
+                            {/* "Fe" part - positioned absolutely so male stays fixed */}
+                            <span 
+                              className="uppercase font-bold tracking-wide absolute right-full"
+                              style={{ 
+                                color: '#e91e63',
+                                opacity: registerData.gender === 'female' ? 1 : 0,
+                                transition: 'opacity 0.3s ease-in-out'
+                              }}
+                            >
+                              Fe
+                            </span>
+                            {/* "male" part - stays fixed, each letter changes color individually with staggered delays */}
+                            <span className="uppercase font-bold tracking-wide inline-flex">
+                              {['m', 'a', 'l', 'e'].map((letter, index) => (
+                                <span
+                                  key={letter + index}
+                                  style={{
+                                    color: registerData.gender === 'female' ? '#e91e63' : '#7aa0ff',
+                                    transition: 'color 0.25s ease-in-out',
+                                    transitionDelay: registerData.gender === 'female' 
+                                      ? `${0.3 + index * 0.08}s`
+                                      : `${0.05 + (3 - index) * 0.08}s`
+                                  }}
+                                >
+                                  {letter}
+                                </span>
+                              ))}
+                            </span>
+                        </div>
+                      </button>
                     </div>
                   </div>
 
@@ -779,6 +959,8 @@ const LoginPage = () => {
                           type={showPassword ? "text" : "password"}
                           value={registerData.password}
                           onChange={(e) => setRegisterData(prev => ({ ...prev, password: e.target.value }))}
+                          onFocus={() => setPasswordFocused(true)}
+                          onBlur={() => setPasswordFocused(false)}
                           placeholder="Create"
                           className={`relative w-full pl-11 pr-10 py-3 rounded-xl border-2 transition-all duration-300 ${
                             darkMode
@@ -827,6 +1009,79 @@ const LoginPage = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Password Strength Progress Bar */}
+                  {passwordFocused && (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Password strength</span>
+                        <span className={`text-xs font-semibold ${
+                          (() => {
+                            const score = [
+                              registerData.password.length >= 8,
+                              /[A-Z]/.test(registerData.password),
+                              /[a-z]/.test(registerData.password),
+                              /[0-9]/.test(registerData.password),
+                              /[!@#$%^&*(),.?":{}|<>]/.test(registerData.password)
+                            ].filter(Boolean).length;
+                            if (score === 5) return darkMode ? 'text-green-400' : 'text-green-600';
+                            if (score >= 3) return darkMode ? 'text-yellow-400' : 'text-yellow-600';
+                            return darkMode ? 'text-red-400' : 'text-red-500';
+                          })()
+                        }`}>
+                          {(() => {
+                            const score = [
+                              registerData.password.length >= 8,
+                              /[A-Z]/.test(registerData.password),
+                              /[a-z]/.test(registerData.password),
+                              /[0-9]/.test(registerData.password),
+                              /[!@#$%^&*(),.?":{}|<>]/.test(registerData.password)
+                            ].filter(Boolean).length;
+                            if (score === 5) return 'Strong';
+                            if (score >= 3) return 'Medium';
+                            if (score >= 1) return 'Weak';
+                            return '';
+                          })()}
+                        </span>
+                      </div>
+                      <div className="flex gap-1">
+                        {[
+                          registerData.password.length >= 8,
+                          /[A-Z]/.test(registerData.password),
+                          /[a-z]/.test(registerData.password),
+                          /[0-9]/.test(registerData.password),
+                          /[!@#$%^&*(),.?":{}|<>]/.test(registerData.password)
+                        ].map((met, i) => (
+                          <div
+                            key={i}
+                            className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
+                              met 
+                                ? (() => {
+                                    const score = [
+                                      registerData.password.length >= 8,
+                                      /[A-Z]/.test(registerData.password),
+                                      /[a-z]/.test(registerData.password),
+                                      /[0-9]/.test(registerData.password),
+                                      /[!@#$%^&*(),.?":{}|<>]/.test(registerData.password)
+                                    ].filter(Boolean).length;
+                                    if (score === 5) return 'bg-green-500';
+                                    if (score >= 3) return 'bg-yellow-500';
+                                    return 'bg-red-500';
+                                  })()
+                                : darkMode ? 'bg-gray-700' : 'bg-gray-200'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <div className={`flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                        <span className={registerData.password.length >= 8 ? (darkMode ? 'text-green-400' : 'text-green-600') : ''}>8+ chars</span>
+                        <span className={/[A-Z]/.test(registerData.password) ? (darkMode ? 'text-green-400' : 'text-green-600') : ''}>A-Z</span>
+                        <span className={/[a-z]/.test(registerData.password) ? (darkMode ? 'text-green-400' : 'text-green-600') : ''}>a-z</span>
+                        <span className={/[0-9]/.test(registerData.password) ? (darkMode ? 'text-green-400' : 'text-green-600') : ''}>0-9</span>
+                        <span className={/[!@#$%^&*(),.?":{}|<>]/.test(registerData.password) ? (darkMode ? 'text-green-400' : 'text-green-600') : ''}>!@#$</span>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Terms Agreement */}
                   <div className="flex items-start gap-3">
@@ -885,7 +1140,7 @@ const LoginPage = () => {
       </div>
       
       {/* Footer - Desktop */}
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <SmallFooter />
       </div>
     </>
