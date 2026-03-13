@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Megaphone, X } from "lucide-react";
 import { useUI } from "./../../lib/contexts/UniShareContext";
 
-export default function AnnouncementBar() {
+const AnnouncementBar = React.memo(function AnnouncementBar() {
   const { darkMode } = useUI();
   const [loading, setLoading] = useState(true);
   const [announcement, setAnnouncement] = useState({
@@ -371,4 +371,6 @@ export default function AnnouncementBar() {
       `}</style>
     </>
   );
-}
+});
+
+export default AnnouncementBar;

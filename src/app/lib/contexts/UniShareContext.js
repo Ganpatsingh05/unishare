@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useReducer, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useReducer, useEffect, useCallback, useMemo } from "react";
 import { checkAuthStatus, logout as apiLogout } from "../api";
 
 // =============================================================================
@@ -61,6 +61,14 @@ const ActionTypes = {
   SET_USER_ITEMS: 'SET_USER_ITEMS',
   UPDATE_USER_ROOMS: 'UPDATE_USER_ROOMS',
   UPDATE_USER_ITEMS: 'UPDATE_USER_ITEMS',
+  REMOVE_USER_ROOM: 'REMOVE_USER_ROOM',
+  REMOVE_USER_ITEM: 'REMOVE_USER_ITEM',
+  UPDATE_SINGLE_USER_ROOM: 'UPDATE_SINGLE_USER_ROOM',
+  UPDATE_SINGLE_USER_ITEM: 'UPDATE_SINGLE_USER_ITEM',
+  
+  // Toggle actions
+  TOGGLE_DARK_MODE: 'TOGGLE_DARK_MODE',
+  TOGGLE_MOBILE_MENU: 'TOGGLE_MOBILE_MENU',
   
   // App initialization
   INITIALIZE_APP: 'INITIALIZE_APP',
@@ -174,9 +182,15 @@ const uniShareReducer = (state, action) => {
       
     case ActionTypes.SET_DARK_MODE:
       return { ...state, darkMode: action.payload };
+    
+    case ActionTypes.TOGGLE_DARK_MODE:
+      return { ...state, darkMode: !state.darkMode };
       
     case ActionTypes.SET_MOBILE_MENU:
       return { ...state, mobileMenuOpen: action.payload };
+    
+    case ActionTypes.TOGGLE_MOBILE_MENU:
+      return { ...state, mobileMenuOpen: !state.mobileMenuOpen };
       
     case ActionTypes.SET_NOTIFICATIONS:
       return { ...state, notifications: Array.isArray(action.payload) ? action.payload : [] };
@@ -251,6 +265,28 @@ const uniShareReducer = (state, action) => {
       
     case ActionTypes.UPDATE_USER_ITEMS:
       return { ...state, userItems: [...state.userItems, action.payload] };
+    
+    case ActionTypes.REMOVE_USER_ROOM:
+      return { ...state, userRooms: state.userRooms.filter(room => room.id !== action.payload) };
+    
+    case ActionTypes.REMOVE_USER_ITEM:
+      return { ...state, userItems: state.userItems.filter(item => item.id !== action.payload) };
+    
+    case ActionTypes.UPDATE_SINGLE_USER_ROOM:
+      return {
+        ...state,
+        userRooms: state.userRooms.map(room =>
+          room.id === action.payload.id ? { ...room, ...action.payload.data } : room
+        ),
+      };
+    
+    case ActionTypes.UPDATE_SINGLE_USER_ITEM:
+      return {
+        ...state,
+        userItems: state.userItems.map(item =>
+          item.id === action.payload.id ? { ...item, ...action.payload.data } : item
+        ),
+      };
       
     case ActionTypes.INITIALIZE_APP:
       return { ...state, initialized: true, authLoading: false };
@@ -268,11 +304,11 @@ export const ThemeProvider = ({ children, className = "" }) => {
   const { darkMode } = useUI();
   
   return (
-    <div className={`transition-all duration-500 ${
+    <div className={`transition-colors duration-200 ${
       darkMode
         ? "bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-blue-50"
         : "bg-gradient-to-br from-orange-100 via-orange-200 to-orange-300 text-gray-900"
-    } ${className}`}>
+    } ${className}`} style={{ willChange: 'background-color, color' }}>
       {children}
     </div>
   );
@@ -294,7 +330,7 @@ export const ThemeCard = ({ children, className = "", hover = true, variant = "d
   };
   
   return (
-    <div className={`transition-all duration-300 ${variants[variant]} ${className}`}>
+    <div className={`transition-colors duration-150 ${variants[variant]} ${className}`} style={{ willChange: 'background-color, border-color' }}>
       {children}
     </div>
   );
@@ -336,7 +372,8 @@ export const ThemeButton = ({
   
   return (
     <button 
-      className={`transition-all duration-300 transform hover:scale-105 active:scale-95 rounded-xl font-medium focus:outline-none focus:ring-2 ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`transition-all duration-150 transform hover:scale-105 active:scale-95 rounded-xl font-medium focus:outline-none focus:ring-2 ${variants[variant]} ${sizes[size]} ${className}`}
+      style={{ willChange: 'transform, background-color' }}
       {...props}
     >
       {children}
@@ -358,7 +395,8 @@ export const ThemeInput = ({ className = "", variant = "default", ...props }) =>
   
   return (
     <input 
-      className={`transition-all duration-300 rounded-xl px-4 py-2 border focus:outline-none focus:ring-2 ${variants[variant]} ${className}`}
+      className={`transition-colors duration-150 rounded-xl px-4 py-2 border focus:outline-none focus:ring-2 ${variants[variant]} ${className}`}
+      style={{ willChange: 'border-color, background-color' }}
       {...props}
     />
   );
@@ -369,11 +407,12 @@ export const ThemeSelect = ({ children, className = "", ...props }) => {
   
   return (
     <select 
-      className={`transition-all duration-300 rounded-xl px-4 py-2 border focus:outline-none focus:ring-2 ${
+      className={`transition-colors duration-150 rounded-xl px-4 py-2 border focus:outline-none focus:ring-2 ${
         darkMode 
           ? "bg-slate-800 text-blue-50 border-slate-700 focus:border-blue-500 focus:ring-blue-500/30" 
           : "bg-white text-gray-900 border-orange-300 focus:border-orange-500 focus:ring-orange-500/30"
       } ${className}`}
+      style={{ willChange: 'border-color, background-color' }}
       {...props}
     >
       {children}
@@ -386,11 +425,12 @@ export const ThemeTextarea = ({ className = "", ...props }) => {
   
   return (
     <textarea 
-      className={`transition-all duration-300 rounded-xl px-4 py-2 border focus:outline-none focus:ring-2 resize-none ${
+      className={`transition-colors duration-150 rounded-xl px-4 py-2 border focus:outline-none focus:ring-2 resize-none ${
         darkMode 
           ? "bg-slate-800 text-blue-50 border-slate-700 placeholder-slate-400 focus:border-blue-500 focus:ring-blue-500/30" 
           : "bg-white text-gray-900 border-orange-300 placeholder-gray-500 focus:border-orange-500 focus:ring-orange-500/30"
       } ${className}`}
+      style={{ willChange: 'border-color, background-color' }}
       {...props}
     />
   );
@@ -415,29 +455,30 @@ export const UniShareProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('unishare_dark_mode', JSON.stringify(state.darkMode));
     
-    // Manage body classes and styles for global theming
-    const body = document.body;
-    const html = document.documentElement;
-    
-    if (state.darkMode) {
-      // Dark mode - Matte Black Charcoal theme
-      body.classList.add('dark', 'theme-ocean');
-      body.classList.remove('light', 'theme-warm');
-      html.setAttribute('data-theme', 'dark');
+    // ✅ PERFORMANCE: Use RAF to batch DOM updates and prevent layout thrashing
+    requestAnimationFrame(() => {
+      const body = document.body;
+      const html = document.documentElement;
       
-      // Apply dark theme styles to body
-      body.style.backgroundColor = '#1a1a1a'; // Matte Black Charcoal
-      body.style.color = '#FFFFFF'; // Pure white
-    } else {
-      // Light mode - Warm Orange theme
-      body.classList.add('light', 'theme-warm');
-      body.classList.remove('dark', 'theme-ocean');
-      html.setAttribute('data-theme', 'light');
-      
-      // Apply light theme styles to body
-      body.style.backgroundColor = '#F9FAFB'; // Off-white
-      body.style.color = '#1f2937'; // gray-800
-    }
+      // Batch class and attribute updates
+      if (state.darkMode) {
+        // Dark mode - Matte Black Charcoal theme
+        body.className = body.className.replace(/light|theme-warm/g, '').trim() + ' dark theme-ocean';
+        html.setAttribute('data-theme', 'dark');
+        
+        // Use CSS custom properties for instant theme switching
+        html.style.setProperty('--theme-bg', '#1a1a1a');
+        html.style.setProperty('--theme-text', '#FFFFFF');
+      } else {
+        // Light mode - Warm Orange theme
+        body.className = body.className.replace(/dark|theme-ocean/g, '').trim() + ' light theme-warm';
+        html.setAttribute('data-theme', 'light');
+        
+        // Use CSS custom properties for instant theme switching
+        html.style.setProperty('--theme-bg', '#F9FAFB');
+        html.style.setProperty('--theme-text', '#1f2937');
+      }
+    });
   }, [state.darkMode]);
   
   // Initialize app with loading sequence
@@ -521,7 +562,7 @@ export const UniShareProvider = ({ children }) => {
   // ACTION CREATORS
   // =============================================================================
   
-  const actions = {
+  const actions = useMemo(() => ({
     // Authentication actions
     login: (userData) => {
       dispatch({ type: ActionTypes.LOGIN_SUCCESS, payload: userData });
@@ -550,16 +591,8 @@ export const UniShareProvider = ({ children }) => {
       dispatch({ type: ActionTypes.SET_DARK_MODE, payload: isDark });
     },
     
-    toggleDarkMode: () => {
-      dispatch({ type: ActionTypes.SET_DARK_MODE, payload: !state.darkMode });
-    },
-    
     setMobileMenu: (isOpen) => {
       dispatch({ type: ActionTypes.SET_MOBILE_MENU, payload: isOpen });
-    },
-    
-    toggleMobileMenu: () => {
-      dispatch({ type: ActionTypes.SET_MOBILE_MENU, payload: !state.mobileMenuOpen });
     },
     
     // Search actions
@@ -634,63 +667,63 @@ export const UniShareProvider = ({ children }) => {
       dispatch({ type: ActionTypes.SET_LOADING, payload: loading });
     },
     
-    // Navigation Loading actions (memoized to prevent infinite re-renders)
-    setNavigationLoading: useCallback((loading) => {
+    // Navigation Loading actions
+    setNavigationLoading: (loading) => {
       dispatch({ type: ActionTypes.SET_NAVIGATION_LOADING, payload: loading });
-    }, [dispatch]),
+    },
     
-    setNavigationMessage: useCallback((message) => {
+    setNavigationMessage: (message) => {
       dispatch({ type: ActionTypes.SET_NAVIGATION_MESSAGE, payload: message });
-    }, [dispatch]),
+    },
     
-    startNavigationLoading: useCallback((message = 'Loading...') => {
+    startNavigationLoading: (message = 'Loading...') => {
       dispatch({ type: ActionTypes.SET_NAVIGATION_MESSAGE, payload: message });
       dispatch({ type: ActionTypes.SET_NAVIGATION_LOADING, payload: true });
-    }, [dispatch]),
+    },
     
-    stopNavigationLoading: useCallback(() => {
+    stopNavigationLoading: () => {
       dispatch({ type: ActionTypes.SET_NAVIGATION_LOADING, payload: false });
-    }, [dispatch]),
+    },
     
-    // Enhanced loading helpers for different contexts
-    showFormLoading: useCallback((message = 'Processing...') => {
+    // Enhanced loading helpers
+    showFormLoading: (message = 'Processing...') => {
       dispatch({ type: ActionTypes.SET_NAVIGATION_MESSAGE, payload: message });
       dispatch({ type: ActionTypes.SET_NAVIGATION_LOADING, payload: true });
-    }, [dispatch]),
+    },
     
-    showApiLoading: useCallback((message = 'Connecting to server...') => {
+    showApiLoading: (message = 'Connecting to server...') => {
       dispatch({ type: ActionTypes.SET_NAVIGATION_MESSAGE, payload: message });
       dispatch({ type: ActionTypes.SET_NAVIGATION_LOADING, payload: true });
-    }, [dispatch]),
+    },
     
-    showUploadLoading: useCallback((message = 'Uploading files...') => {
+    showUploadLoading: (message = 'Uploading files...') => {
       dispatch({ type: ActionTypes.SET_NAVIGATION_MESSAGE, payload: message });
       dispatch({ type: ActionTypes.SET_NAVIGATION_LOADING, payload: true });
-    }, [dispatch]),
+    },
     
-    showAuthLoading: useCallback((message = 'Authenticating...') => {
+    showAuthLoading: (message = 'Authenticating...') => {
       dispatch({ type: ActionTypes.SET_NAVIGATION_MESSAGE, payload: message });
       dispatch({ type: ActionTypes.SET_NAVIGATION_LOADING, payload: true });
-    }, [dispatch]),
+    },
     
     // Initial App Loading actions
-    setInitialLoading: useCallback((loading) => {
+    setInitialLoading: (loading) => {
       dispatch({ type: ActionTypes.SET_INITIAL_LOADING, payload: loading });
-    }, [dispatch]),
+    },
     
-    setInitialMessage: useCallback((message) => {
+    setInitialMessage: (message) => {
       dispatch({ type: ActionTypes.SET_INITIAL_MESSAGE, payload: message });
-    }, [dispatch]),
+    },
     
-    setAppReady: useCallback(() => {
+    setAppReady: () => {
       dispatch({ type: ActionTypes.SET_INITIAL_LOADING, payload: false });
       dispatch({ type: ActionTypes.SET_APP_READY, payload: true });
-    }, [dispatch]),
+    },
     
-    startInitialLoading: useCallback(() => {
+    startInitialLoading: () => {
       dispatch({ type: ActionTypes.SET_INITIAL_LOADING, payload: true });
       dispatch({ type: ActionTypes.SET_APP_READY, payload: false });
-    }, [dispatch]),
+    },
     
     // User data actions
     setUserRooms: (rooms) => {
@@ -710,58 +743,50 @@ export const UniShareProvider = ({ children }) => {
     },
     
     removeUserRoom: (roomId) => {
-      dispatch({
-        type: ActionTypes.SET_USER_ROOMS,
-        payload: state.userRooms.filter(room => room.id !== roomId),
-      });
+      dispatch({ type: ActionTypes.REMOVE_USER_ROOM, payload: roomId });
     },
     
     removeUserItem: (itemId) => {
-      dispatch({
-        type: ActionTypes.SET_USER_ITEMS,
-        payload: state.userItems.filter(item => item.id !== itemId),
-      });
+      dispatch({ type: ActionTypes.REMOVE_USER_ITEM, payload: itemId });
     },
     
     updateUserRoom: (roomId, updatedRoom) => {
-      dispatch({
-        type: ActionTypes.SET_USER_ROOMS,
-        payload: state.userRooms.map(room => 
-          room.id === roomId ? { ...room, ...updatedRoom } : room
-        ),
-      });
+      dispatch({ type: ActionTypes.UPDATE_SINGLE_USER_ROOM, payload: { id: roomId, data: updatedRoom } });
     },
     
     updateUserItem: (itemId, updatedItem) => {
-      dispatch({
-        type: ActionTypes.SET_USER_ITEMS,
-        payload: state.userItems.map(item => 
-          item.id === itemId ? { ...item, ...updatedItem } : item
-        ),
-      });
+      dispatch({ type: ActionTypes.UPDATE_SINGLE_USER_ITEM, payload: { id: itemId, data: updatedItem } });
     },
+    
+    toggleDarkMode: () => {
+      dispatch({ type: ActionTypes.TOGGLE_DARK_MODE });
+    },
+    
+    toggleMobileMenu: () => {
+      dispatch({ type: ActionTypes.TOGGLE_MOBILE_MENU });
+    },
+  }), [dispatch]);
 
-    // Notification loading action
-    loadNotifications: async () => {
-      if (state.isAuthenticated && state.user) {
-        try {
-          const { getUserNotifications } = await import('../api/notifications');
-          const response = await getUserNotifications();
-          const notifications = response.notifications || response.data || [];
-          dispatch({ type: ActionTypes.SET_NOTIFICATIONS, payload: notifications });
-        } catch (error) {
-          console.error('Failed to load notifications:', error);
-          dispatch({ type: ActionTypes.SET_NOTIFICATIONS, payload: [] });
-        }
+  // Load notifications (needs state access, so separate useCallback)
+  const loadNotifications = useCallback(async () => {
+    if (state.isAuthenticated && state.user) {
+      try {
+        const { getUserNotifications } = await import('../api/notifications');
+        const response = await getUserNotifications();
+        const notifications = response.notifications || response.data || [];
+        dispatch({ type: ActionTypes.SET_NOTIFICATIONS, payload: notifications });
+      } catch (error) {
+        console.error('Failed to load notifications:', error);
+        dispatch({ type: ActionTypes.SET_NOTIFICATIONS, payload: [] });
       }
-    },
-  };
+    }
+  }, [state.isAuthenticated, state.user, dispatch]);
   
   // =============================================================================
   // COMPUTED VALUES
   // =============================================================================
   
-  const computedValues = {
+  const computedValues = useMemo(() => ({
     unreadNotificationCount: (Array.isArray(state.notifications) ? state.notifications : []).filter(n => !n.read).length,
     hasUnreadNotifications: (Array.isArray(state.notifications) ? state.notifications : []).some(n => !n.read),
     userInitials: state.user?.name 
@@ -770,16 +795,18 @@ export const UniShareProvider = ({ children }) => {
     userAvatar: state.user?.picture || state.user?.googleAvatar || state.user?.avatar || null,
     totalUserRooms: state.userRooms.length,
     totalUserItems: state.userItems.length,
-  };
+  }), [state.notifications, state.user, state.userRooms, state.userItems]);
   
-  const contextValue = {
+  const contextValue = useMemo(() => ({
     // State
     ...state,
     // Actions
     ...actions,
     // Computed values
     ...computedValues,
-  };
+    // Separate memoized action
+    loadNotifications,
+  }), [state, actions, computedValues, loadNotifications]);
   
   return (
     <UniShareContext.Provider value={contextValue}>
@@ -857,7 +884,7 @@ export const withAuth = (WrappedComponent) => {
 
 export const useAuth = () => {
   const context = useUniShare();
-  return {
+  return useMemo(() => ({
     isAuthenticated: context.isAuthenticated,
     user: context.user,
     authLoading: context.authLoading,
@@ -866,12 +893,12 @@ export const useAuth = () => {
     updateUser: context.updateUser,
     userInitials: context.userInitials,
     userAvatar: context.userAvatar,
-  };
+  }), [context.isAuthenticated, context.user, context.authLoading, context.login, context.logout, context.updateUser, context.userInitials, context.userAvatar]);
 };
 
 export const useNotifications = () => {
   const context = useUniShare();
-  return {
+  return useMemo(() => ({
     notifications: context.notifications,
     unreadCount: context.unreadNotificationCount,
     hasUnread: context.hasUnreadNotifications,
@@ -881,12 +908,12 @@ export const useNotifications = () => {
     removeNotification: context.removeNotification,
     setNotifications: context.setNotifications,
     loadNotifications: context.loadNotifications,
-  };
+  }), [context.notifications, context.unreadNotificationCount, context.hasUnreadNotifications, context.addNotification, context.markNotificationRead, context.markAllNotificationsRead, context.removeNotification, context.setNotifications, context.loadNotifications]);
 };
 
 export const useUI = () => {
   const context = useUniShare();
-  return {
+  return useMemo(() => ({
     darkMode: context.darkMode,
     mobileMenuOpen: context.mobileMenuOpen,
     searchValue: context.searchValue,
@@ -916,12 +943,12 @@ export const useUI = () => {
     setInitialMessage: context.setInitialMessage,
     setAppReady: context.setAppReady,
     startInitialLoading: context.startInitialLoading,
-  };
+  }), [context.darkMode, context.mobileMenuOpen, context.searchValue, context.searchFocused, context.logoRotation, context.navigationLoading, context.navigationMessage, context.initialLoading, context.initialMessage, context.appReady, context.setDarkMode, context.toggleDarkMode, context.setMobileMenu, context.toggleMobileMenu, context.setSearchValue, context.setSearchFocused, context.setLogoRotation, context.setNavigationLoading, context.setNavigationMessage, context.startNavigationLoading, context.stopNavigationLoading, context.showFormLoading, context.showApiLoading, context.showUploadLoading, context.showAuthLoading, context.setInitialLoading, context.setInitialMessage, context.setAppReady, context.startInitialLoading]);
 };
 
 export const useMessages = () => {
   const context = useUniShare();
-  return {
+  return useMemo(() => ({
     error: context.error,
     success: context.success,
     loading: context.loading,
@@ -931,12 +958,12 @@ export const useMessages = () => {
     clearSuccess: context.clearSuccess,
     showTemporaryMessage: context.showTemporaryMessage,
     setLoading: context.setLoading,
-  };
+  }), [context.error, context.success, context.loading, context.setError, context.clearError, context.setSuccess, context.clearSuccess, context.showTemporaryMessage, context.setLoading]);
 };
 
 export const useUserData = () => {
   const context = useUniShare();
-  return {
+  return useMemo(() => ({
     userRooms: context.userRooms,
     userItems: context.userItems,
     totalUserRooms: context.totalUserRooms,
@@ -949,5 +976,5 @@ export const useUserData = () => {
     removeUserItem: context.removeUserItem,
     updateUserRoom: context.updateUserRoom,
     updateUserItem: context.updateUserItem,
-  };
+  }), [context.userRooms, context.userItems, context.totalUserRooms, context.totalUserItems, context.setUserRooms, context.setUserItems, context.addUserRoom, context.addUserItem, context.removeUserRoom, context.removeUserItem, context.updateUserRoom, context.updateUserItem]);
 };

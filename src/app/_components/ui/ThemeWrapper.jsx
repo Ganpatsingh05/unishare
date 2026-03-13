@@ -6,7 +6,7 @@ export default function ThemeWrapper({ children }) {
   const { darkMode } = useUI();
 
   return (
-    <div className={`min-h-screen transition-all duration-500 ${
+    <div className={`min-h-screen transition-colors duration-300 ${
       darkMode
         ? "theme-bg-dark"
         : "theme-bg-light"

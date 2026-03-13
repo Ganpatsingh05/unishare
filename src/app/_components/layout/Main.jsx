@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import dynamic from "next/dynamic";
 import { Car, ShoppingCart, Tag, Search, Star, Home, Megaphone, BookOpen, Phone, Users, RotateCw, CheckCircle, Filter, TrendingUp, Zap, Ticket } from "lucide-react";
 
@@ -57,16 +58,15 @@ const sections = [
     href: '/share-ride',
     color: 'from-blue-500 to-cyan-500',
     category: 'transport',
-    features: ['Real-time matching', 'Cost splitting', 'Safe rides']
-  },
-  {
-    title: 'Buy in Marketplace',
-    description: 'Buy items within your college community at great prices.',
-    icon: <ShoppingCart className="w-10 h-10" />,
-    href: '/marketplace/buy',
-    color: 'from-green-500 to-emerald-500',
-    category: 'marketplace',
-    features: ['Student verification', 'Price comparison', 'Local pickup']
+    features: ['Real-time matching', 'Cost splitting', 'Safe rides'],
+    image: '/images/cards/ride.png',
+    cta: 'Find a Ride',
+    imageContainerClass: 'justify-center',
+    imageClass: 'w-[90%] max-h-[200px]',
+    overflow: 'hidden',
+    textAlign: '',
+    ctaAlign: '',
+    badgeAlign: '',
   },
   {
     title: 'Sell Your Items',
@@ -75,7 +75,32 @@ const sections = [
     href: '/marketplace/sell',
     color: 'from-purple-500 to-violet-500',
     category: 'marketplace',
-    features: ['Easy listing', 'Price suggestions', 'Quick sales']
+    features: ['Easy listing', 'Price suggestions', 'Quick sales'],
+    image: '/images/cards/boy_sell.png',
+    cta: 'Start Selling',
+    imageContainerClass: 'justify-end',
+    imageClass: 'w-[90%] max-h-[300px] translate-x-10 -translate-y-28',
+    overflow: 'visible',
+    textAlign: '',
+    ctaAlign: '',
+    badgeAlign: '',
+  },
+  {
+    title: 'Buy in Marketplace',
+    description: 'Buy items within your college community at great prices.',
+    icon: <ShoppingCart className="w-10 h-10" />,
+    href: '/marketplace/buy',
+    color: 'from-green-500 to-emerald-500',
+    category: 'marketplace',
+    features: ['Student verification', 'Price comparison', 'Local pickup'],
+    image: '/images/cards/girl_buy.png',
+    cta: 'Browse Deals',
+    imageContainerClass: 'justify-start',
+    imageClass: 'w-[90%] max-h-[300px] -translate-x-10 -translate-y-28',
+    overflow: 'visible',
+    textAlign: 'text-right',
+    ctaAlign: 'flex justify-end',
+    badgeAlign: 'flex justify-end',
   },
   {
     title: 'Buy & Sell Tickets',
@@ -84,7 +109,15 @@ const sections = [
     href: '/ticket',
     color: 'from-pink-500 to-rose-500',
     category: 'marketplace',
-    features: ['Event verification', 'Secure transfers', 'Price protection']
+    features: ['Event verification', 'Secure transfers', 'Price protection'],
+    image: '/images/cards/tickets.png',
+    cta: 'Get Tickets',
+    imageContainerClass: 'justify-center',
+    imageClass: 'w-full max-h-[280px]',
+    overflow: 'hidden',
+    textAlign: '',
+    ctaAlign: '',
+    badgeAlign: '',
   },
   {
     title: 'Find Housing & Roommates',
@@ -93,7 +126,15 @@ const sections = [
     href: '/housing',
     color: 'from-orange-500 to-red-500',
     category: 'housing',
-    features: ['Location filtering', 'Roommate matching', 'Virtual tours']
+    features: ['Location filtering', 'Roommate matching', 'Virtual tours'],
+    image: '/images/cards/room.png',
+    cta: 'Browse Matches',
+    imageContainerClass: 'justify-center',
+    imageClass: 'w-full max-h-[200px]',
+    overflow: 'hidden',
+    textAlign: '',
+    ctaAlign: '',
+    badgeAlign: '',
   },
   {
     title: 'Report Lost/Found Items',
@@ -102,7 +143,15 @@ const sections = [
     href: '/lost-found',
     color: 'from-indigo-500 to-blue-500',
     category: 'community',
-    features: ['AI matching', 'Photo recognition', 'Community help']
+    features: ['AI matching', 'Photo recognition', 'Community help'],
+    image: '/images/cards/lost_found.png',
+    cta: 'Report Item',
+    imageContainerClass: 'justify-center',
+    imageClass: 'w-full max-h-[280px]',
+    overflow: 'hidden',
+    textAlign: '',
+    ctaAlign: '',
+    badgeAlign: '',
   },
   {
     title: 'View Found Items',
@@ -120,7 +169,10 @@ const sections = [
     href: '/announcements',
     color: 'from-rose-500 to-pink-500',
     category: 'communication',
-    features: ['Real-time alerts', 'Priority filtering', 'Push notifications']
+    features: ['Real-time alerts', 'Priority filtering', 'Push notifications'],
+    image: '/images/cards/announcement.png',
+    layout: 'billboard',
+    cta: 'View Updates',
   },
   {
     title: 'Notes & Resources',
@@ -129,7 +181,15 @@ const sections = [
     href: '/resources',
     color: 'from-teal-500 to-green-500',
     category: 'academic',
-    features: ['Subject filtering', 'Quality ratings', 'Download tracking']
+    features: ['Subject filtering', 'Quality ratings', 'Download tracking'],
+    image: '/images/cards/notes (1).png',
+    cta: 'Browse Notes',
+    imageContainerClass: 'justify-center',
+    imageClass: 'w-full max-h-[300px]',
+    overflow: 'hidden',
+    textAlign: '',
+    ctaAlign: '',
+    badgeAlign: '',
   },
   {
     title: 'Important Contacts',
@@ -138,7 +198,15 @@ const sections = [
     href: '/contacts',
     color: 'from-violet-500 to-purple-500',
     category: 'communication',
-    features: ['Emergency contacts', 'Department info', 'Quick dial']
+    features: ['Emergency contacts', 'Department info', 'Quick dial'],
+    image: '/images/cards/contacts.png',
+    cta: 'View Contacts',
+    imageContainerClass: 'justify-center',
+    imageClass: 'w-[90%] max-h-[200px]',
+    overflow: 'hidden',
+    textAlign: '',
+    ctaAlign: '',
+    badgeAlign: '',
   }
 ];
 
@@ -221,18 +289,24 @@ const Main = ({ darkMode, isVisible = false }) => {
   // Desktop version (original implementation)
   return (
     <main className="w-full px-4 pt-8 md:pt-16 pb-16">
-      {/* Modern Hero Section - Full Width - Always Visible */}
-      <div 
-        className="max-w-7xl mx-auto mb-24"
-      >
-        {/* Hero Content with Visual Elements */}
-        <div className="relative">
-          {/* Top Section */}
-          <div className="text-center mb-20">
+      {/* Brave-style Hero Section — massive bold text + watermark */}
+      <div className="max-w-6xl mx-auto mb-20 relative overflow-hidden">
+        {/* Giant watermark text behind — UniShare brand */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
+          aria-hidden="true">
+          <span className={`text-[12vw] font-black leading-none tracking-tighter whitespace-nowrap ${
+            darkMode ? 'text-white/[0.03]' : 'text-black/[0.03]'
+          }`}
+          style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+            UniShare
+          </span>
+        </div>
 
-            {/* Modern Headline with Better Typography */}
+        <div className="relative z-10">
+          {/* Left-aligned massive heading (Section 1 = LEFT) */}
+          <div className="mb-16">
             <h1 
-              className={`text-6xl md:text-7xl lg:text-8xl font-extrabold mb-8 leading-[0.95] tracking-tight ${
+              className={`text-6xl md:text-7xl lg:text-8xl font-black leading-[0.95] tracking-tight ${
                 darkMode ? 'text-white' : 'text-gray-900'
               }`}
               style={{
@@ -242,97 +316,55 @@ const Main = ({ darkMode, isVisible = false }) => {
             >
               Your Campus,
               <br />
-              <span className="brand-wordmark relative inline-block mt-2 whitespace-nowrap"
-              style={{
-                fontWeight: 900,
-                letterSpacing: '-0.05em'
-              }}>
+              <span className="brand-wordmark relative inline-block mt-1">
                 <span className="brand-uni">Conn</span><span className="brand-share">ected</span>
               </span>
             </h1>
             
-            {/* Elegant Subtitle with Modern Font */}
             <p 
-              className="text-xl md:text-2xl mb-16 max-w-4xl mx-auto leading-relaxed"
-              style={{
-                fontWeight: 400,
-                letterSpacing: '-0.01em',
-                fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-                color: darkMode ? '#9CA3AF' : '#6B7280'
-              }}
+              className={`text-lg md:text-xl max-w-2xl mt-6 leading-relaxed ${
+                darkMode ? 'text-gray-300' : 'text-gray-600'
+              }`}
+              style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
             >
               Share rides, trade items, find housing, and access resources—
-              <span style={{ 
-                fontWeight: 600,
-                color: darkMode ? '#06B6D4' : '#3B82F6'
-              }}> everything you need</span>
+              <span className={`font-semibold ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`}> everything you need</span>
             </p>
           </div>
 
-          {/* Modern Filter Chips */}
-          <div 
-            className="flex flex-wrap justify-center gap-4 mb-6"
-          >
+          {/* Clean Filter Chips — bordered, minimal */}
+          <div className="flex flex-wrap gap-3 mb-8">
             {['All', 'Transport', 'Housing', 'Marketplace', 'Resources'].map((filter) => (
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
-                className={`px-8 py-3.5 rounded-2xl text-base transition-all duration-200 border-2 shadow-sm ${
+                className={`px-6 py-2.5 rounded-full text-sm font-bold border-2 transition-all duration-200 ${
                   activeFilter === filter
                     ? darkMode 
-                      ? 'text-white shadow-lg hover:shadow-xl' 
-                      : 'text-white shadow-lg hover:shadow-xl'
+                      ? 'bg-white text-gray-900 border-white' 
+                      : 'bg-gray-900 text-white border-gray-900'
                     : darkMode
-                      ? 'bg-slate-800/40 border-slate-700/40 hover:bg-slate-800/60 hover:border-slate-600'
-                      : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-blue-400 hover:shadow-md'
+                      ? 'bg-transparent border-gray-700 text-gray-300 hover:border-gray-500 hover:text-gray-100'
+                      : 'bg-transparent border-gray-300 text-gray-600 hover:border-gray-400 hover:text-gray-900'
                 }`}
-                style={{
-                  letterSpacing: '0.03em',
-                  fontWeight: activeFilter === filter ? 700 : 600,
-                  fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-                  color: activeFilter === filter 
-                    ? '#FFFFFF' 
-                    : darkMode ? '#9CA3AF' : '#6B7280',
-                  ...(activeFilter === filter && {
-                    backgroundColor: darkMode ? '#8B5CF6' : '#3B82F6',
-                    borderColor: darkMode ? '#8B5CF6' : '#3B82F6'
-                  })
-                }}
+                style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
               >
                 {filter}
               </button>
             ))}
           </div>
 
-          {/* Colorful Bottom Text */}
-          <div 
-            className="text-center mt-16"
-          >
-            <p 
-              className="text-lg md:text-xl font-light tracking-tight"
-              style={{
-                letterSpacing: '-0.01em',
-                fontWeight: 400,
-                color: darkMode ? '#9CA3AF' : '#6B7280'
-              }}
-            >
-              All in one place,
-              {' '}
-              <span style={{ 
-                fontWeight: 600,
-                color: darkMode ? '#06B6D4' : '#3B82F6'
-              }}>
-                designed for Students
-              </span>
-            </p>
-          </div>
+          {/* Subtle helper text */}
+          <p className={`text-sm mb-2 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+            All in one place, <span className={`font-semibold ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`}>designed for Students</span>
+          </p>
         </div>
       </div>
 
-      {/* Services Grid */}
-      <div className="max-w-7xl mx-auto px-4">
+      {/* Services Grid — Brave-style bordered cards with tinted bg */}
+      <div className="max-w-6xl mx-auto px-4">
         {filteredSections.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-16">
           {filteredSections.map((section, index) => {
             // Hide "View Found Items" card on large screens for perfect 3x3 grid
             const isViewFoundItems = section.title === 'View Found Items';
@@ -340,262 +372,275 @@ const Main = ({ darkMode, isVisible = false }) => {
               return null;
             }
 
-            // Get solid color for each card - Premium Dark iPhone Tones
-            const getCardColor = (colorClass) => {
-              const colorMap = {
-                // Premium Dark iPhone-Inspired Colors - Each Card Unique & Different
-                'from-blue-500 to-cyan-500': '#1D3557', // Deep Ocean Blue
-                'from-green-500 to-emerald-500': '#2A4A3E', // Forest Green
-                'from-purple-500 to-violet-500': '#3A3F47', // Graphite Smoke — elegant, tech-inspired neutral
-                'from-pink-500 to-rose-500': '#8B5A6F', // Rich Mauve (changed - lighter)
-                'from-orange-500 to-red-500': '#5C3A3A', // Warm Burgundy
-                'from-indigo-500 to-blue-500': '#2C3E50', // Slate Gray
-                'from-teal-500 to-cyan-500': '#2D5F5D', // Deep Teal
-                'from-rose-500 to-pink-500': '#412532', // Dark Dusty Rose (changed - different)
-                'from-teal-500 to-green-500': '#3A5A52', // Pine Green
-                'from-violet-500 to-purple-500': '#524463', // Midnight Purple (changed - different)
-              };
-              return colorMap[colorClass] || '#1D3557';
-            };
+            // Rotating tinted backgrounds like Brave — white, blue, peach, mint (4 tints for variety)
+            const tintCycle = [
+              { bg: darkMode ? 'rgba(30,35,45,0.7)' : '#ffffff', border: darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.18)' },
+              { bg: darkMode ? 'rgba(28,35,52,0.7)' : '#eef4ff', border: darkMode ? 'rgba(100,150,255,0.2)' : 'rgba(0,0,0,0.18)' },
+              { bg: darkMode ? 'rgba(42,32,36,0.7)' : '#fff1ee', border: darkMode ? 'rgba(255,120,100,0.18)' : 'rgba(0,0,0,0.18)' },
+              { bg: darkMode ? 'rgba(30,40,38,0.7)' : '#ecfdf5', border: darkMode ? 'rgba(72,220,170,0.18)' : 'rgba(0,0,0,0.18)' },
+            ];
+            const tint = tintCycle[index % 4];
 
-            const cardColor = getCardColor(section.color);
+            // Accent color from gradient
+            const getAccent = (color) => {
+              const map = {
+                'from-blue-500 to-cyan-500': darkMode ? '#60a5fa' : '#2563eb',
+                'from-green-500 to-emerald-500': darkMode ? '#34d399' : '#059669',
+                'from-purple-500 to-violet-500': darkMode ? '#a78bfa' : '#7c3aed',
+                'from-pink-500 to-rose-500': darkMode ? '#f472b6' : '#db2777',
+                'from-orange-500 to-red-500': darkMode ? '#fb923c' : '#ea580c',
+                'from-indigo-500 to-blue-500': darkMode ? '#818cf8' : '#4f46e5',
+                'from-teal-500 to-cyan-500': darkMode ? '#2dd4bf' : '#0d9488',
+                'from-rose-500 to-pink-500': darkMode ? '#fb7185' : '#e11d48',
+                'from-teal-500 to-green-500': darkMode ? '#34d399' : '#0d9488',
+                'from-violet-500 to-purple-500': darkMode ? '#c084fc' : '#7c3aed',
+              };
+              return map[color] || (darkMode ? '#60a5fa' : '#2563eb');
+            };
+            const accent = getAccent(section.color);
             
             return (
             <Link
               key={index}
               href={section.href}
               className="block group relative h-full"
+              style={{ zIndex: 1 }}
               onMouseEnter={() => setHoveredSection(index)}
               onMouseLeave={() => setHoveredSection(null)}
               onClick={() => handleSectionClick(index)}
-              style={{ perspective: '2000px' }}
               aria-label={`${section.title} - ${section.description}`}
             >
               <div
-                className="relative h-full min-h-[450px] transition-all duration-500 ease-out"
+                className={`relative rounded-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col h-[380px] ${
+                  section.overflow === 'visible' ? 'overflow-visible' : 'overflow-hidden'
+                }`}
                 style={{
-                  transformStyle: 'preserve-3d',
-                  transform: hoveredSection === index 
-                    ? 'rotateX(-4deg) rotateY(6deg) translateY(-8px) scale(1.01)' 
-                    : 'rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)',
-                  willChange: hoveredSection === index ? 'transform' : 'auto',
+                  background: tint.bg,
+                  border: darkMode 
+                    ? (hoveredSection === index ? '2px solid rgba(255,255,255,0.35)' : '2px solid rgba(255,255,255,0.18)')
+                    : (hoveredSection === index ? '2px solid #111' : '2px solid #222'),
+                  boxShadow: hoveredSection === index
+                    ? (darkMode 
+                        ? '4px 6px 0 0 rgba(255,255,255,0.12), 0 20px 40px -10px rgba(0,0,0,0.5)'
+                        : '4px 6px 0 0 #222, 0 20px 40px -10px rgba(0,0,0,0.15)')
+                    : (darkMode
+                        ? '3px 4px 0 0 rgba(255,255,255,0.08), 0 4px 12px -4px rgba(0,0,0,0.4)'
+                        : '3px 4px 0 0 #222, 0 4px 12px -4px rgba(0,0,0,0.08)'),
                 }}
               >
-                {/* Main Card with Solid Background */}
-                <div
-                  className="relative h-full rounded-[28px] overflow-hidden"
-                  style={{
-                    background: cardColor,
-                    transform: 'translateZ(0)',
-                    boxShadow: hoveredSection === index
-                      ? `0 30px 60px -15px ${cardColor}40, 0 15px 30px -8px rgba(0,0,0,0.3)`
-                      : `0 20px 40px -10px ${cardColor}25, 0 8px 16px -4px rgba(0,0,0,0.2)`,
-                    transition: 'box-shadow 0.5s ease-out',
-                  }}
-                >
-                  {/* Decorative Background Elements - Optimized */}
-                  <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-60">
-                    {/* Large decorative circle bottom left */}
-                    <div 
-                      className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full border-2 border-white/10"
-                      style={{
-                        transform: hoveredSection === index ? 'scale(1.05)' : 'scale(1)',
-                        transition: 'transform 0.4s ease-out',
-                      }}
+                {section.layout === 'billboard' ? (
+                  /* ── BILLBOARD CARD: image background with text on the billboard sign ── */
+                  <div className="relative w-full h-full">
+                    {/* Full-card background image */}
+                    <Image
+                      src={section.image}
+                      alt={section.title}
+                      fill
+                      className="object-cover object-center"
+                      priority={false}
+                      sizes="(max-width: 768px) 100vw, 33vw"
                     />
-                    {/* Medium circle top right */}
-                    <div 
-                      className="absolute -top-12 -right-12 w-48 h-48 rounded-full border-2 border-white/10"
+                    {/* Text overlay positioned on the billboard sign area */}
+                    <div
+                      className="absolute flex flex-col items-center justify-center text-center px-6"
                       style={{
-                        transform: hoveredSection === index ? 'scale(1.08)' : 'scale(1)',
-                        transition: 'transform 0.4s ease-out',
+                        top: '5%',
+                        left: '13%',
+                        right: '13%',
+                        bottom: '52%',
                       }}
-                    />
-                    {/* Small accent circle */}
-                    <div className="absolute top-10 left-10 w-4 h-4 rounded-full bg-white/20" />
-                    {/* Decorative dots cluster - bottom right */}
-                    <div className="absolute bottom-10 right-10 grid grid-cols-2 gap-2">
-                      <div className="w-2 h-2 rounded-full bg-white/15" />
-                      <div className="w-2 h-2 rounded-full bg-white/20" />
-                      <div className="w-2 h-2 rounded-full bg-white/20" />
-                      <div className="w-2 h-2 rounded-full bg-white/25" />
-                    </div>
-                  </div>
-
-                  {/* 3D Floating Content Card - Optimized */}
-                  <div 
-                    className="absolute top-6 left-5 right-5 backdrop-blur-lg rounded-[20px] transition-all duration-400 border"
-                    style={{
-                      background: darkMode 
-                        ? 'rgba(17, 24, 39, 0.95)'
-                        : 'rgba(255, 255, 255, 0.95)',
-                      borderColor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
-                      transform: hoveredSection === index 
-                        ? 'translateZ(40px) scale(1.01)' 
-                        : 'translateZ(20px)',
-                      transformStyle: 'preserve-3d',
-                      boxShadow: hoveredSection === index
-                        ? '0 25px 50px -12px rgba(0,0,0,0.35)'
-                        : '0 15px 30px -8px rgba(0,0,0,0.25)',
-                      willChange: hoveredSection === index ? 'transform' : 'auto',
-                    }}
-                  >
-                    <div className="p-7">
-                      {/* Category Badge */}
-                      <div className="mb-6 flex items-center justify-between">
-                        <div 
-                          className="px-4 py-2 rounded-xl text-[10px] font-black tracking-[0.15em] uppercase"
-                          style={{
-                            background: `${cardColor}15`,
-                            color: cardColor.includes('F59E0B') || cardColor.includes('D97706') || cardColor.includes('FBBF24') || cardColor.includes('EAB308') ? '#F59E0B' : '#3B82F6',
-                            border: `1.5px solid ${cardColor}30`,
-                            letterSpacing: '0.12em',
-                            fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
-                          }}
-                        >
-                          {section.category}
-                        </div>
-                        <div className="flex gap-1.5">
-                          <div 
-                            className="w-2 h-2 rounded-full transition-all duration-500"
-                            style={{ 
-                              backgroundColor: cardColor,
-                              boxShadow: hoveredSection === index ? `0 0 8px ${cardColor}` : 'none',
-                            }} 
-                          />
-                          <div 
-                            className="w-2 h-2 rounded-full transition-all duration-500"
-                            style={{ 
-                              backgroundColor: cardColor,
-                              boxShadow: hoveredSection === index ? `0 0 8px ${cardColor}` : 'none',
-                            }} 
-                          />
-                        </div>
-                      </div>
-
-                      {/* Icon - Optimized */}
-                      <div 
-                        className="inline-flex items-center justify-center w-16 h-16 rounded-[18px] mb-5 transition-all duration-400"
+                    >
+                      {/* Category badge */}
+                      <span
+                        className="px-3 py-1 rounded-full text-[9px] font-black tracking-[0.12em] uppercase mb-2"
                         style={{
-                          background: cardColor,
-                          transform: hoveredSection === index ? 'translateZ(25px) rotate(-4deg) scale(1.08)' : 'translateZ(12px)',
-                          transformStyle: 'preserve-3d',
-                          boxShadow: `0 12px 24px -6px ${cardColor}60`,
-                          color: '#ffffff',
+                          color: accent,
+                          background: `${accent}15`,
+                          border: `1px solid ${accent}30`,
                         }}
                       >
-                        <div style={{ transform: 'scale(1.1)' }}>
-                          {section.icon}
-                        </div>
-                      </div>
+                        {section.category}
+                      </span>
 
                       {/* Title */}
-                      <h3 
-                        className="text-xl font-black mb-3 tracking-tight leading-tight"
+                      <h3
+                        className="text-lg font-black tracking-tight leading-tight mb-1"
                         style={{
-                          transform: hoveredSection === index ? 'translateZ(18px)' : 'translateZ(8px)',
-                          transformStyle: 'preserve-3d',
-                          transition: 'transform 0.4s ease-out',
+                          color: '#1a1a2e',
                           letterSpacing: '-0.02em',
-                          fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-                          color: '#FFFFFF'
+                          fontFamily: 'system-ui, -apple-system, sans-serif',
+                          textShadow: '0 1px 2px rgba(255,255,255,0.3)',
                         }}
                       >
                         {section.title}
                       </h3>
 
                       {/* Description */}
-                      <p 
-                        className="text-sm leading-relaxed"
+                      <p
+                        className="text-xs leading-snug max-w-[90%]"
                         style={{
-                          transform: hoveredSection === index ? 'translateZ(15px)' : 'translateZ(6px)',
-                          transformStyle: 'preserve-3d',
-                          transition: 'transform 0.4s ease-out',
-                          lineHeight: '1.65',
-                          fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-                          fontWeight: 400,
-                          color: '#3B82F6'
+                          color: '#374151',
                         }}
                       >
                         {section.description}
                       </p>
+
+                      {/* CTA pill */}
+                      <span
+                        className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold text-white mt-2 transition-all duration-200 group-hover:shadow-md group-hover:scale-[1.02]"
+                        style={{ backgroundColor: accent }}
+                      >
+                        <span>{section.cta || 'Learn More'}</span>
+                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"
+                          className="transition-transform duration-300 group-hover:translate-x-1">
+                          <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </span>
                     </div>
                   </div>
+                ) : section.image ? (
+                  /* ── Brave-style IMAGE CARD: text top, illustration bottom ── */
+                  <>
+                    <div className={`relative z-20 p-5 pb-2 ${section.textAlign || ''}`}>
+                      {/* Category badge */}
+                      <div className={`mb-3 ${section.badgeAlign || ''}`}>
+                        <span 
+                          className="px-3 py-1 rounded-full text-[10px] font-black tracking-[0.12em] uppercase border"
+                          style={{
+                            color: accent,
+                            borderColor: `${accent}25`,
+                            background: `${accent}08`,
+                          }}
+                        >
+                          {section.category}
+                        </span>
+                      </div>
 
-                  {/* Bottom section with title and CTA - Optimized */}
-                  <div className="absolute bottom-0 left-0 right-0 p-7">
-                    <h2 
-                      className="text-3xl font-black text-white mb-4 tracking-tight leading-tight"
+                      {/* Title */}
+                      <h3 
+                        className={`text-xl font-black mb-2 tracking-tight leading-tight ${
+                          darkMode ? 'text-white' : 'text-gray-900'
+                        }`}
+                        style={{
+                          letterSpacing: '-0.02em',
+                          fontFamily: 'system-ui, -apple-system, sans-serif'
+                        }}
+                      >
+                        {section.title}
+                      </h3>
+
+                      {/* Description */}
+                      <p className={`text-sm leading-relaxed ${
+                        darkMode ? 'text-gray-300' : 'text-gray-600'
+                      }`}>
+                        {section.description}
+                      </p>
+
+                      {/* CTA pill */}
+                      <div className={`mt-3 ${section.ctaAlign || ''}`}>
+                        <span 
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold text-white transition-all duration-200 group-hover:shadow-md group-hover:scale-[1.02]"
+                          style={{ backgroundColor: accent }}
+                        >
+                          <span>{section.cta || 'Learn More'}</span>
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" 
+                            className="transition-transform duration-300 group-hover:translate-x-1">
+                            <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Illustration — below text, clipped to card */}
+                    <div className={`relative z-10 w-full flex-1 flex items-end px-0 pb-0 ${
+                      section.imageContainerClass || 'justify-center'
+                    }`}>
+                      <Image
+                        src={section.image}
+                        alt={section.title}
+                        width={400}
+                        height={300}
+                        className={`h-auto object-contain drop-shadow-md ${section.imageClass || 'w-[90%] max-h-[200px]'}`}
+                        priority={false}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  /* ── Standard card (no image) ── */
+                  <div className="p-5 flex-1 flex flex-col">
+                    {/* Category badge */}
+                    <div className="mb-3 flex items-center justify-between">
+                      <span 
+                        className="px-3 py-1 rounded-full text-[10px] font-black tracking-[0.12em] uppercase border"
+                        style={{
+                          color: accent,
+                          borderColor: `${accent}25`,
+                          background: `${accent}08`,
+                        }}
+                      >
+                        {section.category}
+                      </span>
+                    </div>
+
+                    {/* Icon */}
+                    <div 
+                      className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-3 transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-3"
                       style={{
-                        transform: hoveredSection === index ? 'translateZ(28px)' : 'translateZ(5px)',
-                        transformStyle: 'preserve-3d',
-                        transition: 'transform 0.4s ease-out',
-                        textShadow: '0 4px 20px rgba(0,0,0,0.4)',
-                        letterSpacing: '-0.03em',
-                        fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+                        background: `${accent}12`,
+                        color: accent,
+                      }}
+                    >
+                      <div className="scale-75">{section.icon}</div>
+                    </div>
+
+                    {/* Title */}
+                    <h3 
+                      className={`text-xl font-black mb-2 tracking-tight leading-tight ${
+                        darkMode ? 'text-white' : 'text-gray-900'
+                      }`}
+                      style={{
+                        letterSpacing: '-0.02em',
+                        fontFamily: 'system-ui, -apple-system, sans-serif'
                       }}
                     >
                       {section.title}
-                    </h2>
-                    
-                    <div 
-                      className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm font-bold group-hover:gap-3.5 group-hover:bg-white/20 transition-all duration-300"
-                      style={{
-                        transform: hoveredSection === index ? 'translateZ(24px) scale(1.03)' : 'translateZ(3px)',
-                        transformStyle: 'preserve-3d',
-                        boxShadow: '0 8px 16px -4px rgba(0,0,0,0.3)',
-                        fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-                        letterSpacing: '0.01em'
-                      }}
-                    >
-                      <span>Learn More</span>
-                      <svg 
-                        width="18" 
-                        height="18" 
-                        viewBox="0 0 16 16" 
-                        fill="none" 
-                        className="transition-transform duration-300 group-hover:translate-x-1"
+                    </h3>
+
+                    {/* Description */}
+                    <p className={`text-sm leading-relaxed mb-3 ${
+                      darkMode ? 'text-gray-300' : 'text-gray-600'
+                    }`}>
+                      {section.description}
+                    </p>
+
+                    {/* Features */}
+                    <div className="space-y-1.5 mb-4">
+                      {section.features.map((feature, idx) => (
+                        <div key={idx} className="flex items-center gap-2 text-xs">
+                          <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" 
+                            style={{ backgroundColor: accent }} />
+                          <span className={`font-medium ${darkMode ? 'text-gray-400' : 'text-gray-700'}`}>
+                            {feature}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* CTA — Brave-style colored pill button */}
+                    <div className="mt-auto pt-2">
+                      <span 
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold text-white transition-all duration-200 group-hover:shadow-md group-hover:scale-[1.02]"
+                        style={{ backgroundColor: accent }}
                       >
-                        <path 
-                          d="M6 12L10 8L6 4" 
-                          stroke="currentColor" 
-                          strokeWidth="2.5" 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round"
-                        />
-                      </svg>
+                        <span>Learn More</span>
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" 
+                          className="transition-transform duration-300 group-hover:translate-x-1">
+                          <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </span>
                     </div>
                   </div>
-
-                  {/* Gradient Overlay - Simplified */}
-                  <div 
-                    className="absolute inset-0 pointer-events-none"
-                    style={{
-                      background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.1) 100%)',
-                      opacity: 0.6,
-                    }}
-                  />
-                </div>
-
-                {/* 3D Stack Layers - Solid Colors */}
-                <div 
-                  className="absolute inset-0 rounded-[28px] -z-10 transition-opacity duration-400"
-                  style={{
-                    background: `${cardColor}90`,
-                    transform: 'translateZ(-30px) translateY(15px) scale(0.96)',
-                    filter: 'blur(8px)',
-                    opacity: hoveredSection === index ? 0.8 : 0.5,
-                  }}
-                />
-                <div 
-                  className="absolute inset-0 rounded-[28px] -z-20 transition-opacity duration-400"
-                  style={{
-                    background: `${cardColor}70`,
-                    transform: 'translateZ(-60px) translateY(30px) scale(0.92)',
-                    filter: 'blur(15px)',
-                    opacity: hoveredSection === index ? 0.6 : 0.3,
-                  }}
-                />
+                )}
               </div>
             </Link>
             );
@@ -610,219 +655,90 @@ const Main = ({ darkMode, isVisible = false }) => {
       )}
       </div>
 
-      {/* Enhanced Animated Stats Section - Hidden on mobile, shown in FAB popup */}
-      <div className="max-w-7xl mx-auto mt-16 hidden md:block relative">
-        {/* Clean background without colors */}
-        
+      {/* Stats Section — Brave-style with watermark, RIGHT-aligned (alternating) */}
+      <div className="max-w-6xl mx-auto mt-20 hidden md:block relative px-4">
+        {/* Giant watermark text — UniShare brand */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden" aria-hidden="true">
+          <span className="text-[12rem] font-black tracking-tight"
+            style={{
+              color: darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              letterSpacing: '-0.06em',
+              lineHeight: 1,
+            }}>
+            UniShare
+          </span>
+        </div>
+
         <div className="relative z-10">
-          {/* Enhanced Header with clean styling */}
-          <div className="text-center mb-12">
-            <div className="relative inline-block">
-              {/* Clean header without background glow */}
-              
-              <h1 
-              className={`text-6xl md:text-7xl lg:text-8xl font-extrabold mb-8 leading-[0.95] tracking-tight ${
+          {/* Centered massive heading */}
+          <div className="mb-14 text-center">
+            <h2 
+              className={`text-5xl md:text-6xl lg:text-7xl font-black leading-[0.95] tracking-tight ${
                 darkMode ? 'text-white' : 'text-gray-900'
               }`}
               style={{
                 letterSpacing: '-0.04em',
-                fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+                fontFamily: 'system-ui, -apple-system, sans-serif'
               }}
             >
-              Community 
-              <br />
-              <span className="brand-wordmark relative inline-block mt-2 whitespace-nowrap"
-              style={{
-                fontWeight: 900,
-                letterSpacing: '-0.05em'
-              }}>
-                <span className="brand-uni">imp</span><span className="brand-share">act</span>
-              </span>
-            </h1>
-            </div>
-            
-            <p className={`text-xl md:text-2xl max-w-3xl mx-auto mt-8 font-bold ${
-              darkMode ? 'text-gray-200' : 'text-gray-700'
+              Community<br />
+              <span style={{ color: '#f97316' }}>impact.</span>
+            </h2>
+            <p className={`text-lg mt-5 max-w-lg mx-auto ${
+              darkMode ? 'text-gray-300' : 'text-gray-600'
             }`}>
-              See how our platform is making a difference in campus life
+              See how our platform is making a real difference across campus life.
             </p>
           </div>
 
-          {/* Ultra-Premium Glass Morphism Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-12" id="stats-section">
+          {/* 4-column bordered stat cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5" id="stats-section">
             {[
-              { 
-                label: 'Active Users', 
-                value: '400', 
-                color: 'from-blue-500 to-cyan-400',
-                accentColor: '#3b82f6',
-                suffix: '+',
-                bgPattern: 'users'
-              },
-              { 
-                label: 'Rides Shared', 
-                value: '630', 
-                color: 'from-green-500 to-emerald-400',
-                accentColor: '#10b981',
-                suffix: '+',
-                bgPattern: 'rides'
-              },
-              { 
-                label: 'Items Traded', 
-                value: '200', 
-                color: 'from-purple-500 to-violet-400',
-                accentColor: '#a855f7',
-                suffix: '+',
-                bgPattern: 'items'
-              },
-              { 
-                label: 'Satisfaction Rate', 
-                value: '90', 
-                color: 'from-amber-500 to-orange-400',
-                accentColor: '#f59e0b',
-                suffix: '%',
-                bgPattern: 'satisfaction'
-              }
-            ].map((stat, index) => (
-              <div
-                key={index}
-                className="group relative text-center"
-              >
-                {/* Ultra-Premium Bold Glass Card with Hover Effects */}
-                <div className="relative p-10 rounded-[32px] backdrop-blur-3xl border-2 transition-all duration-500 group-hover:scale-[1.02] group-hover:shadow-2xl overflow-hidden"
+              { label: 'Active Users', value: '400', suffix: '+', accent: '#2563eb' },
+              { label: 'Rides Shared', value: '630', suffix: '+', accent: '#059669' },
+              { label: 'Items Traded', value: '200', suffix: '+', accent: '#7c3aed' },
+              { label: 'Satisfaction', value: '90', suffix: '%', accent: '#ea580c' },
+            ].map((stat, index) => {
+              const tints = [
+                { bg: darkMode ? 'rgba(30,35,45,0.7)' : '#ffffff', border: darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' },
+                { bg: darkMode ? 'rgba(28,35,52,0.7)' : '#eef4ff', border: darkMode ? 'rgba(80,130,255,0.12)' : 'rgba(59,130,246,0.12)' },
+                { bg: darkMode ? 'rgba(42,32,36,0.7)' : '#fff1ee', border: darkMode ? 'rgba(255,100,80,0.1)' : 'rgba(239,68,68,0.08)' },
+                { bg: darkMode ? 'rgba(35,30,42,0.7)' : '#f5f3ff', border: darkMode ? 'rgba(139,92,246,0.1)' : 'rgba(139,92,246,0.1)' },
+              ];
+              const t = tints[index];
+
+              return (
+                <div
+                  key={index}
+                  className="group rounded-2xl border p-8 text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
                   style={{
-                    background: darkMode 
-                      ? `linear-gradient(135deg, 
-                          rgba(255, 255, 255, 0.08) 0%,
-                          rgba(255, 255, 255, 0.04) 100%)`
-                      : `linear-gradient(135deg, 
-                          rgba(255, 255, 255, 0.25) 0%,
-                          rgba(255, 255, 255, 0.12) 100%)`,
-                    borderColor: darkMode 
-                      ? 'rgba(255, 255, 255, 0.15)'
-                      : 'rgba(255, 255, 255, 0.25)',
-                    boxShadow: `
-                      0 32px 64px -12px rgba(0, 0, 0, 0.4),
-                      0 20px 40px -15px rgba(0, 0, 0, 0.3),
-                      inset 0 2px 0 rgba(255, 255, 255, 0.15),
-                      inset 0 -2px 0 rgba(0, 0, 0, 0.05),
-                      0 2px 0 rgba(255, 255, 255, 0.1)
-                    `
-                  }}>
-                  
-                  {/* Animated Background Pattern */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    <div className="absolute inset-0" style={{
-                      backgroundImage: stat.bgPattern === 'users' 
-                        ? `radial-gradient(circle at 20% 50%, ${stat.accentColor}15 0%, transparent 50%),
-                           radial-gradient(circle at 80% 80%, ${stat.accentColor}10 0%, transparent 50%),
-                           radial-gradient(circle at 40% 20%, ${stat.accentColor}08 0%, transparent 50%)`
-                        : stat.bgPattern === 'rides'
-                        ? `linear-gradient(135deg, ${stat.accentColor}08 0%, transparent 50%),
-                           radial-gradient(circle at 70% 30%, ${stat.accentColor}12 0%, transparent 40%)`
-                        : stat.bgPattern === 'items'
-                        ? `radial-gradient(ellipse at 50% 50%, ${stat.accentColor}10 0%, transparent 50%),
-                           conic-gradient(from 45deg at 50% 50%, transparent 0%, ${stat.accentColor}08 25%, transparent 50%)`
-                        : `radial-gradient(circle at 50% 50%, ${stat.accentColor}15 0%, transparent 60%),
-                           linear-gradient(45deg, ${stat.accentColor}05 25%, transparent 25%, transparent 75%, ${stat.accentColor}05 75%)`
-                    }} />
+                    background: t.bg,
+                    borderColor: t.border,
+                  }}
+                >
+                  {/* Value */}
+                  <div 
+                    className={`text-5xl font-black mb-2 transition-colors duration-300 ${
+                      darkMode ? 'text-white' : 'text-gray-900'
+                    }`}
+                    style={{
+                      fontFamily: 'system-ui, -apple-system, sans-serif',
+                      letterSpacing: '-0.03em',
+                    }}
+                  >
+                    {stat.value}<span style={{ color: stat.accent }}>{stat.suffix}</span>
                   </div>
 
-                  {/* Decorative Background Symbols */}
-                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    {/* Large Background Symbol */}
-                    <div className={`absolute transition-all duration-700 ${
-                      stat.bgPattern === 'users' ? 'top-4 right-4 w-32 h-32' :
-                      stat.bgPattern === 'rides' ? 'top-2 right-2 w-36 h-36' :
-                      stat.bgPattern === 'items' ? 'bottom-2 right-2 w-32 h-32' :
-                      'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40'
-                    } group-hover:scale-110 group-hover:rotate-6`}
-                      style={{
-                        opacity: darkMode ? 0.04 : 0.06,
-                        filter: 'blur(1px)'
-                      }}>
-                      {stat.bgPattern === 'users' && (
-                        <svg viewBox="0 0 24 24" fill="currentColor" className={`w-full h-full text-gradient bg-gradient-to-br ${stat.color}`}>
-                          <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                          <circle cx="18" cy="8" r="3" opacity="0.6"/>
-                          <circle cx="6" cy="8" r="3" opacity="0.6"/>
-                        </svg>
-                      )}
-                      {stat.bgPattern === 'rides' && (
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={`w-full h-full text-gradient bg-gradient-to-br ${stat.color}`}>
-                          <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
-                          <path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10M13 16h5.586a1 1 0 00.707-.293l2.414-2.414A1 1 0 0022 12.586V10a1 1 0 00-1-1h-4"/>
-                          <path d="M3 9h10" strokeLinecap="round"/>
-                        </svg>
-                      )}
-                      {stat.bgPattern === 'items' && (
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={`w-full h-full text-gradient bg-gradient-to-br ${stat.color}`}>
-                          <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-                          <circle cx="17" cy="8" r="1.5" opacity="0.5"/>
-                          <circle cx="12" cy="6" r="1" opacity="0.5"/>
-                        </svg>
-                      )}
-                      {stat.bgPattern === 'satisfaction' && (
-                        <svg viewBox="0 0 24 24" fill="currentColor" className={`w-full h-full text-gradient bg-gradient-to-br ${stat.color}`}>
-                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                          <circle cx="12" cy="12" r="4" opacity="0.3"/>
-                        </svg>
-                      )}
-                    </div>
-
-                    {/* Small Floating Decorative Elements */}
-                    <div className="absolute top-6 left-6 w-2 h-2 rounded-full bg-white/20 group-hover:scale-150 transition-transform duration-500" style={{ boxShadow: `0 0 20px ${stat.accentColor}40` }} />
-                    <div className="absolute bottom-8 left-8 w-1.5 h-1.5 rounded-full bg-white/15 group-hover:scale-150 group-hover:translate-y-1 transition-all duration-700" style={{ boxShadow: `0 0 15px ${stat.accentColor}30` }} />
-                    <div className="absolute top-1/3 left-4 w-1 h-1 rounded-full bg-white/10 group-hover:scale-[2] transition-transform duration-600" />
-                    
-                    {/* Gradient Accent Line */}
-                    <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${stat.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} 
-                      style={{ 
-                        boxShadow: `0 0 20px ${stat.accentColor}60, 0 0 40px ${stat.accentColor}30` 
-                      }}
-                    />
-                  </div>
-                  
-                  {/* Counter with Enhanced Typography */}
-                  <div className={`relative z-10 text-5xl font-bold mb-4 transition-all duration-500 group-hover:scale-110 ${
-                    darkMode ? 'text-white' : 'text-gray-900'
-                  }`}
-                  style={{
-                    fontFamily: 'SF Pro Display, -apple-system, system-ui, sans-serif',
-                    letterSpacing: '-0.03em',
-                    fontWeight: 700,
-                    textShadow: darkMode 
-                      ? `0 0 40px ${stat.accentColor}40, 0 2px 8px rgba(0,0,0,0.3)`
-                      : `0 2px 8px rgba(0,0,0,0.1)`
-                  }}>
-                    <AnimatedCounter 
-                      end={stat.value} 
-                      isVisible={animatedStats} 
-                      suffix={stat.suffix}
-                    />
-                  </div>
-                  
-                  {/* Enhanced Label Typography with Hover Effect */}
-                  <div className={`relative z-10 text-lg font-bold tracking-wide transition-all duration-300 group-hover:translate-y-1 ${
-                    darkMode ? 'text-white/90 group-hover:text-white' : 'text-gray-700 group-hover:text-gray-900'
-                  }`}
-                  style={{
-                    fontFamily: 'SF Pro Text, -apple-system, system-ui, sans-serif',
-                    letterSpacing: '0.01em'
-                  }}>
+                  {/* Label */}
+                  <div className={`text-sm font-bold uppercase tracking-widest ${
+                    darkMode ? 'text-gray-400' : 'text-gray-500'
+                  }`}>
                     {stat.label}
                   </div>
-
-                  {/* Hover Glow Effect */}
-                  <div className={`absolute inset-0 rounded-[32px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`}
-                    style={{
-                      background: `radial-gradient(circle at center, ${stat.accentColor}15 0%, transparent 70%)`,
-                      filter: 'blur(20px)'
-                    }}
-                  />
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

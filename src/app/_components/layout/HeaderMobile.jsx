@@ -7,6 +7,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 
 import { Search, Globe, Bell, Sun, Moon, User, LogOut, Menu, X, Settings, Camera, Edit3, Shield, HelpCircle, Info, ChevronRight, ArrowLeft } from "lucide-react";
+import NotificationFloatingPanel from "../ui/NotificationFloatingPanel";
 import { useAuth, useNotifications, useUI } from "./../../lib/contexts/UniShareContext";
 import { getProfileImageUrl, getUserInitials } from "./../../lib/utils/profileUtils";
 import { getCurrentUserProfile } from "./../../lib/api/userProfile";
@@ -70,17 +71,21 @@ export default function HeaderMobile() {
 
   // Local state for mobile menu sections
   const [logoRotation, setLogoRotation] = useState(0);
+  const [notifOpen, setNotifOpen] = useState(false);
   const [notifInlineOpen, setNotifInlineOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [notifInlineFilter, setNotifInlineFilter] = useState('All');
+  const bellMobileRef = useRef(null);
 
   const handleLogout = async () => {
     try {
       await contextLogout();
       setMobileMenu(false);
-      router.push('/');
     } catch (error) {
       console.error('Logout error:', error);
+    } finally {
+      // Always redirect and force full reload to clear cached state
+      window.location.href = '/login';
     }
   };
 
@@ -249,14 +254,15 @@ export default function HeaderMobile() {
       style={{ top: smoothHeaderTop }}
     >
       <nav 
-        className={`relative border backdrop-blur-2xl shadow-2xl rounded-full px-6 sm:px-8 py-2.5 sm:py-3 flex items-center justify-between max-w-full ${
+        className={`relative border backdrop-blur-lg shadow-2xl rounded-full px-6 sm:px-8 py-2.5 sm:py-3 flex items-center justify-between max-w-full ${
           darkMode 
             ? 'bg-[#0a0a0a]/40 border-white/10' 
             : 'bg-white/95 border-gray-200/50'
         }`}
         style={{
-          backdropFilter: 'blur(24px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+          backdropFilter: 'blur(16px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+          willChange: 'background-color, border-color'
         }}
       >
         {/* Left - Back Button or Logo */}
@@ -339,19 +345,36 @@ export default function HeaderMobile() {
           </Link>
         </div>
 
-        {/* Right - Theme Toggle & Menu/Sign In */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        {/* Right - Theme Toggle, Notifications & Menu/Sign In */}
+        <div className="flex items-center gap-1 flex-shrink-0">
           <button
             onClick={toggleDarkMode}
-            className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:text-accent-foreground h-10 w-10 hover:bg-transparent"
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:text-accent-foreground h-9 w-9 hover:bg-transparent"
             aria-label="Toggle theme"
           >
             {darkMode ? (
-              <Moon className="h-5 w-5" />
+              <Moon className="h-[1.15rem] w-[1.15rem]" />
             ) : (
-              <Sun className="h-5 w-5" />
+              <Sun className="h-[1.15rem] w-[1.15rem]" />
             )}
           </button>
+
+          {/* Notification Bell */}
+          {isAuthenticated && (
+            <button
+              ref={bellMobileRef}
+              onClick={() => {
+                setNotifOpen(prev => !prev);
+              }}
+              className="relative inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none h-9 w-9 hover:bg-transparent"
+              aria-label="Notifications"
+            >
+              <Bell className="h-[1.15rem] w-[1.15rem]" />
+              {hasUnread && (
+                <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-[#0a0a0a]" />
+              )}
+            </button>
+          )}
           
           {!isAuthenticated ? (
             <button
@@ -366,33 +389,42 @@ export default function HeaderMobile() {
           ) : (
             <button
               onClick={toggleMobileMenu}
-              className="flex items-center gap-2 rounded-full transition-all duration-300 hover:scale-105 p-[3px]"
-              style={{
-                background: 'linear-gradient(90deg, #facc15 0%, #facc15 50%, #38bdf8 50%, #38bdf8 100%)',
-                borderRadius: '9999px'
-              }}
+              className="flex items-center gap-2 rounded-full transition-all duration-300 hover:scale-105 relative"
             >
-              <div className="h-9 w-9 overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center transition-all duration-300">
-                {(() => {
-                  const profileImage = getProfileImageUrl(userProfile, user);
-                  if (profileImage) {
-                    return (
-                      <Image
-                        src={profileImage}
-                        alt="User"
-                        width={36}
-                        height={36}
-                        className="h-full w-full object-cover"
-                      />
-                    );
-                  } else {
-                    return (
-                      <span className="flex h-full w-full items-center justify-center text-sm font-bold text-white">
-                        {getUserInitials(userProfile, user)}
-                      </span>
-                    );
-                  }
-                })()}
+              <div className="relative">
+                {/* Yellow + Blue border ring */}
+                <div className="absolute inset-0 rounded-full p-[2.5px]" style={{
+                  background: 'linear-gradient(135deg, #EAB308 0%, #EAB308 45%, #3B82F6 55%, #3B82F6 100%)'
+                }}>
+                  <div className="w-full h-full rounded-full backdrop-blur-lg" style={{
+                    background: 'rgba(255, 255, 255, 0.95)'
+                  }} />
+                </div>
+                {/* Profile image */}
+                <div className="relative p-[2.5px]">
+                  <div className="h-9 w-9 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center transition-all duration-300">
+                  {(() => {
+                    const profileImage = getProfileImageUrl(userProfile, user);
+                    if (profileImage) {
+                      return (
+                        <Image
+                          src={profileImage}
+                          alt="User"
+                          width={36}
+                          height={36}
+                          className="h-full w-full object-cover"
+                        />
+                      );
+                    } else {
+                      return (
+                        <span className="flex h-full w-full items-center justify-center text-sm font-bold text-white">
+                          {getUserInitials(userProfile, user)}
+                        </span>
+                      );
+                    }
+                  })()}
+                  </div>
+                </div>
               </div>
             </button>
           )}
@@ -783,6 +815,12 @@ export default function HeaderMobile() {
           </div>
         </div>
       </div>
+      {/* Floating Notification Panel */}
+      <NotificationFloatingPanel
+        open={notifOpen}
+        onClose={() => setNotifOpen(false)}
+        anchorRef={bellMobileRef}
+      />
     </motion.div>
   );
 }

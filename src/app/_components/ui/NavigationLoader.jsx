@@ -10,33 +10,56 @@ const NavigationLoader = () => {
   const [dots, setDots] = useState('');
   const [progress, setProgress] = useState(0);
 
-  // Animate loading dots
+  // ✅ PERFORMANCE: Animate loading dots with RAF instead of setInterval
   useEffect(() => {
     if (!navigationLoading) return;
     
-    const interval = setInterval(() => {
-      setDots(prev => prev.length >= 3 ? '' : prev + '.');
-    }, 400); // Faster dots animation
-
-    return () => clearInterval(interval);
+    let rafId;
+    let lastUpdate = Date.now();
+    const updateInterval = 400; // Update every 400ms
+    
+    const animate = () => {
+      const now = Date.now();
+      if (now - lastUpdate >= updateInterval) {
+        setDots(prev => prev.length >= 3 ? '' : prev + '.');
+        lastUpdate = now;
+      }
+      rafId = requestAnimationFrame(animate);
+    };
+    
+    rafId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(rafId);
   }, [navigationLoading]);
 
-  // Smooth progress simulation
+  // ✅ PERFORMANCE: Smooth progress simulation with RAF
   useEffect(() => {
     if (!navigationLoading) {
       setProgress(0);
       return;
     }
     
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 90) return 90; // Cap at 90% until actual completion
-        return Math.min(prev + Math.random() * 8 + 2, 90); // Smoother, more realistic progress
-      });
-    }, 80); // Faster updates for smoother animation
-
-    return () => clearInterval(interval);
-  }, [navigationLoading]);
+    let rafId;
+    let lastUpdate = Date.now();
+    const updateInterval = 80; // Update every 80ms
+    
+    const animate = () => {
+      const now = Date.now();
+      if (now - lastUpdate >= updateInterval) {
+        setProgress(prev => {
+          if (prev >= 90) return 90; // Cap at 90% until actual completion
+          return Math.min(prev + Math.random() * 8 + 2, 90); // Smoother, more realistic progress
+        });
+        lastUpdate = now;
+      }
+      
+      if (progress < 90) {
+        rafId = requestAnimationFrame(animate);
+      }
+    };
+    
+    rafId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(rafId);
+  }, [navigationLoading, progress]);
 
   if (!navigationLoading) return null;
 

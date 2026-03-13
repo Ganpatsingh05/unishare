@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Bell, CheckCheck, Trash2, MessageCircle, Megaphone, AlertTriangle, Info, Loader2 } from "lucide-react";
 import { markNotificationAsRead, markAllNotificationsAsRead, deleteUserNotification } from "./../../lib/api/notifications";
 
@@ -47,7 +47,8 @@ const formatNotificationDate = (dateString) => {
  *   - loadNotifications: () => void (function to refresh notifications)
  *   - isAuthenticated: boolean (whether user is logged in)
  */
-export default function NotificationPanel({ open, onClose, darkMode, notifications: propNotifications, setNotifications: propSetNotifications, loadNotifications: propLoadNotifications, isAuthenticated }) {
+// ✅ PERFORMANCE: Memoized to prevent re-renders when parent state changes
+const NotificationPanel = React.memo(({ open, onClose, darkMode, notifications: propNotifications, setNotifications: propSetNotifications, loadNotifications: propLoadNotifications, isAuthenticated }) => {
   // Use context-provided data
   const notifications = propNotifications || [];
   const setNotifications = propSetNotifications || (() => {});
@@ -495,4 +496,8 @@ export default function NotificationPanel({ open, onClose, darkMode, notificatio
       </div>
     </div>
   );
-}
+});
+
+NotificationPanel.displayName = 'NotificationPanel';
+
+export default NotificationPanel;

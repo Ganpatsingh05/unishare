@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { useUI } from "./../../lib/contexts/UniShareContext";
 
-const Footer = () => {
+const Footer = React.memo(function Footer() {
   const {darkMode} = useUI();
   const [email, setEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -447,6 +447,6 @@ const Footer = () => {
       </div>
     </footer>
   );
-};
+});
 
 export default Footer;

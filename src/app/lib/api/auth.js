@@ -34,11 +34,18 @@ export const checkAuthStatus = async () => {
 
 export const logout = async () => {
   try {
-    // Use your backend logout endpoint which handles session destruction and redirects
-    window.location.href = `${BACKEND_URL}/auth/logout`;
-    return true;
+    // Use fetch POST to properly destroy the session on the server
+    const response = await fetch(`${BACKEND_URL}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await response.json();
+    return data.success === true;
   } catch (error) {
     console.error('Logout error:', error);
+    // Fallback: navigate to GET logout endpoint if fetch fails
+    window.location.href = `${BACKEND_URL}/auth/logout`;
     return false;
   }
 };

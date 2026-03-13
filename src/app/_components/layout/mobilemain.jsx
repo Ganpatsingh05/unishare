@@ -115,7 +115,9 @@ const sections = [
     href: '/announcements',
     color: 'from-rose-500 to-pink-500',
     category: 'communication',
-    keyFeature: 'Real-time alerts'
+    keyFeature: 'Real-time alerts',
+    image: '/images/cards/announcement.png',
+    layout: 'billboard',
   },
   {
     title: 'Study Resources',
@@ -302,6 +304,56 @@ const MobileMain = ({ darkMode, isVisible = false }) => {
                   '--ring-color': `${cardColor}50`,
                 }}
               >
+                {section.layout === 'billboard' ? (
+                  /* ── BILLBOARD CARD: image background with text on the billboard sign ── */
+                  <div className="relative w-full min-h-[210px]">
+                    <Image
+                      src={section.image}
+                      alt={section.title}
+                      fill
+                      className="object-cover object-center"
+                      priority={false}
+                      sizes="50vw"
+                    />
+                    {/* Text overlay on the billboard sign area */}
+                    <div
+                      className="absolute flex flex-col items-center justify-center text-center px-3"
+                      style={{
+                        top: '4%',
+                        left: '13%',
+                        right: '13%',
+                        bottom: '52%',
+                      }}
+                    >
+                      <span
+                        className="px-2 py-0.5 rounded-full text-[7px] font-black tracking-[0.1em] uppercase mb-1"
+                        style={{
+                          color: cardColor,
+                          background: `${cardColor}15`,
+                          border: `1px solid ${cardColor}30`,
+                        }}
+                      >
+                        {section.category}
+                      </span>
+                      <h3
+                        className="text-sm font-black tracking-tight leading-tight mb-0.5"
+                        style={{
+                          color: '#1a1a2e',
+                          letterSpacing: '-0.02em',
+                          fontFamily: 'system-ui, -apple-system, sans-serif',
+                        }}
+                      >
+                        {section.title}
+                      </h3>
+                      <p
+                        className="text-[10px] leading-snug"
+                        style={{ color: '#4B5563' }}
+                      >
+                        {section.description}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
                 <div
                   className="relative w-full h-full pt-6 pb-5 px-4 flex flex-col justify-between min-h-[210px] transition-all duration-300 ease-in-out"
                   style={{
@@ -332,11 +384,11 @@ const MobileMain = ({ darkMode, isVisible = false }) => {
 
                   {/* 3D Floating Content Card */}
                   <div
-                    className="absolute top-3 left-2 right-2 backdrop-blur-lg rounded-[18px] border"
+                    className="absolute top-3 left-2 right-2 rounded-[18px] border"
                     style={{
                       background: darkMode 
-                        ? 'rgba(17, 24, 39, 0.95)'
-                        : 'rgba(255, 255, 255, 0.95)',
+                        ? 'rgba(17, 24, 39, 0.98)'
+                        : 'rgba(255, 255, 255, 0.98)',
                       borderColor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
                       boxShadow: '0 8px 16px -4px rgba(0,0,0,0.25)',
                     }}
@@ -406,6 +458,7 @@ const MobileMain = ({ darkMode, isVisible = false }) => {
                     </div>
                   </div>
                 </div>
+                )}
               </Link>
             );
           })}

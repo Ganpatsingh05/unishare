@@ -6,6 +6,9 @@
 :root {
   --background: transparent;
   --foreground: #171717;
+  /* ✅ PERFORMANCE: Theme variables for instant switching */
+  --theme-bg: #F9FAFB;
+  --theme-text: #1f2937;
   /* Theme text tokens (light defaults) */
   --text-primary: #0f172a; /* slate-900 */
   --text-secondary: #334155; /* slate-700 */
@@ -18,15 +21,19 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  /* Global easing for subtle spring-like motion */
+  /* ✅ PERFORMANCE: Faster transitions */
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-soft: cubic-bezier(0.5, 0, 0.75, 0);
+  --transition-fast: 0.15s;
+  --transition-normal: 0.2s;
 }
 
 /* Dark theme token overrides (driven by UniShareProvider setting html[data-theme]) */
 html[data-theme='dark'] {
   --background: transparent; /* Transparent to show galaxy */
   --foreground: #FFFFFF;
+  --theme-bg: #1a1a1a;
+  --theme-text: #FFFFFF;
   --text-primary: #FFFFFF; /* Pure white for best contrast */
   --text-secondary: #E2E8F0; /* slate-200 */
   --text-muted: #94A3B8; /* slate-400 */
@@ -40,6 +47,18 @@ html[data-theme='dark'] {
     --background: transparent;
     --foreground: #FFFFFF;
   }
+}
+
+/* ✅ Global cursor-pointer for all interactive elements */
+button,
+[role="button"],
+input[type="submit"],
+input[type="reset"],
+input[type="button"],
+select,
+summary,
+a {
+  cursor: pointer;
 }
 
 /* Line clamp utilities for text truncation */
@@ -79,16 +98,24 @@ html[data-theme='dark'] {
 
 html {
   background-color: transparent;
+  /* Slight zoom for larger feel */
+  zoom: 1.05;
+  /* ✅ PERFORMANCE: GPU acceleration for smooth theme transitions */
+  transform: translateZ(0);
+  -webkit-font-smoothing: antialiased;
 }
 
 body {
   /* Base text uses theme token for better contrast */
-  color: var(--text-primary);
-  background-color: transparent;
+  color: var(--theme-text, var(--text-primary));
+  background-color: var(--theme-bg, transparent);
   font-family: Arial, Helvetica, sans-serif;
   overflow-x: hidden;
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
+  /* ✅ PERFORMANCE: Fast theme transitions */
+  transition: background-color var(--transition-fast) ease, color var(--transition-fast) ease;
+  will-change: background-color, color;
 }
 
 body::-webkit-scrollbar {
@@ -102,15 +129,17 @@ body::-webkit-scrollbar {
    🌟 Global Theme Backgrounds
    ========================= */
 .theme-bg-light {
-  background: #F9FAFB;
-  color: #1f2937;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--theme-bg, #F9FAFB);
+  color: var(--theme-text, #1f2937);
+  transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: background-color, color;
 }
 
 .theme-bg-dark {
-  background: #1a1a1a;
-  color: #FFFFFF;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--theme-bg, #1a1a1a);
+  color: var(--theme-text, #FFFFFF);
+  transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: background-color, color;
 }
 
 /* =========================
@@ -385,7 +414,26 @@ body::-webkit-scrollbar {
 /* =========================
    🌟 UI Utilities
    ========================= */
-.theme-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+/* ✅ PERFORMANCE: Faster theme transitions */
+.theme-transition { 
+  transition: background-color var(--transition-fast) cubic-bezier(0.4, 0, 0.2, 1), 
+              color var(--transition-fast) cubic-bezier(0.4, 0, 0.2, 1), 
+              border-color var(--transition-fast) cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: background-color, color, border-color;
+}
+
+/* ✅ PERFORMANCE: CSS containment for better paint/layout performance */
+.contain-layout { contain: layout; }
+.contain-paint { contain: paint; }
+.contain-content { contain: content; }
+.contain-strict { contain: strict; }
+
+/* ✅ PERFORMANCE: GPU acceleration for animations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
 
 .hover-glow:hover { box-shadow: 0 0 25px rgba(59, 130, 246, 0.4); }
 .hover-lift:hover { transform: translateY(-4px) scale(1.02); }
@@ -419,12 +467,16 @@ body::-webkit-scrollbar {
 .human-hover:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 25px rgba(255, 154, 86, 0.2);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform var(--transition-fast) cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow var(--transition-fast) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .warm-button {
   background: linear-gradient(135deg, #ff9a56, #ff7b36);
-  transition: all 0.3s ease;
+  transition: background var(--transition-fast) ease, 
+              transform var(--transition-fast) ease, 
+              box-shadow var(--transition-fast) ease;
+  will-change: transform, background;
 }
 
 .warm-button:hover {

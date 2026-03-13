@@ -19,7 +19,7 @@ import {
   ArrowLeft,
   ArrowRight, // Add ArrowRight
 } from "lucide-react";
-import NotificationPanel from "../ui/NotificationPanel";
+import NotificationFloatingPanel from "../ui/NotificationFloatingPanel";
 import HeaderMobile from "./HeaderMobile";
 import { useUniShare, useAuth, useUI, useNotifications } from "./../../lib/contexts/UniShareContext";
 import { getProfileImageUrl, getUserInitials } from "./../../lib/utils/profileUtils";
@@ -32,9 +32,8 @@ const Header = ({ logoRotation = 0 }) => {
   const [userProfile, setUserProfile] = useState(null); // Add user profile state
   const [notifOpen, setNotifOpen] = useState(false);
   const [isNotificationActive, setIsNotificationActive] = useState(false);
-  const [notifInlineOpen, setNotifInlineOpen] = useState(false);
-  const [notifInlineFilter, setNotifInlineFilter] = useState('All');
   const profileMenuRef = useRef(null); // Ref for profile menu
+  const bellRef = useRef(null); // Ref for notification bell button
   
   // Use Framer Motion for smooth animations
   const headerTop = useMotionValue(50);
@@ -80,12 +79,7 @@ const Header = ({ logoRotation = 0 }) => {
   } = useAuth();
   
   const { 
-    notifications, 
-    hasUnread, 
-    markNotificationRead, 
-    markAllNotificationsRead,
-    setNotifications,
-    loadNotifications
+    hasUnread
   } = useNotifications();
 
   // Fetch user profile data when user is authenticated
@@ -189,25 +183,26 @@ const Header = ({ logoRotation = 0 }) => {
   };
 
   const handleThemeToggle = () => {
+    // ✅ PERFORMANCE: Immediate visual feedback
     toggleDarkMode();
     const button = document.querySelector('[data-theme-toggle]');
     if (button) {
       button.classList.add('animate-spin');
-      setTimeout(() => button.classList.remove('animate-spin'), 300);
+      setTimeout(() => button.classList.remove('animate-spin'), 200);
     }
   };
 
    const handleLogout = async () => {
     try {
-      // Call the logout function from context
+      // Call the logout function from context (destroys session on server)
       await logout();
       setProfileMenuOpen(false);
       setMobileMenu(false);
-      
-      // Force a full page reload to clear any cached state
-      window.location.href = '/login';
     } catch (e) {
       console.error('Logout error:', e);
+    } finally {
+      // Always redirect to login page and force full reload to clear cached state
+      window.location.href = '/login';
     }
   };
 
@@ -237,7 +232,8 @@ const Header = ({ logoRotation = 0 }) => {
       {/* Desktop/Tablet header */}
       <div className="hidden md:flex justify-center w-full pt-3">
         <nav
-          className={`relative backdrop-blur supports-[backdrop-filter]:bg-white/70 bg-white/80 dark:supports-[backdrop-filter]:bg-black/50 dark:bg-black/80 border border-black/10 dark:border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.35)] rounded-full px-8 sm:px-10 py-3 sm:py-4 max-w-6xl w-full flex items-center justify-between gap-6`}
+          className={`relative backdrop-blur-md supports-[backdrop-filter]:bg-white/70 bg-white/80 dark:supports-[backdrop-filter]:bg-black/50 dark:bg-black/80 border border-black/10 dark:border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.35)] rounded-full px-8 sm:px-10 py-3 sm:py-4 max-w-6xl w-full flex items-center justify-between gap-6`}
+          style={{ willChange: 'background-color, border-color' }}
         >
           <div className="flex items-center gap-6 flex-shrink-0">
             <Link href="/" className="flex items-center gap-3">
@@ -287,6 +283,22 @@ const Header = ({ logoRotation = 0 }) => {
                 {darkMode ? <Moon className="h-[1.4rem] w-[1.4rem]" /> : <Sun className="h-[1.4rem] w-[1.4rem]" />}
               </button>
             </div>
+
+            {/* Notification Bell */}
+            {isAuthenticated && (
+              <button
+                ref={bellRef}
+                onClick={handleNotificationClick}
+                className="relative inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none h-10 w-10 hover:bg-transparent"
+                aria-label="Notifications"
+              >
+                <Bell className={`h-[1.3rem] w-[1.3rem] transition-transform duration-150 ${isNotificationActive ? 'scale-90' : 'scale-100'}`} />
+                {hasUnread && (
+                  <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-black" />
+                )}
+              </button>
+            )}
+
             {!isAuthenticated ? (
                 <Link
                   href="/login"
@@ -302,36 +314,45 @@ const Header = ({ logoRotation = 0 }) => {
                 <div className="relative" ref={profileMenuRef}>
                   <button
                     onClick={handleProfileMenuToggle}
-                    className="flex items-center gap-3 rounded-full transition-all duration-300 hover:scale-105 p-[3px]"
-                    style={{
-                      background: 'linear-gradient(135deg, #facc15 0%, #fbbf24 15%, #fb923c 30%, #f472b6 45%, #d946ef 60%, #a855f7 75%, #38bdf8 90%, #22d3ee 100%)',
-                      borderRadius: '9999px'
-                    }}
+                    className="flex items-center gap-3 rounded-full transition-all duration-300 hover:scale-105 relative"
                   >
-                    <div className="h-10 w-10 overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-purple-600 transition-all duration-300">
-                      {(() => {
-                        const profileImage = getProfileImageUrl(
-                          userProfile,
-                          user
-                        );
-                        if (profileImage) {
-                          return (
-                            <Image
-                              src={profileImage}
-                              alt="User"
-                              width={40}
-                              height={40}
-                              className="h-full w-full object-cover"
-                            />
+                    <div className="relative">
+                      {/* Yellow + Blue border ring */}
+                      <div className="absolute inset-0 rounded-full p-[3px]" style={{
+                        background: 'linear-gradient(135deg, #EAB308 0%, #EAB308 45%, #3B82F6 55%, #3B82F6 100%)'
+                      }}>
+                        <div className="w-full h-full rounded-full backdrop-blur-md" style={{
+                          background: 'rgba(255, 255, 255, 0.7)'
+                        }} />
+                      </div>
+                      {/* Profile image */}
+                      <div className="relative p-[3px]">
+                        <div className="h-10 w-10 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700 transition-all duration-300">
+                        {(() => {
+                          const profileImage = getProfileImageUrl(
+                            userProfile,
+                            user
                           );
-                        } else {
-                          return (
-                            <span className="flex h-full w-full items-center justify-center text-sm font-bold text-white">
-                              {getUserInitials(userProfile, user)}
-                            </span>
-                          );
-                        }
-                      })()}
+                          if (profileImage) {
+                            return (
+                              <Image
+                                src={profileImage}
+                                alt="User"
+                                width={40}
+                                height={40}
+                                className="h-full w-full object-cover"
+                              />
+                            );
+                          } else {
+                            return (
+                              <span className="flex h-full w-full items-center justify-center text-sm font-bold text-white">
+                                {getUserInitials(userProfile, user)}
+                              </span>
+                            );
+                          }
+                        })()}
+                        </div>
+                      </div>
                     </div>
                   </button>
 
@@ -423,13 +444,12 @@ const Header = ({ logoRotation = 0 }) => {
         </nav>
       </div>
 
-      {/* Notification Panel */}
-      {notifOpen && (
-        <NotificationPanel
-          isOpen={notifOpen}
-          onClose={() => setNotifOpen(false)}
-        />
-      )}
+      {/* Floating Notification Panel */}
+      <NotificationFloatingPanel
+        open={notifOpen}
+        onClose={() => setNotifOpen(false)}
+        anchorRef={bellRef}
+      />
     </motion.header>
   );
 };

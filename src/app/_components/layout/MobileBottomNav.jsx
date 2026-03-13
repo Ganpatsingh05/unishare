@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
@@ -10,7 +11,7 @@ import {
 } from "@phosphor-icons/react";
 import { useUI } from "./../../lib/contexts/UniShareContext";
 
-export default function MobileBottomNav() {
+const MobileBottomNav = React.memo(function MobileBottomNav() {
   const { darkMode } = useUI();
   const pathname = usePathname();
 
@@ -123,4 +124,6 @@ export default function MobileBottomNav() {
       </div>
     </div>
   );
-}
+});
+
+export default MobileBottomNav;

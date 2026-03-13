@@ -11,7 +11,8 @@ export default function ShareRideHubPage() {
   // Use proper dark mode from context
   const { darkMode } = useUI();
 
-  const [recentRides, setRecentRides] = useState([]);
+  const [recentRides, setRecentRides] = useState([]);6
+  578
   const [loadingRides, setLoadingRides] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
