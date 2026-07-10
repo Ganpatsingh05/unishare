@@ -160,8 +160,8 @@ const LoginPage = () => {
   const px = (mousePos.x - 0.5);
   const py = (mousePos.y - 0.5);
 
-  const inputCls = `w-full pl-11 pr-4 py-3 rounded-lg border transition-all duration-200 focus:outline-none bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder-white/40 focus:border-cyan-400/60 focus:bg-white/15`;
-  const inputSmCls = `w-full pl-9 pr-4 py-2.5 rounded-lg border transition-all duration-200 focus:outline-none bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder-white/40 focus:border-cyan-400/60 focus:bg-white/15`;
+  const inputCls = `w-full pl-11 pr-4 py-3 rounded-lg border transition-all duration-200 focus:outline-none bg-white/15 border-white/25 text-white placeholder-white/60 focus:border-cyan-400 focus:bg-white/20 focus:outline-0`;
+  const inputSmCls = `w-full pl-9 pr-4 py-2.5 rounded-lg border transition-all duration-200 focus:outline-none bg-white/15 border-white/25 text-white placeholder-white/60 focus:border-cyan-400 focus:bg-white/20 focus:outline-0`;
 
   // ═════════════════════════════════════════════════════════════════════════
   // RENDER
@@ -230,9 +230,11 @@ const LoginPage = () => {
             priority
             quality={90}
           />
-          {/* Cinematic color grading overlay */}
+          {/* Cinematic color grading overlay — stronger in light mode for text contrast */}
           <div className="absolute inset-0" style={{
-            background: 'linear-gradient(180deg, rgba(26,26,46,0.4) 0%, rgba(15,52,96,0.3) 40%, rgba(0,0,0,0.5) 100%)',
+            background: darkMode
+              ? 'linear-gradient(180deg, rgba(26,26,46,0.4) 0%, rgba(15,52,96,0.3) 40%, rgba(0,0,0,0.5) 100%)'
+              : 'linear-gradient(180deg, rgba(0,0,0,0.65) 0%, rgba(0,0,20,0.6) 40%, rgba(0,0,0,0.75) 100%)',
           }} />
         </div>
 
@@ -363,12 +365,13 @@ const LoginPage = () => {
               />
             </div>
 
-            {/* Main Card */}
-            <div className="relative rounded-2xl border border-white/15 backdrop-blur-xl overflow-hidden"
+            {/* Main Card — solid opaque background so text is always readable */}
+            <div className="relative rounded-2xl border border-white/20 overflow-hidden"
               style={{
                 background: accessGranted
-                  ? 'rgba(16, 185, 129, 0.15)'
-                  : 'rgba(0, 10, 30, 0.65)',
+                  ? '#0d2e20'
+                  : '#080e1f',
+                boxShadow: '0 8px 64px rgba(0,0,0,0.7)',
                 transition: 'background 0.6s',
               }}
             >
@@ -390,7 +393,7 @@ const LoginPage = () => {
                       <Image src="/images/logos/logounishare1.png" alt="UniShare" width={36} height={36} className="rounded-lg" />
                     </div>
                   </div>
-                  <p className="text-cyan-400/80 text-xs font-mono tracking-[0.3em] uppercase mb-2"
+                  <p className="text-cyan-300 text-xs font-mono tracking-[0.3em] uppercase mb-2"
                     style={{ animation: sceneReady ? 'none' : undefined }}
                   >
                     Welcome To
@@ -398,7 +401,7 @@ const LoginPage = () => {
                   <h1 className="text-3xl font-bold text-white tracking-tight">
                     UniShare
                   </h1>
-                  <p className="text-white/40 text-sm mt-1">Your Campus. Connected.</p>
+                  <p className="text-white/75 text-sm mt-1">Your Campus. Connected.</p>
                 </div>
 
                 {/* ── Tab Switcher ───────────────────────────────────── */}
@@ -414,7 +417,7 @@ const LoginPage = () => {
                     <button
                       key={t} type="button" onClick={() => switchTab(t)}
                       className={`relative flex-1 py-2 text-sm font-medium rounded-lg transition-colors duration-200 z-10 ${
-                        activeTab === t ? 'text-white' : 'text-white/40 hover:text-white/60'
+                        activeTab === t ? 'text-white' : 'text-white/60 hover:text-white/80'
                       }`}
                     >
                       {t === 'login' ? 'Sign In' : 'Sign Up'}
@@ -437,7 +440,7 @@ const LoginPage = () => {
                 {/* ── Google Login ───────────────────────────────────── */}
                 <button
                   onClick={handleGoogleLogin} disabled={isLoading}
-                  className="w-full flex items-center justify-center gap-3 px-5 py-3 rounded-lg font-medium transition-all duration-200 mb-4 disabled:opacity-50 bg-white/8 hover:bg-white/12 text-white/90 border border-white/10 hover:border-white/20"
+                  className="w-full flex items-center justify-center gap-3 px-5 py-3 rounded-lg font-medium transition-all duration-200 mb-4 disabled:opacity-50 bg-white/10 hover:bg-white/15 text-white border border-white/20 hover:border-white/30"
                 >
                   {isLoading ? (
                     <div className="w-5 h-5 border-2 border-t-transparent border-white/60 rounded-full animate-spin" />
@@ -456,26 +459,26 @@ const LoginPage = () => {
 
                 {/* Divider */}
                 <div className="flex items-center mb-4">
-                  <div className="flex-1 h-px bg-white/10" />
-                  <span className="px-3 text-xs text-white/30">or</span>
-                  <div className="flex-1 h-px bg-white/10" />
+                  <div className="flex-1 h-px bg-white/20" />
+                  <span className="px-3 text-xs text-white/60">or</span>
+                  <div className="flex-1 h-px bg-white/20" />
                 </div>
 
                 {/* ═══════ LOGIN FORM ═══════ */}
                 {activeTab === 'login' && (
                   <form onSubmit={handleLoginSubmit} className="space-y-3.5">
                     <div className="relative">
-                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 z-10">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60 z-10">
                         <Mail className="w-4 h-4" />
                       </div>
                       <input type="email" value={loginData.email} onChange={e => setLoginData(p => ({ ...p, email: e.target.value }))} placeholder="your.email@university.edu" className={inputCls} required />
                     </div>
                     <div className="relative">
-                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 z-10">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60 z-10">
                         <Lock className="w-4 h-4" />
                       </div>
                       <input type={showPassword ? 'text' : 'password'} value={loginData.password} onChange={e => setLoginData(p => ({ ...p, password: e.target.value }))} placeholder="Enter your password" className={`${inputCls} !pr-10`} required />
-                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 z-10">
+                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white z-10">
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
@@ -485,9 +488,9 @@ const LoginPage = () => {
                         <div className="w-4 h-4 rounded border border-white/20 bg-white/5 peer-checked:bg-cyan-500 peer-checked:border-cyan-500 transition-all">
                           <CheckCircle2 className="w-full h-full text-white opacity-0 peer-checked:opacity-100 p-[1px]" />
                         </div>
-                        <span className="ml-2 text-xs text-white/40">Remember me</span>
+                        <span className="ml-2 text-xs text-white/75">Remember me</span>
                       </label>
-                      <Link href="/forgot-password" className="text-xs text-cyan-400/70 hover:text-cyan-400">Forgot password?</Link>
+                      <Link href="/forgot-password" className="text-xs text-cyan-300 hover:text-white">Forgot password?</Link>
                     </div>
                     <button
                       type="submit" disabled={isLoginLoading}
@@ -500,9 +503,9 @@ const LoginPage = () => {
                         <><span>Enter Campus</span><ArrowRight className="w-5 h-5" /></>
                       )}
                     </button>
-                    <p className="text-center text-xs text-white/30">
+                    <p className="text-center text-xs text-white/70">
                       Don't have an account?{' '}
-                      <button type="button" onClick={() => switchTab('register')} className="text-cyan-400/70 hover:text-cyan-400 font-medium">Sign up</button>
+                      <button type="button" onClick={() => switchTab('register')} className="text-cyan-300 hover:text-white font-medium">Sign up</button>
                     </p>
                   </form>
                 )}
