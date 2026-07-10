@@ -684,8 +684,8 @@ const MobileLoginPage = () => {
                       <div 
                         className={`absolute inset-0 rounded-full bg-white transition-all duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
                           registerData.gender === 'female'
-                            ? 'shadow-[0_0_6px_#ffe2fe]'
-                            : 'shadow-[0_0_6px_#dae4ff]'
+                            ? 'shadow-[0_1px_4px_rgba(233,30,99,0.35)] border-2 border-pink-300'
+                            : 'shadow-[0_1px_4px_rgba(59,130,246,0.35)] border-2 border-blue-300'
                         }`}
                       />
                       {/* Bow/Ribbon Icon */}

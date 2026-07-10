@@ -219,7 +219,7 @@ export default function Page() {
 
       {/* Interactive How It Works Section - Conditionally rendered for desktop only */}
       {!isMobile && (
-      <section ref={howItWorksRef} className="py-20 md:py-28 transition-colors duration-300 relative overflow-hidden">
+      <section id="how-it-works" ref={howItWorksRef} className="py-20 md:py-28 transition-colors duration-300 relative overflow-hidden">
         {/* Giant watermark text behind — UniShare brand */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
           aria-hidden="true">

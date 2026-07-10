@@ -11,10 +11,30 @@ export default function HeroSlider({ darkMode = true }) {
   const containerRef = useRef(null);
   const pauseTimeoutRef = useRef(null);
 
-  // Detect reduced motion preference for accessibility and performance
-  const prefersReducedMotion = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Detect reduced motion preference for accessibility
+  // Used only to disable CSS transitions, NOT to stop auto-rotation
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mql.matches);
+    // Listen for changes (user may toggle the setting)
+    const handler = (e) => setPrefersReducedMotion(e.matches);
+    mql.addEventListener?.('change', handler);
+    return () => mql.removeEventListener?.('change', handler);
+  }, []);
+
+  // Detect whether the device truly supports hover (pointer device, not touch-only)
+  const [canHover, setCanHover] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mql = window.matchMedia('(hover: hover)');
+    setCanHover(mql.matches);
+    const handler = (e) => setCanHover(e.matches);
+    mql.addEventListener?.('change', handler);
+    return () => mql.removeEventListener?.('change', handler);
   }, []);
 
   // ✅ PERFORMANCE: Moved slides to useMemo to prevent recreation on every render
@@ -24,45 +44,27 @@ export default function HeroSlider({ darkMode = true }) {
     () => [
       {
         id: "buysell",
-        bgImage: "/images/services/buysell.webp",
-        alt: "Buy & Sell on Campus",
-        cta: { label: "Browse Deals", href: "/marketplace/buy" },
-        priority: true // First image loads with priority
-      },
-      {
-        id: "announcement",
-        bgImage: "/images/services/announcement.webp",
-        alt: "Announcements",
-        cta: { label: "View Announcements", href: "/announcements" },
-        priority: false
+        bgImage: "/images/services/buy_sell_banner.png",
+        alt: "Buy Smart. Sell Easily. — Discover affordable essentials from fellow students",
+        href: "/marketplace/buy",
       },
       {
         id: "house",
-        bgImage: "/images/services/house.webp",
-        alt: "Find Housing",
-        cta: { label: "Find Housing", href: "/housing" },
-        priority: false
-      },
-      {
-        id: "lost",
-        bgImage: "/images/services/Lost.webp",
-        alt: "Lost & Found",
-        cta: { label: "Lost & Found", href: "/lost-found" },
-        priority: false
+        bgImage: "/images/services/housing_banner.png",
+        alt: "Find Your Perfect Room. Meet the Right Roommate.",
+        href: "/housing",
       },
       {
         id: "rideshare",
-        bgImage: "/images/services/rideshare.webp",
-        alt: "Share a Ride",
-        cta: { label: "Find a Ride", href: "/share-ride" },
-        priority: false
+        bgImage: "/images/services/share_ride_banner.png",
+        alt: "Share the Ride. Share the Savings.",
+        href: "/share-ride",
       },
       {
         id: "ticket",
-        bgImage: "/images/services/ticket.webp",
-        alt: "Explore Tickets",
-        cta: { label: "Explore Tickets", href: "/ticket" },
-        priority: false
+        bgImage: "/images/services/ticket_banner.png",
+        alt: "Never Miss Campus Moments — Buy, sell, or transfer event tickets securely",
+        href: "/ticket",
       },
     ],
     []
@@ -100,9 +102,12 @@ export default function HeroSlider({ darkMode = true }) {
   }, [pauseAfterInteraction]);
 
   // Memoize track style to prevent object recreation
+  // When reduced motion is preferred, use instant transition (no animation)
+  // but still auto-rotate slides
   const trackStyle = useMemo(() => ({ 
-    transform: `translateX(-${index * 100}%)` 
-  }), [index]);
+    transform: `translateX(-${index * 100}%)`,
+    transition: prefersReducedMotion ? 'none' : undefined,
+  }), [index, prefersReducedMotion]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -112,13 +117,6 @@ export default function HeroSlider({ darkMode = true }) {
       }
     };
   }, []);
-
-  // Respect user's reduced motion preference
-  useEffect(() => {
-    if (prefersReducedMotion) {
-      setPaused(true);
-    }
-  }, [prefersReducedMotion]);
 
   // Keyboard navigation for accessibility
   useEffect(() => {
@@ -174,13 +172,18 @@ export default function HeroSlider({ darkMode = true }) {
     };
   }, [prevSlide, nextSlide, pauseAfterInteraction]);
 
+  // ✅ FIX: Only pause auto-scroll on hover for devices that truly support hover.
+  // On touch-only devices, isHovering is always false — prevents the
+  // "mouseenter fires but mouseleave never fires" mobile bug.
+  const effectiveHovering = canHover && isHovering;
+
   useEffect(() => {
-    if (isHovering || paused) return;
+    if (effectiveHovering || paused) return;
     const id = setInterval(() => {
       setIndex((i) => (i + 1) % slides.length);
     }, 4000); // 4 seconds per slide
     return () => clearInterval(id);
-  }, [slides.length, isHovering, paused]);
+  }, [slides.length, effectiveHovering, paused]);
 
   return (
     <section className="w-full">
@@ -202,53 +205,47 @@ export default function HeroSlider({ darkMode = true }) {
             >
               {slides.map((slide, slideIdx) => (
                 <div key={slide.id} className="w-full flex-shrink-0">
-                  <div className="relative w-full">
-                    {/* ✅ PERFORMANCE: Optimized Next.js Image with priority for first slide */}
+                  <Link href={slide.href} className="block relative w-full">
                     <Image
                       src={slide.bgImage}
                       alt={slide.alt}
-                      width={2659}
-                      height={784}
+                      width={2119}
+                      height={742}
                       className="
-                        w-full 
-                        h-auto          /* good for mobile */
-                        md:h-[340px]    /* fix height for desktops */
-                        lg:h-[400px] 
-                        object-cover 
+                        w-full
+                        h-auto
                         rounded-xl
+                        cursor-pointer
                       "
-                      priority={slideIdx === 0} // Priority load first image
-                      loading={slideIdx === 0 ? undefined : "lazy"} // Lazy load others
-                      quality={85} // Balanced quality/size
+                      priority={slideIdx === 0}
+                      loading={slideIdx === 0 ? undefined : "lazy"}
+                      quality={85}
                       sizes="(max-width: 640px) 100vw, (max-width: 1080px) 90vw, 1280px"
                     />
-                    {/* CTA Button positioned consistently */}
-                    <div className="absolute bottom-6 left-6 md:bottom-8 md:left-8 z-10">
-                      <Link
-                        href={slide.cta.href}
-                        className="
-                          inline-block 
-                          bg-[#5B46F6] hover:bg-[#4a38e5] 
-                          text-white font-semibold
-                          px-3 py-1.5     /* smaller padding on mobile */
-                          sm:px-4 sm:py-2 /* medium padding on tablet */
-                          md:px-6 md:py-3 /* full size on desktop */
-                          rounded-lg sm:rounded-xl
-                          shadow-md sm:shadow-lg
-                          transition-all duration-200 
-                          hover:shadow-xl hover:scale-105
-                          text-xs sm:text-sm md:text-base /* font scales up */
-                        "
-                      >
-                        {slide.cta.label}
-                      </Link>
-                    </div>
-                  </div>
+                  </Link>
                 </div>
               ))}
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Dot Navigation */}
+      <div className="flex items-center justify-center gap-2 mt-4 pb-1">
+        {slides.map((slide, i) => (
+          <button
+            key={slide.id}
+            onClick={() => goToSlide(i)}
+            aria-label={`Go to slide ${i + 1}`}
+            className={`
+              rounded-full transition-all duration-300 ease-out
+              ${i === index
+                ? 'w-7 h-2.5 bg-gradient-to-r from-[#facc15] to-[#38bdf8] shadow-md shadow-sky-400/30'
+                : `w-2.5 h-2.5 ${darkMode ? 'bg-white/25 hover:bg-white/50' : 'bg-gray-300 hover:bg-gray-400'}`
+              }
+            `}
+          />
+        ))}
       </div>
       
       {/* Performance-optimized styles */}
@@ -263,7 +260,8 @@ export default function HeroSlider({ darkMode = true }) {
             transition: none !important;
           }
         }
-      `}</style>
+      `}
+      </style>
     </section>
   );
 }

@@ -288,7 +288,7 @@ const Main = ({ darkMode, isVisible = false }) => {
 
   // Desktop version (original implementation)
   return (
-    <main className="w-full px-4 pt-8 md:pt-16 pb-16">
+    <main id="features" className="w-full px-4 pt-8 md:pt-16 pb-16">
       {/* Brave-style Hero Section — massive bold text + watermark */}
       <div className="max-w-6xl mx-auto mb-20 relative overflow-hidden">
         {/* Giant watermark text behind — UniShare brand */}

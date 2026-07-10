@@ -1,20 +1,24 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
 
 // Lightweight, privacy-friendly cookie consent banner.
 // Stores consent in localStorage under key 'cookie:consent:v1'.
-// Usage: Place <CookieConsent /> in RootLayout to show across the app.
+// Rendered via createPortal directly into document.body so no parent
+// transform / will-change / stacking-context can ever break position:fixed.
 
 const CONSENT_KEY = "cookie:consent:v1";
 
 export default function CookieConsent() {
   const [visible, setVisible] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     // Only run on client
+    setMounted(true);
     try {
       const raw = localStorage.getItem(CONSENT_KEY);
       const consent = raw ? JSON.parse(raw) : null;
@@ -41,22 +45,45 @@ export default function CookieConsent() {
     // e.g., window.gtag && window.gtag('consent', 'update', { ad_user_data: 'granted', ad_personalization: 'granted', ad_storage: 'granted', analytics_storage: 'granted' });
   }, []);
 
-  if (!visible) return null;
+  // Don't render until client-side hydration is complete
+  if (!mounted || !visible) return null;
 
-  return (
+  const banner = (
     <div
       role="dialog"
       aria-live="polite"
       aria-label="Cookie consent"
       aria-modal="false"
-      className="fixed z-[10002] bottom-4 left-4 right-4 sm:right-auto sm:w-[420px]"
+      style={{
+        position: "fixed",
+        bottom: "20px",
+        left: "20px",
+        zIndex: 9999,
+        width: "calc(100vw - 40px)",
+        maxWidth: "420px",
+      }}
     >
-      <div className="relative rounded-2xl bg-white text-gray-800 shadow-2xl ring-1 ring-black/5 px-5 pt-8 pb-4 sm:px-6 sm:pt-9 sm:pb-5">
+      <div
+        style={{
+          position: "relative",
+          borderRadius: "16px",
+          background: "#ffffff",
+          color: "#1f2937",
+          boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05)",
+          padding: "32px 20px 16px",
+        }}
+      >
         {/* Cookie badge overlay */}
-        <div className="absolute -top-16 left-1/2 -translate-x-1/2">
-          {/* Cookie icon - using correct path */}
+        <div
+          style={{
+            position: "absolute",
+            top: "-64px",
+            left: "50%",
+            transform: "translateX(-50%)",
+          }}
+        >
           <Image
-            src="\images\services\cookie.webp"
+            src="/images/services/cookie.webp"
             alt="Cookie"
             width={100}
             height={100}
@@ -64,20 +91,46 @@ export default function CookieConsent() {
           />
         </div>
 
-        <p className="text-sm leading-6 text-gray-700 pr-2">
-          We use cookies for essential website functions and to better understand how you use our site, so we can create the best possible experience for you <span aria-hidden>💗</span>
+        <p style={{ fontSize: "14px", lineHeight: "1.6", color: "#374151", paddingRight: "8px" }}>
+          We use cookies for essential website functions and to better understand how you use our site, so we can create the best possible experience for you{" "}
+          <span aria-hidden>💗</span>
         </p>
 
-        <div className="mt-4 flex items-center gap-3">
+        <div style={{ marginTop: "16px", display: "flex", alignItems: "center", gap: "12px" }}>
           <Link
-            href="/footerpages/privacy"
-            className="text-sm font-medium text-gray-600 hover:text-gray-900 underline underline-offset-4"
+            href="/info/privacy"
+            style={{
+              fontSize: "14px",
+              fontWeight: "500",
+              color: "#4b5563",
+              textDecoration: "underline",
+              textUnderlineOffset: "4px",
+            }}
           >
             Privacy Policy
           </Link>
           <button
             onClick={acceptAll}
-            className="ml-auto inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white active:scale-[0.98]"
+            style={{
+              marginLeft: "auto",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: "8px",
+              background: "#10b981",
+              padding: "8px 16px",
+              fontSize: "14px",
+              fontWeight: "600",
+              color: "#ffffff",
+              border: "none",
+              cursor: "pointer",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
+              transition: "background 0.15s ease, transform 0.1s ease",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "#059669")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "#10b981")}
+            onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.98)")}
+            onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
           >
             Got it
           </button>
@@ -85,4 +138,9 @@ export default function CookieConsent() {
       </div>
     </div>
   );
+
+  // Render via portal directly into document.body to bypass any parent
+  // stacking context (transforms, will-change, overflow) that would
+  // otherwise break position:fixed viewport anchoring.
+  return createPortal(banner, document.body);
 }

@@ -255,11 +255,11 @@ const Header = ({ logoRotation = 0 }) => {
           
           {/* Center: Navigation Links */}
           <div className="flex-1 flex items-center justify-end gap-1 mr-4">
-            <Link href="#features" className="group relative inline-flex items-center px-3 py-1.5 text-sm font-bold text-neutral-700 hover:text-black dark:text-white/80 dark:hover:text-white transition-colors">
+            <Link href="/#features" className="group relative inline-flex items-center px-3 py-1.5 text-sm font-bold text-neutral-700 hover:text-black dark:text-white/80 dark:hover:text-white transition-colors">
               <span className="relative z-10">Features</span>
               <span className="pointer-events-none absolute inset-0 rounded-full bg-black/5 dark:bg-white/5 opacity-0 transition-opacity group-hover:opacity-100"></span>
             </Link>
-            <Link href="#how-it-works" className="group relative inline-flex items-center px-3 py-1.5 text-sm font-bold text-neutral-700 hover:text-black dark:text-white/80 dark:hover:text-white transition-colors">
+            <Link href="/#how-it-works" className="group relative inline-flex items-center px-3 py-1.5 text-sm font-bold text-neutral-700 hover:text-black dark:text-white/80 dark:hover:text-white transition-colors">
               <span className="relative z-10">How it works</span>
               <span className="pointer-events-none absolute inset-0 rounded-full bg-black/5 dark:bg-white/5 opacity-0 transition-opacity group-hover:opacity-100"></span>
             </Link>

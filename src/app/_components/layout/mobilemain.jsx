@@ -198,6 +198,7 @@ const MobileMain = ({ darkMode, isVisible = false }) => {
 
   return (
     <div
+      id="features"
       className="max-w-sm mx-auto px-3 pt-4 pb-2 min-h-screen"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}

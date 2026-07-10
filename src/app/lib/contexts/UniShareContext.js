@@ -86,7 +86,7 @@ const initialState = {
   logoRotation: 0,
 
   // UI State
-  darkMode: true,
+  darkMode: false, // Default: light theme
   mobileMenuOpen: false,
   searchValue: '',
   searchFocused: false,
@@ -443,11 +443,15 @@ export const ThemeTextarea = ({ className = "", ...props }) => {
 export const UniShareProvider = ({ children }) => {
   const [state, dispatch] = useReducer(uniShareReducer, initialState);
   
-  // Initialize dark mode from localStorage
+  // Initialize dark mode from localStorage; default to light (false) on first visit
   useEffect(() => {
     const savedDarkMode = localStorage.getItem('unishare_dark_mode');
     if (savedDarkMode !== null) {
       dispatch({ type: ActionTypes.SET_DARK_MODE, payload: JSON.parse(savedDarkMode) });
+    } else {
+      // No saved preference — explicitly set light mode and persist it
+      dispatch({ type: ActionTypes.SET_DARK_MODE, payload: false });
+      localStorage.setItem('unishare_dark_mode', JSON.stringify(false));
     }
   }, []);
   

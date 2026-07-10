@@ -100,8 +100,7 @@ html {
   background-color: transparent;
   /* Slight zoom for larger feel */
   zoom: 1.05;
-  /* ✅ PERFORMANCE: GPU acceleration for smooth theme transitions */
-  transform: translateZ(0);
+  /* NOTE: transform removed — any transform on <html> breaks position:fixed by changing the containing block */
   -webkit-font-smoothing: antialiased;
 }
 
@@ -115,7 +114,7 @@ body {
   -ms-overflow-style: none !important;
   /* ✅ PERFORMANCE: Fast theme transitions */
   transition: background-color var(--transition-fast) ease, color var(--transition-fast) ease;
-  will-change: background-color, color;
+  /* NOTE: will-change removed from body — it can create a stacking context that breaks position:fixed */
 }
 
 body::-webkit-scrollbar {
@@ -132,14 +131,14 @@ body::-webkit-scrollbar {
   background: var(--theme-bg, #F9FAFB);
   color: var(--theme-text, #1f2937);
   transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: background-color, color;
+  /* NOTE: will-change removed — creates a stacking context that can break position:fixed in children */
 }
 
 .theme-bg-dark {
   background: var(--theme-bg, #1a1a1a);
   color: var(--theme-text, #FFFFFF);
   transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: background-color, color;
+  /* NOTE: will-change removed — creates a stacking context that can break position:fixed in children */
 }
 
 /* =========================
