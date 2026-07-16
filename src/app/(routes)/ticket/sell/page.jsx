@@ -30,7 +30,6 @@ import {
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import useIsMobile from "./../../../_components/ui/useIsMobile";
-import MarketplaceTicketTheme from "./../../../_components/ServicesTheme/JupiterTheme";
 import { fetchMyTickets, deleteTicket, createTicket, updateTicket, formatContactInfo } from "./../../../lib/api";
 import { 
   useAuth, 
@@ -215,8 +214,7 @@ export default function TicketSellPage() {
     return (
       <div className="min-h-screen">
         {/* Ticket Jupiter Yellow/Brown/Red Bands Theme */}
-        <MarketplaceTicketTheme />
-        
+                
         <main className={`relative ${isMobile ? 'px-3 py-4' : 'max-w-4xl mx-auto px-4 py-6 sm:py-10'} text-center`}>
           <div className={`${isMobile ? 'p-6' : 'p-8'} rounded-2xl ${cardBg} border backdrop-blur-sm shadow-xl`}>
             <Ticket className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} mx-auto mb-4 ${titleClr}`} />
@@ -248,8 +246,7 @@ export default function TicketSellPage() {
     <>
       <div className="min-h-screen">
         {/* Ticket Jupiter Yellow/Brown/Red Bands Theme */}
-        <MarketplaceTicketTheme />
-        
+                
         <div className={`relative ${isMobile ? 'px-3 py-4' : 'max-w-6xl mx-auto px-4 py-6 sm:py-10'}`}>
           {/* Header */}
           <div className={`mb-6 ${isMobile ? 'p-4' : 'p-6'} rounded-lg border backdrop-blur-sm ${

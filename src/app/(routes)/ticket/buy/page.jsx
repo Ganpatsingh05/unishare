@@ -29,7 +29,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import useIsMobile from "./../../../_components/ui/useIsMobile";
-import MarketplaceTicketTheme from "./../../../_components/ServicesTheme/JupiterTheme";
 import RequestButton from "./../../../_components/forms/RequestButton";
 import { fetchTickets } from "./../../../lib/api";
 import { 
@@ -256,7 +255,7 @@ export default function TicketBuyPage() {
 
           {/* Event details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className={`flex items-center gap-3 p-3 rounded-xl ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+            <div className={`flex items-center gap-3 p-3 rounded-xl bg-transparent`}>
               <CalendarDays className="w-5 h-5 text-blue-500" />
               <div>
                 <p className={`text-xs ${subClr}`}>Event Date</p>
@@ -264,7 +263,7 @@ export default function TicketBuyPage() {
                 <p className={`text-xs text-blue-500`}>{formatEventDate(ticket.event_date)}</p>
               </div>
             </div>
-            <div className={`flex items-center gap-3 p-3 rounded-xl ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+            <div className={`flex items-center gap-3 p-3 rounded-xl bg-transparent`}>
               <MapPin className="w-5 h-5 text-purple-500" />
               <div>
                 <p className={`text-xs ${subClr}`}>Venue</p>
@@ -272,14 +271,14 @@ export default function TicketBuyPage() {
                 <p className={`text-xs ${subClr}`}>{ticket.location}</p>
               </div>
             </div>
-            <div className={`flex items-center gap-3 p-3 rounded-xl ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+            <div className={`flex items-center gap-3 p-3 rounded-xl bg-transparent`}>
               <Ticket className="w-5 h-5 text-green-500" />
               <div>
                 <p className={`text-xs ${subClr}`}>Available</p>
                 <p className={`font-medium ${titleClr}`}>{ticket.quantity_available} ticket{ticket.quantity_available > 1 ? 's' : ''}</p>
               </div>
             </div>
-            <div className={`flex items-center gap-3 p-3 rounded-xl ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+            <div className={`flex items-center gap-3 p-3 rounded-xl bg-transparent`}>
               <Clock className="w-5 h-5 text-orange-500" />
               <div>
                 <p className={`text-xs ${subClr}`}>Listed</p>
@@ -353,8 +352,7 @@ export default function TicketBuyPage() {
   return (
     <>
       {/* Ticket Jupiter Yellow/Brown/Red Bands Theme */}
-      <MarketplaceTicketTheme />
-      
+            
       <main className={`relative ${isMobile ? 'px-4 py-5' : 'max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10'}`}>
         <div className={`rounded-xl border ${isMobile ? 'p-4' : 'p-4 sm:p-6'} backdrop-blur-sm ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white/95 border-slate-200'}`}>
           
@@ -382,7 +380,7 @@ export default function TicketBuyPage() {
               )}
               <button 
                 onClick={handleReset} 
-                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${darkMode ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'border-slate-300 text-slate-600 hover:bg-slate-50'}`}
+                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${darkMode ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'border-slate-300 text-slate-600 hover:bg-transparent'}`}
               >
                 <SlidersHorizontal className="w-4 h-4" /> {isMobile ? '' : 'Reset'}
               </button>

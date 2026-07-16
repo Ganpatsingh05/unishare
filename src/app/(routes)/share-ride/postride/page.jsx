@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import SmallFooter from "./../../../_components/layout/SmallFooter";
-import ShareRideTheme from "./../../../_components/ServicesTheme/EarthTheme";
 import {
   Car,
   MapPin,
@@ -715,8 +714,7 @@ export default function PostRidePage() {
   if (isCheckingAuth || !isAuthenticated) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${darkMode ? "bg-gray-900" : "bg-gray-50"}`}>
-        <ShareRideTheme />
-        <div className="text-center">
+                <div className="text-center">
           <div className="w-16 h-16 border-4 border-sky-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className={`text-lg font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
             {!isAuthenticated ? 'Redirecting to login...' : 'Loading...'}
@@ -729,8 +727,7 @@ export default function PostRidePage() {
   return (
     <div className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-gray-50"}`}>
       {/* ShareRide Mercury Gray Theme */}
-      <ShareRideTheme />
-      
+            
       <main className="relative max-w-2xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10">
         {/* Header */}
         <div className="mb-8">

@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { Search, MapPin, IndianRupee, Calendar, Bed, Heart, Share2, Phone, Mail, Instagram, Filter, ChevronDown, Eye } from "lucide-react";
 import { fetchhousedata } from "./../../../lib/api";
 import RequestButton from "./../../../_components/forms/RequestButton";
-import HousingTheme from "./../../../_components/ServicesTheme/EarthTheme";
 
 
 const Footer = ({ darkMode }) => (
@@ -279,8 +278,7 @@ export default function HousingSearchPage() {
   return (
     <div className="min-h-screen relative">
       {/* Earth Theme Background */}
-      <HousingTheme />
-
+      
       <main className="relative z-10 px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="mx-auto max-w-6xl">
 

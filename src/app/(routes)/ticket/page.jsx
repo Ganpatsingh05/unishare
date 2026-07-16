@@ -4,7 +4,6 @@ import { useUI } from "./../../lib/contexts/UniShareContext";
 import Link from "next/link";
 import { ShoppingCart, Tag, ArrowRight, Users, Ticket, IndianRupee, MapPin, Clock, Music } from "lucide-react";
 import SmallFooter from "./../../_components/layout/SmallFooter";
-import MarketplaceTicketTheme from "./../../_components/ServicesTheme/JupiterTheme";
 import { fetchTickets } from "./../../lib/api";
 
 export default function TicketHubPage() {
@@ -81,10 +80,9 @@ export default function TicketHubPage() {
   }, []);
 
   return (
-    <div className={`min-h-screen flex flex-col relative transition-colors ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div className={`min-h-screen flex flex-col relative transition-colors bg-transparent`}>
       {/* Ticket Jupiter Yellow/Brown/Red Bands Theme */}
-      <MarketplaceTicketTheme />
-
+      
       <main className="relative flex-1 min-h-[115vh] px-4 sm:px-6 lg:px-8 py-10 sm:py-14 pb-24">
         <div className="mx-auto max-w-6xl">
           <header className="mb-6 sm:mb-8">

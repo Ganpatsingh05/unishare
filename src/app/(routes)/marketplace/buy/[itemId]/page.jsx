@@ -17,7 +17,6 @@ import {
   Loader
 } from "lucide-react";
 import SmallFooter from "./../../../../_components/layout/SmallFooter";
-import MarketplaceBuyTheme from "./../../../../_components/ServicesTheme/VenusTheme";
 import RequestButton from "./../../../../_components/forms/RequestButton";
 import useIsMobile from "./../../../../_components/ui/useIsMobile";
 import { fetchItem } from "./../../../../lib/api";
@@ -120,8 +119,7 @@ export default function ItemDetailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         {/* Marketplace Buy Venus Golden Brown Theme */}
-        <MarketplaceBuyTheme />
-        <div className="relative text-center">
+                <div className="relative text-center">
           <Loader className="w-8 h-8 animate-spin text-blue-500 mx-auto mb-3" />
           <p className={`text-sm ${subClr}`}>Loading item details...</p>
         </div>
@@ -133,8 +131,7 @@ export default function ItemDetailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         {/* Marketplace Buy Venus Golden Brown Theme */}
-        <MarketplaceBuyTheme />
-        <div className="relative text-center">
+                <div className="relative text-center">
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <h1 className={`text-2xl font-bold mb-2 ${titleClr}`}>Item Not Found</h1>
           <p className={`mb-6 ${subClr}`}>{error || "The item you're looking for doesn't exist."}</p>
@@ -151,10 +148,9 @@ export default function ItemDetailPage() {
   }
 
   return (
-    <div key={params.itemId} className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div key={params.itemId} className={`min-h-screen bg-transparent`}>
       {/* Marketplace Buy Venus Golden Brown Theme */}
-      <MarketplaceBuyTheme />
-      
+            
 
       <div className={`relative ${isMobile ? 'px-4 pt-20 pb-8' : 'max-w-7xl mx-auto px-6 pt-24 pb-16'}`}>
         

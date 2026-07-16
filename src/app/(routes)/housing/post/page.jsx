@@ -4,7 +4,6 @@ import { Moon, Sun, Home, MapPin, Bed, Calendar, Mail, Phone, Instagram, Camera,
 import { postRoom, startGoogleLogin } from "./../../../lib/api";
 import { useAuth, useUI, useMessages } from "./../../../lib/contexts/UniShareContext";
 import { HousingNotifications } from "./../../../lib/utils/actionNotifications";
-import HousingTheme from "./../../../_components/ServicesTheme/EarthTheme";
 
 export default function AuthProtectedRoomForm() {
   const { isAuthenticated, user, authLoading, userAvatar, userInitials } = useAuth();
@@ -199,8 +198,7 @@ export default function AuthProtectedRoomForm() {
   return (
     <div className={`${themeClasses} relative min-h-screen`}>
       {/* Earth Theme Background */}
-      <HousingTheme />
-      
+            
       <div className="container mx-auto px-4 py-8 relative z-10">
         {/* Header with user info */}
         <div className="text-center mb-8">

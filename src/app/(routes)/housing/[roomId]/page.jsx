@@ -6,7 +6,6 @@ import { ArrowLeft, MapPin, IndianRupee, Calendar, Bed, Bath, Users, Wifi, Car, 
 import RequestButton from "./../../../_components/forms/RequestButton";
 import { useUI } from "./../../../lib/contexts/UniShareContext";
 import { fetchRoom } from "./../../../lib/api";
-import HousingTheme from "./../../../_components/ServicesTheme/EarthTheme";
 
 const RoomDetailPage = () => {
   const { roomId } = useParams();
@@ -174,8 +173,7 @@ const RoomDetailPage = () => {
   if (loading) {
     return (
       <div className={`min-h-screen ${theme.bg} flex items-center justify-center relative`}>
-        <HousingTheme />
-        <div className="text-center relative z-10">
+                <div className="text-center relative z-10">
           <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className={theme.text}>Loading room details...</p>
         </div>
@@ -186,8 +184,7 @@ const RoomDetailPage = () => {
   if (!room) {
     return (
       <div className={`min-h-screen ${theme.bg} flex items-center justify-center relative`}>
-        <HousingTheme />
-        <div className="text-center relative z-10">
+                <div className="text-center relative z-10">
           <Home className={`w-16 h-16 mx-auto mb-4 ${theme.textMuted}`} />
           <h2 className={`text-xl font-semibold mb-2 ${theme.text}`}>Room not found</h2>
           <p className={`mb-4 ${theme.textMuted}`}>The room you are looking for does not exist.</p>
@@ -204,8 +201,7 @@ const RoomDetailPage = () => {
 
   return (
     <div className={`min-h-screen ${theme.bg} relative`}>
-      <HousingTheme />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Images and Details */}

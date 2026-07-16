@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, ChevronDown, Search, UploadCloud, Users, Shield, MapPin, Star } from "lucide-react";
 import SmallFooter from "./../../_components/layout/SmallFooter";
-import HousingTheme from "./../../_components/ServicesTheme/EarthTheme";
 import { useUI } from "./../../lib/contexts/UniShareContext";
 
 export default function HousingHubPage() {
@@ -26,8 +25,7 @@ export default function HousingHubPage() {
   return (
     <div className="min-h-screen relative">
       {/* Earth Theme Background */}
-      <HousingTheme />
-
+      
       {/* ═══════════════════════════════════════════════════════ */}
       {/*  HERO / LANDING SECTION — full viewport, centered      */}
       {/* ═══════════════════════════════════════════════════════ */}

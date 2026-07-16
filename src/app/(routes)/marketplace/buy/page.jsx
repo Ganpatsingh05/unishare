@@ -24,7 +24,6 @@ import {
 } from "lucide-react";
 import Footer from "./../../../_components/layout/Footer";
 import SmallFooter from "./../../../_components/layout/SmallFooter";
-import MarketplaceBuyTheme from "./../../../_components/ServicesTheme/VenusTheme";
 import useIsMobile from "./../../../_components/ui/useIsMobile";
 import { fetchMarketplaceItems } from "./../../../lib/api";
 import { 
@@ -125,8 +124,7 @@ export default function MarketplaceBuyPage() {
   return (
     <div className="min-h-screen">
       {/* Marketplace Buy Venus Golden Brown Theme */}
-      <MarketplaceBuyTheme />
-
+      
       <main className={`relative ${isMobile ? 'px-3 py-4' : 'max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10'}`}>
         <div className={`rounded-2xl border shadow-xl ${isMobile ? 'p-3' : 'p-4 sm:p-6'} ${darkMode ? 'bg-gray-800/60 border-gray-700' : 'bg-white/80 border-gray-200'} backdrop-blur-sm`}>
           

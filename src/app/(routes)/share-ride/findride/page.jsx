@@ -2,7 +2,6 @@
 
 import React, { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import SmallFooter from "./../../../_components/layout/SmallFooter";
-import ShareRideTheme from "./../../../_components/ServicesTheme/EarthTheme";
 import {
   Car,
   MapPin,
@@ -1110,8 +1109,7 @@ export default function FindRidePage() {
   return (
     <div className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-gray-50"}`}>
       {/* ShareRide Mercury Gray Theme */}
-      <ShareRideTheme />
-      
+            
       {/* Modals */}
       <RideDetailsModal />
       <JoinRideModal />

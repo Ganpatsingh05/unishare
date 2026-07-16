@@ -195,18 +195,9 @@ export default function Page() {
   };
 
   return (
-      <div 
-        className="relative min-h-screen" 
-        style={{ 
-          backgroundColor: darkMode ? '#0a0a0a' : '#fafafa' 
-        }}
-      >
-        {/* ✅ PERFORMANCE: Only render heavy 3D background on desktop */}
-        {!isMobile && <GalaxyDesktop/>}
+      <div className="relative min-h-screen bg-transparent">
         
-      <div
-        className="relative z-10"
-      >
+      <div className="relative z-10">
       {/* SLIDER SECTION (replacing previous hero) */}
       <div ref={heroRef} className="mt-8 md:mt-8">
         <HeroSlider darkMode={darkMode} />

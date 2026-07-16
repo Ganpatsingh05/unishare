@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useUI } from "./../../lib/contexts/UniShareContext";
 import { Search, Car, ArrowRight, Users, MapPin, Calendar, Clock, IndianRupee, Eye, Plus } from "lucide-react";
 import SmallFooter from "./../../_components/layout/SmallFooter";
-import ShareRideTheme from "./../../_components/ServicesTheme/EarthTheme";
 
 export default function ShareRideHubPage() {
   // Use proper dark mode from context
@@ -114,10 +113,9 @@ export default function ShareRideHubPage() {
   }, []);
 
   return (
-    <div className={`min-h-screen flex flex-col relative transition-colors ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 via-white to-sky-50'}`}>
+    <div className={`min-h-screen flex flex-col relative transition-colors bg-transparent`}>
       {/* ShareRide Mercury Gray Theme */}
-      <ShareRideTheme />
-      
+            
       <main className="relative flex-1 min-h-[115vh] px-4 sm:px-6 lg:px-8 py-10 sm:py-14 pb-8">
         <div className="mx-auto max-w-6xl">
           <header className="mb-6 sm:mb-8 text-center sm:text-left">
