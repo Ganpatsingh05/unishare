@@ -457,7 +457,7 @@ export default function MarketplaceSellPage() {
     setLoading(true); setErrorMsg("");
     try {
       const formattedContacts = formatContactInfo(contacts);
-      const itemData = { title: title.trim(), price: parseFloat(price), category, condition, location: location.trim(), description: description.trim(), contact: formattedContacts };
+      const itemData = { title: title.trim(), price: parseFloat(price), category, condition, location: location.trim(), description: description.trim(), contact_info: formattedContacts, available_from: new Date().toISOString() };
       const result = await createItem(itemData, imageFile);
       if (result.success) {
         if (result.data) addUserItem(result.data);
