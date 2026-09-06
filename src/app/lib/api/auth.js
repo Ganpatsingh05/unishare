@@ -79,8 +79,14 @@ export const checkAdminStatus = async () => {
   }
 };
 
+// OAuth Login - Google
 export const startGoogleLogin = () => {
   window.location.href = `${BACKEND_URL}${API_CONFIG.API_PREFIX}/auth/google`;
+};
+
+// OAuth Login - GitHub
+export const startGithubLogin = () => {
+  window.location.href = `${BACKEND_URL}${API_CONFIG.API_PREFIX}/auth/github`;
 };
 
 // Email/Password Login

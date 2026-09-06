@@ -58,6 +58,8 @@ All authentication endpoints use the `/api` prefix:
 | Logout | `/api/auth/logout` | POST | - | `{ status, message }` |
 | Google OAuth | `/api/auth/google` | GET | - | Redirects to Google |
 | Google Callback | `/api/auth/google/callback` | GET | `?code=...` | Redirects to frontend |
+| GitHub OAuth | `/api/auth/github` | GET | - | Redirects to GitHub |
+| GitHub Callback | `/api/auth/github/callback` | GET | `?code=...` | Redirects to frontend |
 | Forgot Password | `/api/auth/forgot-password` | POST | `{ email }` | `{ status, message }` |
 | Reset Password | `/api/auth/reset-password` | POST | `{ token, password }` | `{ status, message }` |
 

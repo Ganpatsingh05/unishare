@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, User, GraduationCap, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
-import { startGoogleLogin, loginWithEmail, registerWithEmail, fetchCurrentUser } from "./../../lib/api";
+import { startGoogleLogin, startGithubLogin, loginWithEmail, registerWithEmail, fetchCurrentUser } from "./../../lib/api";
 import { useUI, useAuth } from "./../../lib/contexts/UniShareContext";
 import SmallFooter from "../../_components/layout/SmallFooter";
 import MobileLoginPage from "./MobileLoginPage";
@@ -142,6 +142,13 @@ const LoginPage = () => {
     const r = searchParams.get('redirect');
     if (r) sessionStorage.setItem('oauth_redirect', r);
     try { startGoogleLogin(); } catch (err) { setIsLoading(false); }
+  };
+
+  const handleGithubLogin = () => {
+    setIsLoading(true);
+    const r = searchParams.get('redirect');
+    if (r) sessionStorage.setItem('oauth_redirect', r);
+    try { startGithubLogin(); } catch (err) { setIsLoading(false); }
   };
 
   const switchTab = (t) => { setActiveTab(t); setError(''); setSuccess(''); };
@@ -440,7 +447,7 @@ const LoginPage = () => {
                 {/* ── Google Login ───────────────────────────────────── */}
                 <button
                   onClick={handleGoogleLogin} disabled={isLoading}
-                  className="w-full flex items-center justify-center gap-3 px-5 py-3 rounded-lg font-medium transition-all duration-200 mb-4 disabled:opacity-50 bg-white/10 hover:bg-white/15 text-white border border-white/20 hover:border-white/30"
+                  className="w-full flex items-center justify-center gap-3 px-5 py-3 rounded-lg font-medium transition-all duration-200 mb-3 disabled:opacity-50 bg-white/10 hover:bg-white/15 text-white border border-white/20 hover:border-white/30"
                 >
                   {isLoading ? (
                     <div className="w-5 h-5 border-2 border-t-transparent border-white/60 rounded-full animate-spin" />
@@ -457,10 +464,27 @@ const LoginPage = () => {
                   )}
                 </button>
 
+                {/* ── GitHub Login ───────────────────────────────────── */}
+                <button
+                  onClick={handleGithubLogin} disabled={isLoading}
+                  className="w-full flex items-center justify-center gap-3 px-5 py-3 rounded-lg font-medium transition-all duration-200 mb-4 disabled:opacity-50 bg-[#24292e]/90 hover:bg-[#2c3238] text-white border border-[#24292e] hover:border-gray-700"
+                >
+                  {isLoading ? (
+                    <div className="w-5 h-5 border-2 border-t-transparent border-white/60 rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
+                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                      </svg>
+                      <span>Continue with GitHub</span>
+                    </>
+                  )}
+                </button>
+
                 {/* Divider */}
                 <div className="flex items-center mb-4">
                   <div className="flex-1 h-px bg-white/20" />
-                  <span className="px-3 text-xs text-white/60">or</span>
+                  <span className="px-3 text-xs text-white/60">or with email</span>
                   <div className="flex-1 h-px bg-white/20" />
                 </div>
 
