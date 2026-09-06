@@ -12,8 +12,8 @@ This branch (`Axiom-frontend`) is **exclusively compatible with Spring Boot back
 - ✅ Error handling updated for Spring Boot error format
 
 ## Backend Configuration
-- **Spring Boot Backend URL**: `http://localhost:8080` (development)
-- **Environment Variable**: `NEXT_PUBLIC_BACKEND_URL=http://localhost:8080`
+- **Spring Boot Backend URL**: `http://localhost:0011` (development)
+- **Environment Variable**: `NEXT_PUBLIC_BACKEND_URL=http://localhost:0011`
 - **API Prefix**: All endpoints use `/api` prefix (e.g., `/api/auth/login`)
 
 ## Spring Boot Response Format
@@ -118,7 +118,7 @@ All authentication endpoints use the `/api` prefix:
 - ⏳ `src/app/lib/api/rideshare.js` - Future update (when rideshare API is ready)
 
 ### Configuration Files ✅
-- ✅ `.env` - Updated to `http://localhost:8080`
+- ✅ `.env` - Updated to `http://localhost:0011`
 - `.env.local` - (create for production with production Spring Boot URL)
 
 ### Authentication Pages ✅
@@ -132,7 +132,7 @@ The `base.js` file automatically adds `/api` prefix to all endpoints, so you can
 ```javascript
 apiCall('/auth/login', { method: 'POST', body: ... })
 ```
-And it will automatically become: `http://localhost:8080/api/auth/login`
+And it will automatically become: `http://localhost:0011/api/auth/login`
 
 ### Response Format
 All Spring Boot responses follow this format:

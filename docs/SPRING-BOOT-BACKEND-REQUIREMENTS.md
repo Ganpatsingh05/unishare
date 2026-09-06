@@ -7,7 +7,7 @@ This document outlines the exact requirements the Spring Boot backend must meet 
 ### Server Port
 ```properties
 # application.properties
-server.port=8080
+server.port=0011
 ```
 
 ### API Prefix
@@ -284,7 +284,53 @@ public void googleCallback(
 }
 ```
 
-### 7. Forgot Password
+### 7. GitHub OAuth - Start Flow
+```java
+@GetMapping("/api/auth/github")
+public void githubLogin(HttpServletResponse response) throws IOException {
+    String githubAuthUrl = "https://github.com/login/oauth/authorize?" +
+        "client_id=" + githubClientId +
+        "&redirect_uri=" + githubRedirectUri +
+        "&scope=read:user%20user:email";
+    
+    response.sendRedirect(githubAuthUrl);
+}
+```
+
+### 8. GitHub OAuth - Callback
+```java
+@GetMapping("/api/auth/github/callback")
+public void githubCallback(
+        @RequestParam String code,
+        HttpSession session,
+        HttpServletResponse response) throws IOException {
+    
+    // Exchange code for access token
+    GithubTokenResponse tokenResponse = exchangeCodeForGithubToken(code);
+    
+    // Get user info from GitHub
+    GithubUserInfo userInfo = getUserInfoFromGithub(tokenResponse.getAccessToken());
+    
+    // Get user's primary email
+    List<GithubEmail> emails = getUserEmailsFromGithub(tokenResponse.getAccessToken());
+    String primaryEmail = emails.stream()
+        .filter(e -> e.isPrimary() && e.isVerified())
+        .findFirst()
+        .map(GithubEmail::getEmail)
+        .orElseThrow(() -> new RuntimeException("No verified email found"));
+    
+    // Find or create user
+    User user = authService.findOrCreateGithubUser(userInfo, primaryEmail);
+    
+    // Store in session
+    session.setAttribute("user", user);
+    
+    // Redirect back to frontend
+    response.sendRedirect("http://localhost:3000/");
+}
+```
+
+### 9. Forgot Password
 ```java
 @PostMapping("/api/auth/forgot-password")
 public ResponseEntity<ApiResponse<Void>> forgotPassword(@RequestBody ForgotPasswordRequest request) {
@@ -300,7 +346,7 @@ public ResponseEntity<ApiResponse<Void>> forgotPassword(@RequestBody ForgotPassw
 }
 ```
 
-### 8. Reset Password
+### 10. Reset Password
 ```java
 @PostMapping("/api/auth/reset-password")
 public ResponseEntity<ApiResponse<Void>> resetPassword(@RequestBody ResetPasswordRequest request) {
@@ -365,7 +411,7 @@ public class SecurityConfig {
 
 ## Testing Checklist
 
-- [ ] Backend runs on port 8080
+- [ ] Backend runs on port 0011
 - [ ] All endpoints have `/api` prefix
 - [ ] CORS allows `http://localhost:3000` with credentials
 - [ ] GET `/api/auth/me` returns current user or null
@@ -385,7 +431,12 @@ public class SecurityConfig {
 # Google OAuth
 google.client.id=your-client-id
 google.client.secret=your-client-secret
-google.redirect.uri=http://localhost:8080/api/auth/google/callback
+google.redirect.uri=http://localhost:0011/api/auth/google/callback
+
+# GitHub OAuth
+github.client.id=your-github-client-id
+github.client.secret=your-github-client-secret
+github.redirect.uri=http://localhost:0011/api/auth/github/callback
 
 # Frontend URL
 frontend.url=http://localhost:3000
@@ -401,17 +452,17 @@ spring.mail.password=your-app-password
 
 ```bash
 # Test login
-curl -X POST http://localhost:8080/api/auth/login \
+curl -X POST http://localhost:0011/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"password123"}' \
   -c cookies.txt
 
 # Test getting current user (with session cookie)
-curl http://localhost:8080/api/auth/me \
+curl http://localhost:0011/api/auth/me \
   -b cookies.txt
 
 # Test logout
-curl -X POST http://localhost:8080/api/auth/logout \
+curl -X POST http://localhost:0011/api/auth/logout \
   -b cookies.txt
 ```
 

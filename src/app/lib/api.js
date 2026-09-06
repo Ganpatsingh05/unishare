@@ -11,6 +11,7 @@ export {
   logout,
   checkAdminStatus,
   startGoogleLogin,
+  startGithubLogin,
   loginWithEmail,
   registerWithEmail,
   requestPasswordReset

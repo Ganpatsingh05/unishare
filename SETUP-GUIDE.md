@@ -26,7 +26,7 @@ The `Axiom-frontend` branch has been created and configured to work **exclusivel
   - Compatible with Spring Boot OAuth flow
 
 ### 3. **Environment Configuration** ✅
-- **`.env`**: Set to `NEXT_PUBLIC_BACKEND_URL=http://localhost:8080`
+- **`.env`**: Set to `NEXT_PUBLIC_BACKEND_URL=http://localhost:0011`
 
 ### 4. **Documentation Created** ✅
 - **`BRANCH-README.md`**: Quick start guide for this branch
@@ -46,7 +46,7 @@ The `Axiom-frontend` branch has been created and configured to work **exclusivel
 ./gradlew bootRun
 ```
 
-Backend should be running on: `http://localhost:8080`
+Backend should be running on: `http://localhost:0011`
 
 ### Step 2: Install Frontend Dependencies
 ```bash
@@ -57,7 +57,7 @@ npm install
 ### Step 3: Verify Environment Configuration
 Check that `.env` contains:
 ```
-NEXT_PUBLIC_BACKEND_URL=http://localhost:8080
+NEXT_PUBLIC_BACKEND_URL=http://localhost:0011
 ```
 
 ### Step 4: Run Frontend
@@ -74,7 +74,7 @@ Frontend will run on: `http://localhost:3000`
 ### Test 1: Check Current User
 Open browser console and try:
 ```javascript
-const response = await fetch('http://localhost:8080/api/auth/me', {
+const response = await fetch('http://localhost:0011/api/auth/me', {
   credentials: 'include'
 });
 const data = await response.json();
@@ -97,9 +97,9 @@ Expected response:
 
 ### Test 3: Verify API Prefix
 All API calls should go to URLs starting with `/api`:
-- ✅ `http://localhost:8080/api/auth/me`
-- ✅ `http://localhost:8080/api/auth/login`
-- ❌ NOT `http://localhost:8080/auth/me` (old Node.js format)
+- ✅ `http://localhost:0011/api/auth/me`
+- ✅ `http://localhost:0011/api/auth/login`
+- ❌ NOT `http://localhost:0011/auth/me` (old Node.js format)
 
 ---
 

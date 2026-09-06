@@ -5,7 +5,7 @@
 ## Quick Start
 
 ### Prerequisites
-1. Spring Boot backend must be running on `http://localhost:8080`
+1. Spring Boot backend must be running on `http://localhost:0011`
 2. Spring Boot backend must have authentication system implemented
 3. Spring Boot backend must use `/api` prefix for all endpoints
 
@@ -16,7 +16,7 @@ npm install
 
 # Make sure .env has Spring Boot backend URL
 # .env should contain:
-# NEXT_PUBLIC_BACKEND_URL=http://localhost:8080
+# NEXT_PUBLIC_BACKEND_URL=http://localhost:0011
 
 # Run development server
 npm run dev
@@ -61,7 +61,7 @@ Your Spring Boot backend MUST:
 - Response parsing updated for Spring Boot format
 
 ### Environment
-- `.env` configured for `http://localhost:8080`
+- `.env` configured for `http://localhost:0011`
 
 ## Testing Authentication
 
@@ -85,7 +85,7 @@ console.log(result); // { success: true, user: {...}, message: '...' }
 ```javascript
 import { startGoogleLogin } from '@/app/lib/api/auth';
 
-// This will redirect to: http://localhost:8080/api/auth/google
+// This will redirect to: http://localhost:0011/api/auth/google
 startGoogleLogin();
 ```
 
@@ -97,7 +97,7 @@ See `docs/SPRING-BOOT-MIGRATION.md` for complete migration details.
 
 ### Backend URL Not Configured
 **Error**: `Backend not available`
-**Solution**: Make sure `.env` has `NEXT_PUBLIC_BACKEND_URL=http://localhost:8080`
+**Solution**: Make sure `.env` has `NEXT_PUBLIC_BACKEND_URL=http://localhost:0011`
 
 ### CORS Error
 **Error**: `CORS policy: No 'Access-Control-Allow-Origin' header`
