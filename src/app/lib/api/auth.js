@@ -1,5 +1,5 @@
-// api/auth.js - Authentication related API functions
-import { apiCall, BACKEND_URL } from "./base.js";
+// api/auth.js - Authentication API functions for Spring Boot backend
+import { apiCall, BACKEND_URL, API_CONFIG } from "./base.js";
 
 // ============== AUTHENTICATION ==============
 
@@ -7,9 +7,10 @@ export const fetchCurrentUser = async () => {
   try {
     const data = await apiCall('/auth/me');
     
-    // Your backend returns { success: true, user: {...} } or { success: true, user: null }
-    if (data.success) {
-      return data.user;
+    // Spring Boot returns: { status: 'success', data: {...user}, message: '...' }
+    // or { status: 'success', data: null, message: 'No user authenticated' }
+    if (data.status === 'success') {
+      return data.data; // This will be user object or null
     }
     return null;
   } catch (error) {
@@ -34,18 +35,15 @@ export const checkAuthStatus = async () => {
 
 export const logout = async () => {
   try {
-    // Use fetch POST to properly destroy the session on the server
-    const response = await fetch(`${BACKEND_URL}/auth/logout`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' }
+    const data = await apiCall('/auth/logout', {
+      method: 'POST'
     });
-    const data = await response.json();
-    return data.success === true;
+    // Spring Boot returns: { status: 'success', message: 'Logged out successfully' }
+    return data.status === 'success';
   } catch (error) {
     console.error('Logout error:', error);
-    // Fallback: navigate to GET logout endpoint if fetch fails
-    window.location.href = `${BACKEND_URL}/auth/logout`;
+    // Fallback: navigate to logout endpoint if fetch fails
+    window.location.href = `${BACKEND_URL}${API_CONFIG.API_PREFIX}/auth/logout`;
     return false;
   }
 };
@@ -82,7 +80,7 @@ export const checkAdminStatus = async () => {
 };
 
 export const startGoogleLogin = () => {
-  window.location.href = `${BACKEND_URL}/auth/google`;
+  window.location.href = `${BACKEND_URL}${API_CONFIG.API_PREFIX}/auth/google`;
 };
 
 // Email/Password Login
@@ -93,13 +91,22 @@ export const loginWithEmail = async (email, password) => {
       body: JSON.stringify({ email, password })
     });
     
-    if (response.success) {
-      return { success: true, user: response.user, message: response.message };
+    // Spring Boot returns: { status: 'success', data: {user}, message: '...' }
+    if (response.status === 'success') {
+      return { 
+        success: true, 
+        user: response.data?.user || response.data, 
+        message: response.message || 'Login successful' 
+      };
     }
     return { success: false, message: response.message || 'Login failed' };
   } catch (error) {
     console.error('Login error:', error);
-    return { success: false, message: error.message || 'Login failed. Please try again.' };
+    return { 
+      success: false, 
+      message: error.message || 'Login failed. Please try again.',
+      errors: error.errors || []
+    };
   }
 };
 
@@ -117,13 +124,22 @@ export const registerWithEmail = async (userData) => {
       })
     });
     
-    if (response.success) {
-      return { success: true, user: response.user, message: response.message || 'Registration successful!' };
+    // Spring Boot returns: { status: 'success', data: {user}, message: '...' }
+    if (response.status === 'success') {
+      return { 
+        success: true, 
+        user: response.data?.user || response.data, 
+        message: response.message || 'Registration successful!' 
+      };
     }
     return { success: false, message: response.message || 'Registration failed' };
   } catch (error) {
     console.error('Registration error:', error);
-    return { success: false, message: error.message || 'Registration failed. Please try again.' };
+    return { 
+      success: false, 
+      message: error.message || 'Registration failed. Please try again.',
+      errors: error.errors || []
+    };
   }
 };
 
@@ -135,12 +151,17 @@ export const requestPasswordReset = async (email) => {
       body: JSON.stringify({ email })
     });
     
-    if (response.success) {
+    // Spring Boot returns: { status: 'success', message: '...' }
+    if (response.status === 'success') {
       return { success: true, message: response.message || 'Password reset email sent!' };
     }
     return { success: false, message: response.message || 'Failed to send reset email' };
   } catch (error) {
     console.error('Password reset error:', error);
-    return { success: false, message: error.message || 'Failed to send reset email. Please try again.' };
+    return { 
+      success: false, 
+      message: error.message || 'Failed to send reset email. Please try again.',
+      errors: error.errors || []
+    };
   }
 };

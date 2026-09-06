@@ -1,9 +1,13 @@
-// api/base.js - Enhanced API utilities and configuration
+// api/base.js - Spring Boot Backend API utilities and configuration
+// This version is compatible ONLY with Spring Boot backend
+
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+const API_PREFIX = '/api'; // Spring Boot uses /api prefix for all endpoints
 
 // API Configuration and Constants
 export const API_CONFIG = {
   BASE_URL: BACKEND_URL,
+  API_PREFIX: API_PREFIX,
   TIMEOUT: 30000, // 30 second timeout
   RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 1000, // 1 second base delay
@@ -46,14 +50,15 @@ class APICache {
 
 const apiCache = new APICache();
 
-// Standardized API error class
+// Standardized API error class for Spring Boot responses
 export class APIError extends Error {
-  constructor(message, status, details = null, errors = []) {
+  constructor(message, status, details = null, errors = [], timestamp = null) {
     super(message);
     this.name = 'APIError';
     this.status = status;
     this.details = details;
-    this.errors = errors;
+    this.errors = errors; // Spring Boot validation errors array
+    this.timestamp = timestamp; // Spring Boot error timestamp
   }
 }
 
@@ -95,11 +100,15 @@ export const apiCall = async (endpoint, options = {}) => {
   // Validate backend URL
   if (!BACKEND_URL) {
     console.warn(`Backend URL not configured. Skipping API call to ${endpoint}`);
-    if (endpoint === '/auth/me') {
-      return { success: true, user: null };
+    if (endpoint.includes('/auth/me')) {
+      // Return Spring Boot format for unauthenticated user
+      return { status: 'success', data: null, message: 'No user authenticated' };
     }
     throw new APIError('Backend not available', 503, 'NEXT_PUBLIC_BACKEND_URL not configured');
   }
+
+  // Add /api prefix for Spring Boot endpoints if not already present
+  const fullEndpoint = endpoint.startsWith(API_PREFIX) ? endpoint : `${API_PREFIX}${endpoint}`;
 
   let attempt = 0;
   let lastError;
@@ -109,7 +118,7 @@ export const apiCall = async (endpoint, options = {}) => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-      const response = await fetch(`${BACKEND_URL}${endpoint}`, {
+      const response = await fetch(`${BACKEND_URL}${fullEndpoint}`, {
         method,
         credentials: 'include', // Essential for session-based auth
         signal: controller.signal,
@@ -133,13 +142,14 @@ export const apiCall = async (endpoint, options = {}) => {
         );
       }
 
-      // Handle HTTP errors
+      // Handle HTTP errors - Spring Boot format
       if (!response.ok) {
         throw new APIError(
           data.message || data.error || `HTTP ${response.status}`,
           response.status,
-          data.details || null,
-          data.errors || []
+          data.details || data.path || null,
+          data.errors || [],
+          data.timestamp || null
         );
       }
 
@@ -206,7 +216,10 @@ export const apiCallFormData = async (endpoint, formData, options = {}) => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-      const response = await fetch(`${BACKEND_URL}${endpoint}`, {
+      // Add /api prefix for Spring Boot endpoints if not already present
+      const fullEndpoint = endpoint.startsWith(API_PREFIX) ? endpoint : `${API_PREFIX}${endpoint}`;
+
+      const response = await fetch(`${BACKEND_URL}${fullEndpoint}`, {
         method,
         credentials: 'include',
         signal: controller.signal,
@@ -230,8 +243,9 @@ export const apiCallFormData = async (endpoint, formData, options = {}) => {
         throw new APIError(
           data.message || data.error || `HTTP ${response.status}`,
           response.status,
-          data.details || null,
-          data.errors || []
+          data.details || data.path || null,
+          data.errors || [],
+          data.timestamp || null
         );
       }
 
