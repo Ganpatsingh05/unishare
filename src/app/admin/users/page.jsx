@@ -22,7 +22,7 @@ import AdminGuard from "../_components/AdminGuard";
 import AdminLayout from "../_components/AdminLayout";
 import AdminLoader, { AdminTableSkeleton } from "../_components/AdminLoader";
 import { getProfileImageUrl, getUserInitials } from "../../lib/utils/profileUtils";
-import { getPublicUserProfile } from "../../lib/api/userProfile";
+import { getPublicUserProfile } from "../../lib/api/services/user/userProfile.service";
 
 
 // Mock user data - replace with real API

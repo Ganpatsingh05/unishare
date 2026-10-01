@@ -10,7 +10,7 @@ import { Search, Globe, Bell, Sun, Moon, User, LogOut, Menu, X, Settings, Camera
 import NotificationFloatingPanel from "../ui/NotificationFloatingPanel";
 import { useAuth, useNotifications, useUI } from "./../../lib/contexts/UniShareContext";
 import { getProfileImageUrl, getUserInitials } from "./../../lib/utils/profileUtils";
-import { getCurrentUserProfile } from "./../../lib/api/userProfile";
+import { getCurrentUserProfile } from "../../lib/api/services/user/userProfile.service";
 
 export default function HeaderMobile() {
   const router = useRouter();

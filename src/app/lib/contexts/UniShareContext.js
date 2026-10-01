@@ -548,7 +548,7 @@ export const UniShareProvider = ({ children }) => {
     const loadUserNotifications = async () => {
       if (state.isAuthenticated && state.user && !state.authLoading) {
         try {
-          const { getUserNotifications } = await import('../api/notifications');
+          const { getUserNotifications } = await import('../api/shared/notifications');
           const response = await getUserNotifications();
           const notifications = response.notifications || response.data || [];
           dispatch({ type: ActionTypes.SET_NOTIFICATIONS, payload: notifications });
@@ -775,7 +775,7 @@ export const UniShareProvider = ({ children }) => {
   const loadNotifications = useCallback(async () => {
     if (state.isAuthenticated && state.user) {
       try {
-        const { getUserNotifications } = await import('../api/notifications');
+        const { getUserNotifications } = await import('../api/shared/notifications');
         const response = await getUserNotifications();
         const notifications = response.notifications || response.data || [];
         dispatch({ type: ActionTypes.SET_NOTIFICATIONS, payload: notifications });

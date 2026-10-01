@@ -50,7 +50,7 @@ export default function AdminAnnouncementsPage() {
   const loadAllAnnouncements = async () => {
     setError(null);
     try {
-      const { getAllSystemAnnouncements } = await import("../../lib/api/announcements");
+      const { getAllSystemAnnouncements } = await import("../../lib/api/services/community/announcements.service");
       const res = await getAllSystemAnnouncements();
       if (res.success) {
         setAllAnnouncements(res.announcements || res.data || []);
@@ -107,7 +107,7 @@ export default function AdminAnnouncementsPage() {
     if (!form.title.trim() || !form.body.trim()) return;
     setSubmitting(true);
     try {
-      const { createSystemAnnouncement, updateSystemAnnouncement } = await import("../../lib/api/announcements");
+      const { createSystemAnnouncement, updateSystemAnnouncement } = await import("../../lib/api/services/community/announcements.service");
 
       const payload = {
         user_id: user?.id, // Admin's user ID for new announcements
@@ -139,7 +139,7 @@ export default function AdminAnnouncementsPage() {
 
   const toggleActive = async (ann) => {
     try {
-      const { updateSystemAnnouncement } = await import("../../lib/api/announcements");
+      const { updateSystemAnnouncement } = await import("../../lib/api/services/community/announcements.service");
       const newActive = !ann.active;
       // Update only the active status, keep other fields unchanged
       await updateSystemAnnouncement(ann.id, {
@@ -159,7 +159,7 @@ export default function AdminAnnouncementsPage() {
 
   const performDelete = async (id) => {
     try {
-      const { deleteSystemAnnouncement } = await import("../../lib/api/announcements");
+      const { deleteSystemAnnouncement } = await import("../../lib/api/services/community/announcements.service");
       await deleteSystemAnnouncement(id);
       await loadAllAnnouncements(); // Reload all announcements
       setConfirmDelete(null);

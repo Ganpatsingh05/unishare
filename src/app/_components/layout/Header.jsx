@@ -23,7 +23,7 @@ import NotificationFloatingPanel from "../ui/NotificationFloatingPanel";
 import HeaderMobile from "./HeaderMobile";
 import { useUniShare, useAuth, useUI, useNotifications } from "./../../lib/contexts/UniShareContext";
 import { getProfileImageUrl, getUserInitials } from "./../../lib/utils/profileUtils";
-import { getCurrentUserProfile } from "./../../lib/api/userProfile";
+import { getCurrentUserProfile } from "../../lib/api/services/user/userProfile.service";
 
 const Header = ({ logoRotation = 0 }) => {
   const router = useRouter();

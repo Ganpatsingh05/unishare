@@ -38,7 +38,7 @@ import {
   updateUserProfile as saveUserProfile,
   validateProfileDataEnhanced,
   validateProfileImage
-} from "../../lib/api/userProfile";
+} from "../../lib/api/services/user/userProfile.service";
 import { useUI } from "../../lib/contexts/UniShareContext";
 
 // Galaxy Background for dark mode (same as home page)

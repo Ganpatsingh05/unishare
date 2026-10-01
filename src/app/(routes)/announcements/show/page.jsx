@@ -6,7 +6,7 @@ import { ArrowLeft, Search, Tag, Calendar, ExternalLink, Link2, Check, Megaphone
 import Header from "./../../../_components/layout/Header";
 
 import Footer from "./../../../_components/layout/Footer";
-import { getActiveAnnouncements } from "./../../../lib/api/announcements";
+import { getActiveAnnouncements } from "../../../lib/api/services/community/announcements.service";
 import { useUI } from "./../../../lib/contexts/UniShareContext";
 
 const CATEGORIES = [

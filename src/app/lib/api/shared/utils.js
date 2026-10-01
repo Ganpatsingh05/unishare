@@ -19,7 +19,7 @@ export const fetchUserDashboardData = async () => {
       apiCall('/profile/me'),
       apiCall('/api/rooms/my-rooms?limit=5'),
       apiCall('/itemsell/mine?limit=5'),
-      apiCall('/api/shareride/my?limit=5'),
+      apiCall('/rides/my-rides?size=5'),
       apiCall('/api/tickets/my?limit=5'),
       apiCall('/api/lostfound/my?limit=5')
     ]);
@@ -28,7 +28,7 @@ export const fetchUserDashboardData = async () => {
     const profile = profileResponse.status === 'fulfilled' ? profileResponse.value?.user : null;
     const rooms = roomsResponse.status === 'fulfilled' ? (roomsResponse.value?.data || []) : [];
     const items = itemsResponse.status === 'fulfilled' ? (itemsResponse.value?.data || []) : [];
-    const rides = ridesResponse.status === 'fulfilled' ? (ridesResponse.value?.data || []) : [];
+    const rides = ridesResponse.status === 'fulfilled' ? (ridesResponse.value?.content || ridesResponse.value?.data || []) : [];
     const tickets = ticketsResponse.status === 'fulfilled' ? (ticketsResponse.value?.data || []) : [];
     const lostFound = lostFoundResponse.status === 'fulfilled' ? (lostFoundResponse.value?.data || []) : [];
 

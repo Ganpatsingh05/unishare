@@ -187,7 +187,7 @@ export default function RequestsMadePage() {
 
     const fetchRequestCounts = async () => {
       try {
-        const { getAllRequestCounts } = await import("../../lib/api/requests");
+        const { getAllRequestCounts } = await import("../../lib/api/shared/requests");
         const counts = await getAllRequestCounts();
         setRequestCounts(counts);
       } catch (error) {

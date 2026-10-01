@@ -1,22 +1,34 @@
-// lib/api.js - Main API entry point
-// Centralized exports from the restructured API
+/**
+ * UniShare API - Centralized API exports
+ * 
+ * Structure:
+ * - core: HTTP client and configuration
+ * - services: Feature-specific API services
+ *   - auth: Authentication
+ *   - rides: Ride sharing
+ *   - housing: Housing/rooms
+ *   - marketplace: Buy/sell items
+ *   - community: Announcements, lost & found, tickets, notices
+ *   - user: User profile and contacts
+ *   - admin: Admin panel
+ * - shared: Cross-cutting utilities (notifications, requests, utils)
+ */
 
 // Core
-export { apiCall, API_CONFIG } from './api/core/client.js';
+export { apiCall, API_CONFIG } from './core/client.js';
+export { default as config } from './core/config.js';
 
-// Auth
+// Auth Service
 export {
   fetchCurrentUser,
   loginWithEmail,
   registerWithEmail,
   startGoogleLogin,
   startGithubLogin,
-  logout,
-  requestPasswordReset,
-  resetPassword
-} from './api/services/auth/index.js';
+  logout
+} from './services/auth/index.js';
 
-// Rides
+// Rides Service
 export {
   fetchRides,
   createRide,
@@ -30,11 +42,14 @@ export {
   getRideById,
   getRideStats,
   validateRideData,
+  // Mapper utilities
+  mapToBackendRide,
+  mapToFrontendRide,
   formatRideDateTime,
   getRideStatusInfo
-} from './api/services/rides/index.js';
+} from './services/rides/index.js';
 
-// Housing
+// Housing Service
 export {
   fetchHousingListings,
   createHousingListing,
@@ -42,6 +57,7 @@ export {
   deleteHousingListing,
   getMyHousingListings,
   getHousingById,
+  // Rooms
   fetchRooms,
   createRoom,
   getRoomById,
@@ -49,9 +65,9 @@ export {
   deleteRoom,
   getMyRooms,
   searchRooms
-} from './api/services/housing/index.js';
+} from './services/housing/index.js';
 
-// Marketplace
+// Marketplace Service
 export {
   fetchMarketplaceItems,
   createMarketplaceItem,
@@ -60,35 +76,39 @@ export {
   getMyMarketplaceItems,
   getMarketplaceItemById,
   searchMarketplaceItems
-} from './api/services/marketplace/index.js';
+} from './services/marketplace/index.js';
 
-// Community
+// Community Service
 export {
+  // Lost & Found
   fetchLostFoundItems,
   createLostFoundItem,
   updateLostFoundItem,
   deleteLostFoundItem,
   getMyLostFoundItems,
   getLostFoundItemById,
+  // Tickets
   fetchTickets,
   createTicket,
   updateTicket,
   deleteTicket,
   getMyTickets,
   getTicketById,
+  // Notices
   fetchNotices,
   createNotice,
   updateNotice,
   deleteNotice,
   getNoticeById,
+  // Announcements
   fetchAnnouncements,
   createAnnouncement,
   updateAnnouncement,
   deleteAnnouncement,
   getAnnouncementById
-} from './api/services/community/index.js';
+} from './services/community/index.js';
 
-// User
+// User Service
 export {
   fetchUserProfile,
   updateUserProfile,
@@ -102,31 +122,35 @@ export {
   getUserProfileById,
   getUserActivity,
   getUserStats
-} from './api/services/user/index.js';
+} from './services/user/index.js';
 
-// Admin
+// Admin Service
 export {
   fetchAllUsers,
-  getUserById as getAdminUserById,
+  getUserById,
   updateUserRole,
-  deleteUser as deleteUserAdmin,
+  deleteUser,
   fetchSystemStats,
   fetchAuditLogs,
   moderateContent
-} from './api/services/admin/index.js';
+} from './services/admin/index.js';
 
-// Shared
+// Shared Utilities
 export {
+  // Utils
   formatDate,
   formatPrice,
   handleApiError,
+  // Notifications
   fetchNotifications,
   markNotificationAsRead,
   markAllNotificationsAsRead,
   deleteNotification,
+  // Resources
   fetchResources,
   uploadResource,
   deleteResource,
+  // Requests
   UniversalRequestAPI,
   roomsAPI,
   marketplaceAPI,
@@ -134,7 +158,7 @@ export {
   ticketsAPI,
   ridesAPI,
   getAllRequestCounts
-} from './api/shared/index.js';
+} from './shared/index.js';
 
-// Backward compatibility - export getUserActivity from both locations
-export { getUserActivity } from './api/shared/utils.js';
+// Re-export getUserActivity from shared/utils (backward compatibility)
+export { getUserActivity } from './shared/utils.js';

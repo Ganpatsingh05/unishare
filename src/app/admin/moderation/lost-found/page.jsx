@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Search, RefreshCcw, Eye, CheckCircle, XCircle, Trash2, Flag, Clock, AlertTriangle, Filter } from "lucide-react";
 import AdminGuard from "../../_components/AdminGuard";
 import AdminLayout from "../../_components/AdminLayout";
-import { fetchLostFoundItems, deleteLostFoundItem } from "./../../../lib/api/lostFound";
+import { fetchLostFoundItems, deleteLostFoundItem } from "../../../lib/api/services/community/lostFound.service";
 
 /*
   Lost & Found Moderation Page

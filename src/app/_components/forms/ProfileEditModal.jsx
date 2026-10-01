@@ -5,7 +5,7 @@ import {
   validateProfileDataEnhanced, 
   useUsernameValidation,
   checkUsernameAvailability 
-} from "./../../lib/api/userProfile";
+} from "../../lib/api/services/user/userProfile.service";
 
 const ProfileEditModal = ({ 
   isOpen, 

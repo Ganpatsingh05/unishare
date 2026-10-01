@@ -5,7 +5,7 @@ import Header from "./../../_components/layout/Header";
 import Footer from "./../../_components/layout/Footer";
 import SmallFooter from "./../../_components/layout/SmallFooter";
 import { Phone, Mail, MapPin, Clock, Search, Copy, Check, ShieldAlert, Building2, GraduationCap, Home, Users } from "lucide-react";
-import { getPublicContacts } from "./../../lib/api/contacts";
+import { getPublicContacts } from "../../lib/api/services/user/contacts.service";
 
 const CATEGORIES = [
   { key: 'all', label: 'All' },

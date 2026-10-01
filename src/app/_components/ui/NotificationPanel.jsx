@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Bell, CheckCheck, Trash2, MessageCircle, Megaphone, AlertTriangle, Info, Loader2 } from "lucide-react";
-import { markNotificationAsRead, markAllNotificationsAsRead, deleteUserNotification } from "./../../lib/api/notifications";
+import { markNotificationAsRead, markAllNotificationsAsRead, deleteUserNotification } from "../../lib/api/shared/notifications";
 
 // Utility function to format date/time
 const formatNotificationDate = (dateString) => {

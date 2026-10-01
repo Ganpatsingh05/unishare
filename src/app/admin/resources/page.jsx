@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Plus, Search, Tag, ExternalLink, Copy, Check, Pencil, Trash2, X, Save, Filter, AlertCircle } from "lucide-react";
 import AdminGuard from "../_components/AdminGuard";
 import AdminLayout from "../_components/AdminLayout";
-import { getAllResources, getResourceCategories, createResource, updateResource, deleteResource, toggleResourceActive } from "../../lib/api/resources";
+import { getAllResources, getResourceCategories, createResource, updateResource, deleteResource, toggleResourceActive } from "../../lib/api/shared/resources";
 
 
 

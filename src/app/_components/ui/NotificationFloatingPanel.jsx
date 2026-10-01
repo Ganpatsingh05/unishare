@@ -17,7 +17,7 @@ import {
   markNotificationAsRead,
   markAllNotificationsAsRead,
   deleteUserNotification,
-} from "../../lib/api/notifications";
+} from "../../lib/api/shared/notifications";
 import { useAuth, useNotifications, useUI } from "../../lib/contexts/UniShareContext";
 
 // ─── Date formatter ────────────────────────────────────────────────

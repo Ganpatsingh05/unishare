@@ -62,7 +62,7 @@ const RequestManager = ({
 
     try {
       // Dynamic import based on module
-      const { roomsAPI, marketplaceAPI, lostFoundAPI, ticketsAPI, ridesAPI } = await import("../../lib/api/requests");
+      const { roomsAPI, marketplaceAPI, lostFoundAPI, ticketsAPI, ridesAPI } = await import("../../lib/api/shared/requests");
       
       let api;
       switch (module) {
@@ -113,7 +113,7 @@ const RequestManager = ({
 
   const respondToRequest = async (requestId, action) => {
     try {
-      const { roomsAPI, marketplaceAPI, lostFoundAPI, ticketsAPI, ridesAPI } = await import("../../lib/api/requests");
+      const { roomsAPI, marketplaceAPI, lostFoundAPI, ticketsAPI, ridesAPI } = await import("../../lib/api/shared/requests");
       
       let api;
       switch (module) {
@@ -178,7 +178,7 @@ const RequestManager = ({
 
   const cancelRequest = async (requestId) => {
     try {
-      const { roomsAPI, marketplaceAPI, lostFoundAPI, ticketsAPI, ridesAPI } = await import("../../lib/api/requests");
+      const { roomsAPI, marketplaceAPI, lostFoundAPI, ticketsAPI, ridesAPI } = await import("../../lib/api/shared/requests");
       
       let api;
       switch (module) {

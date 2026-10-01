@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Search, RefreshCcw, Eye, Trash2, AlertTriangle } from "lucide-react";
 import AdminGuard from "../../_components/AdminGuard";
 import AdminLayout from "../../_components/AdminLayout";
-import { fetchRides, deleteRide } from "./../../../lib/api/rideSharing";
+import { fetchRides, deleteRide } from "../../../lib/api/services/rides/rides.service";
 
 /*
   Rideshare Moderation Page

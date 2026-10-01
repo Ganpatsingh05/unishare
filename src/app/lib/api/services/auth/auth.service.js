@@ -1,5 +1,6 @@
 // api/auth.js - Authentication API functions for Spring Boot backend
-import { apiCall, BACKEND_URL, API_CONFIG } from "./base.js";
+import { apiCall, BACKEND_URL } from "../../core/client.js";
+
 
 // ============== AUTHENTICATION ==============
 
@@ -43,7 +44,7 @@ export const logout = async () => {
   } catch (error) {
     console.error('Logout error:', error);
     // Fallback: navigate to logout endpoint if fetch fails
-    window.location.href = `${BACKEND_URL}${API_CONFIG.API_PREFIX}/auth/logout`;
+    window.location.href = `${BACKEND_URL}/api/auth/logout`;
     return false;
   }
 };
@@ -81,12 +82,12 @@ export const checkAdminStatus = async () => {
 
 // OAuth Login - Google
 export const startGoogleLogin = () => {
-  window.location.href = `${BACKEND_URL}${API_CONFIG.API_PREFIX}/auth/google`;
+  window.location.href = `${BACKEND_URL}/api/auth/google`;
 };
 
 // OAuth Login - GitHub
 export const startGithubLogin = () => {
-  window.location.href = `${BACKEND_URL}${API_CONFIG.API_PREFIX}/auth/github`;
+  window.location.href = `${BACKEND_URL}/api/auth/github`;
 };
 
 // Email/Password Login
@@ -149,25 +150,68 @@ export const registerWithEmail = async (userData) => {
   }
 };
 
-// Request password reset
+// Request password reset - Send reset token via email
+// Backend endpoint: POST /api/user-management/password-update
 export const requestPasswordReset = async (email) => {
   try {
-    const response = await apiCall('/auth/forgot-password', {
+    const response = await fetch(`${BACKEND_URL}/api/user-management/password-update`, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
       body: JSON.stringify({ email })
     });
     
-    // Spring Boot returns: { status: 'success', message: '...' }
-    if (response.status === 'success') {
-      return { success: true, message: response.message || 'Password reset email sent!' };
+    const data = await response.json();
+    
+    // Backend returns: { message: "If an account exists for this email, a password reset link has been sent." }
+    return { 
+      success: true, 
+      message: data.message || 'If an account exists for this email, a password reset link has been sent.'
+    };
+  } catch (error) {
+    console.error('Password reset request error:', error);
+    return { 
+      success: false, 
+      message: error.message || 'Failed to send password reset email. Please try again.'
+    };
+  }
+};
+
+// Reset password with token (from email link)
+// Backend endpoint: POST /api/user-management/password-update/confirm
+export const resetPassword = async (token, newPassword) => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/user-management/password-update/confirm`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
+      body: JSON.stringify({ 
+        token, 
+        newPassword 
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Invalid or expired token');
     }
-    return { success: false, message: response.message || 'Failed to send reset email' };
+    
+    const data = await response.json();
+    
+    // Backend returns: { message: "Password has been updated successfully." }
+    return { 
+      success: true, 
+      message: data.message || 'Password has been updated successfully!'
+    };
   } catch (error) {
     console.error('Password reset error:', error);
     return { 
       success: false, 
-      message: error.message || 'Failed to send reset email. Please try again.',
-      errors: error.errors || []
+      message: error.message || 'Failed to reset password. The link may be invalid or expired.'
     };
   }
 };

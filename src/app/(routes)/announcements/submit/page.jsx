@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Megaphone, Tag, Calendar, Link2, Send } from "lucide-react";
 import Header from "./../../../_components/layout/Header";
 import Footer from "./../../../_components/layout/Footer";
-import { submitAnnouncement } from "./../../../lib/api/announcements";
+import { submitAnnouncement } from "../../../lib/api/services/community/announcements.service";
 import { useUI } from "./../../../lib/contexts/UniShareContext";
 
 export default function SubmitAnnouncementPage() {

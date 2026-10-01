@@ -5,7 +5,7 @@ import { useUI } from "./../../lib/contexts/UniShareContext";
 import Footer from "./../../_components/layout/Footer";
 import SmallFooter from "./../../_components/layout/SmallFooter";
 import { Search, Link2, ExternalLink, Copy, Check, BookOpen, GraduationCap, Globe, Wrench, FileText, Video, Tag, Plus, X } from "lucide-react";
-import { getResources, getResourceCategories, submitResourceSuggestion } from "./../../lib/api/resources";
+import { getResources, getResourceCategories, submitResourceSuggestion } from "../../lib/api/shared/resources";
 
 const DEFAULT_CATEGORIES = [
   { key: 'all', label: 'All' },

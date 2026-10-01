@@ -514,7 +514,7 @@ const LoginPage = () => {
                         </div>
                         <span className="ml-2 text-xs text-white/75">Remember me</span>
                       </label>
-                      <Link href="/forgot-password" className="text-xs text-cyan-300 hover:text-white">Forgot password?</Link>
+                      <Link href="/forgot-password" className="text-xs text-cyan-300 hover:text-cyan-100 transition-colors">Forgot password?</Link>
                     </div>
                     <button
                       type="submit" disabled={isLoginLoading}

@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Plus, Search, Phone, Mail, MapPin, Trash2, Pencil, X, Building2, GraduationCap, ShieldAlert, Home, Users, Save, AlertCircle } from "lucide-react";
 import AdminGuard from "../_components/AdminGuard";
 import AdminLayout from "../_components/AdminLayout";
-import { getAllContacts, createContact, updateContact, deleteContact } from "../../lib/api/contacts";
+import { getAllContacts, createContact, updateContact, deleteContact } from "../../lib/api/services/user/contacts.service";
 
 // Mirror categories used on public page
 const CATEGORIES = [
