@@ -1,5 +1,5 @@
 // api/notice.js - Notice management API functions
-import { apiCall } from "./base.js";
+import { apiCall } from "../../core/client.js";
 
 // ============== ADMIN NOTICE MANAGEMENT ==============
 

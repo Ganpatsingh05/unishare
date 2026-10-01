@@ -1,5 +1,5 @@
 // api/resources.js - Resources API functions
-import { apiCall } from "./base.js";
+import { apiCall } from "../core/client.js";
 
 // ============== PUBLIC RESOURCES ==============
 

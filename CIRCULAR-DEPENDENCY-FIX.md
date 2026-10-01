@@ -14,43 +14,59 @@ The build was failing with circular dependency errors in the API module system.
 
 ## Files Fixed
 
-### 1. `src/app/lib/api/services/auth/auth.service.js`
+### 1. Auth Service
+**File**: `src/app/lib/api/services/auth/auth.service.js`  
 **Issue**: Importing from non-existent `./base.js`  
 **Fix**: Changed import to `../../core/client.js`
 
-```javascript
-// Before
-import { apiCall, BACKEND_URL, API_CONFIG } from "./base.js";
+### 2. User Services
+**Files**:
+- `src/app/lib/api/services/user/profile.service.js`
+- `src/app/lib/api/services/user/userProfile.service.js`
+- `src/app/lib/api/services/user/contacts.service.js`
 
-// After
-import { apiCall, BACKEND_URL } from "../../core/client.js";
-```
-
-### 2. `src/app/lib/api/services/user/profile.service.js`
 **Issue**: Importing from non-existent `./base.js`  
 **Fix**: Changed import to `../../core/client.js`
 
-```javascript
-// Before
-import { apiCall, apiCallFormData } from "./base.js";
+### 3. Community Services
+**Files**:
+- `src/app/lib/api/services/community/announcements.service.js`
+- `src/app/lib/api/services/community/lostFound.service.js`
+- `src/app/lib/api/services/community/notice.service.js`
+- `src/app/lib/api/services/community/tickets.service.js`
 
-// After
-import { apiCall, apiCallFormData } from "../../core/client.js";
-```
-
-### 3. `src/app/lib/api/services/user/userProfile.service.js`
 **Issue**: Importing from non-existent `./base.js`  
 **Fix**: Changed import to `../../core/client.js`
 
-```javascript
-// Before
-import { apiCall, apiCallFormData } from "./base.js";
+### 4. Housing Services
+**Files**:
+- `src/app/lib/api/services/housing/housing.service.js`
+- `src/app/lib/api/services/housing/rooms.service.js`
 
-// After
-import { apiCall, apiCallFormData } from "../../core/client.js";
-```
+**Issue**: Importing from non-existent `./base.js`  
+**Fix**: Changed import to `../../core/client.js`
 
-### 4. `src/app/lib/api/services/user/index.js`
+### 5. Marketplace Service
+**File**: `src/app/lib/api/services/marketplace/marketplace.service.js`  
+**Issue**: Importing from non-existent `./base.js`  
+**Fix**: Changed import to `../../core/client.js`
+
+### 6. Admin Service
+**File**: `src/app/lib/api/services/admin/admin.service.js`  
+**Issue**: Importing from non-existent `./base.js`  
+**Fix**: Changed import to `../../core/client.js`
+
+### 7. Shared Utilities
+**Files**:
+- `src/app/lib/api/shared/notifications.js`
+- `src/app/lib/api/shared/resources.js`
+- `src/app/lib/api/shared/utils.js`
+
+**Issue**: Importing from non-existent `./base.js`  
+**Fix**: Changed import to `../core/client.js`
+
+### 8. User Export Configuration
+**File**: `src/app/lib/api/services/user/index.js`  
 **Issue**: Exporting functions that don't exist  
 **Fix**: Updated exports to match actual functions in source files
 
