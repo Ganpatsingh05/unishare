@@ -93,15 +93,28 @@ export {
   fetchUserProfile,
   updateUserProfile,
   uploadProfilePicture,
-  updateUserSettings,
+  deleteUserAvatar,
+  getUserStats,
+  getUserDashboard,
+  fetchPublicProfile,
   fetchContacts,
   addContact,
   updateContact,
   deleteContact,
   getContactById,
-  getUserProfileById,
-  getUserActivity,
-  getUserStats
+  getCurrentUserProfile,
+  getPublicUserProfile,
+  validateCustomUserId,
+  validateCampusName,
+  validatePhoneNumber,
+  validateProfileImage,
+  validateDisplayName,
+  validateBio,
+  validateProfileData,
+  checkUsernameAvailability,
+  getUsernameSuggestions,
+  searchUserProfiles,
+  deleteProfileImage
 } from './api/services/user/index.js';
 
 // Admin

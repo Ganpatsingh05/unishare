@@ -4,8 +4,9 @@
 export {
   fetchUserProfile,
   updateUserProfile,
-  uploadProfilePicture,
-  updateUserSettings
+  uploadUserAvatar as uploadProfilePicture,
+  deleteUserAvatar,
+  getUserStats
 } from './profile.service.js';
 
 // Contacts
@@ -17,9 +18,21 @@ export {
   getContactById
 } from './contacts.service.js';
 
-// User Profile (extended)
+// User Profile (extended from userProfile.service)
 export {
-  getUserProfileById,
-  getUserActivity,
-  getUserStats
+  getCurrentUserProfile,
+  getPublicUserProfile,
+  validateCustomUserId,
+  validateCampusName,
+  validatePhoneNumber,
+  validateProfileImage,
+  validateDisplayName,
+  validateBio,
+  validateProfileData,
+  checkUsernameAvailability,
+  getUsernameSuggestions,
+  searchUserProfiles,
+  deleteProfileImage,
+  useUsernameValidation,
+  validateProfileDataEnhanced
 } from './userProfile.service.js';

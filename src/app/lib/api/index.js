@@ -113,15 +113,17 @@ export {
   fetchUserProfile,
   updateUserProfile,
   uploadProfilePicture,
-  updateUserSettings,
+  deleteUserAvatar,
+  getUserStats,
+  getUserDashboard,
+  fetchPublicProfile,
   fetchContacts,
   addContact,
   updateContact,
   deleteContact,
   getContactById,
-  getUserProfileById,
-  getUserActivity,
-  getUserStats
+  getCurrentUserProfile,
+  getPublicUserProfile
 } from './services/user/index.js';
 
 // Admin Service
