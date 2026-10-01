@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { resetPassword } from '@/app/lib/api';
-import AuthLayout from '@/app/components/auth/AuthLayout';
+import AuthLayout from '@/app/_components/auth/AuthLayout';
 
 function ResetPasswordForm() {
   const router = useRouter();

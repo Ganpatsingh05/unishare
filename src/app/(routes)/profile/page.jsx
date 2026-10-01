@@ -32,7 +32,7 @@ import {
   User,
   X
 } from "lucide-react";
-import { fetchUserDashboardData, formatDate, getTimeSince } from "../../lib/api/utils";
+import { fetchUserDashboardData, formatDate, getTimeSince } from "../../lib/api";
 import {
   getCurrentUserProfile,
   updateUserProfile as saveUserProfile,

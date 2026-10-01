@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { requestPasswordReset } from '@/app/lib/api';
-import AuthLayout from '@/app/components/auth/AuthLayout';
+import AuthLayout from '@/app/_components/auth/AuthLayout';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();

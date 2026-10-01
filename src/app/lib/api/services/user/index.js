@@ -11,17 +11,18 @@ export {
 
 // Contacts
 export {
-  fetchContacts,
-  addContact,
+  getPublicContacts as fetchContacts,
+  getAllContacts,
+  createContact as addContact,
   updateContact,
-  deleteContact,
-  getContactById
+  deleteContact
 } from './contacts.service.js';
 
 // User Profile (extended from userProfile.service)
 export {
   getCurrentUserProfile,
   getPublicUserProfile,
+  getPublicUserProfile as fetchPublicProfile,
   validateCustomUserId,
   validateCampusName,
   validatePhoneNumber,

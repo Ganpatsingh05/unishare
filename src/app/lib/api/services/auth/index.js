@@ -7,5 +7,7 @@ export {
   startGithubLogin,
   logout,
   requestPasswordReset,
-  resetPassword
+  resetPassword,
+  checkAdminStatus,
+  checkAuthStatus
 } from './auth.service.js';

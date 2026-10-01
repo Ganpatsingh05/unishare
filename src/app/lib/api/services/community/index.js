@@ -6,8 +6,8 @@ export {
   createLostFoundItem,
   updateLostFoundItem,
   deleteLostFoundItem,
-  getMyLostFoundItems,
-  getLostFoundItemById
+  fetchMyLostFoundItems as getMyLostFoundItems,
+  fetchLostFoundItem as getLostFoundItemById
 } from './lostFound.service.js';
 
 // Tickets (Event/Concert tickets)
@@ -16,24 +16,27 @@ export {
   createTicket,
   updateTicket,
   deleteTicket,
-  getMyTickets,
-  getTicketById
+  fetchMyTickets,
+  fetchMyTickets as getMyTickets,
+  fetchTicket as getTicketById
 } from './tickets.service.js';
 
 // Notices
 export {
-  fetchNotices,
+  getPublicNotices as fetchNotices,
+  getAllNotices,
   createNotice,
   updateNotice,
   deleteNotice,
-  getNoticeById
+  getAllNotices as getNoticeById
 } from './notice.service.js';
 
 // Announcements
 export {
-  fetchAnnouncements,
-  createAnnouncement,
-  updateAnnouncement,
-  deleteAnnouncement,
-  getAnnouncementById
+  getSystemAnnouncements as fetchAnnouncements,
+  getAllSystemAnnouncements,
+  createSystemAnnouncement as createAnnouncement,
+  updateSystemAnnouncement as updateAnnouncement,
+  deleteSystemAnnouncement as deleteAnnouncement,
+  getSystemAnnouncements as getAnnouncementById
 } from './announcements.service.js';

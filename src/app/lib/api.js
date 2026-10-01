@@ -13,7 +13,9 @@ export {
   startGithubLogin,
   logout,
   requestPasswordReset,
-  resetPassword
+  resetPassword,
+  checkAdminStatus,
+  checkAuthStatus
 } from './api/services/auth/index.js';
 
 // Rides
@@ -36,30 +38,32 @@ export {
 
 // Housing
 export {
-  fetchHousingListings,
-  createHousingListing,
-  updateHousingListing,
-  deleteHousingListing,
-  getMyHousingListings,
-  getHousingById,
   fetchRooms,
+  fetchHousingListings,
+  fetchhousedata,
+  fetchRoom,
+  fetchMyRooms,
+  getMyHousingListings,
   createRoom,
-  getRoomById,
-  updateRoom,
-  deleteRoom,
-  getMyRooms,
-  searchRooms
+  createHousingListing,
+  postRoom,
+  deleteRoom
 } from './api/services/housing/index.js';
 
 // Marketplace
 export {
   fetchMarketplaceItems,
-  createMarketplaceItem,
-  updateMarketplaceItem,
-  deleteMarketplaceItem,
-  getMyMarketplaceItems,
+  searchMarketplaceItems,
+  fetchItem,
   getMarketplaceItemById,
-  searchMarketplaceItems
+  fetchMyItems,
+  getMyMarketplaceItems,
+  createItem,
+  createMarketplaceItem,
+  updateItem,
+  updateMarketplaceItem,
+  deleteItem,
+  deleteMarketplaceItem
 } from './api/services/marketplace/index.js';
 
 // Community
@@ -74,6 +78,7 @@ export {
   createTicket,
   updateTicket,
   deleteTicket,
+  fetchMyTickets,
   getMyTickets,
   getTicketById,
   fetchNotices,
@@ -95,13 +100,12 @@ export {
   uploadProfilePicture,
   deleteUserAvatar,
   getUserStats,
-  getUserDashboard,
   fetchPublicProfile,
   fetchContacts,
+  getAllContacts,
   addContact,
   updateContact,
   deleteContact,
-  getContactById,
   getCurrentUserProfile,
   getPublicUserProfile,
   validateCustomUserId,
@@ -130,16 +134,30 @@ export {
 
 // Shared
 export {
+  fetchUserDashboardData,
+  getUserActivity,
   formatDate,
+  getTimeSince,
   formatPrice,
-  handleApiError,
+  formatContactInfo,
+  parseContactInfo,
+  getUserNotifications,
   fetchNotifications,
+  getUnreadNotificationsCount,
   markNotificationAsRead,
   markAllNotificationsAsRead,
   deleteNotification,
+  sendAdminNotification,
+  getAllAdminNotifications,
+  deleteAdminNotification,
+  getNotificationStats,
+  getResources,
   fetchResources,
-  uploadResource,
-  deleteResource,
+  getResourceCategories,
+  getResource,
+  getMyResources,
+  submitResourceSuggestion,
+  updateResource,
   UniversalRequestAPI,
   roomsAPI,
   marketplaceAPI,
@@ -148,6 +166,3 @@ export {
   ridesAPI,
   getAllRequestCounts
 } from './api/shared/index.js';
-
-// Backward compatibility - export getUserActivity from both locations
-export { getUserActivity } from './api/shared/utils.js';

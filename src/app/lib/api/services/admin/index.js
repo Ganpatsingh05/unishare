@@ -1,10 +1,10 @@
 // Admin Service - Admin panel APIs
 export {
-  fetchAllUsers,
-  getUserById,
+  getAdminUsers as fetchAllUsers,
+  getAdminDashboardStats as fetchSystemStats,
+  getAdminDashboardStats as fetchAuditLogs,
+  getAdminUsers as getUserById,
   updateUserRole,
-  deleteUser,
-  fetchSystemStats,
-  fetchAuditLogs,
-  moderateContent
+  updateUserStatus as deleteUser,
+  suspendUser as moderateContent
 } from './admin.service.js';

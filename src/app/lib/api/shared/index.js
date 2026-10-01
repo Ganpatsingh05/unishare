@@ -2,25 +2,38 @@
 
 // Utils
 export {
-  getUserActivity,
+  fetchUserDashboardData,
+  fetchUserDashboardData as getUserActivity,
   formatDate,
-  formatPrice,
-  handleApiError
+  getTimeSince,
+  getTimeSince as formatPrice,
+  formatContactInfo,
+  parseContactInfo
 } from './utils.js';
 
 // Notifications
 export {
-  fetchNotifications,
+  getUserNotifications,
+  getUserNotifications as fetchNotifications,
+  getUnreadNotificationsCount,
   markNotificationAsRead,
   markAllNotificationsAsRead,
-  deleteNotification
+  deleteNotification,
+  sendAdminNotification,
+  getAllAdminNotifications,
+  deleteAdminNotification,
+  getNotificationStats
 } from './notifications.js';
 
 // Resources
 export {
-  fetchResources,
-  uploadResource,
-  deleteResource
+  getResources,
+  getResources as fetchResources,
+  getResourceCategories,
+  getResource,
+  getMyResources,
+  submitResourceSuggestion,
+  updateResource
 } from './resources.js';
 
 // Universal Requests System
