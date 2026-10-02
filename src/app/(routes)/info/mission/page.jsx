@@ -3,11 +3,11 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import Reveal from "./../../../_components/ui/Reveal";
-import useIsMobile from "./../../../_components/ui/useIsMobile";
+import Reveal from '@components/ui/Reveal';
+import useIsMobile from '@components/ui/useIsMobile';
 
 // ✅ PERFORMANCE: Lazy load Footer
-const Footer = dynamic(() => import("./../../../_components/layout/Footer"), {
+const Footer = dynamic(() => import('@components/layout/Footer'), {
   loading: () => null,
   ssr: true,
 });
@@ -30,7 +30,7 @@ import {
 	Lightbulb,
 	Rocket,
 } from "lucide-react";
-import { useUI } from "./../../../lib/contexts/UniShareContext";
+import { useUI } from '@contexts/UniShareContext';
 
 export default function MissionPage() {
 	const {darkMode} = useUI();

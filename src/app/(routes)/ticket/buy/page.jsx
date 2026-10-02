@@ -11,15 +11,15 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import useIsMobile from "./../../../_components/ui/useIsMobile";
-import RequestButton from "./../../../_components/forms/RequestButton";
-import SmallFooter from "./../../../_components/layout/SmallFooter";
-import { fetchTickets } from "./../../../lib/api";
+import useIsMobile from '@components/ui/useIsMobile';
+import RequestButton from '@components/forms/RequestButton';
+import SmallFooter from '@components/layout/SmallFooter';
+import { fetchTickets } from '@lib/api/api';
 import {
   useAuth,
   useMessages,
   useUI
-} from "./../../../lib/contexts/UniShareContext";
+} from '@contexts/UniShareContext';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS

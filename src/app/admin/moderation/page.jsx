@@ -19,9 +19,9 @@ import {
   Ban,
   Archive
 } from "lucide-react";
-import AdminGuard from "../_components/AdminGuard";
-import AdminLayout from "../_components/AdminLayout";
-import AdminLoader, { AdminTableSkeleton } from "../_components/AdminLoader";
+import AdminGuard from '@features/admin/components/AdminGuard';
+import AdminLayout from '@features/admin/components/AdminLayout';
+import AdminLoader, { AdminTableSkeleton } from '@features/admin/components/AdminLoader';
 
 // Mock moderation data - replace with real API
 const mockReports = [
@@ -117,7 +117,7 @@ export default function AdminModeration() {
     const fetchReports = async () => {
       setLoading(true);
       try {
-        const { getAdminReports } = await import("../../lib/api");
+        const { getAdminReports } = await import('@lib/api/api');
         const response = await getAdminReports({
           status: statusFilter !== 'all' ? statusFilter : undefined,
           category: categoryFilter !== 'all' ? categoryFilter : undefined,
@@ -210,7 +210,7 @@ export default function AdminModeration() {
 
   const handleResolveReport = async (reportId, action) => {
     try {
-      const { updateReportStatus } = await import("../../lib/api");
+      const { updateReportStatus } = await import('@lib/api/api');
       await updateReportStatus(reportId, "resolved", action, `Report resolved with action: ${action}`);
       
       // Update local state
@@ -227,7 +227,7 @@ export default function AdminModeration() {
 
   const handleDismissReport = async (reportId) => {
     try {
-      const { updateReportStatus } = await import("../../lib/api");
+      const { updateReportStatus } = await import('@lib/api/api');
       await updateReportStatus(reportId, "dismissed", "no_action", "Report dismissed - no action required");
       
       // Update local state

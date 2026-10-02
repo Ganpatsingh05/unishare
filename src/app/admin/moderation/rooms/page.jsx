@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Search, RefreshCcw, Eye, Trash2, Home, MapPin, Calendar, AlertTriangle } from "lucide-react";
-import AdminGuard from "../../_components/AdminGuard";
-import AdminLayout from "../../_components/AdminLayout";
-import { fetchRooms, deleteRoom } from "./../../../lib/api/rooms";
+import AdminGuard from '@features/admin/components/AdminGuard';
+import AdminLayout from '@features/admin/components/AdminLayout';
+import { fetchRooms, deleteRoom } from '@lib/api/rooms';
 
 /*
   Rooms Moderation Page

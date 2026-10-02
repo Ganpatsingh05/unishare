@@ -20,10 +20,10 @@ import {
   Loader2
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useUI, useAuth } from "./../../../lib/contexts/UniShareContext";
+import { useUI, useAuth } from '@contexts/UniShareContext';
 
 // ✅ PERFORMANCE: Lazy load Footer
-const Footer = dynamic(() => import("./../../../_components/layout/Footer"), {
+const Footer = dynamic(() => import('@components/layout/Footer'), {
   loading: () => null,
   ssr: true,
 });

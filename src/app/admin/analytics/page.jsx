@@ -18,9 +18,9 @@ import {
   Activity,
   Home
 } from "lucide-react";
-import AdminGuard from "../_components/AdminGuard";
-import AdminLayout from "../_components/AdminLayout";
-import AdminLoader, { AdminInlineLoader } from "../_components/AdminLoader";
+import AdminGuard from '@features/admin/components/AdminGuard';
+import AdminLayout from '@features/admin/components/AdminLayout';
+import AdminLoader, { AdminInlineLoader } from '@features/admin/components/AdminLoader';
 
 // Mock analytics data - replace with real API
 const mockAnalytics = {
@@ -83,7 +83,7 @@ export default function AdminAnalytics() {
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
-      const { getAdminAnalytics } = await import("../../lib/api");
+      const { getAdminAnalytics } = await import('@lib/api/api');
       const response = await getAdminAnalytics();
       
       if (response.success) {

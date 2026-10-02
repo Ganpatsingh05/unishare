@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import Footer from "./../../../_components/layout/Footer";
+import Footer from '@components/layout/Footer';
 import { Calendar, Clock, MapPin, Image as ImageIcon, Phone, Instagram, Mail, Link2, Plus, Trash2 } from "lucide-react";
-import { createLostFoundItem } from "./../../../lib/api";
-import { useAuth } from "./../../../lib/contexts/UniShareContext";
-import { useMessages, useUI } from "./../../../lib/contexts/UniShareContext";
-import { LostFoundNotifications } from "./../../../lib/utils/actionNotifications";
+import { createLostFoundItem } from '@lib/api/api';
+import { useAuth } from '@contexts/UniShareContext';
+import { useMessages, useUI } from '@contexts/UniShareContext';
+import { LostFoundNotifications } from '@lib/utils/actionNotifications';
 import { useRouter } from "next/navigation";
 
 export default function ReportLostFoundPage() {

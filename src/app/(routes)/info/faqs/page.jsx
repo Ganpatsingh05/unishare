@@ -27,10 +27,10 @@ import {
   RotateCw
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useUI } from "./../../../lib/contexts/UniShareContext";
+import { useUI } from '@contexts/UniShareContext';
 
 // ✅ PERFORMANCE: Lazy load Footer (19KB) - not critical for initial page load
-const Footer = dynamic(() => import("./../../../_components/layout/Footer"), {
+const Footer = dynamic(() => import('@components/layout/Footer'), {
   loading: () => null,
   ssr: true,
 });

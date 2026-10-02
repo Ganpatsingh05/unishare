@@ -4,7 +4,7 @@ import { useState, useMemo, memo, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Car, ShoppingCart, Home, Search, Megaphone, Ticket, LogIn, User } from "lucide-react";
-import { useUI, useAuth } from "./../../lib/contexts/UniShareContext";
+import { useUI, useAuth } from '@contexts/UniShareContext';
 
 
 const NotificationBadge = memo(({ count, gradient }) => (
@@ -187,7 +187,7 @@ export default function RequestsMadePage() {
 
     const fetchRequestCounts = async () => {
       try {
-        const { getAllRequestCounts } = await import("../../lib/api/requests");
+        const { getAllRequestCounts } = await import('@lib/api/requests');
         const counts = await getAllRequestCounts();
         setRequestCounts(counts);
       } catch (error) {

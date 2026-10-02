@@ -1,10 +1,10 @@
 "use client";
 import React, { useMemo, useState, useEffect } from "react";
-import Footer from "./../../../_components/layout/Footer";
-import RequestButton from "./../../../_components/forms/RequestButton";
+import Footer from '@components/layout/Footer';
+import RequestButton from '@components/forms/RequestButton';
 import { Search, Calendar, MapPin, Clock, Image as ImageIcon, Loader } from "lucide-react";
-import { fetchLostFoundItems } from "./../../../lib/api";
-import { useMessages } from "./../../../lib/contexts/UniShareContext";
+import { fetchLostFoundItems } from '@lib/api/api';
+import { useMessages } from '@contexts/UniShareContext';
 
 export default function ViewFoundPage() {
   const [darkMode, setDarkMode] = useState(true);

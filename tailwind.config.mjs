@@ -14,6 +14,39 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        text: {
+          primary: "var(--text-primary)",
+          secondary: "var(--text-secondary)",
+          muted: "var(--text-muted)",
+          inverse: "var(--text-inverse)"
+        },
+        surface: {
+          primary: "var(--surface-primary)",
+          secondary: "var(--surface-secondary)",
+          interactive: "var(--surface-interactive)"
+        },
+        border: {
+          subtle: "var(--border-subtle)",
+          default: "var(--border-default)",
+          strong: "var(--border-strong)"
+        },
+        brand: {
+          primary: {
+            DEFAULT: "var(--brand-primary)",
+            hover: "var(--brand-primary-hover)",
+            light: "var(--brand-primary-light)"
+          },
+          secondary: {
+            DEFAULT: "var(--brand-secondary)",
+            hover: "var(--brand-secondary-hover)",
+            light: "var(--brand-secondary-light)"
+          }
+        },
+        route: {
+          path: "var(--route-path)",
+          node: "var(--route-node)",
+          active: "var(--route-active)"
+        },
       },
       animation: {
         'fade-in-up': 'fadeInUp 0.6s ease-out forwards',

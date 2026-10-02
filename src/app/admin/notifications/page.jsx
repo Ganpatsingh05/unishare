@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Send, Bell, Users, Loader2, CheckCircle2, XCircle, RefreshCcw, Search, Filter, X, Plus, Tag, History } from "lucide-react";
-import { useUI } from "../../lib/contexts/UniShareContext";
-import { sendAdminNotification, getAllAdminNotifications, deleteAdminNotification, getNotificationStats } from "../../lib/api";
-import AdminGuard from "../_components/AdminGuard";
-import AdminLayout from "../_components/AdminLayout";
+import { useUI } from '@contexts/UniShareContext';
+import { sendAdminNotification, getAllAdminNotifications, deleteAdminNotification, getNotificationStats } from '@lib/api/api';
+import AdminGuard from '@features/admin/components/AdminGuard';
+import AdminLayout from '@features/admin/components/AdminLayout';
 
 /*
   Admin Notifications Page (Refined)

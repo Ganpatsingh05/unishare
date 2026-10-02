@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import Header from "./../../_components/layout/Header";
-import Footer from "./../../_components/layout/Footer";
-import SmallFooter from "./../../_components/layout/SmallFooter";
+import Header from '@components/layout/Header';
+import Footer from '@components/layout/Footer';
+import SmallFooter from '@components/layout/SmallFooter';
 import { Phone, Mail, MapPin, Clock, Search, Copy, Check, ShieldAlert, Building2, GraduationCap, Home, Users } from "lucide-react";
-import { getPublicContacts } from "./../../lib/api/contacts";
+import { getPublicContacts } from '@features/contacts/services/contacts.service';
 
 const CATEGORIES = [
   { key: 'all', label: 'All' },

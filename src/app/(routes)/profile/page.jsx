@@ -32,23 +32,23 @@ import {
   User,
   X
 } from "lucide-react";
-import { fetchUserDashboardData, formatDate, getTimeSince } from "../../lib/api/utils";
+import { fetchUserDashboardData, formatDate, getTimeSince } from '@lib/api/utils';
 import {
   getCurrentUserProfile,
   updateUserProfile as saveUserProfile,
   validateProfileDataEnhanced,
   validateProfileImage
-} from "../../lib/api/userProfile";
-import { useUI } from "../../lib/contexts/UniShareContext";
+} from '@lib/api/userProfile';
+import { useUI } from '@contexts/UniShareContext';
 
 // Galaxy Background for dark mode (same as home page)
-const GalaxyDesktop = dynamic(() => import("../../_components/ui/GalaxyDesktop"), { 
+const GalaxyDesktop = dynamic(() => import('@components/ui/GalaxyDesktop'), { 
   ssr: false,
   loading: () => null
 });
 
 // Small Footer
-import SmallFooter from "../../_components/layout/SmallFooter";
+import SmallFooter from '@components/layout/SmallFooter';
 
 // Card colors matching home page style - Same solid colors for both modes
 const CARD_COLORS = {

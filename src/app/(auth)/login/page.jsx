@@ -5,9 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, User, GraduationCap, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
-import { startGoogleLogin, loginWithEmail, registerWithEmail, fetchCurrentUser } from "./../../lib/api";
-import { useUI, useAuth } from "./../../lib/contexts/UniShareContext";
-import SmallFooter from "../../_components/layout/SmallFooter";
+import { startGoogleLogin, loginWithEmail, registerWithEmail, fetchCurrentUser } from '@lib/api/api';
+import { useUI, useAuth } from '@contexts/UniShareContext';
+import SmallFooter from '@components/layout/SmallFooter';
 import MobileLoginPage from "./MobileLoginPage";
 
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import RequestManager from "./../../../../_components/forms/RequestManager";
-import SmallFooter from "./../../../../_components/layout/SmallFooter";
+import RequestManager from '@components/forms/RequestManager';
+import SmallFooter from '@components/layout/SmallFooter';
 
 export default function LostFoundRequestsPage() {
   return (

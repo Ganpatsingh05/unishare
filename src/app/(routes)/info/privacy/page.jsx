@@ -23,12 +23,12 @@ import {
   Share2
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Reveal from "./../../../_components/ui/Reveal";
-import MobileQuickNav from "./../../../_components/layout/MobileQuickNav";
-import { useUI } from "./../../../lib/contexts/UniShareContext";
+import Reveal from '@components/ui/Reveal';
+import MobileQuickNav from '@components/layout/MobileQuickNav';
+import { useUI } from '@contexts/UniShareContext';
 
 // ✅ PERFORMANCE: Lazy load Footer
-const Footer = dynamic(() => import("./../../../_components/layout/Footer"), {
+const Footer = dynamic(() => import('@components/layout/Footer'), {
   loading: () => null,
   ssr: true,
 });

@@ -3,10 +3,10 @@
 import React from "react";
 import Link from "next/link";
 import { Megaphone, PlusCircle, Eye } from "lucide-react";
-import { useUI } from "./../../lib/contexts/UniShareContext";
-import Header from "./../../_components/layout/Header";
-import Footer from "./../../_components/layout/Footer";
-import SmallFooter from "./../../_components/layout/SmallFooter";
+import { useUI } from '@contexts/UniShareContext';
+import Header from '@components/layout/Header';
+import Footer from '@components/layout/Footer';
+import SmallFooter from '@components/layout/SmallFooter';
 
 
 export default function AnnouncementsPage() {

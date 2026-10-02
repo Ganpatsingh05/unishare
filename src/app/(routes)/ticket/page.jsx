@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
-import { useUI } from "./../../lib/contexts/UniShareContext";
+import { useUI } from '@contexts/UniShareContext';
 import Link from "next/link";
 import Image from "next/image";
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from "framer-motion";
@@ -9,8 +9,8 @@ import {
   Calendar, Users, Tag, Star, Sparkles, QrCode, Eye, Handshake,
   PartyPopper, Plane, Trophy, Laugh, Drama, Mic, Ferris, ShieldCheck
 } from "lucide-react";
-import SmallFooter from "./../../_components/layout/SmallFooter";
-import { fetchTickets } from "./../../lib/api";
+import SmallFooter from '@components/layout/SmallFooter';
+import { fetchTickets } from '@lib/api/api';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS

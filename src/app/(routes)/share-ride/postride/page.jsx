@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import SmallFooter from "./../../../_components/layout/SmallFooter";
+import SmallFooter from '@components/layout/SmallFooter';
+import { readRidePrefill } from '@features/rides/utils/rideLinks';
+import { SEAT_LIMITS } from '@features/rides/constants/ridePlaces';
 import {
   Car,
   MapPin,
@@ -24,8 +26,8 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useUI, useAuth, useMessages } from "./../../../lib/contexts/UniShareContext";
-import { RideNotifications } from "./../../../lib/utils/actionNotifications";
+import { useUI, useAuth, useMessages } from '@contexts/UniShareContext';
+import { RideNotifications } from '@lib/utils/actionNotifications';
 import Link from "next/link";
 
 // Success Popup Component
@@ -573,6 +575,16 @@ export default function PostRidePage() {
   const [description, setDescription] = useState("");
   const [contacts, setContacts] = useState([{ id: 1, type: "mobile", value: "" }]);
 
+  // Prefill from the landing page (?from=&to=&date=&time=&seats=)
+  useEffect(() => {
+    const prefill = readRidePrefill();
+    if (prefill.from) setFromLoc(prefill.from);
+    if (prefill.to) setToLoc(prefill.to);
+    if (prefill.date) setDate(prefill.date);
+    if (prefill.time) setTime(prefill.time);
+    if (prefill.seats) setSeats(Math.min(prefill.seats, SEAT_LIMITS.maxPost));
+  }, []);
+
   // Form validation
   const [errors, setErrors] = useState({});
 
@@ -640,7 +652,7 @@ export default function PostRidePage() {
     setIsSubmitting(true);
 
     try {
-      const { createRide } = await import("../../../lib/api");
+      const { createRide } = await import('@lib/api/api');
       
       const rideData = {
         from: fromLoc.trim(),

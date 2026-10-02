@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useMemo, useState, useEffect, useCallback, useRef } from "react";
-import SmallFooter from "./../../../_components/layout/SmallFooter";
+import SmallFooter from '@components/layout/SmallFooter';
+import { readRidePrefill } from '@features/rides/utils/rideLinks';
+import { SEAT_LIMITS } from '@features/rides/constants/ridePlaces';
 import {
   Car,
   MapPin,
@@ -30,7 +32,7 @@ import {
   ChevronDown,
   ChevronLeft,
 } from "lucide-react";
-import { useUI, useAuth, useMessages } from "./../../../lib/contexts/UniShareContext";
+import { useUI, useAuth, useMessages } from '@contexts/UniShareContext';
 import Link from "next/link";
 
 // Custom Dropdown Component for Seats
@@ -318,6 +320,15 @@ export default function FindRidePage() {
   const [seatsNeeded, setSeatsNeeded] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
 
+  // Prefill from the landing page search (?from=&to=&date=&seats=)
+  useEffect(() => {
+    const prefill = readRidePrefill();
+    if (prefill.from) setFromLoc(prefill.from);
+    if (prefill.to) setToLoc(prefill.to);
+    if (prefill.date) setDate(prefill.date);
+    if (prefill.seats) setSeatsNeeded(Math.min(prefill.seats, SEAT_LIMITS.maxFind));
+  }, []);
+
   // Remove active section state - now only search functionality
 
   // State for rides data
@@ -350,7 +361,7 @@ export default function FindRidePage() {
       if (showLoadingState) setLoading(true);
       setError(null);
       
-      const { fetchRides: fetchRidesAPI } = await import("../../../lib/api");
+      const { fetchRides: fetchRidesAPI } = await import('@lib/api/api');
       
       const filters = {};
       if (fromLoc.trim()) filters.from = fromLoc.trim();
@@ -406,7 +417,7 @@ export default function FindRidePage() {
     }
 
     try {
-      const { getUserSentRequests } = await import("../../../lib/api");
+      const { getUserSentRequests } = await import('@lib/api/api');
       const result = await getUserSentRequests();
       
       if (result.success) {
@@ -598,7 +609,7 @@ export default function FindRidePage() {
     const originalRequests = userSentRequests;
     
     try {
-      const { requestRideJoin } = await import("../../../lib/api");
+      const { requestRideJoin } = await import('@lib/api/api');
       
       const requestData = {
         seatsRequested: 1,

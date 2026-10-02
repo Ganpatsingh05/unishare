@@ -23,7 +23,7 @@ import {
   Camera,
   Toggle
 } from "lucide-react";
-import { useUI } from "./../../lib/contexts/UniShareContext";
+import { useUI } from '@contexts/UniShareContext';
 
 const SettingsPage = () => {
   const {darkMode} = useUI();
