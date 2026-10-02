@@ -175,7 +175,8 @@ function DecisionLayer({ decision, name, t, reduce }) {
  * accept / decline decision. `decision` ("confirm"|"decline") swaps the row
  * into its confirmation state while the queue plays the exit.
  */
-export default function RequestRow({ request, onDecide, decision = null }) {
+/** `inRide`: shown inside its own ride's card, so the route, time and steps are left out. */
+export default function RequestRow({ request, onDecide, decision = null, inRide = false }) {
   const t = useRideTokens();
   const reduce = useReducedMotion();
   const { name, ride } = request;
@@ -240,7 +241,7 @@ export default function RequestRow({ request, onDecide, decision = null }) {
       </Box>
 
       <Box sx={{ pl: { sm: `${INDENT}px` }, mt: 1.25, display: "grid", gap: 0.5, minWidth: 0 }}>
-        <CompactRoute from={ride.from} to={ride.to} t={t} />
+        {inRide ? null : <CompactRoute from={ride.from} to={ride.to} t={t} />}
         <Box
           sx={{
             display: "flex",
@@ -255,8 +256,8 @@ export default function RequestRow({ request, onDecide, decision = null }) {
             fontVariantNumeric: "tabular-nums",
           }}
         >
-          <span>{day}</span>
-          {time ? (
+          {inRide ? null : <span>{day}</span>}
+          {time && !inRide ? (
             <>
               <Separator />
               <span>{time}</span>
@@ -264,9 +265,11 @@ export default function RequestRow({ request, onDecide, decision = null }) {
           ) : null}
           {request.pickup ? (
             <>
-              <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
-                <Separator />
-              </Box>
+              {inRide ? null : (
+                <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+                  <Separator />
+                </Box>
+              )}
               <Box
                 component="span"
                 sx={{
@@ -318,7 +321,7 @@ export default function RequestRow({ request, onDecide, decision = null }) {
             sx={{
               display: "none",
               flex: `0 0 ${STEPS_WIDTH}px`,
-              [`@container (min-width: ${STEPS_MIN_ROW}px)`]: { display: "block" },
+              [`@container (min-width: ${STEPS_MIN_ROW}px)`]: { display: inRide ? "none" : "block" },
             }}
           >
             <Steps

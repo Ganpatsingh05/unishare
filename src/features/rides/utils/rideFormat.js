@@ -6,7 +6,8 @@ const LOCALE = "en-IN";
 const rupee = new Intl.NumberFormat(LOCALE, {
   style: "currency",
   currency: "INR",
-  maximumFractionDigits: 0,
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
 });
 
 const clock = new Intl.DateTimeFormat(LOCALE, { hour: "numeric", minute: "2-digit", hour12: true });

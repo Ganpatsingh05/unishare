@@ -149,7 +149,7 @@ export default function UpcomingRides({ rides, status, pendingByRide = {}, onCan
       aria-label={S.ridesTitle}
       sx={{ listStyle: "none", m: 0, p: 0, position: "relative", outline: "none" }}
     >
-      <AnimatePresence initial={false} mode="popLayout">
+      <AnimatePresence initial={false}>
         {rides.map((ride, index) => (
           <Box
             component={m.li}

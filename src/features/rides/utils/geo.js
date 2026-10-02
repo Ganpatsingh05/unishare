@@ -1,8 +1,8 @@
 // Place lookup and road routing for the hero map.
 //
 // - Suggestions while typing: Photon (photon.komoot.io), which allows
-//   search-as-you-type. Results are limited to India and to places within
-//   MAX_DISTANCE_KM of campus.
+//   search-as-you-type. Results are limited to India, anywhere in it; campus
+//   is only a ranking hint, so nearby matches are listed first.
 // - Verifying a settled value: Nominatim (nominatim.openstreetmap.org), which
 //   is more accurate for stations but forbids autocomplete, so it is only
 //   called once typing has settled, at most once per distinct value.
@@ -20,9 +20,6 @@ const OSRM_DRIVE_URL = "https://router.project-osrm.org/route/v1/driving/";
 const OSRM_WALK_URL = "https://routing.openstreetmap.de/routed-foot/route/v1/foot/";
 const WALK_LIMIT_KM = 3;
 const CAMPUS = { lat: 31.2556, lng: 75.7047 };
-const MAX_DISTANCE_KM = 600;
-// Lookups are bounded to North India around campus.
-const VIEWBOX = "72.5,34.5,79.5,27.5";
 
 const verifyCache = new Map();
 const suggestCache = new Map();
@@ -36,10 +33,6 @@ export function distanceKm(a, b) {
   const dLng = rad(b.lng - a.lng);
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
   return 2 * 6371 * Math.asin(Math.sqrt(h));
-}
-
-function nearCampus(point) {
-  return distanceKm(CAMPUS, point) <= MAX_DISTANCE_KM;
 }
 
 /** A curated place matching the text exactly (case-insensitive), if any. */
@@ -67,7 +60,7 @@ export function rememberPlace(text, place) {
 }
 
 /**
- * Search-as-you-type suggestions near campus.
+ * Search-as-you-type suggestions anywhere in India (campus-near matches first).
  * @returns {Promise<Array<{label: string, detail: string, lat: number, lng: number}>>}
  */
 export async function suggestPlaces(query, signal) {
@@ -85,7 +78,7 @@ export async function suggestPlaces(query, signal) {
       const [lng, lat] = feature.geometry.coordinates;
       return { ...photonLabel(feature.properties), lat, lng };
     })
-    .filter((place) => place.label && nearCampus(place))
+    .filter((place) => place.label)
     .filter((place) => {
       const id = `${norm(place.label)}|${norm(place.detail)}`;
       if (seen.has(id)) return false;
@@ -98,7 +91,7 @@ export async function suggestPlaces(query, signal) {
 }
 
 /**
- * Resolves free text to one place near campus, or null when it cannot be
+ * Resolves free text to one place in India, or null when it cannot be
  * found. Curated places resolve without a network call.
  * @returns {Promise<{label: string, detail: string, lat: number, lng: number, source: string} | null>}
  */
@@ -113,7 +106,6 @@ export async function verifyPlace(text, signal) {
     format: "jsonv2",
     limit: "3",
     countrycodes: "in",
-    viewbox: VIEWBOX,
     "accept-language": "en",
   });
   const response = await fetch(`${NOMINATIM_URL}?${params}`, { signal, headers: { Accept: "application/json" } });
@@ -127,7 +119,7 @@ export async function verifyPlace(text, signal) {
       lng: Number(row.lon),
       source: "osm",
     }))
-    .find((place) => Number.isFinite(place.lat) && nearCampus(place));
+    .find((place) => Number.isFinite(place.lat) && Number.isFinite(place.lng));
   const result = match || null;
   verifyCache.set(key, result);
   return result;

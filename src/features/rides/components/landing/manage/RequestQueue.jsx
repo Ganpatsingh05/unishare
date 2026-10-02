@@ -140,7 +140,7 @@ export default function RequestQueue({ requests, status, onRespond, onRetry }) {
         aria-label={S.requestsTitle}
         sx={{ listStyle: "none", m: 0, p: 0, position: "relative", outline: "none" }}
       >
-        <AnimatePresence initial={false} mode="popLayout">
+        <AnimatePresence initial={false}>
           {requests.map((request, index) => (
             <Box
               component={m.li}

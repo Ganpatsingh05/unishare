@@ -278,6 +278,19 @@ export const respondToRideRequest = async (requestId, action, message = '') => {
   }
 };
 
+// Cancel a request I sent (backend refuses once it is confirmed)
+export const cancelRideRequest = async (requestId) => {
+  try {
+    if (!requestId) {
+      throw new Error('Request ID is required');
+    }
+    const response = await apiCall(`/api/shareride/requests/${requestId}`, { method: 'DELETE' });
+    return { success: true, data: response.data || response };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+};
+
 // Get ride details by ID
 export const getRideById = async (rideId) => {
   try {

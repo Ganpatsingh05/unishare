@@ -175,8 +175,8 @@ export default function LiveStrip({ stats }) {
           alignItems: "stretch",
         }}
       >
-        {cells.map((cell, index) => (
-          <StatCell key={cell.key} t={t} index={index} count={cells.length} {...cell} />
+        {cells.map(({ key, ...cell }, index) => (
+          <StatCell key={key} t={t} index={index} count={cells.length} {...cell} />
         ))}
       </Box>
     </Panel>

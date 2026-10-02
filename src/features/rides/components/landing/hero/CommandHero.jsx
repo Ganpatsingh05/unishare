@@ -54,7 +54,7 @@ const FIELD_ORDER = ["from", "to", "when"];
 
 const noop = () => {};
 
-function validatePost(form) {
+export function validatePost(form) {
   const from = form.from.trim();
   const to = form.to.trim();
   const errors = {};
@@ -113,7 +113,7 @@ function VerifyLine({ t, label, state, text }) {
 }
 
 /** Live verification of the typed places, announced politely. */
-function VerifyNotes({ form, resolved }) {
+export function VerifyNotes({ form, resolved }) {
   const t = useRideTokens();
   const showFrom = form.from.trim() && resolved.origin.status !== "default";
   const showTo = form.to.trim();
@@ -284,7 +284,8 @@ function SubmitArea({ mode, pending }) {
 }
 
 /** Desktop and tablet fields: route group, timing group, submit. */
-function InlineFields({ form, onFormChange, rides, errors, onSwap }) {
+/** Desktop and tablet fields (also used by the Find page). */
+export function InlineFields({ form, onFormChange, rides, errors, onSwap }) {
   const t = useRideTokens();
   const post = form.mode === "post";
   const timingAreas = post
@@ -437,7 +438,7 @@ function SheetRow({ id, label, value, placeholder, leading, onOpen, error, error
 }
 
 /** Mobile fields: tappable rows that open bottom sheets, inline seat stepper. */
-function CompactFields({ form, onFormChange, rides, errors, onSwap }) {
+export function CompactFields({ form, onFormChange, rides, errors, onSwap }) {
   const t = useRideTokens();
   const [sheet, setSheet] = useState({ kind: null, open: false });
   const [draft, setDraft] = useState("");

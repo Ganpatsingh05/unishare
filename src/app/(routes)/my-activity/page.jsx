@@ -205,7 +205,7 @@ export default function RequestsMadePage() {
     {
       name: "Share Ride",
       icon: Car,
-      path: "/my-activity/requests/sharerideREQ",
+      path: "/share-ride/manage?tab=joining",
       count: requestCounts.rides?.total || 0,
       color: "from-blue-500 to-cyan-500",
       description: "Ride requests you've made"

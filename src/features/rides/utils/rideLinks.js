@@ -5,7 +5,7 @@ export const RIDE_ROUTES = {
   home: "/share-ride",
   find: "/share-ride/findride",
   post: "/share-ride/postride",
-  activity: "/my-activity/requests/sharerideREQ",
+  manage: "/share-ride/manage",
   login: "/login",
 };
 

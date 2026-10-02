@@ -75,6 +75,36 @@ export function normalizeRequest(raw) {
   };
 }
 
+// The backend has used both vocabularies for request states.
+const STATUS_ALIASES = { accepted: "confirmed", rejected: "declined" };
+export const normalizeStatus = (status) => STATUS_ALIASES[status] || status || "pending";
+
+/** A request the signed-in user sent to someone else's ride (GET /my/requested). */
+export function normalizeSentRequest(raw) {
+  const ride = raw.ride || {};
+  const owner = ride.owner || {};
+  const profile = raw.ride_owner_profile || {};
+  return {
+    id: raw.id,
+    rideId: raw.ride_id ?? ride.id,
+    status: normalizeStatus(raw.status),
+    seats: toNumber(raw.seats_requested, 1),
+    message: cleanMessage(raw.message),
+    createdAt: raw.created_at || null,
+    hostName: profile.display_name || owner.name || RIDE_STRINGS.recent.driverFallback,
+    hostAvatar: profile.profile_image_url || owner.picture || null,
+    ride: {
+      from: ride.from_location || "",
+      to: ride.to_location || "",
+      date: ride.date || "",
+      time: (ride.time || "").slice(0, 5),
+      startsAt: parseRideDateTime(ride.date, ride.time),
+      price: toNumber(ride.price, NaN),
+      seats: toNumber(ride.seats, 0),
+    },
+  };
+}
+
 /** Body for PUT /api/shareride/:id, which re-validates every field. */
 export function toRideUpdateBody(ride, patch) {
   const next = { ...ride, ...patch };

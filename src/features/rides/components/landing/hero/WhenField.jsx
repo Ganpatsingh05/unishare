@@ -92,7 +92,7 @@ function InlineWhen({ mode, date, time, onChange, error, ids }) {
           />
         </FieldSegment>
       </m.div>
-      <AnimatePresence mode="popLayout" initial={false}>
+      <AnimatePresence initial={false}>
         {post ? (
           <m.div
             key="time"

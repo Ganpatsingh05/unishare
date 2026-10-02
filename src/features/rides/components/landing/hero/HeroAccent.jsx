@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useLayoutEffect, useRef } from "react";
 import Box from "@mui/material/Box";
 import { animate, useReducedMotion } from "framer-motion";
 import { useRideTokens } from "../../../theme/RideThemeBridge";
@@ -59,6 +59,8 @@ const clipG = above(G_ARM.y);
 // The arms overlap their letters by a few units, so the two anti-aliased edges
 // at a cut never leave a hairline between them.
 const SEAM = 4;
+// Ink outline around the yellow word in light mode, in font units per side.
+const OUTLINE = 13;
 const points = (list) => list.map(([x, y]) => `${x},${y}`).join(" ");
 
 // Hands in hand units (1 unit = U; origin at the clasp, y down). Each wrist
@@ -117,10 +119,16 @@ const ARM = { delay: 0.2, duration: 0.85, ease: [0.65, 0, 0.35, 1] };
 const PALM_OPEN = { delay: 0.95, duration: 0.6, ease: [0.25, 0.8, 0.3, 1] };
 const REACH = 9; // palm reveal radius, in hand units
 
-const setArms = (svg, progress) =>
+// The current progress is kept on the svg, so shapes that mount later (the
+// light-mode outline after a theme switch) can be brought to the same point.
+const setArms = (svg, progress) => {
+  svg.dataset.arm = String(progress);
   svg.querySelectorAll("[data-arm]").forEach((node) => node.setAttribute("stroke-dashoffset", String(1 - progress)));
-const setPalms = (svg, progress) =>
+};
+const setPalms = (svg, progress) => {
+  svg.dataset.palm = String(progress);
   svg.querySelectorAll("[data-reveal]").forEach((node) => node.setAttribute("r", String(progress * REACH)));
+};
 
 /** Plays the whole sequence from the start; returns a function that stops it. */
 function play(svg) {
@@ -152,14 +160,23 @@ export default function HeroAccent({ text }) {
 
   const dark = t.mode === "dark";
   const firstColor = dark ? t.brand.skyBright : t.brand.actionBlue;
-  // Yellow text fails contrast on light surfaces, so light mode uses the
-  // logo's deep blue for the second word. Each arm takes its own letter's
-  // colour so letter and arm read as one stroke; the g's hand stays yellow
-  // so the two hands are always told apart.
-  const restColor = dark ? t.brand.yellow : t.brand.deepBlue;
-  const yellowHand = dark ? t.brand.yellow : t.brand.yellowDeep;
+  // The second word, its arm and hand are brand yellow in both modes. Bare
+  // yellow is unreadable on light surfaces, so light mode traces it with an
+  // ink-navy outline, the way the UniShare wordmark does.
+  const restColor = t.brand.yellow;
+  const yellowHand = t.brand.yellow;
+  const outline = dark ? null : t.brand.inkNavy;
   // Thin line between the overlapping palms, close to the page behind.
   const handGap = dark ? "rgba(8, 18, 20, 0.9)" : "rgba(255, 255, 255, 0.95)";
+
+  // After any re-render (theme switch), newly mounted arms and reveals start
+  // where the animation already is instead of hidden.
+  useLayoutEffect(() => {
+    const svg = svgRef.current;
+    if (!svg || svg.dataset.arm === undefined) return;
+    setArms(svg, Number(svg.dataset.arm));
+    setPalms(svg, Number(svg.dataset.palm || 0));
+  });
 
   useEffect(() => {
     const svg = svgRef.current;
@@ -195,8 +212,15 @@ export default function HeroAccent({ text }) {
   const ids = { e: `${uid}e`, g: `${uid}g`, blue: `${uid}pb`, yellow: `${uid}py`, armE: `${uid}ae`, armG: `${uid}ag` };
   const letters = ACCENT_GLYPHS.map((item, i) => {
     const clip = i === E ? ids.e : i === G ? ids.g : undefined;
+    const traced = outline && i >= FIRST_WORD;
     return (
-      <path key={`${item.ch}${i}`} d={item.d} fill={i < FIRST_WORD ? firstColor : restColor} clipPath={clip ? `url(#${clip})` : undefined} />
+      <path
+        key={`${item.ch}${i}`}
+        d={item.d}
+        fill={i < FIRST_WORD ? firstColor : restColor}
+        clipPath={clip ? `url(#${clip})` : undefined}
+        {...(traced ? { stroke: outline, strokeWidth: OUTLINE * 2, strokeLinejoin: "round", paintOrder: "stroke" } : {})}
+      />
     );
   });
   // Each arm starts inside its letter, and is clipped to the cut line, so it
@@ -243,6 +267,9 @@ export default function HeroAccent({ text }) {
             <circle data-reveal cx={WRIST.yellow.x} cy={WRIST.yellow.y} r={0} />
           </clipPath>
         </defs>
+        {/* The yellow arm's outline goes under the letters, so the letter fill
+            hides it where the two meet and the join stays seamless. */}
+        {outline ? arm(YELLOW_ARM, outline, U + OUTLINE * 2, ids.armG) : null}
         {letters}
         {arm(BLUE_ARM, firstColor, U, ids.armE)}
         {arm(YELLOW_ARM, restColor, U, ids.armG)}
@@ -255,10 +282,16 @@ export default function HeroAccent({ text }) {
           <g transform={`rotate(${-TILT.yellow})`}>
             <g clipPath={`url(#${ids.yellow})`}>
               <path d={PALM.yellowEdge} stroke={`url(#${fadeId})`} strokeWidth={0.36} strokeLinecap="butt" fill="none" />
-              <path d={PALM.yellow} fill={yellowHand} />
+              <path
+                d={PALM.yellow}
+                fill={yellowHand}
+                {...(outline ? { stroke: outline, strokeWidth: (OUTLINE * 2) / U, strokeLinejoin: "round", paintOrder: "stroke" } : {})}
+              />
             </g>
           </g>
         </g>
+        {/* Over the palm too, so the palm's outline never cuts across the wrist. */}
+        {outline ? arm(YELLOW_ARM, restColor, U, ids.armG) : null}
       </Box>
     </Box>
   );

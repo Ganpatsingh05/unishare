@@ -125,12 +125,13 @@ export default function SeatsField({ mode, value, onChange, layout = "cell", id 
       aria-live="polite"
       sx={{ position: "relative", minHeight: 18, fontSize: 12.5, fontWeight: 550, color: t.color.textMuted, whiteSpace: "nowrap" }}
     >
-      <AnimatePresence mode="popLayout" initial={false}>
+      <AnimatePresence mode="wait" initial={false}>
         <m.span
           key={liveLabel}
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.12 }}
           style={{ display: "inline-block" }}
         >
           {liveLabel}

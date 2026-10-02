@@ -35,7 +35,7 @@ function ActivityLink({ children, t }) {
   return (
     <Button
       component={Link}
-      href={RIDE_ROUTES.activity}
+      href={RIDE_ROUTES.manage}
       variant="text"
       endIcon={<ArrowRight size={18} weight="regular" aria-hidden />}
       // Pull the label onto the gutter so its text, not its hit area, aligns.

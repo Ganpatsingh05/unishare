@@ -1,16 +1,16 @@
-import FindRides from "@features/rides/components/find/FindRides";
+import ManageRides from "@features/rides/components/manage/ManageRides";
 import { RIDE_STRINGS } from "@features/rides/constants/rideStrings";
 import SmallFooter from "@components/layout/SmallFooter";
 
 export const metadata = {
-  title: RIDE_STRINGS.find.meta.title,
-  description: RIDE_STRINGS.find.meta.description,
+  title: RIDE_STRINGS.my.meta.title,
+  description: RIDE_STRINGS.my.meta.description,
 };
 
-export default function FindRidePage() {
+export default function ManageRidesPage() {
   return (
     <div className="flex flex-col">
-      <FindRides />
+      <ManageRides />
       <SmallFooter />
     </div>
   );

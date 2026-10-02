@@ -114,7 +114,7 @@ function RideList({ t, rides, filter, isMobile, requestState, onRequest }) {
   return (
     <Box role={isMobile ? "region" : undefined} aria-label={isMobile ? S.carouselLabel : undefined}>
       <Box ref={listRef} role="list" tabIndex={isMobile ? 0 : undefined} sx={listSx(t)}>
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence>
           {rides.map((ride, i) => (
             <Box
               key={ride.id}
