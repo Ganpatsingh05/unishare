@@ -12,15 +12,15 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { createItem, formatContactInfo } from "./../../../lib/api";
+import { createItem, formatContactInfo } from '@lib/api/api';
 import {
   useAuth,
   useMessages,
   useUI,
   useUserData
-} from "./../../../lib/contexts/UniShareContext";
-import { MarketplaceNotifications } from "./../../../lib/utils/actionNotifications";
-import useIsMobile from "./../../../_components/ui/useIsMobile";
+} from '@contexts/UniShareContext';
+import { MarketplaceNotifications } from '@lib/utils/actionNotifications';
+import useIsMobile from '@components/ui/useIsMobile';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Brand style matching Share Ride landing page
@@ -206,10 +206,12 @@ const LivePreviewCard = ({ title, price, category, condition, imagePreview, loca
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
         style={{
           backgroundColor: darkMode ? '#111827' : '#ffffff',
-          borderColor: darkMode ? '#1f2937' : '#cbd5e1',
+          border: darkMode 
+            ? '2px solid rgba(255,255,255,0.18)'
+            : '2px solid #222',
           boxShadow: darkMode
-            ? '0 20px 40px -12px rgba(0, 0, 0, 0.5)'
-            : '0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0,0,0,0.05)',
+            ? '4px 6px 0 0 rgba(255,255,255,0.08), 0 20px 40px -12px rgba(0,0,0,0.5)'
+            : '4px 6px 0 0 #222, 0 25px 50px -12px rgba(0,0,0,0.15)',
         }}
       >
         {/* Preview Header */}
@@ -437,6 +439,11 @@ export default function MarketplaceSellPage() {
   };
 
   const handleNext = () => {
+    if (currentStep === 2 && description.length > 500) {
+      setErrorMsg("Description cannot exceed 500 characters.");
+      if (scrollContainerRef.current) scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     if (validateStep(currentStep)) {
       setErrorMsg("");
       setCurrentStep(p => Math.min(p + 1, STEPS.length - 1));
@@ -497,7 +504,7 @@ export default function MarketplaceSellPage() {
       {/* ─── Minimal Back Button (no header bar) ─── */}
       <div className="absolute top-4 left-4 lg:left-6 z-20">
         <Link
-          href="/marketplace/buy"
+          href="/"
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200"
           style={{
             ...FONT_STYLE,
@@ -795,10 +802,18 @@ export default function MarketplaceSellPage() {
                             }}
                           />
                           <div className="flex justify-between mt-1.5 px-0.5">
-                            <span className="text-[11px] font-medium" style={{ ...FONT_STYLE, color: description.length >= 100 ? '#10b981' : '#f59e0b' }}>
-                              {description.length === 0 ? "Buyers love detailed descriptions" : description.length < 100 ? `${100 - description.length} more chars needed` : "Great description"}
+                            <span className="text-[11px] font-medium" style={{ ...FONT_STYLE, color: description.length > 500 ? '#ef4444' : (description.length >= 100 ? '#10b981' : '#f59e0b') }}>
+                              {description.length === 0 
+                                ? "Buyers love detailed descriptions" 
+                                : description.length > 500 
+                                  ? "Description is too long (max 500)" 
+                                  : description.length < 100 
+                                    ? `${100 - description.length} more chars needed` 
+                                    : "Great description"}
                             </span>
-                            <span className="text-[11px]" style={{ color: darkMode ? '#4b5563' : '#94a3b8' }}>{description.length}</span>
+                            <span className="text-[11px] font-medium" style={{ color: description.length > 500 ? '#ef4444' : (darkMode ? '#4b5563' : '#94a3b8') }}>
+                              {description.length} / 500
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -1030,7 +1045,7 @@ export default function MarketplaceSellPage() {
               </div>
 
               {/* ─── STICKY BOTTOM NAV ─── */}
-              <div className="flex-shrink-0 p-4 lg:p-6 xl:px-12 flex items-center justify-between border-t" style={{ borderColor: darkMode ? '#1e293b' : '#e2e8f0', backgroundColor: darkMode ? '#0f172a' : '#ffffff' }}>
+              <div className="flex-shrink-0 p-4 lg:p-6 xl:px-12 flex items-center justify-between bg-transparent pt-6 pb-8">
                 <button
                   type="button" onClick={handleBack}
                   className="px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 text-sm transition-colors"

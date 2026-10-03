@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Search, RefreshCcw, Eye, Trash2, Tag, CheckCircle, AlertTriangle } from "lucide-react";
-import AdminGuard from "../../_components/AdminGuard";
-import AdminLayout from "../../_components/AdminLayout";
-import { fetchMarketplaceItems, deleteItem } from "./../../../lib/api/marketplace";
+import AdminGuard from '@features/admin/components/AdminGuard';
+import AdminLayout from '@features/admin/components/AdminLayout';
+import { fetchMarketplaceItems, deleteItem } from '@features/marketplace/services/marketplace.service';
 
 /*
   Marketplace Moderation Page

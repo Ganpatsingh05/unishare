@@ -3,11 +3,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { ArrowLeft, Search, Tag, Calendar, ExternalLink, Link2, Check, Megaphone, Filter } from "lucide-react";
-import Header from "./../../../_components/layout/Header";
+import Header from '@components/layout/Header';
 
-import Footer from "./../../../_components/layout/Footer";
-import { getActiveAnnouncements } from "./../../../lib/api/announcements";
-import { useUI } from "./../../../lib/contexts/UniShareContext";
+import Footer from '@components/layout/Footer';
+import { getActiveAnnouncements } from '@features/announcements/services/announcements.service';
+import { useUI } from '@contexts/UniShareContext';
 
 const CATEGORIES = [
   { key: 'all', label: 'All' },

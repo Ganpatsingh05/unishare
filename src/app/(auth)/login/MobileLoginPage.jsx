@@ -8,9 +8,9 @@ import {
   Mail, Lock, Eye, EyeOff, ArrowRight, User, GraduationCap, 
   CheckCircle2, AlertCircle, Loader2, ChevronLeft, X, Check, Calendar, Home, ArrowLeft
 } from "lucide-react";
-import { startGoogleLogin, loginWithEmail, registerWithEmail, fetchCurrentUser } from "./../../lib/api";
-import { useUI, useAuth } from "./../../lib/contexts/UniShareContext";
-import HeaderMobile from "./../../_components/layout/HeaderMobile";
+import { startGoogleLogin, loginWithEmail, registerWithEmail, fetchCurrentUser } from '@lib/api/api';
+import { useUI, useAuth } from '@contexts/UniShareContext';
+import HeaderMobile from '@components/layout/HeaderMobile';
 
 // Password strength calculator
 const calculatePasswordStrength = (password) => {

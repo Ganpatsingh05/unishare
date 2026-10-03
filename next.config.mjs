@@ -48,14 +48,17 @@ const nextConfig = {
   },
 
   webpack(config) {
-    const base = path.resolve(__dirname, "src/app");
+    const baseSrc = path.resolve(__dirname, "src");
 
-    // ✅ Both alias versions
-    config.resolve.alias["@components"] = path.join(base, "_components");
-    config.resolve.alias["_components"] = path.join(base, "_components"); // ← Add this
-    config.resolve.alias["@lib"] = path.join(base, "lib");
+    // o. Both alias versions
+    config.resolve.alias["@components"] = path.join(baseSrc, "components");
+    config.resolve.alias["_components"] = path.join(baseSrc, "components");
+    config.resolve.alias["@features"] = path.join(baseSrc, "features");
+    config.resolve.alias["@lib"] = path.join(baseSrc, "lib");
+    config.resolve.alias["@hooks"] = path.join(baseSrc, "hooks");
+    config.resolve.alias["@contexts"] = path.join(baseSrc, "contexts");
     config.resolve.alias["@assets"] = path.resolve(__dirname, "public/assets");
-    config.resolve.alias["@config"] = path.resolve(__dirname, "src/config");
+    config.resolve.alias["@config"] = path.join(baseSrc, "config");
 
     return config;
   },
@@ -63,9 +66,12 @@ const nextConfig = {
   // Turbopack configuration (mirrors Webpack aliases)
   turbopack: {
     resolveAlias: {
-      "@components": "./src/app/_components",
-      "_components": "./src/app/_components",
-      "@lib": "./src/app/lib",
+      "@components": "./src/components",
+      "_components": "./src/components",
+      "@features": "./src/features",
+      "@lib": "./src/lib",
+      "@hooks": "./src/hooks",
+      "@contexts": "./src/contexts",
       "@assets": "./public/assets",
       "@config": "./src/config",
     },

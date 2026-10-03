@@ -18,11 +18,11 @@ import {
   UserPlus,
   Settings
 } from "lucide-react";
-import AdminGuard from "../_components/AdminGuard";
-import AdminLayout from "../_components/AdminLayout";
-import AdminLoader, { AdminTableSkeleton } from "../_components/AdminLoader";
-import { getProfileImageUrl, getUserInitials } from "../../lib/utils/profileUtils";
-import { getPublicUserProfile } from "../../lib/api/userProfile";
+import AdminGuard from '@features/admin/components/AdminGuard';
+import AdminLayout from '@features/admin/components/AdminLayout';
+import AdminLoader, { AdminTableSkeleton } from '@features/admin/components/AdminLoader';
+import { getProfileImageUrl, getUserInitials } from '@lib/utils/profileUtils';
+import { getPublicUserProfile } from '@lib/api/userProfile';
 
 
 // Mock user data - replace with real API
@@ -111,7 +111,7 @@ export default function AdminUsers() {
           throw new Error('Backend URL not configured. Please set NEXT_PUBLIC_BACKEND_URL in .env.local file.');
         }
 
-        const { getAdminUsers } = await import("../../lib/api");
+        const { getAdminUsers } = await import('@lib/api/api');
         const response = await getAdminUsers();
         
         if (response.success) {

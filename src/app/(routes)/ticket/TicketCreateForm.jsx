@@ -26,12 +26,12 @@ import {
   CalendarDays,
   Music
 } from "lucide-react";
-import { createTicket, formatContactInfo } from "./../../lib/api";
+import { createTicket, formatContactInfo } from '@lib/api/api';
 import { 
   useAuth, 
   useMessages, 
   useUI
-} from "./../../lib/contexts/UniShareContext";
+} from '@contexts/UniShareContext';
 
 export default function TicketCreateForm({ onClose, onTicketCreated }) {
   const { isAuthenticated, user } = useAuth();

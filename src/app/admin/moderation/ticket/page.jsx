@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Search, RefreshCcw, Eye, Trash2, CheckCircle, AlertTriangle } from "lucide-react";
-import AdminGuard from "../../_components/AdminGuard";
-import AdminLayout from "../../_components/AdminLayout";
-import { fetchTickets, deleteTicket } from "./../../../lib/api/tickets";
+import AdminGuard from '@features/admin/components/AdminGuard';
+import AdminLayout from '@features/admin/components/AdminLayout';
+import { fetchTickets, deleteTicket } from '@features/tickets/services/tickets.service';
 
 /*
   Tickets Moderation Page

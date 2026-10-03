@@ -10,20 +10,20 @@ import {
   Heart,
   ArrowRight,
 } from "lucide-react";
-import Main from "./_components/layout/Main";
-import HeroSlider from "./_components/ui/HeroSlider";
-import { useUI } from "./lib/contexts/UniShareContext";
+import Main from '@components/layout/Main';
+import HeroSlider from '@components/ui/HeroSlider';
+import { useUI } from '@contexts/UniShareContext';
 
 // Dynamic imports for heavy visual components - improves initial load
-const GalaxyDesktop = dynamic(() => import("./_components/ui/GalaxyDesktop"), { 
+const GalaxyDesktop = dynamic(() => import('@components/ui/GalaxyDesktop'), { 
   ssr: false, 
   loading: () => null 
 });
-const Footer = dynamic(() => import("./_components/layout/Footer"), { 
+const Footer = dynamic(() => import('@components/layout/Footer'), { 
   ssr: false, 
   loading: () => null 
 });
-const FloatingActionButton = dynamic(() => import("./_components/ui/FloatingActionButton"), { 
+const FloatingActionButton = dynamic(() => import('@components/ui/FloatingActionButton'), { 
   ssr: false, 
   loading: () => null 
 });

@@ -10,15 +10,15 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import useIsMobile from "./../../../_components/ui/useIsMobile";
-import { fetchMyTickets, deleteTicket, createTicket, updateTicket, formatContactInfo } from "./../../../lib/api";
-import SmallFooter from "./../../../_components/layout/SmallFooter";
+import useIsMobile from '@components/ui/useIsMobile';
+import { fetchMyTickets, deleteTicket, createTicket, updateTicket, formatContactInfo } from '@lib/api/api';
+import SmallFooter from '@components/layout/SmallFooter';
 import {
   useAuth,
   useMessages,
   useUI
-} from "./../../../lib/contexts/UniShareContext";
-import { TicketNotifications } from "./../../../lib/utils/actionNotifications";
+} from '@contexts/UniShareContext';
+import { TicketNotifications } from '@lib/utils/actionNotifications';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS

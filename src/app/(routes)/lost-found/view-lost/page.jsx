@@ -1,9 +1,9 @@
 "use client";
 import React, { useMemo, useState, useEffect } from "react";
-import Footer from "./../../../_components/layout/Footer";
+import Footer from '@components/layout/Footer';
 import { Search, Calendar, MapPin, Clock, Image as ImageIcon, Loader, Package } from "lucide-react";
-import { fetchLostFoundItems } from "./../../../lib/api";
-import { useMessages } from "./../../../lib/contexts/UniShareContext";
+import { fetchLostFoundItems } from '@lib/api/api';
+import { useMessages } from '@contexts/UniShareContext';
 
 export default function ViewLostPage() {
   const { showTemporaryMessage } = useMessages();

@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Footer from "./../../_components/layout/Footer";
-import SmallFooter from "./../../_components/layout/SmallFooter";
+import Footer from '@components/layout/Footer';
+import SmallFooter from '@components/layout/SmallFooter';
 import { Search, Package, FileText, ArrowRight, Calendar, MapPin, Eye, Plus } from "lucide-react";
-import { fetchLostFoundItems } from "./../../lib/api";
-import { useMessages } from "./../../lib/contexts/UniShareContext";
+import { fetchLostFoundItems } from '@lib/api/api';
+import { useMessages } from '@contexts/UniShareContext';
 
 export default function LostFoundHubPage() {
   const { showTemporaryMessage } = useMessages();

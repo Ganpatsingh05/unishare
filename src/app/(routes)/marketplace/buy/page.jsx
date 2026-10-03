@@ -1,49 +1,38 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { 
-  Search, 
-  SlidersHorizontal, 
-  Tag, 
-  MapPin, 
-  DollarSign, 
-  Star, 
-  ArrowUpDown, 
-  ImageIcon, 
-  IndianRupee, 
-  Calendar, 
-  Phone, 
-  Instagram, 
-  Mail, 
-  Link2, 
-  AlertCircle, 
-  Loader,
-  X,
-  ArrowLeft
-} from "lucide-react";
-import Footer from "./../../../_components/layout/Footer";
-import SmallFooter from "./../../../_components/layout/SmallFooter";
-import useIsMobile from "./../../../_components/ui/useIsMobile";
-import { fetchMarketplaceItems } from "./../../../lib/api";
-import { 
-  useUniShare, 
-  useAuth, 
-  useMessages, 
-  useUI 
-} from "./../../../lib/contexts/UniShareContext";
+import { Loader } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+
+import Footer from '@components/layout/Footer';
+import useIsMobile from '@components/ui/useIsMobile';
+import { fetchMarketplaceItems } from '@lib/api/api';
+import { useAuth, useMessages, useUI } from '@contexts/UniShareContext';
+
+import MarketplaceHero from '@features/marketplace/components/MarketplaceHero';
+import DiscoveryDock from '@features/marketplace/components/DiscoveryDock';
+import ExpandableFilterDrawer from '@features/marketplace/components/ExpandableFilterDrawer';
+import QuickFilters from '@features/marketplace/components/QuickFilters';
+import SegmentedSorting from '@features/marketplace/components/SegmentedSorting';
+import BuyProductCard from '@features/marketplace/components/BuyProductCard';
+import ProductDetailDrawer from '@features/marketplace/components/ProductDetailDrawer';
 
 export default function MarketplaceBuyPage() {
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
   const { error, success, loading, setError, clearError, setLoading } = useMessages();
-  const { darkMode, toggleDarkMode, searchValue, setSearchValue } = useUI();
+  const { darkMode, searchValue, setSearchValue } = useUI();
   const isMobile = useIsMobile();
 
   // Local state
   const [items, setItems] = useState([]);
-
+  const [selectedItem, setSelectedItem] = useState(null);
+  
   // Filter states
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [activeQuickFilter, setActiveQuickFilter] = useState(null);
+
   const [category, setCategory] = useState("all");
   const [condition, setCondition] = useState("all");
   const [minPrice, setMinPrice] = useState("");
@@ -51,18 +40,10 @@ export default function MarketplaceBuyPage() {
   const [location, setLocation] = useState("");
   const [sort, setSort] = useState("recent");
 
-  // Theme classes
-  const labelClr = darkMode ? "text-gray-300" : "text-gray-700";
-  const inputBg = darkMode ? "bg-gray-900 border-gray-800 text-gray-100 placeholder-gray-500" : "bg-white border-gray-200 text-gray-900 placeholder-gray-500";
-  const cardBg = darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200";
-  const titleClr = darkMode ? "text-white" : "text-gray-900";
-  const subClr = darkMode ? "text-gray-400" : "text-gray-600";
-
   // Fetch items from backend
   const fetchItems = async () => {
     setLoading(true);
     clearError();
-    
     try {
       const filters = {
         search: searchValue || undefined,
@@ -71,13 +52,12 @@ export default function MarketplaceBuyPage() {
         min_price: minPrice || undefined,
         max_price: maxPrice || undefined,
         location: location || undefined,
-        sort: sort === 'recent' ? 'created_at' : sort === 'price-asc' ? 'price' : sort === 'price-desc' ? 'price' : 'created_at',
+        sort: sort === 'recent' ? 'created_at' : sort.includes('price') ? 'price' : sort === 'popular' ? 'views' : 'created_at',
         order: sort === 'price-desc' ? 'desc' : sort === 'price-asc' ? 'asc' : 'desc',
-        limit: 50
+        limit: 100
       };
 
       const result = await fetchMarketplaceItems(filters);
-      
       if (result.success) {
         setItems(result.data || []);
       } else {
@@ -92,12 +72,11 @@ export default function MarketplaceBuyPage() {
     }
   };
 
-  // Fetch items on component mount and when filters change
   useEffect(() => {
     fetchItems();
   }, [searchValue, category, condition, minPrice, maxPrice, location, sort]);
 
-  const handleReset = () => {
+  const handleResetFilters = () => {
     setSearchValue("");
     setCategory("all");
     setCondition("all");
@@ -105,388 +84,148 @@ export default function MarketplaceBuyPage() {
     setMaxPrice("");
     setLocation("");
     setSort("recent");
+    setActiveQuickFilter(null);
     clearError();
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
+  const handleQuickFilterApply = (filters) => {
+    if (filters.sort !== undefined) setSort(filters.sort);
+    if (filters.maxPrice !== undefined) setMaxPrice(filters.maxPrice);
+    if (filters.location !== undefined) setLocation(filters.location);
+    if (filters.category !== undefined) setCategory(filters.category);
   };
 
-  // Handle item click to navigate to detail page
   const handleItemClick = (itemId) => {
-    router.push(`/marketplace/buy/${itemId}`);
+    const item = items.find(i => i.id === itemId);
+    if (item) setSelectedItem(item);
   };
+
+  // Mock item counts for dock
+  const itemCounts = useMemo(() => {
+    return {
+      books: 42,
+      electronics: 18,
+      gaming: 5,
+      cycles: 12,
+      music: 7,
+      hostel: 23,
+      sports: 9
+    };
+  }, []);
 
   return (
-    <div className="min-h-screen">
-      {/* Marketplace Buy Venus Golden Brown Theme */}
-      
-      <main className={`relative ${isMobile ? 'px-3 py-4' : 'max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10'}`}>
-        <div className={`rounded-2xl border shadow-xl ${isMobile ? 'p-3' : 'p-4 sm:p-6'} ${darkMode ? 'bg-gray-800/60 border-gray-700' : 'bg-white/80 border-gray-200'} backdrop-blur-sm`}>
-          
-          {/* Search and filters header */}
-          <div className={`flex items-center justify-between gap-3 ${isMobile ? 'flex-col' : 'flex-wrap'} mb-6`}>
-            <h2 className={`${isMobile ? 'text-lg' : 'text-xl sm:text-2xl'} font-semibold ${titleClr}`}>Browse Items</h2>
-            <div className={`flex items-center gap-2 ${isMobile ? 'w-full' : ''}`}>
-              <div className="relative flex-1">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input 
-                  value={searchValue} 
-                  onChange={(e) => setSearchValue(e.target.value)} 
-                  placeholder="Search items..." 
-                  className={`${isMobile ? 'w-full' : 'w-56 sm:w-64'} pl-9 pr-3 py-2.5 rounded-lg border shadow-sm ${inputBg}`} 
-                />
-              </div>
-              <button 
-                onClick={handleReset} 
-                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${darkMode ? 'border-gray-800 text-gray-300 hover:bg-gray-900' : 'border-gray-200 text-gray-700 hover:bg-gray-100'}`}
-              >
-                <SlidersHorizontal className="w-4 h-4" /> Reset
-              </button>
-            </div>
-          </div>
+    <div className="min-h-screen bg-transparent relative">
+      <main className={`relative w-full mx-auto pb-24`}>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+          {/* HERO SECTION */}
+          <MarketplaceHero 
+            searchValue={searchValue}
+            setSearchValue={setSearchValue}
+            setCategory={setCategory}
+            darkMode={darkMode}
+          />
+        </div>
 
-          {/* Filters */}
-          <div className={`grid ${isMobile ? 'grid-cols-2 gap-2' : 'grid-cols-2 md:grid-cols-6 gap-3'} mb-6`}>
-            <div className={`${isMobile ? 'col-span-1' : 'col-span-1'}`}>
-              <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Category</label>
-              <select 
-                value={category} 
-                onChange={(e) => setCategory(e.target.value)} 
-                className={`w-full px-3 ${isMobile ? 'py-2' : 'py-2.5'} rounded-lg border ${inputBg}`}
-              >
-                <option value="all">All Categories</option>
-                <option value="electronics">Electronics</option>
-                <option value="books">Books</option>
-                <option value="furniture">Furniture</option>
-                <option value="accessories">Accessories</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            <div className={`${isMobile ? 'col-span-1' : 'col-span-1'}`}>
-              <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Condition</label>
-              <select 
-                value={condition} 
-                onChange={(e) => setCondition(e.target.value)} 
-                className={`w-full px-3 ${isMobile ? 'py-2' : 'py-2.5'} rounded-lg border ${inputBg}`}
-              >
-                <option value="all">All Conditions</option>
-                <option value="new">New</option>
-                <option value="like-new">Like New</option>
-                <option value="good">Good</option>
-                <option value="fair">Fair</option>
-                <option value="damaged">Damaged</option>
-              </select>
-            </div>
-            {!isMobile && (
-              <>
-                <div className="col-span-1">
-                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Min Price</label>
-                  <div className="relative">
-                    <IndianRupee className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input 
-                      value={minPrice} 
-                      onChange={(e) => setMinPrice(e.target.value.replace(/[^0-9]/g, ''))} 
-                      placeholder="0" 
-                      className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`} 
-                    />
-                  </div>
-                </div>
-                <div className="col-span-1">
-                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Max Price</label>
-                  <div className="relative">
-                    <IndianRupee className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input 
-                      value={maxPrice} 
-                      onChange={(e) => setMaxPrice(e.target.value.replace(/[^0-9]/g, ''))} 
-                      placeholder="5000" 
-                      className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`} 
-                    />
-                  </div>
-                </div>
-                <div className="col-span-1">
-                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Location</label>
-                  <div className="relative">
-                    <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input 
-                      value={location} 
-                      onChange={(e) => setLocation(e.target.value)} 
-                      placeholder="Building / area" 
-                      className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`} 
-                    />
-                  </div>
-                </div>
-                <div className="col-span-1">
-                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Sort by</label>
-                  <div className="relative">
-                    <ArrowUpDown className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <select 
-                      value={sort} 
-                      onChange={(e) => setSort(e.target.value)} 
-                      className={`w-full pl-9 pr-3 py-2.5 rounded-lg border ${inputBg}`}
+        {/* STICKY DISCOVERY DOCK */}
+        <div className="sticky top-16 md:top-20 z-40 px-4 sm:px-6 lg:px-8">
+          <DiscoveryDock 
+            category={category}
+            setCategory={setCategory}
+            isDrawerOpen={isDrawerOpen}
+            setIsDrawerOpen={setIsDrawerOpen}
+            darkMode={darkMode}
+            itemCounts={itemCounts}
+          />
+        </div>
+
+        {/* EXPANDABLE FILTER DRAWER */}
+        <ExpandableFilterDrawer 
+          isOpen={isDrawerOpen}
+          setIsOpen={setIsDrawerOpen}
+          condition={condition} setCondition={setCondition}
+          minPrice={minPrice} setMinPrice={setMinPrice}
+          maxPrice={maxPrice} setMaxPrice={setMaxPrice}
+          location={location} setLocation={setLocation}
+          onReset={handleResetFilters}
+          darkMode={darkMode}
+          isMobile={isMobile}
+        />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+          
+          {/* QUICK FILTERS */}
+          <QuickFilters 
+            activeQuickFilter={activeQuickFilter}
+            setActiveQuickFilter={setActiveQuickFilter}
+            applyFilters={handleQuickFilterApply}
+            darkMode={darkMode}
+          />
+
+          {/* SORTING & HEADER */}
+          <SegmentedSorting 
+            sort={sort}
+            setSort={setSort}
+            darkMode={darkMode}
+          />
+
+          {/* UNIFIED PRODUCT GRID */}
+          <div className="w-full">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-32">
+                <Loader className="w-10 h-10 animate-spin text-indigo-500 mb-4" />
+                <p className="font-bold text-slate-500">Curating the marketplace...</p>
+              </div>
+            ) : items.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <img src="/images/cards/boy_sell.png" alt="Empty" className="w-64 h-64 object-contain opacity-70 mb-6 grayscale" />
+                <h3 className="text-2xl font-black mb-2" style={{ color: darkMode ? '#f8fafc' : '#0f172a' }}>It looks quiet here...</h3>
+                <p className="text-slate-500 max-w-md">Try another category, adjust your filters, or check back later for new items.</p>
+                <button onClick={handleResetFilters} className="mt-6 px-6 py-3 bg-indigo-500 text-white font-bold rounded-full hover:bg-indigo-600 transition-colors">Clear Filters</button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6 justify-items-center items-stretch">
+                <AnimatePresence>
+                  {items.map((item, index) => (
+                    <motion.div 
+                      key={item.id}
+                      className="w-full max-w-[300px] h-full"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 20 }}
+                      transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.4) }}
                     >
-                      <option value="recent">Most Recent</option>
-                      <option value="price-asc">Price: Low to High</option>
-                      <option value="price-desc">Price: High to Low</option>
-                    </select>
-                  </div>
-                </div>
-              </>
+                      <BuyProductCard 
+                        item={item} 
+                        onClick={handleItemClick} 
+                        darkMode={darkMode}
+                        index={index} 
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
             )}
           </div>
 
-          {/* Mobile-only additional filters row */}
-          {isMobile && (
-            <>
-              <div className="grid grid-cols-2 gap-2 mb-4">
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Price Range</label>
-                  <select 
-                    value={minPrice || maxPrice ? 'custom' : 'all'} 
-                    onChange={(e) => {
-                      if (e.target.value === 'all') {
-                        setMinPrice('');
-                        setMaxPrice('');
-                      } else if (e.target.value === '0-500') {
-                        setMinPrice('0');
-                        setMaxPrice('500');
-                      } else if (e.target.value === '500-2000') {
-                        setMinPrice('500');
-                        setMaxPrice('2000');
-                      } else if (e.target.value === '2000+') {
-                        setMinPrice('2000');
-                        setMaxPrice('');
-                      }
-                    }}
-                    className={`w-full px-3 py-2 rounded-lg border ${inputBg}`}
-                  >
-                    <option value="all">All Prices</option>
-                    <option value="0-500">₹0 - ₹500</option>
-                    <option value="500-2000">₹500 - ₹2000</option>
-                    <option value="2000+">₹2000+</option>
-                    <option value="custom">Custom</option>
-                  </select>
-                </div>
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Sort</label>
-                  <select 
-                    value={sort} 
-                    onChange={(e) => setSort(e.target.value)} 
-                    className={`w-full px-3 py-2 rounded-lg border ${inputBg}`}
-                  >
-                    <option value="recent">Latest</option>
-                    <option value="price-asc">Price ↑</option>
-                    <option value="price-desc">Price ↓</option>
-                  </select>
-                </div>
-              </div>
-              
-              {/* Custom price inputs for mobile when custom is selected */}
-              {(minPrice || maxPrice) && (
-                <div className="grid grid-cols-2 gap-2 mb-4">
-                  <div>
-                    <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Min Price</label>
-                    <div className="relative">
-                      <IndianRupee className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input 
-                        value={minPrice} 
-                        onChange={(e) => setMinPrice(e.target.value.replace(/[^0-9]/g, ''))} 
-                        placeholder="0" 
-                        className={`w-full pl-9 pr-3 py-2 rounded-lg border ${inputBg}`} 
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Max Price</label>
-                    <div className="relative">
-                      <IndianRupee className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input 
-                        value={maxPrice} 
-                        onChange={(e) => setMaxPrice(e.target.value.replace(/[^0-9]/g, ''))} 
-                        placeholder="5000" 
-                        className={`w-full pl-9 pr-3 py-2 rounded-lg border ${inputBg}`} 
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {/* Location filter for mobile */}
-              <div className="mb-4">
-                <label className={`block text-xs font-medium mb-1 ${labelClr}`}>Location</label>
-                <div className="relative">
-                  <MapPin className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input 
-                    value={location} 
-                    onChange={(e) => setLocation(e.target.value)} 
-                    placeholder="Building / area" 
-                    className={`w-full pl-9 pr-3 py-2 rounded-lg border ${inputBg}`} 
-                  />
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Error Message */}
-          {error && (
-            <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 backdrop-blur-sm">
-              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-              <span className="text-red-500">{error}</span>
-              <button onClick={clearError} className="ml-auto">
-                <X className="w-4 h-4 text-red-500" />
-              </button>
-            </div>
-          )}
-
-          {/* Loading State */}
-          {loading && (
-            <div className="flex items-center justify-center py-12">
-              <div className="text-center">
-                <Loader className="w-8 h-8 animate-spin text-blue-500 mx-auto mb-3" />
-                <p className={`text-sm ${subClr}`}>Finding the best items for you...</p>
-              </div>
-            </div>
-          )}
-
-          {/* Results */}
-          {!loading && (
-            <div>
-              {/* Results count */}
-              <div className="flex items-center justify-between mb-4">
-                <p className={`text-sm ${subClr}`}>
-                  {items.length} {items.length === 1 ? 'item' : 'items'} found
-                </p>
-              </div>
-
-              {/* Items grid - Mobile vs Desktop */}
-              <div className={`grid gap-4 ${
-                isMobile 
-                  ? 'grid-cols-2' 
-                  : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-              }`}>
-                {items.length === 0 && !error && (
-                  <div className={`col-span-full text-center py-16 ${cardBg} rounded-2xl border ${darkMode ? 'border-gray-800' : 'border-gray-200'}`}>
-                    <div className={`w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
-                      <ImageIcon className={`w-10 h-10 ${subClr}`} />
-                    </div>
-                    <h3 className={`text-xl font-semibold mb-2 ${titleClr}`}>No items found</h3>
-                    <p className={`mb-6 ${subClr}`}>Try adjusting your filters or search terms</p>
-                    <button 
-                      onClick={handleReset}
-                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-medium transition-all shadow-md hover:shadow-lg"
-                    >
-                      Clear all filters
-                    </button>
-                  </div>
-                )}
-                
-                {items.map((item) => (
-                  <div 
-                    key={item.id} 
-                    className={`group rounded-xl border cursor-pointer transition-all hover:shadow-lg ${
-                      isMobile 
-                        ? 'p-2 hover:scale-[1.01]' 
-                        : 'p-4 hover:scale-[1.02]'
-                    } ${cardBg}`} 
-                  >
-                    <div className="space-y-3">
-                      {/* Item image */}
-                      <div 
-                        className={`w-full rounded-lg flex items-center justify-center overflow-hidden cursor-pointer ${
-                          isMobile ? 'h-24' : 'h-40'
-                        } ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}
-                        onClick={() => handleItemClick(item.id)}
-                      >
-                        {item.image_url ? (
-                          <img 
-                            src={item.image_url} 
-                            alt={item.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                          />
-                        ) : item.photos && item.photos.length > 0 ? (
-                          <img 
-                            src={item.photos[0]} 
-                            alt={item.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                          />
-                        ) : (
-                          <ImageIcon className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} text-gray-400`} />
-                        )}
-                      </div>
-
-                      {/* Item details */}
-                      <div className={isMobile ? 'space-y-1.5' : 'space-y-2'}>
-                        <h3 className={`font-semibold ${titleClr} line-clamp-2 ${
-                          isMobile ? 'text-sm leading-tight' : 'text-base'
-                        }`}>
-                          {item.title}
-                        </h3>
-                        
-                        <div className="flex items-center justify-between">
-                          <div className={`flex items-center gap-1 text-emerald-500 font-bold ${
-                            isMobile ? 'text-sm' : 'text-lg'
-                          }`}>
-                            <IndianRupee size={isMobile ? 14 : 18} />
-                            {item.price}
-                          </div>
-                          {!isMobile && (
-                            <div className="flex items-center gap-2">
-                              <span className={`px-2 py-1 rounded-full text-xs ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
-                                {item.category}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className={`flex items-center gap-2 text-xs ${subClr} ${
-                          isMobile ? 'justify-between' : 'gap-4'
-                        }`}>
-                          <span className="flex items-center gap-1">
-                            <MapPin size={10} />
-                            {isMobile ? item.location.split(' ')[0] : item.location}
-                          </span>
-                          <span className={`${
-                            isMobile 
-                              ? 'px-1.5 py-0.5 rounded text-xs bg-gray-100 dark:bg-gray-800' 
-                              : ''
-                          }`}>
-                            {item.condition}
-                          </span>
-                        </div>
-
-                        {!isMobile && (
-                          <div className={`text-xs ${subClr}`}>
-                            Posted {formatDate(item.created_at)}
-                          </div>
-                        )}
-
-                        <button 
-                          className={`w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg ${
-                            isMobile ? 'py-1.5 px-2 text-xs' : 'py-2.5 px-4'
-                          }`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleItemClick(item.id);
-                          }}
-                        >
-                          {isMobile ? 'View' : 'View Details'}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </main>
 
-      <SmallFooter />
+      <ProductDetailDrawer 
+        item={selectedItem} 
+        isOpen={!!selectedItem} 
+        onClose={() => setSelectedItem(null)} 
+        darkMode={darkMode} 
+      />
 
+      <div className="hidden md:block">
+        <Footer darkMode={darkMode} />
+      </div>
+      
+      <style jsx global>{`
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
     </div>
   );
 }

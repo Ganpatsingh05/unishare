@@ -1,9 +1,9 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { Plus, Search, Tag, ExternalLink, Copy, Check, Pencil, Trash2, X, Save, Filter, AlertCircle } from "lucide-react";
-import AdminGuard from "../_components/AdminGuard";
-import AdminLayout from "../_components/AdminLayout";
-import { getAllResources, getResourceCategories, createResource, updateResource, deleteResource, toggleResourceActive } from "../../lib/api/resources";
+import AdminGuard from '@features/admin/components/AdminGuard';
+import AdminLayout from '@features/admin/components/AdminLayout';
+import { getAllResources, getResourceCategories, createResource, updateResource, deleteResource, toggleResourceActive } from '@features/resources/services/resources.service';
 
 
 

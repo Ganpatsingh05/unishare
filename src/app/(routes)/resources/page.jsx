@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useUI } from "./../../lib/contexts/UniShareContext";
-import Footer from "./../../_components/layout/Footer";
-import SmallFooter from "./../../_components/layout/SmallFooter";
+import { useUI } from '@contexts/UniShareContext';
+import Footer from '@components/layout/Footer';
+import SmallFooter from '@components/layout/SmallFooter';
 import { Search, Link2, ExternalLink, Copy, Check, BookOpen, GraduationCap, Globe, Wrench, FileText, Video, Tag, Plus, X } from "lucide-react";
-import { getResources, getResourceCategories, submitResourceSuggestion } from "./../../lib/api/resources";
+import { getResources, getResourceCategories, submitResourceSuggestion } from '@features/resources/services/resources.service';
 
 const DEFAULT_CATEGORIES = [
   { key: 'all', label: 'All' },

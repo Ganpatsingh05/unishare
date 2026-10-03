@@ -2,9 +2,9 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { Megaphone, Plus, RefreshCw, Edit, Trash2, X, Check, Loader2, Search, Filter } from "lucide-react";
-import AdminGuard from "../_components/AdminGuard";
-import AdminLayout from "../_components/AdminLayout";
-import { useUI } from "../../lib/contexts/UniShareContext";
+import AdminGuard from '@features/admin/components/AdminGuard';
+import AdminLayout from '@features/admin/components/AdminLayout';
+import { useUI } from '@contexts/UniShareContext';
 
 /*
   Admin Notice Management Page
@@ -46,7 +46,7 @@ export default function AdminNoticePage() {
   const loadAllNotices = async () => {
     setError(null);
     try {
-      const { getAllNotices } = await import("../../lib/api/notice");
+      const { getAllNotices } = await import('@features/notice/services/notice.service');
       const res = await getAllNotices();
       if (res.success) {
         setAllNotices(res.notices || res.data || []);
@@ -101,7 +101,7 @@ export default function AdminNoticePage() {
     if (!form.heading.trim() || !form.body.trim()) return;
     setSubmitting(true);
     try {
-      const { createNotice, updateNotice } = await import("../../lib/api/notice");
+      const { createNotice, updateNotice } = await import('@features/notice/services/notice.service');
 
       const payload = {
         user_id: user?.id, // Admin's user ID for new notices
@@ -131,7 +131,7 @@ export default function AdminNoticePage() {
 
   const toggleActive = async (notice) => {
     try {
-      const { updateNotice } = await import("../../lib/api/notice");
+      const { updateNotice } = await import('@features/notice/services/notice.service');
       const newActive = !notice.active;
       // Update only the active status, keep other fields unchanged
       await updateNotice(notice.id, {
@@ -149,7 +149,7 @@ export default function AdminNoticePage() {
 
   const performDelete = async (id) => {
     try {
-      const { deleteNotice } = await import("../../lib/api/notice");
+      const { deleteNotice } = await import('@features/notice/services/notice.service');
       await deleteNotice(id);
       await loadAllNotices(); // Reload all notices
       setConfirmDelete(null);

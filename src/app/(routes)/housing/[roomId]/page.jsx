@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, MapPin, IndianRupee, Calendar, Bed, Bath, Users, Wifi, Car, Home, Heart, Share2, Phone, Mail, Instagram, ChevronLeft, ChevronRight, Eye, Clock, Shield, CheckCircle } from "lucide-react";
-import RequestButton from "./../../../_components/forms/RequestButton";
-import { useUI } from "./../../../lib/contexts/UniShareContext";
-import { fetchRoom } from "./../../../lib/api";
+import RequestButton from '@components/forms/RequestButton';
+import { useUI } from '@contexts/UniShareContext';
+import { fetchRoom } from '@lib/api/api';
 
 const RoomDetailPage = () => {
   const { roomId } = useParams();

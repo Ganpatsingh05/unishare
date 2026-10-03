@@ -25,16 +25,16 @@ import {
   AlertCircle,
   Info
 } from "lucide-react";
-import Reveal from "./../../../_components/ui/Reveal";
-import MobileQuickNav from "./../../../_components/layout/MobileQuickNav";
+import Reveal from '@components/ui/Reveal';
+import MobileQuickNav from '@components/layout/MobileQuickNav';
 import { useRouter } from "next/navigation";
 
 // ✅ PERFORMANCE: Lazy load Footer
-const Footer = dynamic(() => import("./../../../_components/layout/Footer"), {
+const Footer = dynamic(() => import('@components/layout/Footer'), {
   loading: () => null,
   ssr: true,
 });
-import { useUI } from "./../../../lib/contexts/UniShareContext";
+import { useUI } from '@contexts/UniShareContext';
 
 export default function DataProtectionPage() {
   const { darkMode } = useUI();

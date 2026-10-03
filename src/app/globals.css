@@ -1,26 +1,60 @@
 @import "tailwindcss";
 
 /* ✅ PERFORMANCE: Import mobile optimization styles */
-@import "./_components/ui/mobile-optimizations.css";
+@import '../components/ui/mobile-optimizations.css';
 
 :root {
   --background: transparent;
   --foreground: #171717;
+  
   /* ✅ PERFORMANCE: Theme variables for instant switching */
   --theme-bg: #F9FAFB;
   --theme-text: #1f2937;
+  
   /* Theme text tokens (light defaults) */
   --text-primary: #0f172a; /* slate-900 */
   --text-secondary: #334155; /* slate-700 */
   --text-muted: #64748b; /* slate-500 */
+  --text-inverse: #ffffff;
+  
+  /* Semantic Surfaces */
+  --surface-primary: #ffffff;
+  --surface-secondary: #f8fafc;
+  --surface-interactive: #f1f5f9;
+  
+  /* Semantic Borders */
+  --border-subtle: #f1f5f9;
+  --border-default: #e2e8f0;
+  --border-strong: #cbd5e1;
+  
+  /* Brand Global */
+  --brand-primary: #0ea5e9;
+  --brand-primary-hover: #0284c7;
+  --brand-primary-light: rgba(14, 165, 233, 0.15);
+  
+  --brand-secondary: #f59e0b;
+  --brand-secondary-hover: #d97706;
+  --brand-secondary-light: rgba(245, 158, 11, 0.15);
+  
+  /* Status */
+  --status-success: #16a34a;
+  --status-warning: #ea580c;
+  
+  /* Route/Mobility Metaphors (Global across Rides/Housing/Maps) */
+  --route-path: #94a3b8;
+  --route-node: #64748b;
+  --route-active: #0ea5e9;
+
   /* Panel (frosted/glass) text tokens for light */
   --panel-text-primary: #0b1220; /* deep slate for light frosted */
   --panel-text-secondary: #334155;
   --panel-text-muted: #475569;
+  
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  
   /* ✅ PERFORMANCE: Faster transitions */
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-soft: cubic-bezier(0.5, 0, 0.75, 0);
@@ -34,9 +68,40 @@ html[data-theme='dark'] {
   --foreground: #FFFFFF;
   --theme-bg: #1a1a1a;
   --theme-text: #FFFFFF;
+  
   --text-primary: #FFFFFF; /* Pure white for best contrast */
   --text-secondary: #E2E8F0; /* slate-200 */
   --text-muted: #94A3B8; /* slate-400 */
+  --text-inverse: #0f172a;
+  
+  /* Semantic Surfaces */
+  --surface-primary: #1e293b; 
+  --surface-secondary: #0f172a; 
+  --surface-interactive: #334155;
+  
+  /* Semantic Borders */
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-default: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  
+  /* Brand Global */
+  --brand-primary: #38bdf8;
+  --brand-primary-hover: #7dd3fc;
+  --brand-primary-light: rgba(56, 189, 248, 0.15);
+  
+  --brand-secondary: #facc15;
+  --brand-secondary-hover: #fef08a;
+  --brand-secondary-light: rgba(250, 204, 21, 0.15);
+
+  /* Status */
+  --status-success: #4ade80;
+  --status-warning: #fb923c;
+  
+  /* Route/Mobility Metaphors */
+  --route-path: rgba(255, 255, 255, 0.15);
+  --route-node: rgba(255, 255, 255, 0.3);
+  --route-active: #38bdf8;
+
   --panel-text-primary: #FFFFFF;
   --panel-text-secondary: #E2E8F0;
   --panel-text-muted: #CBD5E1;

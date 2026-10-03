@@ -1,9 +1,9 @@
 'use client';
 import { useState, useEffect } from "react";
 import { Moon, Sun, Home, MapPin, Bed, Calendar, Mail, Phone, Instagram, Camera, Upload, LogIn, User } from "lucide-react";
-import { postRoom, startGoogleLogin } from "./../../../lib/api";
-import { useAuth, useUI, useMessages } from "./../../../lib/contexts/UniShareContext";
-import { HousingNotifications } from "./../../../lib/utils/actionNotifications";
+import { postRoom, startGoogleLogin } from '@lib/api/api';
+import { useAuth, useUI, useMessages } from '@contexts/UniShareContext';
+import { HousingNotifications } from '@lib/utils/actionNotifications';
 
 export default function AuthProtectedRoomForm() {
   const { isAuthenticated, user, authLoading, userAvatar, userInitials } = useAuth();

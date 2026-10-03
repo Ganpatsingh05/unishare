@@ -9,10 +9,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { fetchMyTickets, deleteTicket } from "./../../../lib/api";
-import { useAuth, useMessages, useUI } from "./../../../lib/contexts/UniShareContext";
-import useIsMobile from "./../../../_components/ui/useIsMobile";
-import SmallFooter from "./../../../_components/layout/SmallFooter";
+import { fetchMyTickets, deleteTicket } from '@lib/api/api';
+import { useAuth, useMessages, useUI } from '@contexts/UniShareContext';
+import useIsMobile from '@components/ui/useIsMobile';
+import SmallFooter from '@components/layout/SmallFooter';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS & HELPERS

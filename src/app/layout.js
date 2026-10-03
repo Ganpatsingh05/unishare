@@ -1,8 +1,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { UniShareProvider } from "./lib/contexts/UniShareContext";
-import ClientLayoutComponents from "./_components/layout/ClientLayoutComponents";
-import ClientUIComponents from "./_components/ui/ClientUIComponents";
+import { UniShareProvider } from '@contexts/UniShareContext';
+import ClientLayoutComponents from '@components/layout/ClientLayoutComponents';
+import ClientUIComponents from '@components/ui/ClientUIComponents';
 
 // ✅ PERFORMANCE: Optimized font loading with display swap to prevent FOIT
 const geistSans = Geist({

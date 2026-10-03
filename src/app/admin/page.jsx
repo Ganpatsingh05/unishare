@@ -22,11 +22,11 @@ import {
   Server,
   Home
 } from "lucide-react";
-import AdminGuard from "./_components/AdminGuard";
-import AdminLayout from "./_components/AdminLayout";
+import AdminGuard from '@features/admin/components/AdminGuard';
+import AdminLayout from '@features/admin/components/AdminLayout';
 
-import AdminLoader from "./_components/AdminLoader";
-import { useAuth } from "../lib/contexts/UniShareContext";
+import AdminLoader from '@features/admin/components/AdminLoader';
+import { useAuth } from '@contexts/UniShareContext';
 
 const quickActions = [
   { title: "User Management", href: "/admin/users", icon: Users, description: "Manage users and roles", color: "bg-blue-500" },
@@ -75,7 +75,7 @@ export default function AdminDashboard() {
       }
       setLoading(true);
       try {
-        const { getAdminAnalytics, getAdminUsers, getAdminRecentActivity, getAdminReports, fetchhousedata } = await import("../lib/api");
+        const { getAdminAnalytics, getAdminUsers, getAdminRecentActivity, getAdminReports, fetchhousedata } = await import('@lib/api/api');
         
         // Fetch analytics data from new API endpoint
         const analyticsResponse = await getAdminAnalytics();

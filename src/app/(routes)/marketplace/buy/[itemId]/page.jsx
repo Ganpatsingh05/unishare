@@ -16,15 +16,15 @@ import {
   AlertCircle,
   Loader
 } from "lucide-react";
-import SmallFooter from "./../../../../_components/layout/SmallFooter";
-import RequestButton from "./../../../../_components/forms/RequestButton";
-import useIsMobile from "./../../../../_components/ui/useIsMobile";
-import { fetchItem } from "./../../../../lib/api";
+import SmallFooter from '@components/layout/SmallFooter';
+import RequestButton from '@components/forms/RequestButton';
+import useIsMobile from '@components/ui/useIsMobile';
+import { fetchItem } from '@lib/api/api';
 import { 
   useAuth, 
   useMessages, 
   useUI 
-} from "./../../../../lib/contexts/UniShareContext";
+} from '@contexts/UniShareContext';
 
 export default function ItemDetailPage() {
   const params = useParams();
