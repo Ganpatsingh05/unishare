@@ -221,7 +221,7 @@ export default function RequestsMadePage() {
     {
       name: "Housing",
       icon: Home,
-      path: "/my-activity/requests/roomsREQ",
+      path: "/housing/manage?tab=sent",
       count: requestCounts.rooms?.total || 0,
       color: "from-green-500 to-emerald-500",
       description: "Room and housing requests"
