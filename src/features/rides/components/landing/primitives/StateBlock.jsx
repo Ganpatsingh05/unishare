@@ -1,7 +1,7 @@
 import Empty from "antd/es/empty";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import { ArrowClockwise } from "@phosphor-icons/react";
+import { RestartIcon as Restart } from "@solar-icons/react/linear/restart";
 import { useRideTokens } from "../../../theme/RideThemeBridge";
 
 /**
@@ -73,7 +73,7 @@ export default function StateBlock({ tone = "empty", title, body, action, onRetr
         }
       >
         {tone === "error" && onRetry ? (
-          <Button variant="outlined" onClick={onRetry} startIcon={<ArrowClockwise size={18} aria-hidden />}>
+          <Button variant="outlined" onClick={onRetry} startIcon={<Restart size={18} aria-hidden />}>
             {retryLabel}
           </Button>
         ) : (

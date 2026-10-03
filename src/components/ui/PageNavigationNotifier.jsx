@@ -100,13 +100,8 @@ const PageNavigationNotifier = () => {
     },
     '/lost-found/report': {
         type: 'alert',
-        title: 'Report Lost Item',
-        message: 'Let others know what you lost.',
-    },
-    '/lost-found/found': {
-        type: 'checkcheck',
-        title: 'Report Found Item',
-        message: 'Report something you’ve found.',
+        title: 'Report an item',
+        message: 'Post something you lost or found.',
     },
 
     // Resources

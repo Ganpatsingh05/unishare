@@ -56,9 +56,6 @@ export const ROUTES = {
   LOST_FOUND: {
     HOME: '/lost-found',
     REPORT: '/lost-found/report',
-    FOUND: '/lost-found/found',
-    VIEW_LOST: '/lost-found/view-lost',
-    VIEW_FOUND: '/lost-found/view-found',
     MY_LOST: '/profile/my-lost-items',
     MY_FOUND: '/profile/my-found-items',
   },

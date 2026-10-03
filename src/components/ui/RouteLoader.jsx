@@ -13,15 +13,6 @@ export default function RouteLoader({ variant = "default", label }) {
 
   const theme = useMemo(() => {
     switch (variant) {
-      case "resources":
-        return {
-          bgDark: "from-emerald-900 via-emerald-950 to-emerald-900",
-          bgLight: "from-emerald-50 via-white to-emerald-50",
-          glow: "from-emerald-400 via-teal-400 to-cyan-400",
-          bar: "from-emerald-400 via-teal-400 to-cyan-400",
-          spinner: "border-emerald-400",
-          textDark: "text-emerald-100",
-        };
       case "marketplace-buy":
         return {
           bgDark: "from-amber-900 via-amber-950 to-amber-900",
@@ -39,34 +30,6 @@ export default function RouteLoader({ variant = "default", label }) {
           bar: "from-fuchsia-400 via-purple-400 to-pink-400",
           spinner: "border-fuchsia-400",
           textDark: "text-fuchsia-100",
-        };
-      case "lost-found":
-        return {
-          bgDark: "from-cyan-900 via-slate-950 to-cyan-900",
-          bgLight: "from-cyan-50 via-white to-cyan-50",
-          glow: "from-cyan-400 via-sky-400 to-blue-400",
-          bar: "from-cyan-400 via-sky-400 to-blue-400",
-          spinner: "border-cyan-300",
-          textDark: "text-cyan-100",
-        };
-      case "lost-found-view":
-      case "lost-found-found":
-        return {
-          bgDark: "from-sky-900 via-slate-950 to-sky-900",
-          bgLight: "from-sky-50 via-white to-sky-50",
-          glow: "from-sky-400 via-cyan-400 to-blue-400",
-          bar: "from-sky-400 via-cyan-400 to-blue-400",
-          spinner: "border-sky-300",
-          textDark: "text-sky-100",
-        };
-      case "lost-found-report":
-        return {
-          bgDark: "from-rose-900 via-rose-950 to-rose-900",
-          bgLight: "from-rose-50 via-white to-rose-50",
-          glow: "from-rose-400 via-orange-400 to-amber-300",
-          bar: "from-rose-400 via-orange-400 to-amber-300",
-          spinner: "border-rose-400",
-          textDark: "text-rose-100",
         };
       default:
         return {

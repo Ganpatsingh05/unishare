@@ -11,6 +11,16 @@ const nextConfig = {
   },
   pageExtensions: ["js", "jsx", "ts", "tsx"],
 
+  // Old pages that now live on their feature's landing page.
+  async redirects() {
+    return [
+      { source: "/lost-found/found", destination: "/lost-found/report?mode=found", permanent: true },
+      { source: "/lost-found/view-found", destination: "/lost-found#lf-board", permanent: true },
+      { source: "/lost-found/view-lost", destination: "/lost-found#lf-board", permanent: true },
+      { source: "/announcements/show", destination: "/announcements#an-feed", permanent: true },
+    ];
+  },
+
   // ✅ PERFORMANCE: Optimized image configuration
   images: {
     remotePatterns: [

@@ -157,7 +157,7 @@ const sections = [
     title: 'View Found Items',
     description: 'Browse items that have been found and claim yours if you see it.',
     icon: <CheckCircle className="w-10 h-10" />,
-    href: '/lost-found/view-found',
+    href: '/lost-found#lf-board',
     color: 'from-teal-500 to-cyan-500',
     category: 'community',
     features: ['Image search', 'Location tracking', 'Verification system']
