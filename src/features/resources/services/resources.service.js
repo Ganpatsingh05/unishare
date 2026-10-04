@@ -244,28 +244,7 @@ export const getAllResources = async (category = null) => {
       message: response.message || `Found ${Array.isArray(resourcesArray) ? resourcesArray.length : 0} resources`
     };
   } catch (error) {
-    console.warn('Admin resources endpoint not available, using fallback:', error.message);
-    
-    // Return demo/fallback resources for development when backend is not available
-    const fallbackResources = [
-      { id: 1, title: 'Academic Calendar', desc: 'Official academic schedule and holidays', category: 'academics', type: 'link', url: 'https://drive.google.com/file/d/example1', tags: ['calendar','dates'], active: true, created_at: '2024-01-01T00:00:00Z' },
-      { id: 2, title: 'CS101 Syllabus', desc: 'Course outline and grading policy', category: 'docs', type: 'link', url: 'https://drive.google.com/file/d/example2', tags: ['cs','syllabus'], active: true, created_at: '2024-01-02T00:00:00Z' },
-      { id: 3, title: 'Library Resources', desc: 'Digital library access and study materials', category: 'campus', type: 'link', url: 'https://drive.google.com/folder/d/example3', tags: ['library','books'], active: false, created_at: '2024-01-03T00:00:00Z' },
-      { id: 4, title: 'Student Software Pack', desc: 'Essential software and tools for students', category: 'tools', type: 'link', url: 'https://drive.google.com/folder/d/example4', tags: ['software','tools'], active: true, created_at: '2024-01-04T00:00:00Z' },
-      { id: 5, title: 'Campus Resources', desc: 'Maps, guides and campus information', category: 'media', type: 'link', url: 'https://drive.google.com/folder/d/example5', tags: ['campus','guides'], active: false, created_at: '2024-01-05T00:00:00Z' },
-      { id: 6, title: 'User Suggested Resource', desc: 'A resource suggested by a user awaiting approval', category: 'docs', type: 'link', url: 'https://example.com/user-resource', tags: ['user-suggested'], active: false, created_at: '2024-01-06T00:00:00Z' },
-    ];
-    
-    // Filter by category if specified
-    const filteredResources = category && category !== 'all' 
-      ? fallbackResources.filter(r => r.category === category)
-      : fallbackResources;
-    
-    return { 
-      success: true, 
-      resources: filteredResources,
-      message: 'Using demo resources (backend not available)' 
-    };
+    return { success: false, data: [], resources: [], message: error.message || 'Could not load resources' };
   }
 };
 
@@ -312,19 +291,7 @@ export const createResource = async (resourceData) => {
       }
     }
     
-    console.warn('Create resource endpoint not available:', error.message);
-    // Return success for demo mode
-    return {
-      success: true,
-      resource: {
-        id: Date.now(),
-        ...resourceData,
-        type: resourceData.type || 'link',
-        active: true,
-        created_at: new Date().toISOString()
-      },
-      message: 'Resource created (demo mode)'
-    };
+    return { success: false, message: error.message || 'Could not create the resource' };
   }
 };
 
@@ -379,13 +346,7 @@ export const updateResource = async (resourceId, updates) => {
       };
     }
     
-    console.warn('Update resource endpoint not available:', error.message);
-    // Return success for demo mode
-    return {
-      success: true,
-      resource: { id: resourceId, ...updates, updated_at: new Date().toISOString() },
-      message: 'Resource updated (demo mode)'
-    };
+    return { success: false, message: error.message || 'Could not update the resource' };
   }
 };
 
@@ -410,13 +371,7 @@ export const deleteResource = async (resourceId) => {
       };
     }
     
-    console.warn('Delete resource endpoint not available:', error.message);
-    // Return success for demo mode
-    return {
-      success: true,
-      message: 'Resource deleted (demo mode)',
-      resourceId
-    };
+    return { success: false, message: error.message || 'Could not delete the resource' };
   }
 };
 
@@ -441,12 +396,7 @@ export const toggleResourceActive = async (resourceId) => {
     }
     
     console.warn('Toggle resource endpoint not available:', error.message);
-    // Return success for demo mode
-    return {
-      success: true,
-      message: 'Resource status toggled (demo mode)',
-      resource: { id: resourceId, active: !true } // Fake toggle
-    };
+    return { success: false, message: error.message || 'Could not change the resource status' };
   }
 };
 

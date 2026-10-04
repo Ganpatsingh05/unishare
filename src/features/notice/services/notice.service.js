@@ -18,47 +18,7 @@ export const getAllNotices = async () => {
       message: response.message || `Found ${Array.isArray(noticesArray) ? noticesArray.length : 0} notices`
     };
   } catch (error) {
-    console.warn('Admin notices endpoint not available, using fallback:', error.message);
-    
-    // Return demo/fallback notices for development when backend is not available
-    const fallbackNotices = [
-      {
-        id: 1,
-        heading: 'System Maintenance',
-        body: 'Scheduled maintenance this weekend. Some features may be temporarily unavailable.',
-        priority: 'high',
-        active: true,
-        created_at: '2024-01-01T00:00:00Z',
-        updated_at: '2024-01-01T00:00:00Z',
-        users: { name: 'Admin', email: 'admin@example.com' }
-      },
-      {
-        id: 2,
-        heading: 'New Feature Available',
-        body: 'Check out our new resource sharing feature in the Resources section.',
-        priority: 'normal',
-        active: true,
-        created_at: '2024-01-02T00:00:00Z',
-        updated_at: '2024-01-02T00:00:00Z',
-        users: { name: 'Admin', email: 'admin@example.com' }
-      },
-      {
-        id: 3,
-        heading: 'Pending Notice',
-        body: 'This notice is awaiting approval before going live.',
-        priority: 'low',
-        active: false,
-        created_at: '2024-01-03T00:00:00Z',
-        updated_at: '2024-01-03T00:00:00Z',
-        users: { name: 'Staff Member', email: 'staff@example.com' }
-      }
-    ];
-    
-    return { 
-      success: true, 
-      notices: fallbackNotices,
-      message: 'Using demo notices (backend not available)' 
-    };
+    return { success: false, data: [], notices: [], message: error.message || 'Could not load notices' };
   }
 };
 

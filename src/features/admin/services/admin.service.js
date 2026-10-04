@@ -141,8 +141,9 @@ export const getAdminReports = async (filters = {}) => {
 
 export const updateReportStatus = async (reportId, status, action, notes) => {
   try {
+    // The backend defines PUT (not PATCH) for this route.
     const data = await apiCall(`/admin/reports/${reportId}`, {
-      method: 'PATCH',
+      method: 'PUT',
       body: JSON.stringify({
         status,
         action,

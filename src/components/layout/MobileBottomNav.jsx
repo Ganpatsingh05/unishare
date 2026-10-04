@@ -17,7 +17,7 @@ const MobileBottomNav = React.memo(function MobileBottomNav() {
 
   // Hide on auth pages (login/register) and admin pages
   const isAuthPage = pathname === "/login";
-  const isAdminPage = pathname?.startsWith("/admin");
+  const isAdminPage = pathname?.startsWith("/console") || pathname?.startsWith("/admin");
   
   if (isAuthPage || isAdminPage) {
     return null;

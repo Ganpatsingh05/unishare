@@ -25,9 +25,10 @@ export default function SmallFooter() {
                 className="w-full h-full object-contain"
               />
             </div>
-            <span className="font-bold text-lg">
-              <span style={{ color: '#facc15' }}>Uni</span>
-              <span style={{ color: '#38bdf8' }}>Share</span>
+            {/* Same treatment as the header: on light pages "Uni" gets a navy edge so it reads. */}
+            <span className="font-extrabold text-xl tracking-[-0.02em]">
+              <span style={darkMode ? { color: '#FFD24C' } : { color: '#FFD24C', WebkitTextStroke: '0.07em #12233A', paintOrder: 'stroke fill' }}>Uni</span>
+              <span style={{ color: darkMode ? '#3CC3F2' : '#1565D8' }}>Share</span>
             </span>
           </Link>
         </div>

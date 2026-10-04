@@ -1,19 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from '@contexts/UniShareContext';
+import { useAuth, useUI } from '@contexts/UniShareContext';
 import { useRouter } from "next/navigation";
-import { Shield, Lock, AlertTriangle } from "lucide-react";
-import AdminLoader from "./AdminLoader";
+import { consoleVars } from "../console/consoleData";
 import { checkAdminStatus } from '@lib/api/api';
-
-// Admin emails list - should match backend configuration
-const ADMIN_EMAILS = [
-  'itspracin750@gmail.com',
-  'ask.gsinghr@gmail.com', 
-  'mishrilalparihar30221@gmail.com',
-  'sumanthjupudi22@gmail.com'
-];
 
 // Check if user has admin privileges using backend authentication
 export const useAdminAuth = () => {
@@ -44,7 +35,7 @@ export const useAdminAuth = () => {
           return;
         }
 
-        // Use backend admin check which validates against the same ADMIN_EMAILS list
+        // Ask the backend; it checks the admin list on the server
         const { isAdmin: adminStatus, user: adminUser } = await checkAdminStatus();
         
         if (isMounted) {
@@ -84,7 +75,7 @@ export default function AdminGuard({ children }) {
     if (!loading && !hasRedirected) {
       if (!isAuthenticated) {
         setHasRedirected(true);
-        router.push('/login?redirect=' + encodeURIComponent('/admin'));
+        router.push('/login?redirect=' + encodeURIComponent('/console'));
         return;
       }
       
@@ -115,7 +106,7 @@ export default function AdminGuard({ children }) {
   if (!isAuthenticated) {
     return (
       <AdminAccessDenied 
-        message="Please login to access the admin panel" 
+        message="Sign in with a Console account to continue." 
         showLoginButton={true}
       />
     );
@@ -125,7 +116,7 @@ export default function AdminGuard({ children }) {
   if (!isAdmin) {
     return (
       <AdminAccessDenied 
-        message={`Access denied. Admin privileges required. Current user: ${user?.email || 'Unknown'}`}
+        message={`You are signed in as ${user?.email || 'an unknown account'}, which does not have Console access.`}
         showLoginButton={false}
       />
     );
@@ -134,63 +125,41 @@ export default function AdminGuard({ children }) {
   return <>{children}</>;
 }
 
-// Simple loading screen for admin authentication
-function AdminLoadingScreen() {
+// The guard's own screens, in the console's look.
+function GuardScreen({ children }) {
+  const { darkMode } = useUI();
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-      <AdminLoader text="Verifying admin access..." />
+    <div style={consoleVars(darkMode)} className="fixed inset-0 z-[60] grid place-items-center bg-[var(--c-bg)] p-6 text-[var(--c-text)]" >
+      <div className="w-full max-w-[380px]">{children}</div>
     </div>
   );
 }
 
-// Access denied screen
+function AdminLoadingScreen() {
+  return (
+    <GuardScreen>
+      <p role="status" className="text-center text-[14px] text-[var(--c-muted)]">Checking your access…</p>
+    </GuardScreen>
+  );
+}
+
 function AdminAccessDenied({ message, showLoginButton = true }) {
   const router = useRouter();
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-900 via-gray-900 to-black flex items-center justify-center p-4">
-      <div className="max-w-md text-center">
-        <div className="relative mb-8">
-          <Lock className="w-24 h-24 mx-auto text-red-400" />
-          <AlertTriangle className="w-8 h-8 absolute -top-2 -right-2 text-yellow-400 animate-pulse" />
-        </div>
-        
-        <h1 className="text-3xl font-bold text-white mb-4">Access Denied</h1>
-        <p className="text-red-200 mb-8">{message}</p>
-        
-        {/* Info for non-admin users */}
-        <div className="mb-6 p-3 bg-gray-800 rounded text-sm text-left">
-          <p className="text-gray-300 mb-2"><strong>Admin Access Required</strong></p>
-          <p className="text-gray-400">This area is restricted to authorized administrators only.</p>
-          {process.env.NODE_ENV === 'development' && (
-            <p className="text-gray-500 text-xs mt-2">Dev Mode: Contact system admin for access</p>
-          )}
-        </div>
-        
-        <div className="space-y-4">
-          <button
-            onClick={() => router.push('/')}
-            className="w-full px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-          >
-            Return to Home
+    <GuardScreen>
+      <p className="text-[14px] font-semibold text-[var(--c-bad)]">Restricted</p>
+      <h1 className="mt-2 text-[24px] font-semibold tracking-[-0.02em]">This is the UniShare Console.</h1>
+      <p className="mt-2 text-[14px] leading-relaxed text-[var(--c-muted)]">{message}</p>
+      <div className="mt-6 flex gap-2">
+        {showLoginButton ? (
+          <button type="button" onClick={() => router.push('/login?redirect=' + encodeURIComponent('/console'))} className="h-9 rounded-[8px] bg-[var(--c-text)] px-4 text-[13px] font-semibold text-[var(--c-bg)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--c-ring)]">
+            Sign in
           </button>
-          {showLoginButton && (
-            <button
-              onClick={() => router.push('/login?redirect=' + encodeURIComponent('/admin'))}
-              className="w-full px-6 py-3 border border-red-400 text-red-400 rounded-lg hover:bg-red-400 hover:text-white transition-colors"
-            >
-              Login as Admin
-            </button>
-          )}
-        </div>
-        
-        <div className="mt-8 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-          <p className="text-xs text-gray-400">
-            Admin access is restricted to authorized personnel only. 
-            Contact system administrators if you believe you should have access.
-          </p>
-        </div>
+        ) : null}
+        <button type="button" onClick={() => router.push('/')} className="h-9 rounded-[8px] border border-[var(--c-line)] px-4 text-[13px] font-semibold outline-none focus-visible:ring-2 focus-visible:ring-[var(--c-ring)]">
+          Back to UniShare
+        </button>
       </div>
-    </div>
+    </GuardScreen>
   );
 }

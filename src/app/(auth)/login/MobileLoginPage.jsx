@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { startGoogleLogin, loginWithEmail, registerWithEmail, fetchCurrentUser } from '@lib/api/api';
 import { useUI, useAuth } from '@contexts/UniShareContext';
-import HeaderMobile from '@components/layout/HeaderMobile';
+import SiteHeader from '@components/layout/header/SiteHeader';
 
 // Password strength calculator
 const calculatePasswordStrength = (password) => {
@@ -368,7 +368,7 @@ const MobileLoginPage = () => {
 
       {/* Main Content */}
       {/* Header - Same as home page */}
-      <HeaderMobile />
+      <SiteHeader />
 
       {/* Main Content */}
       <div className="relative min-h-screen flex flex-col px-6 pt-2 pb-safe">

@@ -73,21 +73,21 @@ export const ROUTES = {
   
   // Admin Routes
   ADMIN: {
-    HOME: '/admin',
-    USERS: '/admin/users',
-    ANALYTICS: '/admin/analytics',
-    MODERATION: '/admin/moderation',
-    ANNOUNCEMENTS: '/admin/announcements',
-    NOTIFICATIONS: '/admin/notifications',
-    RESOURCES: '/admin/resources',
-    CONTACTS: '/admin/contacts',
-    NOTICE: '/admin/notice',
+    HOME: '/console',
+    USERS: '/console/users',
+    ANALYTICS: '/console/analytics',
+    MODERATION: '/console/moderation',
+    ANNOUNCEMENTS: '/console/announcements',
+    NOTIFICATIONS: '/console/notifications',
+    RESOURCES: '/console/resources',
+    CONTACTS: '/console/contacts',
+    NOTICE: '/console/notice',
   },
   
   // Activity Routes
   ACTIVITY: {
     HOME: '/my-activity',
-    REQUESTS: '/my-activity/requests',
+    REQUESTS: '/my-activity',
   },
   
   // Info Routes

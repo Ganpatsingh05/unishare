@@ -44,22 +44,7 @@ export const getAllContacts = async () => {
     };
   } catch (error) {
     console.warn('Admin contacts endpoint not available:', error.message);
-    
-    // Return demo/fallback contacts for development when backend is not available
-    const fallbackContacts = [
-      { id: 1, name: "Campus Security", role: "24x7 Helpline", category: "emergency", phone: "+91 100", email: "security@university.edu", location: "Main Gate Booth", hours: "24/7", active: true },
-      { id: 2, name: "Medical Center", role: "On-campus clinic", category: "emergency", phone: "+91 98765 11111", email: "clinic@university.edu", location: "Health Block", hours: "Mon-Sun 8:00–20:00", active: true },
-      { id: 3, name: "Admin Office", role: "General Administration", category: "administration", phone: "+91 98765 22222", email: "admin@university.edu", location: "A-Block, Room 101", hours: "Mon-Fri 9:00–17:00", active: true },
-      { id: 4, name: "Exam Cell", role: "Examinations & Results", category: "academics", phone: "+91 98765 33333", email: "examcell@university.edu", location: "B-Block, Room 210", hours: "Mon-Fri 10:00–16:00", active: true },
-      { id: 5, name: "Hostel Warden - Dorm A", role: "Warden", category: "hostel", phone: "+91 98765 44444", email: "wardenA@university.edu", location: "Dorm A Office", hours: "Mon-Sat 9:00–18:00", active: true },
-      { id: 6, name: "Student Affairs", role: "Clubs & Activities", category: "student", phone: "+91 98765 55555", email: "students@university.edu", location: "Student Center", hours: "Mon-Fri 9:00–17:00", active: true }
-    ];
-    
-    return {
-      success: true,
-      contacts: fallbackContacts,
-      message: 'Using demo contacts (backend not available)'
-    };
+    return { success: false, contacts: [], message: error.message || 'Could not load contacts' };
   }
 };
 
@@ -87,16 +72,7 @@ export const createContact = async (contactData) => {
     };
   } catch (error) {
     console.warn('Create contact endpoint not available:', error.message);
-    // Return success for demo mode
-    return {
-      success: true,
-      contact: {
-        id: Date.now(),
-        ...contactData,
-        active: contactData.active !== false
-      },
-      message: 'Contact created (demo mode)'
-    };
+    return { success: false, message: error.message || 'Could not create the contact' };
   }
 };
 
@@ -104,7 +80,7 @@ export const createContact = async (contactData) => {
 export const updateContact = async (contactId, updates) => {
   try {
     const data = await apiCall(`/admin/contacts/${contactId}`, {
-      method: 'PATCH',
+      method: 'PUT', // the backend defines PUT for this route
       body: JSON.stringify(updates)
     });
     
@@ -115,12 +91,7 @@ export const updateContact = async (contactId, updates) => {
     };
   } catch (error) {
     console.warn('Update contact endpoint not available:', error.message);
-    // Return success for demo mode
-    return {
-      success: true,
-      contact: { id: contactId, ...updates },
-      message: 'Contact updated (demo mode)'
-    };
+    return { success: false, message: error.message || 'Could not update the contact' };
   }
 };
 
@@ -137,11 +108,7 @@ export const deleteContact = async (contactId) => {
     };
   } catch (error) {
     console.warn('Delete contact endpoint not available:', error.message);
-    // Return success for demo mode
-    return {
-      success: true,
-      message: 'Contact deleted (demo mode)'
-    };
+    return { success: false, message: error.message || 'Could not delete the contact' };
   }
 };
 
