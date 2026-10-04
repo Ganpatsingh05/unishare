@@ -1,7 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useReducer, useEffect, useCallback, useMemo } from "react";
+import React, { createContext, useContext, useReducer, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from "react";
 import { checkAuthStatus, logout as apiLogout } from '@lib/api/api.js';
+import { applyThemeToDom, switchTheme, trackThemeOrigin } from '@lib/theme/switchTheme';
 
 // =============================================================================
 // CONTEXT DEFINITION
@@ -444,47 +445,36 @@ export const UniShareProvider = ({ children }) => {
   const [state, dispatch] = useReducer(uniShareReducer, initialState);
   
   // Initialize dark mode from localStorage; default to light (false) on first visit
+  const themeLoaded = useRef(false);
   useEffect(() => {
+    themeLoaded.current = true;
     const savedDarkMode = localStorage.getItem('unishare_dark_mode');
     if (savedDarkMode !== null) {
-      dispatch({ type: ActionTypes.SET_DARK_MODE, payload: JSON.parse(savedDarkMode) });
+      const saved = JSON.parse(savedDarkMode) === true;
+      applyThemeToDom(saved);
+      dispatch({ type: ActionTypes.SET_DARK_MODE, payload: saved });
     } else {
+      applyThemeToDom(false);
       // No saved preference — explicitly set light mode and persist it
       dispatch({ type: ActionTypes.SET_DARK_MODE, payload: false });
       localStorage.setItem('unishare_dark_mode', JSON.stringify(false));
     }
   }, []);
   
-  // Save dark mode to localStorage and manage body classes
-  useEffect(() => {
+  // Save dark mode and put the theme classes on the page in the same commit,
+  // so CSS-themed and React-themed parts never disagree for a frame.
+  useLayoutEffect(() => {
+    // Not before the saved preference has been read, or we'd overwrite it.
+    if (!themeLoaded.current) return;
     localStorage.setItem('unishare_dark_mode', JSON.stringify(state.darkMode));
-    
-    // ✅ PERFORMANCE: Use RAF to batch DOM updates and prevent layout thrashing
-    requestAnimationFrame(() => {
-      const body = document.body;
-      const html = document.documentElement;
-      
-      // Batch class and attribute updates
-      if (state.darkMode) {
-        // Dark mode - Matte Black Charcoal theme
-        body.className = body.className.replace(/light|theme-warm/g, '').trim() + ' dark theme-ocean';
-        html.setAttribute('data-theme', 'dark');
-        
-        // Use CSS custom properties for instant theme switching
-        html.style.setProperty('--theme-bg', '#1a1a1a');
-        html.style.setProperty('--theme-text', '#FFFFFF');
-      } else {
-        // Light mode - Warm Orange theme
-        body.className = body.className.replace(/dark|theme-ocean/g, '').trim() + ' light theme-warm';
-        html.setAttribute('data-theme', 'light');
-        
-        // Use CSS custom properties for instant theme switching
-        html.style.setProperty('--theme-bg', '#F9FAFB');
-        html.style.setProperty('--theme-text', '#1f2937');
-      }
-    });
+    applyThemeToDom(state.darkMode);
   }, [state.darkMode]);
-  
+
+  // Theme switches reveal from wherever the user last pressed.
+  useEffect(() => trackThemeOrigin(), []);
+  const darkModeRef = useRef(state.darkMode);
+  darkModeRef.current = state.darkMode;
+
   // Initialize app with loading sequence
   useEffect(() => {
     const initializeApp = async () => {
@@ -592,7 +582,8 @@ export const UniShareProvider = ({ children }) => {
     
     // UI actions
     setDarkMode: (isDark) => {
-      dispatch({ type: ActionTypes.SET_DARK_MODE, payload: isDark });
+      if (Boolean(isDark) === darkModeRef.current) return;
+      switchTheme(Boolean(isDark), () => dispatch({ type: ActionTypes.SET_DARK_MODE, payload: Boolean(isDark) }));
     },
     
     setMobileMenu: (isOpen) => {
@@ -763,7 +754,7 @@ export const UniShareProvider = ({ children }) => {
     },
     
     toggleDarkMode: () => {
-      dispatch({ type: ActionTypes.TOGGLE_DARK_MODE });
+      switchTheme(!darkModeRef.current, () => dispatch({ type: ActionTypes.TOGGLE_DARK_MODE }));
     },
     
     toggleMobileMenu: () => {

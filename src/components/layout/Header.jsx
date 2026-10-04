@@ -47,7 +47,6 @@ const Header = ({ logoRotation = 0 }) => {
   const isHomePage = pathname === '/';
   
   // Check if we're on the profile page
-  const isProfilePage = pathname === '/profile';
   
   // Function to go back to previous page
   const handleBackNavigation = () => {
