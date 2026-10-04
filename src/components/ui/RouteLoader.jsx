@@ -13,15 +13,6 @@ export default function RouteLoader({ variant = "default", label }) {
 
   const theme = useMemo(() => {
     switch (variant) {
-      case "marketplace-buy":
-        return {
-          bgDark: "from-amber-900 via-amber-950 to-amber-900",
-          bgLight: "from-amber-50 via-white to-amber-50",
-          glow: "from-amber-300 via-orange-400 to-pink-400",
-          bar: "from-amber-300 via-orange-400 to-pink-400",
-          spinner: "border-amber-300",
-          textDark: "text-amber-100",
-        };
       case "marketplace-sell":
         return {
           bgDark: "from-fuchsia-900 via-purple-950 to-fuchsia-900",
