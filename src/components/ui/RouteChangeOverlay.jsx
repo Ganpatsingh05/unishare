@@ -64,7 +64,7 @@ export default function RouteChangeOverlay() {
         '/contacts': 'Loading contacts...',
         '/profile': 'Loading your profile...',
         '/login': 'Signing you in...',
-        '/admin': 'Loading admin dashboard...',
+        '/console': 'Loading the console...',
         '/info': 'Loading information...',
         '/settings': 'Loading settings...',
         '/': 'Loading UniShare...'

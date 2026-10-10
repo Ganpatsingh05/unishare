@@ -393,3 +393,32 @@ export const prepareRoomFormData = (roomData, imageFiles = []) => {
   
   return formData;
 };
+
+// ============== ROOM REQUESTS ==============
+
+// Requests other students sent to the signed-in user's rooms.
+export const fetchReceivedRoomRequests = async () => {
+  const result = await apiCall('/api/rooms/my/requests', { method: 'GET', cache: false });
+  return result.data || [];
+};
+
+// Requests the signed-in user sent.
+export const fetchSentRoomRequests = async () => {
+  const result = await apiCall('/api/rooms/requests/sent', { method: 'GET', cache: false });
+  return result.data || [];
+};
+
+// Owner answer: status is "approved" or "rejected".
+export const respondToRoomRequest = async (requestId, status, responseMessage) => {
+  const result = await apiCall(`/api/rooms/requests/${requestId}/respond`, {
+    method: 'PUT',
+    body: JSON.stringify({ status, responseMessage }),
+    headers: { 'Content-Type': 'application/json' },
+    cache: false,
+  });
+  return result.data;
+};
+
+export const cancelRoomRequest = async (requestId) => {
+  await apiCall(`/api/rooms/requests/${requestId}`, { method: 'DELETE', cache: false });
+};

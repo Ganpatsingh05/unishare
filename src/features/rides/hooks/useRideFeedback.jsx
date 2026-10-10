@@ -4,7 +4,8 @@ import { createContext, useCallback, useContext, useMemo, useRef, useState } fro
 import Snackbar from "@mui/material/Snackbar";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
-import { CheckCircle, WarningCircle } from "@phosphor-icons/react";
+import { CheckCircleIcon as CheckCircle } from "@solar-icons/react/bold-duotone/check-circle";
+import { DangerCircleIcon as WarningCircle } from "@solar-icons/react/bold-duotone/danger-circle";
 import { motion as motionTokens } from "../theme/rideTokens";
 
 const FeedbackContext = createContext(null);
@@ -72,7 +73,7 @@ export function RideFeedbackProvider({ children }) {
         sx={{ bottom: { xs: 104, md: 32 } }}
         message={
           <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1.25 }}>
-            <Icon size={20} weight="fill" aria-hidden />
+            <Icon size={20} aria-hidden />
             {toast?.message}
           </Box>
         }

@@ -50,6 +50,7 @@ export default function ModeSwitch({ value, onChange }) {
             key={optionValue}
             value={optionValue}
             component={m.button}
+            nativeButton
             whileTap={{ scale: 0.97 }}
             sx={{
               position: "relative",

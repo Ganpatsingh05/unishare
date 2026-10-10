@@ -11,6 +11,24 @@ const nextConfig = {
   },
   pageExtensions: ["js", "jsx", "ts", "tsx"],
 
+  // Old pages that now live on their feature's landing page.
+  async redirects() {
+    return [
+      { source: "/lost-found/found", destination: "/lost-found/report?mode=found", permanent: true },
+      { source: "/lost-found/view-found", destination: "/lost-found#lf-board", permanent: true },
+      { source: "/lost-found/view-lost", destination: "/lost-found#lf-board", permanent: true },
+      { source: "/announcements/show", destination: "/announcements#an-feed", permanent: true },
+      // Per-feature request pages are now filters on My activity.
+      { source: "/my-activity/requests/buysellREQ", destination: "/my-activity?feature=market", permanent: true },
+      { source: "/my-activity/requests/lostfoundREQ", destination: "/my-activity?feature=lostfound", permanent: true },
+      { source: "/my-activity/requests/ticketsREQ", destination: "/my-activity?feature=tickets", permanent: true },
+      { source: "/my-activity/requests/announcmentREQ", destination: "/announcements/manage", permanent: true },
+      // The admin area is now the Console. Not permanent, in case the name changes again.
+      { source: "/admin", destination: "/console", permanent: false },
+      { source: "/admin/:path*", destination: "/console/:path*", permanent: false },
+    ];
+  },
+
   // ✅ PERFORMANCE: Optimized image configuration
   images: {
     remotePatterns: [

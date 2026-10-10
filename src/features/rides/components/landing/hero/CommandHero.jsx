@@ -210,6 +210,7 @@ function SwapButton({ onSwap }) {
   return (
     <IconButton
       component={m.button}
+      nativeButton
       whileTap={{ scale: 0.97 }}
       type="button"
       aria-label={s.swap}
@@ -244,6 +245,7 @@ function SubmitArea({ mode, pending }) {
     <m.div layout="position">
       <Button
         component={m.button}
+        nativeButton
         whileTap={{ scale: 0.97 }}
         type="submit"
         variant="contained"

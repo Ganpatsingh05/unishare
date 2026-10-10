@@ -92,7 +92,7 @@ export default function FieldSheet({ open, onClose, onOpen, title, children }) {
           backgroundColor: t.color.surface,
         }}
       >
-        <Button component={m.button} whileTap={{ scale: 0.97 }} variant="contained" color="primary" size="large" fullWidth onClick={onClose}>
+        <Button component={m.button} nativeButton whileTap={{ scale: 0.97 }} variant="contained" color="primary" size="large" fullWidth onClick={onClose}>
           {RIDE_STRINGS.hero.done}
         </Button>
       </Box>

@@ -265,6 +265,7 @@ function RequestAction({ ride, state, onRequest, t }) {
   return (
     <Button
       component={m.button}
+      nativeButton
       whileTap={{ scale: 0.97 }}
       variant="contained"
       color="primary"

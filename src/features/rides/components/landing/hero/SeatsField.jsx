@@ -21,6 +21,7 @@ function StepButton({ label, disabled, onClick, controls, children, t }) {
   return (
     <IconButton
       component={m.button}
+      nativeButton
       whileTap={disabled ? undefined : { scale: 0.97 }}
       type="button"
       aria-label={label}

@@ -59,22 +59,14 @@ export const checkAdminStatus = async () => {
       return { isAdmin: false, user: null, loading: false };
     }
 
-    // Define the same admin emails as your backend
-    const ADMIN_EMAILS = [
-      'itspracin750@gmail.com',
-      'ask.gsinghr@gmail.com', 
-      'mishrilalparihar30221@gmail.com',
-      'sumanthjupudi22@gmail.com'
-    ];
-
-    const isAdmin = ADMIN_EMAILS.includes(user.email);
-    
-    return { 
-      isAdmin, 
-      user,
-      loading: false,
-      adminEmails: ADMIN_EMAILS 
-    };
+    // The server decides who is an admin; the list never ships to the browser.
+    // Any admin-only endpoint answers 403 for everyone else; this one is light.
+    try {
+      const res = await apiCall('/admin/cleanup/status', { retries: 0 });
+      return { isAdmin: res?.success === true, user, loading: false };
+    } catch {
+      return { isAdmin: false, user, loading: false };
+    }
   } catch (error) {
     console.error('Error checking admin status:', error);
     return { isAdmin: false, user: null, loading: false };
