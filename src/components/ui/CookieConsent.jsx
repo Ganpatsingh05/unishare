@@ -92,13 +92,12 @@ export default function CookieConsent() {
         </div>
 
         <p style={{ fontSize: "14px", lineHeight: "1.6", color: "#374151", paddingRight: "8px" }}>
-          We use cookies for essential website functions and to better understand how you use our site, so we can create the best possible experience for you{" "}
-          <span aria-hidden>💗</span>
+          UniShare uses one cookie to keep you signed in, and saves a few settings like dark mode in your browser. No ads, no tracking.
         </p>
 
         <div style={{ marginTop: "16px", display: "flex", alignItems: "center", gap: "12px" }}>
           <Link
-            href="/info/privacy"
+            href="/info/cookies"
             style={{
               fontSize: "14px",
               fontWeight: "500",
@@ -107,7 +106,7 @@ export default function CookieConsent() {
               textUnderlineOffset: "4px",
             }}
           >
-            Privacy Policy
+            Cookie policy
           </Link>
           <button
             onClick={acceptAll}

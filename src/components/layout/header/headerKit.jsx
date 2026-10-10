@@ -122,12 +122,11 @@ export function HeaderAvatar({ me, size = 36 }) {
   );
 }
 
-/** The UniShare wordmark. In light mode "Uni" gets a navy edge so it reads on white. */
+/** The UniShare wordmark: yellow "Uni", blue "Share". */
 export function Wordmark({ dark, className = "" }) {
-  const uni = dark ? { color: "#FFD24C" } : { color: "#FFD24C", WebkitTextStroke: "0.07em #12233A", paintOrder: "stroke fill" };
   return (
     <span className={`whitespace-nowrap font-extrabold tracking-[-0.02em] ${className}`}>
-      <span style={uni}>Uni</span>
+      <span style={{ color: "#FFD24C" }}>Uni</span>
       <span style={{ color: dark ? "#3CC3F2" : "#1565D8" }}>Share</span>
     </span>
   );

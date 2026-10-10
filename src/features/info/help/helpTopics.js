@@ -37,19 +37,19 @@ export const HELP_TOPICS = [
       {
         id: "password",
         q: "How do I change or set a password?",
-        a: "Open your profile and go to Settings. If you signed up with Google, you can set a password there so you can also sign in with email.",
-        link: { label: "Open settings", href: "/profile" },
+        a: "Open Settings from your avatar menu. If you signed up with Google, you can set a password there so you can also sign in with email.",
+        link: { label: "Open settings", href: "/settings" },
       },
       {
         id: "delete",
         q: "How do I delete my account?",
-        a: "In your profile's Settings, choose Delete account. You'll be asked to type DELETE, and your password if you have one. This removes your account and everything you've posted, and it can't be undone.",
-        link: { label: "Open settings", href: "/profile" },
+        a: "In Settings, choose Delete account. You'll be asked to type DELETE, and your password if you have one. This removes your account and everything you've posted, and it can't be undone.",
+        link: { label: "Open settings", href: "/settings" },
       },
       {
         id: "theme",
         q: "Can I use dark mode?",
-        a: "Yes. Use the sun or moon button in the header, or pick Light, Dark or System under Appearance in your profile's Settings.",
+        a: "Yes. Use the sun or moon button in the header, or pick Light, Dark or System under Appearance in Settings.",
       },
     ],
   },
@@ -212,8 +212,8 @@ export const HELP_TOPICS = [
     articles: [
       {
         id: "what-visible",
-        q: "What can other students see about me?",
-        a: "Your public pass shows your name, username, photo, bio and when you joined. Your phone number or email is only shared with someone when you include it in a request you send.",
+        q: "What can other people see about me?",
+        a: "Your public pass shows your name, username, photo, bio and when you joined. Posts are public too: anyone can see a post, its contact details, and the name and email attached to rides, items, tickets and lost & found posts. In a request, only the person you send it to sees your message and contact details.",
       },
       {
         id: "report",

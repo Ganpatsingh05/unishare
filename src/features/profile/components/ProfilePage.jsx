@@ -26,7 +26,7 @@ import PassCard from "./PassCard";
 import FootprintStamps from "./FootprintStamps";
 import ActivityList from "./ActivityList";
 import EditSheet from "./EditSheet";
-import SettingsPanel from "./SettingsPanel";
+import SettingsShortcut from "./SettingsShortcut";
 
 const S = PROFILE_STRINGS;
 
@@ -57,7 +57,7 @@ function Completeness({ profile, onEdit }) {
               <ButtonBase onClick={done[k] ? undefined : onEdit} disabled={done[k]} sx={{ gap: 0.5, minHeight: 32, px: 1.1, borderRadius: `${t.radius.pill}px`, fontSize: 12.5, fontWeight: 700, border: `1px solid ${done[k] ? "transparent" : c.border}`, backgroundColor: done[k] ? c.successSoft : c.surface, color: done[k] ? c.success : c.textSecondary, "&.Mui-disabled": { color: c.success }, "&.Mui-focusVisible": { outline: `2px solid ${c.focus}` } }}>
                 {done[k] ? <CheckCircle size={15} aria-hidden /> : <AddCircle size={15} aria-hidden />}
                 {S.completeness.items[k]}
-                <Box component="span" sx={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>{done[k] ? S.completeness.done : S.completeness.todo}</Box>
+                <Box component="span" sx={{ position: "absolute", width: "1px", height: "1px", overflow: "hidden", clip: "rect(0 0 0 0)" }}>{done[k] ? S.completeness.done : S.completeness.todo}</Box>
               </ButtonBase>
             </Box>
           ))}
@@ -205,7 +205,7 @@ function ProfileContent() {
           <Box component="h2" id="pf-activity-title" sx={{ m: 0, mb: 2, fontSize: 20, fontWeight: 820 }}>{S.activity.title}</Box>
           <ActivityList items={footprint.recent} status={footprint.status} />
         </Box>
-        <SettingsPanel />
+        <SettingsShortcut />
       </Box>
 
       <EditSheet open={editing} profile={me.profile} form={form} onForm={setForm} photo={photo} onPhoto={(next) => { if (photo?.url) URL.revokeObjectURL(photo.url); setPhoto(next); }} onClose={closeEditor} onSave={save} busy={busy} />

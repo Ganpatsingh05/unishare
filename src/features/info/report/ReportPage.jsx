@@ -13,7 +13,7 @@ import { DETAILS_MAX, DETAILS_MIN, NEXT_STEPS, REPORT_TYPES, URGENCY } from "./r
 import { submitReport } from "./report.service";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const hidden = { position: "absolute", opacity: 0, width: 1, height: 1, m: 0, pointerEvents: "none" };
+const hidden = { position: "absolute", opacity: 0, width: "1px", height: "1px", m: 0, pointerEvents: "none" };
 
 /** Label, optional hint and error around one field. */
 function Field({ id, label, optional, hint, error, children, t }) {

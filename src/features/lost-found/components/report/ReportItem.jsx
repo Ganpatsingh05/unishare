@@ -172,7 +172,7 @@ function LensMeter({ ready }) {
           <Box component="li" key={k} sx={{ display: "flex", alignItems: "center", gap: 0.75, fontSize: 13.5, fontWeight: 650, color: ready[k] ? c.text : c.textMuted }}>
             <Box component="span" aria-hidden sx={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: ready[k] ? (k === "photos" ? t.brand.skyBright : t.brand.yellowDeep) : c.border }} />
             {s.checklist[k]}
-            <Box component="span" sx={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>{ready[k] ? s.checklist.done : s.checklist.todo}</Box>
+            <Box component="span" sx={{ position: "absolute", width: "1px", height: "1px", overflow: "hidden", clip: "rect(0 0 0 0)" }}>{ready[k] ? s.checklist.done : s.checklist.todo}</Box>
           </Box>
         ))}
       </Box>

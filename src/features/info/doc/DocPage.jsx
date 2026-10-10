@@ -46,7 +46,7 @@ function Block({ block, t }) {
       return <Box component="p" sx={{ m: 0, ...text }}>{block.text}</Box>;
     case "list":
       return (
-        <Box component="ul" sx={{ m: 0, pl: 2.5, display: "grid", gap: 0.75, ...text, "& li::marker": { color: c.textMuted } }}>
+        <Box component="ul" sx={{ m: 0, pl: 2.5, listStyle: "disc", display: "grid", gap: 0.75, ...text, "& li": { display: "list-item" }, "& li::marker": { color: c.accentText } }}>
           {block.items.map((it) => <li key={it}>{it}</li>)}
         </Box>
       );
@@ -94,7 +94,7 @@ function Block({ block, t }) {
           {block.items.map((it, i) => (
             <Box key={it.title} sx={{ p: 2.25, borderRadius: "18px", border: `1px solid ${c.border}`, backgroundColor: c.surface }}>
               <Box sx={{ display: "flex", alignItems: "baseline", gap: 1.25 }}>
-                <Box component="span" sx={{ fontSize: 13, fontWeight: 800, color: c.accentText, fontVariantNumeric: "tabular-nums" }}>{String(i + 1).padStart(2, "0")}</Box>
+                {block.numbered === false ? null : <Box component="span" sx={{ fontSize: 13, fontWeight: 800, color: c.accentText, fontVariantNumeric: "tabular-nums" }}>{String(i + 1).padStart(2, "0")}</Box>}
                 <Box component="h3" sx={{ m: 0, fontSize: 17, fontWeight: 800, color: c.text }}>{it.title}</Box>
               </Box>
               <Box component="p" sx={{ m: 0, mt: 0.75, fontSize: 15, lineHeight: 1.6, color: c.textSecondary }}>{it.text}</Box>
@@ -115,6 +115,48 @@ function Block({ block, t }) {
             </Box>
           ) : null}
         </Box>
+      );
+    }
+    case "table": {
+      // A real table from tablet up; stacked cards with labels on phones.
+      const cell = { px: 2, py: 1.5, fontSize: 14.5, lineHeight: 1.55, color: c.textSecondary, textAlign: "left", verticalAlign: "top", borderTop: `1px solid ${c.border}` };
+      return (
+        <>
+          <Box sx={{ display: { xs: "none", sm: "block" }, borderRadius: "18px", border: `1px solid ${c.border}`, backgroundColor: c.surface, overflow: "hidden" }}>
+            <Box component="table" sx={{ width: "100%", borderCollapse: "collapse" }}>
+              {block.caption ? <Box component="caption" sx={{ position: "absolute", width: "1px", height: "1px", overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap" }}>{block.caption}</Box> : null}
+              <thead>
+                <tr>
+                  {block.columns.map((col) => (
+                    <Box component="th" scope="col" key={col} sx={{ ...cell, borderTop: 0, fontSize: 13, fontWeight: 800, color: c.textSecondary, textTransform: "uppercase", letterSpacing: "0.05em", backgroundColor: c.surfaceInteractive }}>{col}</Box>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {block.rows.map((row) => (
+                  <tr key={row[0]}>
+                    {row.map((v, i) => (i === 0 ? <Box component="th" scope="row" key={i} sx={{ ...cell, fontWeight: 750, color: c.text }}>{v}</Box> : <Box component="td" key={i} sx={cell}>{v}</Box>))}
+                  </tr>
+                ))}
+              </tbody>
+            </Box>
+          </Box>
+          <Box component="ul" sx={{ display: { xs: "grid", sm: "none" }, gap: 1.25, m: 0, p: 0, listStyle: "none" }}>
+            {block.rows.map((row) => (
+              <Box component="li" key={row[0]} sx={{ p: 2, borderRadius: "16px", border: `1px solid ${c.border}`, backgroundColor: c.surface }}>
+                <Box sx={{ fontSize: 15.5, fontWeight: 800, color: c.text }}>{row[0]}</Box>
+                <Box component="dl" sx={{ m: 0, mt: 1, display: "grid", gap: 0.75 }}>
+                  {row.slice(1).map((v, i) => (
+                    <Box key={block.columns[i + 1]}>
+                      <Box component="dt" sx={{ fontSize: 12.5, fontWeight: 800, color: c.textSecondary, textTransform: "uppercase", letterSpacing: "0.05em" }}>{block.columns[i + 1]}</Box>
+                      <Box component="dd" sx={{ m: 0, fontSize: 14.5, lineHeight: 1.55, color: c.textSecondary }}>{v}</Box>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        </>
       );
     }
     default:

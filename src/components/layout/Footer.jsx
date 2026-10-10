@@ -5,9 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { 
-  MapPin, 
-  Phone, 
-  Mail, 
+  MapPin,
+  Mail,
   Facebook, 
   Twitter, 
   Instagram, 
@@ -75,16 +74,16 @@ const Footer = React.memo(function Footer() {
       { name: 'Terms of Service', href: '/info/terms' },
       { name: 'Cookie Policy', href: '/info/cookies' },
       { name: 'Community Guidelines', href: '/info/guidelines' },
-      { name: 'Data Protection', href: '/finfo/data-protection' }
+      { name: 'Data Protection', href: '/info/data-protection' }
     ]
   };
 
   const socialLinks = [
-    { name: 'Facebook', href: 'https://facebook.com/unishare', icon: Facebook, color: 'hover:bg-blue-600' },
-    { name: 'Twitter', href: 'https://twitter.com/unishare', icon: Twitter, color: 'hover:bg-blue-400' },
-    { name: 'Instagram', href: 'https://instagram.com/unishare', icon: Instagram, color: 'hover:bg-pink-600' },
+    // { name: 'Facebook', href: 'https://facebook.com/unishare', icon: Facebook, color: 'hover:bg-blue-600' },
+    // { name: 'Twitter', href: 'https://twitter.com/unishare', icon: Twitter, color: 'hover:bg-blue-400' },
+    { name: 'Instagram', href: 'https://instagram.com/web.unishare', icon: Instagram, color: 'hover:bg-pink-600' },
       { name: 'LinkedIn', href: 'https://www.linkedin.com/company/unishare-community/', icon: Linkedin, color: 'hover:bg-blue-700' },
-    { name: 'YouTube', href: 'https://youtube.com/unishare', icon: Youtube, color: 'hover:bg-red-600' }
+    { name: 'YouTube', href: 'https://www.youtube.com/channel/UC12wrJ7qOgyu8xObo0ZKMFQ', icon: Youtube, color: 'hover:bg-red-600' }
   ];
 
   return (
@@ -135,7 +134,7 @@ const Footer = React.memo(function Footer() {
 
             {/* Contact Info */}
             <div className="space-y-3">
-              <div className="flex items-center gap-3 group cursor-pointer">
+              <a href="mailto:support.unisharelpu@gmail.com" className="flex items-center gap-3 group">
                 <div className={`p-2 rounded-lg transition-all duration-200 ${
                   darkMode ? 'bg-gray-800 group-hover:bg-yellow-300/20' : 'bg-gray-100 group-hover:bg-yellow-100'
                 }`}>
@@ -143,27 +142,12 @@ const Footer = React.memo(function Footer() {
                     darkMode ? 'text-yellow-300 group-hover:text-yellow-200' : 'text-yellow-600 group-hover:text-yellow-700'
                   }`} />
                 </div>
-                <span className={`transition-colors duration-200 ${
+                <span className={`break-all transition-colors duration-200 ${
                   darkMode ? 'text-gray-300 group-hover:text-white' : 'text-gray-600 group-hover:text-gray-800'
                 }`}>
-                  support@unishare.com
+                  support.unisharelpu@gmail.com
                 </span>
-              </div>
-              
-              <div className="flex items-center gap-3 group cursor-pointer">
-                <div className={`p-2 rounded-lg transition-all duration-200 ${
-                  darkMode ? 'bg-gray-800 group-hover:bg-sky-300/20' : 'bg-gray-100 group-hover:bg-sky-100'
-                }`}>
-                  <Phone className={`w-4 h-4 transition-colors duration-200 ${
-                    darkMode ? 'text-sky-300 group-hover:text-sky-200' : 'text-sky-600 group-hover:text-sky-700'
-                  }`} />
-                </div>
-                <span className={`transition-colors duration-200 ${
-                  darkMode ? 'text-gray-300 group-hover:text-white' : 'text-gray-600 group-hover:text-gray-800'
-                }`}>
-                  +1 (555) 123-4567
-                </span>
-              </div>
+              </a>
             </div>
           </div>
 
