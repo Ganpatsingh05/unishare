@@ -143,12 +143,17 @@ export const apiCall = async (endpoint, options = {}) => {
         );
       }
 
+      // Unwrap global backend envelope: { data: <payload>, meta: { success, traceId, ... } }
+      const unwrapped = (data && typeof data === 'object' && 'meta' in data && 'data' in data)
+        ? data.data
+        : data;
+
       // Cache successful GET requests
       if (cache && cacheKey && method === 'GET') {
-        apiCache.set(cacheKey, data, cacheTTL);
+        apiCache.set(cacheKey, unwrapped, cacheTTL);
       }
 
-      return data;
+      return unwrapped;
 
     } catch (error) {
       lastError = error;
@@ -239,11 +244,15 @@ export const apiCallFormData = async (endpoint, formData, options = {}) => {
         console.log(`✅ FormData upload successful:`, data);
       }
 
+      // Unwrap global backend envelope: { data: <payload>, meta: { ... } }
+      const unwrapped = (data && typeof data === 'object' && 'meta' in data && 'data' in data)
+        ? data.data
+        : data;
+
       // Clear related cache entries after successful upload
       if (method === 'POST' || method === 'PUT' || method === 'DELETE') {
-        const resourceType = endpoint.split('/')[2]; // Extract resource type from endpoint
+        const resourceType = endpoint.split('/')[2];
         if (resourceType) {
-          // Clear cache entries related to this resource type
           for (const key of apiCache.cache.keys()) {
             if (key.includes(resourceType)) {
               apiCache.delete(key);
@@ -252,7 +261,7 @@ export const apiCallFormData = async (endpoint, formData, options = {}) => {
         }
       }
 
-      return data;
+      return unwrapped;
 
     } catch (error) {
       lastError = error;

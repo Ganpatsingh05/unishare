@@ -1,115 +1,67 @@
-// Universal Request System API
-// Handles requests across all modules: rooms, itemsell, lostfound, ticketsell, shareride
-
+// requests.js - Universal Request System (Spring Boot backend)
 import { apiCall, API_CONFIG } from "./base";
-
-const BASE_URL = API_CONFIG.BASE_URL;
 
 // Handle API errors consistently
 const handleApiError = (error) => {
-  // Silently handle authentication errors (user not logged in)
-  if (error?.message?.includes('Authentication required')) {
-    throw error; // Rethrow without logging
-  }
-  
-  // Use existing error handling from apiCall
-  if (error?.message) {
-    throw new Error(error.message);
-  } else {
-    throw new Error('Something went wrong with your request');
-  }
+  if (error?.message?.includes('Authentication required')) throw error;
+  throw new Error(error?.message || 'Something went wrong with your request');
 };
 
-// Universal Request API Class
+// Generic request API for modules that don't have real backend endpoints yet
+// (rooms, itemsell, lostfound, ticketsell) — stubs that won't crash the app
 class UniversalRequestAPI {
   constructor(module) {
-    this.module = module; // 'rooms', 'itemsell', 'lostfound', 'ticketsell', 'shareride'
+    this.module = module;
     this.baseEndpoint = `/api/${module}`;
   }
 
-  // Send a request for an item/service
   async sendRequest(itemId, data = {}) {
     try {
-      const result = await apiCall(`${this.baseEndpoint}/${itemId}/request`, {
+      return await apiCall(`${this.baseEndpoint}/${itemId}/request`, {
         method: 'POST',
         body: JSON.stringify(data),
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' }
       });
-      
-      return result;
-    } catch (error) {
-      handleApiError(error);
-    }
+    } catch (error) { handleApiError(error); }
   }
 
-  // Get requests received (what others want from me)
   async getReceivedRequests() {
-    try {
-      const result = await apiCall(`${this.baseEndpoint}/my/requests`);
-      return result;
-    } catch (error) {
-      handleApiError(error);
-    }
+    try { return await apiCall(`${this.baseEndpoint}/my/requests`); }
+    catch (error) { handleApiError(error); }
   }
 
-  // Get requests sent (my requests to others)
   async getSentRequests() {
-    try {
-      const result = await apiCall(`${this.baseEndpoint}/requests/sent`);
-      return result;
-    } catch (error) {
-      handleApiError(error);
-    }
+    try { return await apiCall(`${this.baseEndpoint}/requests/sent`); }
+    catch (error) { handleApiError(error); }
   }
 
-  // Respond to a request (accept/reject)
   async respondToRequest(requestId, action) {
     try {
-      const result = await apiCall(`${this.baseEndpoint}/requests/${requestId}/respond`, {
+      return await apiCall(`${this.baseEndpoint}/requests/${requestId}/respond`, {
         method: 'PUT',
         body: JSON.stringify({ action }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' }
       });
-      
-      return result;
-    } catch (error) {
-      handleApiError(error);
-    }
+    } catch (error) { handleApiError(error); }
   }
 
-  // Cancel a request
   async cancelRequest(requestId) {
     try {
-      const result = await apiCall(`${this.baseEndpoint}/requests/${requestId}`, {
-        method: 'DELETE'
-      });
-      
-      return result;
-    } catch (error) {
-      handleApiError(error);
-    }
+      return await apiCall(`${this.baseEndpoint}/requests/${requestId}`, { method: 'DELETE' });
+    } catch (error) { handleApiError(error); }
   }
 
-  // Get request counts for dashboard
   async getRequestCounts() {
     try {
       const [received, sent] = await Promise.all([
         this.getReceivedRequests(),
         this.getSentRequests()
       ]);
-
-      const receivedPending = received.data?.filter(req => req.status === 'pending').length || 0;
-      const sentPending = sent.data?.filter(req => req.status === 'pending').length || 0;
-
-      return {
-        received: receivedPending,
-        sent: sentPending,
-        total: receivedPending + sentPending
-      };
+      const r = Array.isArray(received?.content) ? received.content : (received?.data || []);
+      const s = Array.isArray(sent?.content) ? sent.content : (sent?.data || []);
+      const receivedPending = r.filter(req => req.status === 'PENDING').length;
+      const sentPending = s.filter(req => req.status === 'PENDING').length;
+      return { received: receivedPending, sent: sentPending, total: receivedPending + sentPending };
     } catch (error) {
       console.error(`Failed to get request counts for ${this.module}:`, error);
       return { received: 0, sent: 0, total: 0 };
@@ -117,12 +69,63 @@ class UniversalRequestAPI {
   }
 }
 
-// Create API instances for each module
 export const roomsAPI = new UniversalRequestAPI('rooms');
 export const marketplaceAPI = new UniversalRequestAPI('itemsell');
 export const lostFoundAPI = new UniversalRequestAPI('lostfound');
 export const ticketsAPI = new UniversalRequestAPI('ticketsell');
-export const ridesAPI = new UniversalRequestAPI('shareride');
+
+// Rides uses dedicated endpoints matching the actual Spring Boot backend
+export const ridesAPI = {
+  // POST /api/rides/{rideId}/request
+  async sendRequest(rideId, data = {}) {
+    try {
+      return await apiCall(`/api/rides/${rideId}/request`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (error) { handleApiError(error); }
+  },
+
+  // GET /api/rides/{rideId}/requests (requests on a ride I own)
+  async getReceivedRequests(rideId) {
+    try { return await apiCall(`/api/rides/${rideId}/requests`); }
+    catch (error) { handleApiError(error); }
+  },
+
+  // GET /api/rides/my-requests (requests I sent as a passenger)
+  async getSentRequests() {
+    try { return await apiCall('/api/rides/my-requests'); }
+    catch (error) { handleApiError(error); }
+  },
+
+  // POST /api/rides/{requestId}/approve or /decline
+  async respondToRequest(requestId, action) {
+    try {
+      const endpoint = action === 'approve'
+        ? `/api/rides/${requestId}/approve`
+        : `/api/rides/${requestId}/decline`;
+      return await apiCall(endpoint, { method: 'POST' });
+    } catch (error) { handleApiError(error); }
+  },
+
+  // POST /api/rides/{requestId}/cancel
+  async cancelRequest(requestId) {
+    try { return await apiCall(`/api/rides/${requestId}/cancel`, { method: 'POST' }); }
+    catch (error) { handleApiError(error); }
+  },
+
+  async getRequestCounts() {
+    try {
+      const sent = await this.getSentRequests();
+      const pending = (sent?.content || []).filter(r => r.status === 'PENDING').length;
+      return { received: 0, sent: pending, total: pending };
+    } catch (error) {
+      console.error('Failed to get ride request counts:', error);
+      return { received: 0, sent: 0, total: 0 };
+    }
+  }
+};
 
 // Central function to get all request counts
 export const getAllRequestCounts = async () => {
@@ -134,13 +137,8 @@ export const getAllRequestCounts = async () => {
       ticketsAPI.getRequestCounts(),
       ridesAPI.getRequestCounts()
     ]);
-
     return {
-      rooms,
-      marketplace,
-      lostFound,
-      tickets,
-      rides,
+      rooms, marketplace, lostFound, tickets, rides,
       totalRequests: rooms.total + marketplace.total + lostFound.total + tickets.total + rides.total
     };
   } catch (error) {
@@ -156,5 +154,4 @@ export const getAllRequestCounts = async () => {
   }
 };
 
-// Export individual APIs and utility functions
 export { UniversalRequestAPI, handleApiError };
