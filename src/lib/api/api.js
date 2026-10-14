@@ -7,7 +7,7 @@ export { apiCall, apiCallFormData, BACKEND_URL } from "@lib/api/base.js";
 // Re-export all authentication functions
 export {
   fetchCurrentUser, checkAuthStatus, logout, checkAdminStatus,
-  startGoogleLogin, loginWithEmail, registerWithEmail, requestPasswordReset
+  startGoogleLogin, startGithubLogin, loginWithEmail, registerWithEmail, requestPasswordReset
 } from "@lib/api/auth.js";
 
 // Re-export all profile functions  
