@@ -16,6 +16,9 @@ const DURATION = 7000;
 const SIZES = "(min-width: 1024px) 46vw, 100vw";
 const FACTS = ["Free to use", "No app to download", "Made for campus life"];
 
+/** Resolve feature metadata for a slide; falls back to slide-level ink when the key isn't in navConfig. */
+const featureFor = (slide) => featureByKey[slide.key] || { ink: slide.ink || ["#64748B", "#94A3B8"] };
+
 // Hero files that failed once, so later slides skip straight to the scene.
 const missing = new Set();
 
@@ -27,15 +30,17 @@ function openSearch() {
 /** A slide's picture, or, until its file exists, the feature's scene on its colour. */
 function SlideArt({ slide, priority, moving }) {
   const [failed, setFailed] = useState(() => !slide.image || missing.has(slide.image));
-  const f = featureByKey[slide.key];
+  const f = featureFor(slide);
   if (failed) {
     const Scene = SCENES[slide.key];
     return (
       <div className="absolute inset-0" style={{ backgroundColor: f.ink[0] }}>
         <div aria-hidden className="absolute inset-0 opacity-25 [background-image:radial-gradient(rgba(255,255,255,0.55)_1.2px,transparent_1.2px)] [background-size:22px_22px]" />
-        <div className="absolute left-1/2 top-[42%] aspect-square w-[min(68%,360px)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/10 p-[6%] ring-1 ring-white/20">
-          <Scene c={f.ink[1]} still={!moving} />
-        </div>
+        {Scene ? (
+          <div className="absolute left-1/2 top-[42%] aspect-square w-[min(68%,360px)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/10 p-[6%] ring-1 ring-white/20">
+            <Scene c={f.ink[1]} still={!moving} />
+          </div>
+        ) : null}
       </div>
     );
   }
@@ -94,7 +99,7 @@ function SearchPill({ reduce }) {
 
 /** The current slide's card: what it is, and where to go. Floats over the window's edge on desktop. */
 function Caption({ slide, dark, reduce }) {
-  const f = featureByKey[slide.key];
+  const f = featureFor(slide);
   const ink = f.ink[dark ? 1 : 0];
   return (
     <motion.div
@@ -103,7 +108,8 @@ function Caption({ slide, dark, reduce }) {
       animate={{ opacity: 1, y: 0, rotate: 0 }}
       exit={reduce ? { opacity: 0 } : { opacity: 0, y: -10, transition: { duration: 0.2 } }}
       transition={{ duration: 0.55, ease: RISE, delay: reduce ? 0 : 0.25 }}
-      className="rounded-[24px] border border-[var(--h-border)] bg-[var(--h-surface)] p-5 shadow-[var(--h-shadow)] backdrop-blur-xl"
+      className="rounded-[24px] border border-[var(--h-border)] p-5 shadow-[var(--h-shadow)]"
+      style={{ backgroundColor: dark ? "rgba(19, 26, 38, 0.55)" : "rgba(255, 255, 255, 0.6)" }}
     >
       <div className="flex items-center gap-2 text-[12px] font-extrabold uppercase tracking-[0.14em]" style={{ color: ink }}>
         <span aria-hidden className="h-2 w-2 rounded-full" style={{ backgroundColor: ink }} />
@@ -113,22 +119,24 @@ function Caption({ slide, dark, reduce }) {
         {slide.lines[0]} <span style={{ color: ink }}>{slide.lines[1]}</span>
       </p>
       <p className="mt-1.5 text-[14.5px] leading-snug text-[var(--h-muted)]">{slide.body}</p>
-      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <Link href={slide.primary.href} className={`group inline-flex h-11 items-center gap-2 rounded-full px-4 text-[14.5px] font-extrabold text-white transition-transform hover:-translate-y-0.5 ${RING}`} style={{ backgroundColor: f.ink[0] }}>
-          {slide.primary.label}
-          <ArrowRight size={16} weight="bold" aria-hidden className="transition-transform group-hover:translate-x-0.5" />
-        </Link>
-        <Link href={slide.secondary.href} className={`rounded-full text-[14.5px] font-bold text-[var(--h-text)] underline decoration-[var(--h-border)] decoration-2 underline-offset-4 transition-colors hover:decoration-current ${RING}`}>
-          {slide.secondary.label}
-        </Link>
-      </div>
+      {slide.primary && slide.secondary && (
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <Link href={slide.primary.href} className={`group inline-flex h-11 items-center gap-2 rounded-full px-4 text-[14.5px] font-extrabold text-white transition-transform hover:-translate-y-0.5 ${RING}`} style={{ backgroundColor: f.ink[0] }}>
+            {slide.primary.label}
+            <ArrowRight size={16} weight="bold" aria-hidden className="transition-transform group-hover:translate-x-0.5" />
+          </Link>
+          <Link href={slide.secondary.href} className={`rounded-full text-[14.5px] font-bold text-[var(--h-text)] underline decoration-[var(--h-border)] decoration-2 underline-offset-4 transition-colors hover:decoration-current ${RING}`}>
+            {slide.secondary.label}
+          </Link>
+        </div>
+      )}
     </motion.div>
   );
 }
 
 /**
  * The home page hero. Left: who we are, and a search that opens the real
- * palette. Right: the four big UniShare stories inside the logo's U, framed by
+ * palette. Right: the seven big UniShare stories inside the logo's U, framed by
  * its two arms; each new banner grows out of the handshake at the bottom.
  * Auto-advances with story-style progress tabs; pauses on hover, focus, off
  * screen, in a background tab or with the pause button. Swipe, arrow keys or
@@ -143,7 +151,6 @@ export default function HandshakeHero({ dark }) {
   const [current, setCurrent] = useState(0);
   const [turn, setTurn] = useState(0);
   const [playing, setPlaying] = useState(true);
-  const [held, setHeld] = useState(false);
   const [visible, setVisible] = useState(true);
   const live = useMemo(() => pulse(BRAND.blue), []);
 
@@ -166,7 +173,7 @@ export default function HandshakeHero({ dark }) {
     [current]
   );
 
-  const running = playing && !held && inView && visible;
+  const running = playing && inView && visible;
   const slide = SLIDES[current];
   const upcoming = SLIDES[(current + 1) % SLIDES.length];
 
@@ -184,12 +191,6 @@ export default function HandshakeHero({ dark }) {
     if (!s) return;
     const dx = e.clientX - s.x;
     if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(e.clientY - s.y) * 1.5) go(current + (dx < 0 ? 1 : -1));
-  };
-  const hold = {
-    onPointerEnter: (e) => e.pointerType === "mouse" && setHeld(true),
-    onPointerLeave: (e) => e.pointerType === "mouse" && setHeld(false),
-    onFocus: () => setHeld(true),
-    onBlur: (e) => !e.currentTarget.contains(e.relatedTarget) && setHeld(false),
   };
   const up = (delay) => ({ initial: reduce ? false : { opacity: 0, y: 22 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.7, delay, ease: RISE } });
 
@@ -230,7 +231,7 @@ export default function HandshakeHero({ dark }) {
         </div>
 
         {/* The U. */}
-        <div aria-roledescription="carousel" aria-label="UniShare highlights" className="relative" {...hold}>
+        <div aria-roledescription="carousel" aria-label="UniShare highlights" className="relative">
           <div className="relative mx-auto w-full max-w-[600px] px-[14px] pb-8 lg:max-w-none lg:pl-[14px] lg:pr-[14px]">
             <div className="relative">
               <UArms width={12} />
@@ -316,10 +317,10 @@ export default function HandshakeHero({ dark }) {
 
           {/* Story-style progress tabs and play/pause. */}
           <div className="mt-5 flex items-center gap-3 lg:mt-2 lg:px-4">
-            <div role="tablist" aria-label="Choose a highlight" className="grid flex-1 grid-cols-4 gap-1.5 sm:gap-2.5">
+            <div role="tablist" aria-label="Choose a highlight" className="grid flex-1 gap-1.5 sm:gap-2.5" style={{ gridTemplateColumns: `repeat(${SLIDES.length}, minmax(0, 1fr))` }}>
               {SLIDES.map((s, i) => {
                 const on = i === current;
-                const ink = featureByKey[s.key].ink[dark ? 1 : 0];
+                const ink = featureFor(s).ink[dark ? 1 : 0];
                 return (
                   <button
                     key={s.key}
@@ -334,8 +335,7 @@ export default function HandshakeHero({ dark }) {
                     className={`group min-w-0 rounded-[12px] px-1 py-2 text-left ${RING}`}
                   >
                     <span className={`block truncate text-[12.5px] font-bold transition-colors sm:text-[13.5px] ${on ? "text-[var(--h-text)]" : "text-[var(--h-muted)] group-hover:text-[var(--h-text)]"}`}>
-                      <span className="sm:hidden">{s.short || s.label}</span>
-                      <span className="hidden sm:inline">{s.label}</span>
+                      {s.short || s.label}
                     </span>
                     <span className="relative mt-2 block h-1 overflow-hidden rounded-full bg-[var(--h-border)]">
                       <span

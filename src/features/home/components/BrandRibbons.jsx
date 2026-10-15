@@ -45,7 +45,7 @@ export default function BrandRibbons() {
           return (
             <div
               key={r}
-              className={`relative -mx-[5%] flex w-[110%] overflow-hidden py-3.5 shadow-[0_18px_30px_-22px_rgba(18,35,58,0.6)] sm:py-4 ${r ? "-mt-[50px] sm:-mt-[58px]" : "z-10"}`}
+              className={`relative -mx-[5%] flex w-[110%] overflow-hidden py-3.5 shadow-[0_18px_30px_-22px_rgba(18,35,58,0.6)] sm:py-4 ${r ? "-mt-[26px] sm:-mt-[50px]" : "z-10"}`}
               style={{ backgroundColor: look.bg, color: look.text, transform: `rotate(${look.tilt})` }}
             >
               {[0, 1].map((copy) => (

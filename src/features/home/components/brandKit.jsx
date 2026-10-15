@@ -12,7 +12,7 @@ export const JOIN = [0.76, 0, 0.24, 1];
 export const U_RADIUS = "32px 32px 50% 50% / 32px 32px 40% 40%";
 
 /**
- * The logo's two arms as a frame: blue down the left, magenta down the right,
+ * The logo's two arms as a frame: blue down the left, yellow down the right,
  * meeting at the bottom where the hands shake. Drawn in real
  * pixels for its box, so the strokes keep their width and draw in cleanly.
  */
@@ -46,7 +46,7 @@ export function UArms({ width = 10, draw = true, className = "" }) {
       {box ? (
         <>
           <path d={left} fill="none" stroke={BRAND.blue} strokeWidth={width} strokeLinecap="round" {...anim} />
-          <path d={right} fill="none" stroke={BRAND.magenta} strokeWidth={width} strokeLinecap="round" {...anim} />
+          <path d={right} fill="none" stroke={BRAND.yellow} strokeWidth={width} strokeLinecap="round" {...anim} />
         </>
       ) : null}
       <style>{`@keyframes hmArm { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }`}</style>

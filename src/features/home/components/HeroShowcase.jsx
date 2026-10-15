@@ -73,7 +73,7 @@ function Reveal({ slide, onDone }) {
 
 /** Words for one slide; each line rises out of a mask. */
 function SlideCopy({ slide, dark, reduce }) {
-  const f = featureByKey[slide.key];
+  const f = featureByKey[slide.key] || { ink: slide.ink || ["#64748B", "#94A3B8"] };
   const ink = f.ink[dark ? 1 : 0];
   const up = (delay) => ({ initial: reduce ? false : { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.6, delay: reduce ? 0 : delay, ease: RISE } });
   return (
@@ -108,21 +108,23 @@ function SlideCopy({ slide, dark, reduce }) {
         {slide.body}
       </motion.p>
 
-      <motion.div {...up(0.42)} className="mt-6 flex flex-wrap gap-2.5">
-        <Link href={slide.primary.href} className={`group inline-flex h-12 items-center gap-2 rounded-full bg-[var(--h-accent)] px-5 text-[15px] font-bold text-[var(--h-on-accent)] shadow-[0_10px_24px_-12px_var(--h-accent)] transition-transform hover:-translate-y-0.5 ${RING}`}>
-          {slide.primary.label}
-          <ArrowRight size={17} weight="bold" aria-hidden className="transition-transform group-hover:translate-x-0.5" />
-        </Link>
-        <Link href={slide.secondary.href} className={`inline-flex h-12 items-center rounded-full border border-[var(--h-border)] bg-[var(--h-surface-solid)] px-5 text-[15px] font-bold text-[var(--h-text)] transition-colors hover:bg-[var(--h-faint)] ${RING}`}>
-          {slide.secondary.label}
-        </Link>
-      </motion.div>
+      {slide.primary && slide.secondary && (
+        <motion.div {...up(0.42)} className="mt-6 flex flex-wrap gap-2.5">
+          <Link href={slide.primary.href} className={`group inline-flex h-12 items-center gap-2 rounded-full bg-[var(--h-accent)] px-5 text-[15px] font-bold text-[var(--h-on-accent)] shadow-[0_10px_24px_-12px_var(--h-accent)] transition-transform hover:-translate-y-0.5 ${RING}`}>
+            {slide.primary.label}
+            <ArrowRight size={17} weight="bold" aria-hidden className="transition-transform group-hover:translate-x-0.5" />
+          </Link>
+          <Link href={slide.secondary.href} className={`inline-flex h-12 items-center rounded-full border border-[var(--h-border)] bg-[var(--h-surface-solid)] px-5 text-[15px] font-bold text-[var(--h-text)] transition-colors hover:bg-[var(--h-faint)] ${RING}`}>
+            {slide.secondary.label}
+          </Link>
+        </motion.div>
+      )}
     </motion.div>
   );
 }
 
 /**
- * The home page hero: the four big UniShare stories. Auto-advances every few
+ * The home page hero: the seven big UniShare stories. Auto-advances every few
  * seconds with story-style progress tabs; pauses on hover, focus, off screen,
  * in a background tab or with the pause button. Swipe, arrow keys or the tabs
  * move between slides.
@@ -137,7 +139,6 @@ export default function HeroShowcase({ dark }) {
   const [previous, setPrevious] = useState(null);
   const [joinId, setJoinId] = useState(0);
   const [playing, setPlaying] = useState(true);
-  const [held, setHeld] = useState(false);
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
@@ -160,7 +161,7 @@ export default function HeroShowcase({ dark }) {
     [current]
   );
 
-  const running = playing && !held && inView && visible;
+  const running = playing && inView && visible;
 
   // Depth: the picture drifts against the pointer, the words a little with it.
   const px = useMotionValue(0);
@@ -206,16 +207,12 @@ export default function HeroShowcase({ dark }) {
 
       <div
         className="relative overflow-hidden rounded-[28px] border border-[var(--h-border)] bg-[var(--h-surface-solid)] shadow-[var(--h-shadow)] lg:h-[clamp(500px,66vh,640px)] lg:rounded-[36px]"
-        onPointerEnter={(e) => e.pointerType === "mouse" && setHeld(true)}
         onPointerLeave={(e) => {
           if (e.pointerType !== "mouse") return;
-          setHeld(false);
           px.set(0);
           py.set(0);
         }}
         onPointerMove={onCardMove}
-        onFocus={() => setHeld(true)}
-        onBlur={(e) => !e.currentTarget.contains(e.relatedTarget) && setHeld(false)}
       >
         {/* Photo: no frame. It melts into the card from the left on desktop, and into the words below on phones. */}
         <motion.div
@@ -260,7 +257,7 @@ export default function HeroShowcase({ dark }) {
           <span className="text-[22px] leading-none">{String(current + 1).padStart(2, "0")}</span>
           <span className="text-[13px] text-[var(--h-muted)]">/ {String(SLIDES.length).padStart(2, "0")}</span>
         </div>
-        <div role="tablist" aria-label="Choose a highlight" className="grid flex-1 grid-cols-4 gap-1.5 sm:gap-2.5">
+        <div role="tablist" aria-label="Choose a highlight" className="grid flex-1 gap-1.5 sm:gap-2.5" style={{ gridTemplateColumns: `repeat(${SLIDES.length}, minmax(0, 1fr))` }}>
           {SLIDES.map((s, i) => {
             const on = i === current;
             return (
@@ -277,8 +274,7 @@ export default function HeroShowcase({ dark }) {
                 className={`group min-w-0 rounded-[12px] px-1 py-2 text-left ${RING}`}
               >
                 <span className={`block truncate text-[12.5px] font-bold transition-colors sm:text-[13.5px] ${on ? "text-[var(--h-text)]" : "text-[var(--h-muted)] group-hover:text-[var(--h-text)]"}`}>
-                  <span className="sm:hidden">{s.short || s.label}</span>
-                  <span className="hidden sm:inline">{s.label}</span>
+                  {s.short || s.label}
                 </span>
                 <span className="relative mt-2 block h-1 overflow-hidden rounded-full bg-[var(--h-border)]">
                   <span
