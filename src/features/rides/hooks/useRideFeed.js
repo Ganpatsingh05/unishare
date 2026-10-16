@@ -55,7 +55,10 @@ export default function useRideFeed({ onRequestResult } = {}) {
       .filter((ride) => isUpcoming(ride, now));
     const requested = {};
     for (const request of sent.data || []) {
-      if (OPEN_REQUEST_STATUSES.has(request.status)) requested[request.ride_id] = "requested";
+      // The backend serialises these as rideId/status, and status upper case.
+      const rideId = request.rideId ?? request.ride_id;
+      const status = String(request.status || "").toLowerCase();
+      if (rideId && OPEN_REQUEST_STATUSES.has(status)) requested[rideId] = "requested";
     }
     setRides(normalized);
     setRequestState(requested);

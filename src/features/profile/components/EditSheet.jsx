@@ -5,30 +5,29 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Drawer from "@mui/material/Drawer";
 import IconButton from "@mui/material/IconButton";
-import InputAdornment from "@mui/material/InputAdornment";
 import TextField from "@mui/material/TextField";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { Camera as Camera } from "lucide-react";
-import { CircleCheck as CheckCircle } from "lucide-react";
-import { CircleX as CloseCircle } from "lucide-react";
 import { X as Close } from "lucide-react";
 import { useRideTokens } from "@features/rides/theme/RideThemeBridge";
-import { checkUsernameAvailability, validateCampusName, validatePhoneNumber, validateProfileImage } from "@lib/api/userProfile";
+import { validateCampus, validateProfileImage, validateUsername } from "@lib/api/userProfile";
 import { PROFILE_STRINGS } from "../constants/profileStrings";
-import { HANDLE_RE, initialsOf, LIMITS } from "../utils/profileModel";
+import { initialsOf, LIMITS } from "../utils/profileModel";
 
 const s = PROFILE_STRINGS.edit;
 
-/** Field errors for the form; empty when valid. */
-function validate(form, handleState) {
+/**
+ * Field errors for the form; empty when valid.
+ *
+ * The username rule is the backend's own, so nothing valid is blocked and
+ * nothing invalid reaches the request.
+ */
+function validate(form) {
   const errors = {};
-  if (form.name.trim().length > LIMITS.name) errors.name = `Up to ${LIMITS.name} characters`;
-  if (form.handle && !HANDLE_RE.test(form.handle)) errors.handle = s.handleHint;
-  else if (handleState === "taken") errors.handle = s.taken;
-  const campus = validateCampusName(form.campus);
+  const username = validateUsername(form.username);
+  if (!username.valid) errors.username = username.message;
+  const campus = validateCampus(form.campus);
   if (!campus.valid) errors.campus = campus.message;
-  const phone = validatePhoneNumber(form.phone);
-  if (!phone.valid) errors.phone = phone.message;
   if (form.bio.length > LIMITS.bio) errors.bio = `Up to ${LIMITS.bio} characters`;
   return errors;
 }
@@ -36,37 +35,18 @@ function validate(form, handleState) {
 /**
  * Edit the profile in a side sheet (bottom sheet on phones). Every change is
  * reported upward straight away so the pass on the page previews it live.
- * The username is checked for availability as you type.
+ *
+ * Only what the backend stores is editable: username, campus (universityName),
+ * about (bio) and the photo. There is no availability probe — the backend has
+ * no such endpoint, and it rejects a taken username with its own message.
  */
 export default function EditSheet({ open, profile, form, onForm, photo, onPhoto, onClose, onSave, busy }) {
   const t = useRideTokens();
   const c = t.color;
   const phone = useMediaQuery("(max-width:899.95px)");
   const fileRef = useRef(null);
-  const [handleState, setHandleState] = useState("idle"); // idle | checking | available | taken
   const [shown, setShown] = useState(false);
   const [photoError, setPhotoError] = useState("");
-
-  // Debounced availability check; your own current username is always fine.
-  useEffect(() => {
-    if (!open) return undefined;
-    const h = form.handle;
-    if (!h || h === profile.handle || !HANDLE_RE.test(h)) {
-      setHandleState("idle");
-      return undefined;
-    }
-    setHandleState("checking");
-    let alive = true;
-    const id = setTimeout(() => {
-      checkUsernameAvailability(h)
-        .then((r) => alive && setHandleState(r?.available ? "available" : "taken"))
-        .catch(() => alive && setHandleState("idle"));
-    }, 450);
-    return () => {
-      alive = false;
-      clearTimeout(id);
-    };
-  }, [form.handle, profile.handle, open]);
 
   useEffect(() => {
     if (open) {
@@ -75,7 +55,7 @@ export default function EditSheet({ open, profile, form, onForm, photo, onPhoto,
     }
   }, [open]);
 
-  const errors = validate(form, handleState);
+  const errors = validate(form);
   const show = (k) => (shown && errors[k]) || "";
   const set = (k, max) => (e) => onForm({ ...form, [k]: max ? e.target.value.slice(0, max) : e.target.value });
   const field = { "& .MuiOutlinedInput-root": { borderRadius: `${t.radius.md}px` } };
@@ -93,16 +73,11 @@ export default function EditSheet({ open, profile, form, onForm, photo, onPhoto,
   const submit = (e) => {
     e.preventDefault();
     setShown(true);
-    if (Object.keys(errors).length || handleState === "checking") return;
+    if (Object.keys(errors).length) return;
     onSave();
   };
 
-  const preview = photo?.remove ? null : photo?.url || profile.photo;
-  const handleAdornment =
-    handleState === "checking" ? <Box component="span" sx={{ fontSize: 12.5, color: c.textMuted }}>{s.checking}</Box>
-    : handleState === "available" ? <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, fontSize: 12.5, fontWeight: 700, color: c.success }}><CheckCircle size={16} aria-hidden />{s.available}</Box>
-    : handleState === "taken" ? <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, fontSize: 12.5, fontWeight: 700, color: c.danger }}><CloseCircle size={16} aria-hidden />{s.taken}</Box>
-    : null;
+  const preview = photo?.url || profile.photo;
 
   return (
     <Drawer
@@ -125,31 +100,28 @@ export default function EditSheet({ open, profile, form, onForm, photo, onPhoto,
           {/* Photo. */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Box sx={{ position: "relative", width: 76, height: 76, borderRadius: "20px", overflow: "hidden", flexShrink: 0, background: "linear-gradient(135deg, #FFD43B, #FF9F1C 55%, #1D6FE0)", display: "grid", placeItems: "center" }}>
-              {preview ? <Box component="img" src={preview} alt="" referrerPolicy="no-referrer" sx={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <Box component="span" sx={{ fontSize: 28, fontWeight: 900, color: "#0B2147" }}>{initialsOf(form.name)}</Box>}
+              {preview ? <Box component="img" src={preview} alt="" referrerPolicy="no-referrer" sx={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <Box component="span" sx={{ fontSize: 28, fontWeight: 900, color: "#0B2147" }}>{initialsOf(form.username)}</Box>}
             </Box>
             <Box sx={{ minWidth: 0 }}>
               <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden onChange={(e) => { pick(e.target.files?.[0]); e.target.value = ""; }} />
               <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                 <Button variant="outlined" size="small" onClick={() => fileRef.current?.click()} startIcon={<Camera size={18} aria-hidden />} sx={{ minHeight: 40, borderRadius: `${t.radius.pill}px` }}>{s.changePhoto}</Button>
-                {profile.hasOwnPhoto && !photo?.remove ? <Button size="small" onClick={() => onPhoto({ remove: true })} sx={{ minHeight: 40, color: c.textSecondary }}>{s.removePhoto}</Button> : null}
               </Box>
               <Box role={photoError ? "alert" : undefined} sx={{ mt: 0.5, fontSize: 12.5, fontWeight: photoError ? 700 : 500, color: photoError ? c.danger : c.textMuted }}>{photoError || s.photoHint}</Box>
             </Box>
           </Box>
 
-          <TextField label={s.name} value={form.name} onChange={set("name", LIMITS.name)} error={Boolean(show("name"))} helperText={show("name") || " "} fullWidth sx={field} slotProps={{ htmlInput: { autoComplete: "name" } }} />
           <TextField
-            label={s.handle}
-            value={form.handle}
-            onChange={(e) => onForm({ ...form, handle: e.target.value.replace(/^@/, "").replace(/[^a-zA-Z0-9_]/g, "").slice(0, LIMITS.handle) })}
-            error={Boolean(show("handle")) || handleState === "taken"}
-            helperText={show("handle") || (handleState === "taken" ? s.taken : s.handleHint)}
+            label={s.username}
+            value={form.username}
+            onChange={(e) => onForm({ ...form, username: e.target.value.slice(0, LIMITS.username) })}
+            error={Boolean(show("username"))}
+            helperText={show("username") || s.usernameHint}
             fullWidth
             sx={field}
-            slotProps={{ htmlInput: { autoCapitalize: "none", autoCorrect: "off", spellCheck: false }, input: { startAdornment: <InputAdornment position="start">@</InputAdornment>, endAdornment: handleAdornment ? <InputAdornment position="end">{handleAdornment}</InputAdornment> : null } }}
+            slotProps={{ htmlInput: { autoComplete: "username", autoCapitalize: "none", autoCorrect: "off", spellCheck: false } }}
           />
           <TextField label={s.campus} placeholder={s.campusPlaceholder} value={form.campus} onChange={set("campus", LIMITS.campus)} error={Boolean(show("campus"))} helperText={show("campus") || " "} fullWidth sx={field} />
-          <TextField label={s.phone} type="tel" value={form.phone} onChange={set("phone", 20)} error={Boolean(show("phone"))} helperText={show("phone") || s.phoneHint} fullWidth sx={field} slotProps={{ htmlInput: { inputMode: "tel", autoComplete: "tel" } }} />
           <TextField label={s.bio} placeholder={s.bioPlaceholder} value={form.bio} onChange={set("bio", LIMITS.bio)} error={Boolean(show("bio"))} helperText={show("bio") || s.count(form.bio.length, LIMITS.bio)} fullWidth multiline minRows={3} sx={field} />
         </Box>
 

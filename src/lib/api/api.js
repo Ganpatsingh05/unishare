@@ -12,9 +12,10 @@ export {
 
 // Re-export all profile functions  
 export {
-  fetchUserProfile, updateUserProfile, uploadUserAvatar, deleteUserAvatar,
-  getUserStats, getUserDashboard, fetchPublicProfile
-} from "@lib/api/profile.js";
+  getCurrentUserProfile, getPublicUserProfile, updateUserProfile,
+  validateUsername, validateCampus, validateProfileImage,
+  USERNAME_PATTERN, USERNAME_MIN, USERNAME_MAX, BIO_MAX, CAMPUS_MAX
+} from "@lib/api/userProfile.js";
 
 // Re-export all housing functions
 export {

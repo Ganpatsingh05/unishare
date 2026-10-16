@@ -5,8 +5,8 @@ import { useAuth } from "@contexts/UniShareContext";
 import {
   cancelRideRequest,
   deleteRide,
+  getAllIncomingRequests,
   getMyRides,
-  getRideRequests,
   getUserSentRequests,
   respondToRideRequest,
   updateRide,
@@ -17,7 +17,9 @@ import { motion as motionTokens } from "../theme/rideTokens";
 /** "upcoming" | "past" | "cancelled" for one of my rides. */
 export function hostBucket(ride, now = new Date()) {
   if (ride.status === "cancelled") return "cancelled";
-  if (ride.status !== "active" || !ride.startsAt || ride.startsAt <= now) return "past";
+  // A full ride is still mine and still ahead; only ended or unknown states are "past".
+  if ((ride.status !== "active" && ride.status !== "full") || !ride.startsAt || ride.startsAt <= now)
+    return "past";
   return "upcoming";
 }
 
@@ -52,7 +54,12 @@ export default function useManageRides({ onCommitError } = {}) {
         return;
       }
       if (!quiet) setStatus("loading");
-      const [mine, incoming, outgoing] = await Promise.all([getMyRides(), getRideRequests(), getUserSentRequests()]);
+      // The backend only exposes requests per ride, so the aggregate call walks my rides.
+      const [mine, incoming, outgoing] = await Promise.all([
+        getMyRides(),
+        getAllIncomingRequests(),
+        getUserSentRequests(),
+      ]);
       if (!mine.success) {
         if (!quiet) setStatus("error");
         return;

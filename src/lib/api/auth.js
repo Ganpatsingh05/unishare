@@ -1,14 +1,44 @@
 // api/auth.js - Authentication API functions (Spring Boot backend)
-import { apiCall, BACKEND_URL } from '@lib/api/base.js';
+import { apiCall, clearAPICache, BACKEND_URL } from '@lib/api/base.js';
+
+// ============== USER SHAPE ==============
+
+/**
+ * Maps the backend's user payload onto the field names the UI already reads.
+ *
+ * The backend returns { id, username, email, roles, authProvider, active, profile }.
+ * Existing components read `name` and `picture`, so those are aliased here once, at
+ * the API boundary, instead of in every consumer.
+ */
+export const normalizeUser = (raw) => {
+  if (!raw || typeof raw !== 'object') return null;
+
+  const profile = raw.profile || {};
+  const name = raw.name || raw.username || raw.displayName || '';
+
+  return {
+    ...raw,
+    name,
+    username: raw.username || name,
+    email: raw.email || null,
+    roles: Array.isArray(raw.roles) ? raw.roles : [],
+    picture: raw.picture || profile.profilePictureUrl || raw.avatar || null,
+    avatar: raw.avatar || profile.profilePictureUrl || null,
+    bio: raw.bio ?? profile.bio ?? null,
+    universityName: raw.universityName ?? profile.universityName ?? null,
+    dateOfBirth: raw.dateOfBirth ?? profile.dateOfBirth ?? null,
+  };
+};
 
 // ============== AUTHENTICATION ==============
 
+// GET /api/user/me → { success, user: UserResponse } | 401 { success: false, message }
+// Never cached: this decides whether the app believes a session exists.
 export const fetchCurrentUser = async () => {
   try {
-    const data = await apiCall('/api/auth/unishare/me');
-    // Backend returns ApiResponse<UserDTO>: { status, data, message, timestamp }
-    if (data.status === 'success' && data.data) {
-      return data.data;
+    const data = await apiCall('/api/user/me', { cache: false });
+    if (data.success && data.user) {
+      return normalizeUser(data.user);
     }
     return null;
   } catch (error) {
@@ -31,15 +61,19 @@ export const checkAuthStatus = async () => {
   }
 };
 
+// POST /api/user/logout → { success, message }
 export const logout = async () => {
   try {
-    const response = await apiCall('/api/auth/unishare/logout', { method: 'POST' });
-    // Backend returns ApiResponse<Void>: { status, message }
-    return response.status === 'success';
+    const response = await apiCall('/api/user/logout', { method: 'POST' });
+    return response.success === true;
   } catch (error) {
     console.error('Logout error:', error);
-    window.location.href = `${BACKEND_URL}/api/auth/unishare/logout`;
+    window.location.href = `${BACKEND_URL}/api/user/logout`;
     return false;
+  } finally {
+    // Session-scoped GETs must not outlive the session, or the next
+    // auth check would still see the signed-out user.
+    clearAPICache();
   }
 };
 
@@ -47,8 +81,10 @@ export const checkAdminStatus = async () => {
   try {
     const user = await fetchCurrentUser();
     if (!user) return { isAdmin: false, user: null, loading: false };
-    // roles is Set<String> of role names e.g. ["USER", "ADMIN"]
-    const isAdmin = user.roles?.includes('ADMIN') || false;
+    // roles is a set of strings e.g. ["USER", "ADMIN"]
+    const isAdmin = Array.isArray(user.roles)
+      ? user.roles.includes('ADMIN')
+      : false;
     return { isAdmin, user, loading: false };
   } catch (error) {
     console.error('Error checking admin status:', error);
@@ -64,8 +100,7 @@ export const startGithubLogin = () => {
   window.location.href = `${BACKEND_URL}/api/auth/github`;
 };
 
-// Email/Password Login
-// Backend returns AuthResponseDTO: { success, message, user }
+// POST /api/auth/unishare/login → AuthResponseDTO: { success, message, user }
 export const loginWithEmail = async (email, password) => {
   try {
     const response = await apiCall('/api/auth/unishare/login', {
@@ -73,7 +108,9 @@ export const loginWithEmail = async (email, password) => {
       body: JSON.stringify({ email, password })
     });
     if (response.success) {
-      return { success: true, user: response.user, message: response.message };
+      // Drop anything cached before the session existed.
+      clearAPICache();
+      return { success: true, user: normalizeUser(response.user), message: response.message };
     }
     return { success: false, message: response.message || 'Login failed' };
   } catch (error) {
@@ -82,8 +119,7 @@ export const loginWithEmail = async (email, password) => {
   }
 };
 
-// Email/Password Registration
-// Backend returns AuthResponseDTO: { success, message, user }
+// POST /api/auth/unishare/register → AuthResponseDTO: { success, message, user }
 export const registerWithEmail = async (userData) => {
   try {
     const response = await apiCall('/api/auth/unishare/register', {
@@ -91,11 +127,14 @@ export const registerWithEmail = async (userData) => {
       body: JSON.stringify({
         email: userData.email,
         password: userData.password,
-        username: userData.username || userData.firstName || userData.email.split('@')[0]
+        username: userData.username || userData.firstName || userData.email.split('@')[0],
+        firstName: userData.firstName,
+        lastName: userData.lastName
       })
     });
     if (response.success) {
-      return { success: true, user: response.user, message: response.message || 'Registration successful!' };
+      clearAPICache();
+      return { success: true, user: normalizeUser(response.user), message: response.message || 'Registration successful!' };
     }
     return { success: false, message: response.message || 'Registration failed' };
   } catch (error) {
@@ -104,8 +143,7 @@ export const registerWithEmail = async (userData) => {
   }
 };
 
-// Request password reset
-// Backend returns PasswordResetResponse: { message } only — no success field
+// POST /api/user-management/password-update → PasswordResetResponse: { message }
 export const requestPasswordReset = async (email) => {
   try {
     const response = await apiCall('/api/user-management/password-update', {
@@ -119,8 +157,7 @@ export const requestPasswordReset = async (email) => {
   }
 };
 
-// Confirm password reset with token
-// Backend returns PasswordResetResponse: { message } only — no success field
+// POST /api/user-management/password-update/confirm → PasswordResetResponse: { message }
 export const confirmPasswordReset = async (token, newPassword) => {
   try {
     const response = await apiCall('/api/user-management/password-update/confirm', {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getRideRequests, respondToRideRequest } from "../services/rides.service";
+import { getAllIncomingRequests, respondToRideRequest } from "../services/rides.service";
 import { normalizeRequest } from "../utils/rideModel";
 import { motion as motionTokens } from "../theme/rideTokens";
 
@@ -28,7 +28,8 @@ export default function useRideRequests({ enabled, onCommitError }) {
       return;
     }
     setStatus("loading");
-    const result = await getRideRequests();
+    // The backend has no "all incoming requests" endpoint, so this walks my rides.
+    const result = await getAllIncomingRequests();
     if (!result.success) {
       setStatus("error");
       return;

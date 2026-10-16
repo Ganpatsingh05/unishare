@@ -256,16 +256,16 @@ function SettingsContent() {
               <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
                 <Box sx={{ width: 64, height: 64, borderRadius: "50%", overflow: "hidden", flexShrink: 0, display: "grid", placeItems: "center", backgroundColor: c.actionSoft, color: c.accentText, fontSize: 22, fontWeight: 850 }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  {loadingProfile ? <Skeleton variant="circular" width={64} height={64} /> : p.photo ? <img src={p.photo} alt="" width={64} height={64} style={{ width: "100%", height: "100%", objectFit: "cover" }} referrerPolicy="no-referrer" /> : initialsOf(p.name)}
+                  {loadingProfile ? <Skeleton variant="circular" width={64} height={64} /> : p.photo ? <img src={p.photo} alt="" width={64} height={64} style={{ width: "100%", height: "100%", objectFit: "cover" }} referrerPolicy="no-referrer" /> : initialsOf(p.username)}
                 </Box>
                 <Box sx={{ flex: 1, minWidth: 160 }}>
-                  <Box sx={{ fontSize: 18, fontWeight: 850, color: c.text, overflowWrap: "anywhere" }}>{loadingProfile ? <Skeleton width={160} /> : p.name || S.account.noName}</Box>
-                  <Box sx={{ fontSize: 14.5, color: c.textSecondary }}>{loadingProfile ? <Skeleton width={110} /> : p.handle ? `@${p.handle}` : S.account.noHandle}</Box>
+                  <Box sx={{ fontSize: 18, fontWeight: 850, color: c.text, overflowWrap: "anywhere" }}>{loadingProfile ? <Skeleton width={160} /> : p.username || S.account.noName}</Box>
+                  <Box sx={{ fontSize: 14.5, color: c.textSecondary }}>{loadingProfile ? <Skeleton width={110} /> : p.username ? `@${p.username}` : S.account.noHandle}</Box>
                 </Box>
                 <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                   <Button component={Link} href="/profile" variant="contained" sx={pill(t)}>{S.account.edit}</Button>
-                  {p.handle ? (
-                    <Button component={Link} href={`/u/${encodeURIComponent(p.handle)}`} variant="outlined" sx={outlined}>{S.account.pass}</Button>
+                  {p.username ? (
+                    <Button component={Link} href={`/u/${encodeURIComponent(p.username)}`} variant="outlined" sx={outlined}>{S.account.pass}</Button>
                   ) : !loadingProfile ? (
                     <Button component={Link} href="/profile" variant="outlined" sx={outlined}>{S.account.pickHandle}</Button>
                   ) : null}

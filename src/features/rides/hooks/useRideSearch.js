@@ -11,14 +11,21 @@ const SEARCH_LIMIT = 100;
 
 // The backend has used both vocabularies for request states.
 const STATUS_ALIASES = { accepted: "confirmed", rejected: "declined" };
-const normStatus = (status) => STATUS_ALIASES[status] || status;
+const normStatus = (status) => {
+  const key = String(status || "pending").toLowerCase();
+  return STATUS_ALIASES[key] || key;
+};
 
 /** Latest request status per ride for the signed-in user. */
 function statusesByRide(requests = []) {
   const latest = {};
   for (const request of requests) {
-    const prev = latest[request.ride_id];
-    if (!prev || new Date(request.created_at || 0) > new Date(prev.created_at || 0)) latest[request.ride_id] = request;
+    const rideId = request.rideId ?? request.ride_id;
+    if (!rideId) continue;
+    const createdAt = request.createdAt || request.created_at;
+    const prev = latest[rideId];
+    const prevCreatedAt = prev ? prev.createdAt || prev.created_at : null;
+    if (!prev || new Date(createdAt || 0) > new Date(prevCreatedAt || 0)) latest[rideId] = request;
   }
   const map = {};
   for (const [rideId, request] of Object.entries(latest)) map[rideId] = normStatus(request.status);

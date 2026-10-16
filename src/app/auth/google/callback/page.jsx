@@ -33,7 +33,7 @@ export default function GoogleCallbackPage() {
     }
 
     // Forward the code to backend by redirecting to backend callback
-    const backendCallbackUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/google/callback?code=${encodeURIComponent(code)}`;
+    const backendCallbackUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/google/callback?code=${encodeURIComponent(code)}`;
     
     // Get the redirect URL from session storage if it exists
     const redirectAfterLogin = sessionStorage.getItem('oauth_redirect') || '/';

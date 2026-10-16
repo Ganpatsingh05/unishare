@@ -39,7 +39,7 @@ export default function AdminDebugTool() {
       try {
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
         if (backendUrl) {
-          const response = await fetch(`${backendUrl}/auth/me`, {
+          const response = await fetch(`${backendUrl}/api/user/me`, {
             credentials: 'include'
           });
           const data = await response.json();

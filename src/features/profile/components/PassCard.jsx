@@ -135,7 +135,7 @@ function Photo({ profile, size, p }) {
       {profile.photo ? (
         <Box component="img" src={profile.photo} alt="" referrerPolicy="no-referrer" sx={{ width: "100%", height: "100%", objectFit: "cover" }} />
       ) : (
-        <Box component="span" sx={{ fontSize: size * 0.38, fontWeight: 900, color: p.photoInk, letterSpacing: "-0.04em" }}>{initialsOf(profile.name)}</Box>
+        <Box component="span" sx={{ fontSize: size * 0.38, fontWeight: 900, color: p.photoInk, letterSpacing: "-0.04em" }}>{initialsOf(profile.username)}</Box>
       )}
     </Box>
   );
@@ -172,7 +172,7 @@ export default function PassCard({ profile, width = 290 }) {
     py.set(0);
   };
   const flip = () => setFlipped((f) => !f);
-  const url = passUrl(profile.handle);
+  const url = passUrl(profile.username);
   const face = { position: "absolute", inset: 0, borderRadius: "26px", overflow: "hidden", backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" };
 
   return (
@@ -191,7 +191,7 @@ export default function PassCard({ profile, width = 290 }) {
             component={m.div}
             role="button"
             tabIndex={0}
-            aria-label={`${s.label(profile.name || "you")}. ${flipped ? s.flipBack : s.flip}`}
+            aria-label={`${s.label(profile.username || "you")}. ${flipped ? s.flipBack : s.flip}`}
             aria-pressed={flipped}
             onClick={flip}
             onKeyDown={(e) => {
@@ -216,8 +216,8 @@ export default function PassCard({ profile, width = 290 }) {
               </Box>
               <Box sx={{ position: "relative", px: 2.5, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
                 <Box sx={{ mt: -3.5 }}><Photo profile={profile} size={Math.round(width * 0.42)} p={p} /></Box>
-                <Box sx={{ mt: 2, fontSize: Math.round(width * 0.08), fontWeight: 850, lineHeight: 1.15, letterSpacing: "-0.01em", overflowWrap: "anywhere", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{profile.name || "—"}</Box>
-                <Box sx={{ mt: 0.5, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 14, fontWeight: 700, color: p.accent, minHeight: 20 }}>{profile.handle ? `@${profile.handle}` : ""}</Box>
+                <Box sx={{ mt: 2, fontSize: Math.round(width * 0.08), fontWeight: 850, lineHeight: 1.15, letterSpacing: "-0.01em", overflowWrap: "anywhere", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{profile.username || "—"}</Box>
+                <Box sx={{ mt: 0.5, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 14, fontWeight: 700, color: p.accent, minHeight: 20 }}>{profile.username ? `@${profile.username}` : ""}</Box>
                 {profile.campus ? (
                   <Box sx={{ mt: 1.25, display: "inline-flex", alignItems: "center", gap: 0.6, maxWidth: "100%", px: 1.25, py: 0.5, borderRadius: 999, backgroundColor: p.chip, fontSize: 12.5, fontWeight: 700, color: p.ink }}>
                     <MapPoint size={15} color={p.accent} aria-hidden style={{ flexShrink: 0 }} />
@@ -228,7 +228,7 @@ export default function PassCard({ profile, width = 290 }) {
               {/* Footer: member since and a hologram seal. */}
               <Box sx={{ position: "absolute", left: 18, right: 18, bottom: 16, pt: 1.25, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1.5, borderTop: `1px dashed ${p.muted}`, fontSize: 11.5, fontWeight: 700, lineHeight: 1.25, color: p.muted }}>
                 <Box component="span" sx={{ minWidth: 0 }}>{profile.memberSince ? s.member(monthFmt.format(profile.memberSince)) : ""}</Box>
-                <Barcode seed={profile.handle || profile.name || "unishare"} color={p.ink} width={Math.round(width * 0.32)} height={26} />
+                <Barcode seed={profile.username || "unishare"} color={p.ink} width={Math.round(width * 0.32)} height={26} />
               </Box>
             </Box>
 
@@ -241,10 +241,10 @@ export default function PassCard({ profile, width = 290 }) {
                     <QRCodeSVG value={url} title={s.scan} size={Math.round(width * 0.55)} fgColor="#0B2147" bgColor="#FFFFFF" level="M" marginSize={0} />
                   </Box>
                   <Box sx={{ fontSize: 15, fontWeight: 800 }}>{s.scan}</Box>
-                  <Box sx={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 13.5, fontWeight: 800, color: dark ? "#FFD43B" : "#1D6FE0" }}>@{profile.handle}</Box>
+                  <Box sx={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 13.5, fontWeight: 800, color: dark ? "#FFD43B" : "#1D6FE0" }}>@{profile.username}</Box>
                 </>
               ) : (
-                <Box sx={{ fontSize: 15, fontWeight: 750, maxWidth: 200 }}>{s.noHandle}</Box>
+                <Box sx={{ fontSize: 15, fontWeight: 750, maxWidth: 200 }}>{s.noUsername}</Box>
               )}
               <Box sx={{ position: "absolute", bottom: 18 }}><Wordmark size={15} uni={p.backInk} share={dark ? "#FFD43B" : "#1D6FE0"} /></Box>
             </Box>

@@ -52,8 +52,8 @@ function PublicContent({ handle }) {
       <Box sx={{ display: "grid", gap: { xs: 3, md: 6 }, gridTemplateColumns: { xs: "1fr", md: "320px 1fr" }, alignItems: "center" }}>
         <Box sx={{ mt: { xs: 0, md: -2 } }}>{profile ? <PassCard profile={profile} width={phone ? 250 : 290} /> : <Skeleton variant="rounded" sx={{ width: 290, height: 560, mx: "auto", borderRadius: "26px" }} />}</Box>
         <Box sx={{ minWidth: 0 }}>
-          <Box component="h1" sx={{ m: 0, fontSize: { xs: 34, md: 46 }, fontWeight: t.typography.displayWeight, letterSpacing: t.typography.displayTracking, lineHeight: 1.08, overflowWrap: "anywhere" }}>{profile ? profile.name || `@${profile.handle}` : <Skeleton width="60%" />}</Box>
-          {profile?.handle ? <Box sx={{ mt: 0.5, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 16, fontWeight: 700, color: c.accentText }}>@{profile.handle}</Box> : null}
+          <Box component="h1" sx={{ m: 0, fontSize: { xs: 34, md: 46 }, fontWeight: t.typography.displayWeight, letterSpacing: t.typography.displayTracking, lineHeight: 1.08, overflowWrap: "anywhere" }}>{profile ? profile.username || "—" : <Skeleton width="60%" />}</Box>
+          {profile?.username ? <Box sx={{ mt: 0.5, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 16, fontWeight: 700, color: c.accentText }}>@{profile.username}</Box> : null}
           {profile?.bio ? (
             <Box sx={{ mt: 3 }}>
               <Box component="h2" sx={{ m: 0, mb: 0.75, fontSize: 15, fontWeight: 780, color: c.textMuted }}>{S.public.about}</Box>

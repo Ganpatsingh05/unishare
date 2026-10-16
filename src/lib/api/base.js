@@ -70,6 +70,30 @@ export const buildQueryParams = (params = {}) => {
 // Delay utility for retries
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+// The backend answers failures with { data, meta }, and puts the useful text inside
+// `data` — often under data.validationErrors. Reading only the top level turned every
+// rejected request into the unhelpful "HTTP 400".
+const readError = (payload, status) => {
+  const detail =
+    payload && typeof payload === 'object' && payload.data && typeof payload.data === 'object'
+      ? payload.data
+      : payload && typeof payload === 'object'
+        ? payload
+        : {};
+
+  const fieldErrors = detail.validationErrors;
+  const firstFieldError =
+    fieldErrors && typeof fieldErrors === 'object'
+      ? Object.values(fieldErrors).find(value => typeof value === 'string' && value.trim())
+      : null;
+
+  return {
+    message: firstFieldError || detail.message || detail.error || `HTTP ${status}`,
+    details: detail.details || null,
+    errors: Array.isArray(detail.errors) ? detail.errors : [],
+  };
+};
+
 // Enhanced API call with retry logic, caching, and proper error handling
 export const apiCall = async (endpoint, options = {}) => {
   const {
@@ -95,7 +119,7 @@ export const apiCall = async (endpoint, options = {}) => {
   // Validate backend URL
   if (!BACKEND_URL) {
     console.warn(`Backend URL not configured. Skipping API call to ${endpoint}`);
-    if (endpoint === '/auth/me') {
+    if (endpoint === '/api/user/me') {
       return { success: true, user: null };
     }
     throw new APIError('Backend not available', 503, 'NEXT_PUBLIC_BACKEND_URL not configured');
@@ -135,12 +159,8 @@ export const apiCall = async (endpoint, options = {}) => {
 
       // Handle HTTP errors
       if (!response.ok) {
-        throw new APIError(
-          data.message || data.error || `HTTP ${response.status}`,
-          response.status,
-          data.details || null,
-          data.errors || []
-        );
+        const failure = readError(data, response.status);
+        throw new APIError(failure.message, response.status, failure.details, failure.errors);
       }
 
       // Unwrap global backend envelope: { data: <payload>, meta: { success, traceId, ... } }
@@ -232,12 +252,8 @@ export const apiCallFormData = async (endpoint, formData, options = {}) => {
       }
 
       if (!response.ok) {
-        throw new APIError(
-          data.message || data.error || `HTTP ${response.status}`,
-          response.status,
-          data.details || null,
-          data.errors || []
-        );
+        const failure = readError(data, response.status);
+        throw new APIError(failure.message, response.status, failure.details, failure.errors);
       }
 
       if (process.env.NODE_ENV === 'development') {

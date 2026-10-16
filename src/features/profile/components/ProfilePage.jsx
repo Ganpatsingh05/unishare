@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -17,7 +17,7 @@ import RideThemeBridge, { useRideTokens } from "@features/rides/theme/RideThemeB
 import useRideFeedback, { RideFeedbackProvider } from "@features/rides/hooks/useRideFeedback";
 import Panel from "@features/rides/components/landing/primitives/Panel";
 import StateBlock from "@features/rides/components/landing/primitives/StateBlock";
-import { deleteProfileImage, getCurrentUserProfile, updateUserProfile } from "@lib/api/userProfile";
+import { getCurrentUserProfile, updateUserProfile } from "@lib/api/userProfile";
 import { PROFILE_STRINGS } from "../constants/profileStrings";
 import useMyProfile from "../hooks/useMyProfile";
 import useFootprint from "../hooks/useFootprint";
@@ -30,7 +30,7 @@ import SettingsShortcut from "./SettingsShortcut";
 
 const S = PROFILE_STRINGS;
 
-const formFrom = (p) => ({ name: p.name, handle: p.handle, campus: p.campus, phone: p.phone, bio: p.bio });
+const formFrom = (p) => ({ username: p.username, campus: p.campus, bio: p.bio });
 
 /** "Your pass is 67% complete" as a ring plus one chip per item; missing ones open the editor. */
 function Completeness({ profile, onEdit }) {
@@ -86,8 +86,7 @@ function ProfileContent() {
   const shown = useMemo(() => {
     if (!editing) return me.profile;
     const p = { ...me.profile, ...form };
-    if (photo?.remove) p.photo = null;
-    else if (photo?.url) p.photo = photo.url;
+    if (photo?.url) p.photo = photo.url;
     return p;
   }, [editing, me.profile, form, photo]);
 
@@ -106,14 +105,13 @@ function ProfileContent() {
     const before = completeness(me.profile).pct;
     setBusy(true);
     try {
-      if (photo?.remove) await deleteProfileImage();
       await updateUserProfile(toProfilePayload(form), photo?.file || null);
       const fresh = await getCurrentUserProfile();
       me.replace(fresh?.data || {});
       closeEditor();
       notify({ message: S.edit.saved, tone: "success" });
       // A small celebration the first time the pass is complete.
-      const after = completeness({ ...me.profile, ...form, photo: photo?.remove ? null : photo?.url || me.profile.photo }).pct;
+      const after = completeness({ ...me.profile, ...form, photo: photo?.url || me.profile.photo }).pct;
       if (before < 100 && after === 100 && !reduce) {
         import("canvas-confetti").then(({ default: confetti }) => confetti({ particleCount: 90, spread: 70, origin: { y: 0.35 }, colors: ["#FFD43B", "#1D6FE0", "#7DD3FC", "#FFFFFF"], disableForReducedMotion: true }));
       }
@@ -125,14 +123,14 @@ function ProfileContent() {
   };
 
   const share = async () => {
-    if (!me.profile.handle) {
-      notify({ message: S.hero.needsHandle, tone: "error" });
+    if (!me.profile.username) {
+      notify({ message: S.hero.needsUsername, tone: "error" });
       openEditor();
       return;
     }
-    const url = passUrl(me.profile.handle);
+    const url = passUrl(me.profile.username);
     try {
-      if (navigator.share) await navigator.share({ title: me.profile.name, url });
+      if (navigator.share) await navigator.share({ title: me.profile.username, url });
       else {
         await navigator.clipboard.writeText(url);
         notify({ message: S.hero.copied, tone: "success" });
@@ -161,7 +159,7 @@ function ProfileContent() {
   }
 
   const loading = me.status === "loading";
-  const first = (me.profile.name || "").split(/\s+/)[0] || S.hero.fallbackName;
+  const first = (me.profile.username || "").split(/\s+/)[0] || S.hero.fallbackName;
   const nameSx = dark ? { color: t.brand.yellow } : { color: t.brand.yellow, WebkitTextStroke: `0.06em ${t.brand.inkNavy}`, paintOrder: "stroke fill" };
 
   return (

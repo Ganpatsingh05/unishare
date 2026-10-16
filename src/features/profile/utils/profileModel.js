@@ -1,54 +1,62 @@
-// Profile shape, completeness, and the cross-feature activity feed.
+// Profile shape, completeness, and the pass link.
+//
+// The backend has exactly one name for a person — `users.username`, restricted to
+// letters, numbers and underscores — plus a bio, a university name and a photo.
+// This model carries those and nothing else, so no screen can promise a field the
+// API cannot store.
 
-export const LIMITS = { name: 100, bio: 500, campus: 100, handle: 20 };
-export const HANDLE_RE = /^[a-zA-Z0-9_]{3,20}$/;
+// Mirrors the backend: users.username 3–50, user_profiles.bio 500,
+// user_profiles.university_name 200.
+export const LIMITS = { username: 50, bio: 500, campus: 200 };
+export const USERNAME_RE = /^[a-zA-Z0-9_]{3,50}$/;
 const DAY = 86400000;
 
-/** Merge the stored profile (GET /api/profile) with the auth user as fallbacks. */
+/** Merge the stored profile (GET /api/user/me) with the auth user as fallbacks. */
 export function normalizeProfile(raw = {}, user = {}) {
-  const handle = (raw.custom_user_id || "").replace(/^@/, "");
   return {
-    name: (raw.display_name || user.name || "").trim(),
-    handle,
+    username: (raw.username || raw.display_name || user.username || "").trim(),
     bio: (raw.bio || "").trim(),
-    campus: (raw.campus_name || "").trim(),
-    phone: (raw.phone_number || "").trim(),
-    photo: raw.profile_image_url || user.picture || user.avatar || null,
-    hasOwnPhoto: Boolean(raw.profile_image_url),
+    campus: (raw.universityName || raw.campus_name || "").trim(),
+    photo: raw.profilePictureUrl || raw.profile_image_url || user.picture || user.avatar || null,
     email: user.email || "",
     memberSince: raw.created_at ? new Date(raw.created_at) : user.created_at ? new Date(user.created_at) : null,
   };
 }
 
-export const initialsOf = (name = "") =>
-  name
+export const initialsOf = (value = "") =>
+  String(value)
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
     .map((w) => w[0].toUpperCase())
     .join("") || "U";
 
-export const COMPLETENESS = ["photo", "name", "handle", "campus", "bio", "phone"];
+// Only fields the backend can actually store count towards a complete pass.
+// It is also the list the pass shows, so 100% is reachable.
+export const COMPLETENESS = ["photo", "username", "campus", "bio"];
 export function completeness(p) {
-  const done = { photo: Boolean(p.photo), name: Boolean(p.name), handle: Boolean(p.handle), campus: Boolean(p.campus), bio: Boolean(p.bio), phone: Boolean(p.phone) };
+  const done = {
+    photo: Boolean(p.photo),
+    username: Boolean(p.username),
+    campus: Boolean(p.campus),
+    bio: Boolean(p.bio),
+  };
   const pct = Math.round((COMPLETENESS.filter((k) => done[k]).length / COMPLETENESS.length) * 100);
   return { done, pct };
 }
 
-/** The body POST /api/profile expects. It replaces every field, so send them all. */
+/** The body PUT /api/user/update/profile expects. */
 export function toProfilePayload(form) {
   return {
-    display_name: form.name.trim(),
+    username: form.username.trim(),
     bio: form.bio.trim(),
-    custom_user_id: form.handle ? `@${form.handle}` : "",
-    phone: form.phone.trim(),
-    campus_name: form.campus.trim(),
+    universityName: form.campus.trim(),
   };
 }
 
-export function passUrl(handle) {
-  if (!handle || typeof window === "undefined") return "";
-  return `${window.location.origin}/u/${encodeURIComponent(handle)}`;
+export function passUrl(username) {
+  if (!username || typeof window === "undefined") return "";
+  return `${window.location.origin}/u/${encodeURIComponent(username)}`;
 }
 
 export function ageText(date, strings, now = new Date()) {
