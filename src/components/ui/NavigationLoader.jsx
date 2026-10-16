@@ -67,7 +67,7 @@ const NavigationLoader = () => {
     <div className={`fixed inset-0 z-50 flex items-center justify-center transition-all duration-300 ${
       darkMode 
         ? 'bg-gradient-to-br from-gray-900/95 via-gray-800/95 to-gray-900/95 backdrop-blur-md' 
-        : 'bg-gradient-to-br from-orange-50/95 via-white/95 to-orange-100/95 backdrop-blur-md'
+        : 'bg-gradient-to-br from-blue-50/95 via-white/95 to-slate-50/95 backdrop-blur-md'
     }`}>
       
       {/* Modern Background Pattern */}
@@ -108,7 +108,7 @@ const NavigationLoader = () => {
           <div className={`absolute inset-4 w-20 h-20 rounded-full border border-transparent ${
             darkMode 
               ? 'border-yellow-200/60'
-              : 'border-orange-300/60'
+              : 'border-blue-300/60'
           }`}
           style={{
             animation: 'gentlePulse 2s ease-in-out infinite'

@@ -2,8 +2,8 @@
 
 import dynamic from "next/dynamic";
 
-// ✅ PERFORMANCE: Lazy load Footer for info pages
-// Footer is 19KB and rarely accessed on mobile
+// ✅ PERFORMANCE: Lazy load Footer — keeps the initial JS bundle lean
+// while still rendering on all pages including mobile.
 // No loading state needed as it's at the bottom of the page
 const Footer = dynamic(() => import("./Footer"), {
   loading: () => null,

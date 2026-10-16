@@ -166,14 +166,24 @@ html {
   /* Slight zoom for larger feel */
   zoom: 1.05;
   /* NOTE: transform removed — any transform on <html> breaks position:fixed by changing the containing block */
-  -webkit-font-smoothing: antialiased;
+}
+
+/* Antialiased (grayscale) rendering looks great on high-DPI desktops but
+   makes text visually thinner on mobile — especially light-on-dark.
+   Use auto (subpixel) on small screens so text stays bold-looking. */
+@media (min-width: 768px) {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
 
 body {
   /* Base text uses theme token for better contrast */
   color: var(--theme-text, var(--text-primary));
   background-color: var(--theme-bg, transparent);
-  font-family: Arial, Helvetica, sans-serif;
+  /* Use the Geist font loaded in layout.js; Arial is the fallback */
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   /* clip, not hidden: hidden makes <body> a scroll container and breaks position: sticky */
   overflow-x: clip;
   scrollbar-width: none !important;

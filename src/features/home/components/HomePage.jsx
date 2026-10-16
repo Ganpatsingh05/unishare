@@ -16,7 +16,7 @@ export default function HomePage() {
   // From tablets up the page renders at 90% so more of it fits on screen;
   // phones stay at full size to keep text readable and taps easy.
   return (
-    <main style={homeVars(darkMode)} className="relative flex flex-col gap-16 overflow-x-clip pb-28 pt-4 sm:gap-20 md:pt-8 md:[zoom:0.9] lg:gap-28 lg:pb-24">
+    <main style={homeVars(darkMode)} className="relative flex flex-col gap-16 overflow-x-clip pb-8 pt-4 sm:gap-20 md:pt-8 md:[zoom:0.9] lg:gap-28 lg:pb-12">
       <HandshakeHero dark={darkMode} />
       <BrandRibbons />
       <FeatureBento dark={darkMode} />
